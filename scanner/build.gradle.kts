@@ -29,16 +29,24 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble
+plugins {
+    alias(libs.plugins.nordic.feature)
+    alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.nexus)
+}
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-
-class MainActivity : AppCompatActivity() {
+group = "no.nordicsemi.android.kotlin.ble"
 
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+android {
+    namespace = "no.nordicsemi.android.kotlin.ble.scanner"
+}
 
+dependencies {
+    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.5.1")
+    implementation("com.google.android.material:material:1.6.1")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }

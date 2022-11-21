@@ -29,16 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble
-
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-
-class MainActivity : AppCompatActivity() {
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.secrets) apply false
+    alias(libs.plugins.protobuf) apply false
+    alias(libs.plugins.nordic.application) apply false
+    alias(libs.plugins.nordic.application.compose) apply false
+    alias(libs.plugins.nordic.library) apply false
+    alias(libs.plugins.nordic.library.compose) apply false
+    alias(libs.plugins.nordic.hilt) apply false
+    alias(libs.plugins.nordic.feature) apply false
+    alias(libs.plugins.nordic.nexus) apply false
 }

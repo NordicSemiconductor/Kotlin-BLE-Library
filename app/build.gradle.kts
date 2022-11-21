@@ -29,16 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble
+plugins {
+    alias(libs.plugins.nordic.application.compose)
+    alias(libs.plugins.nordic.hilt)
+}
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+group = "no.nordicsemi.android.kotlin.ble"
 
-class MainActivity : AppCompatActivity() {
+android {
+    namespace = "no.nordicsemi.android.kotlin.ble.app"
+}
 
+dependencies {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
+    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.appcompat:appcompat:1.5.0")
+    implementation("com.google.android.material:material:1.7.0-beta01")
+    implementation("androidx.compose.material3:material3:1.0.0-alpha16")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.5.1")
+    implementation("androidx.navigation:navigation-ui-ktx:2.5.1")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
 }
