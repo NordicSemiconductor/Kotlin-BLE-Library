@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,7 +52,8 @@ import no.nordicsemi.android.kotlin.ble.app.R
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 fun LazyListScope.ScannerView(
-    devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>,
+    devices: List<BleDevice>,
+    onClick: (BleDevice) -> Unit
 ) {
     val bondedDevices = devices.filter { it.isBonded }
     val discoveredDevices = devices.filter { !it.isBonded }
@@ -64,7 +66,7 @@ fun LazyListScope.ScannerView(
             )
         }
         bondedDevices.forEach {
-            item { BleDeviceView(device = it) }
+            item { BleDeviceView(device = it, onClick) }
         }
     }
 
@@ -77,17 +79,20 @@ fun LazyListScope.ScannerView(
         }
 
         discoveredDevices.forEach {
-            item { BleDeviceView(device = it) }
+            item { BleDeviceView(device = it, onClick) }
         }
     }
 }
 
 @Composable
-private fun BleDeviceView(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
+private fun BleDeviceView(
+    device: BleDevice,
+    onClick: (BleDevice) -> Unit
+) {
     Row(
-        verticalAlignment = Alignment.CenterVertically
-    )
-    {
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.clickable { onClick(device) }
+    ) {
         CircularIcon(Icons.Default.Bluetooth)
 
         Spacer(modifier = Modifier.width(16.dp))

@@ -29,16 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus)
-    id("kotlin-parcelize")
-}
+package no.nordicsemi.android.kotlin.ble.details
 
-group = "no.nordicsemi.android.kotlin.ble"
+import androidx.lifecycle.SavedStateHandle
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.common.navigation.Navigator
+import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import javax.inject.Inject
 
+@HiltViewModel
+class BlinkyViewModel @Inject constructor(
+    private val navigator: Navigator,
+    private val savedStateHandle: SavedStateHandle
+) : SimpleNavigationViewModel(navigator, savedStateHandle) {
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
+    private val _device = MutableStateFlow<BleDevice?>(null)
+    val device = _device.asStateFlow()
+
+    init {
+        _device.value = parameterOf(BlinkyDestinationId)
+    }
 }

@@ -40,6 +40,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import no.nordicsemi.android.common.navigation.NavigationView
 import no.nordicsemi.android.common.theme.NordicActivity
 import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.android.kotlin.ble.details.BlinkyDestination
 import no.nordicsemi.android.kotlin.ble.scanner.ScannerDestination
 
 @AndroidEntryPoint
@@ -51,7 +52,7 @@ class MainActivity : NordicActivity() {
         setContent {
             NordicTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    NavigationView(listOf(ScannerDestination))
+                    NavigationView(listOf(ScannerDestination, BlinkyDestination))
                 }
             }
         }

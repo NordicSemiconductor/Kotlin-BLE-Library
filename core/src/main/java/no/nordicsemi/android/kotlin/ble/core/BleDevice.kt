@@ -34,12 +34,15 @@ package no.nordicsemi.android.kotlin.ble.core
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 
 @SuppressLint("MissingPermission")
+@Parcelize
 class BleDevice(
     val device: BluetoothDevice,
     val scanResult: ScanResult
-) {
+) : Parcelable {
     val name: String
     val address: String
     val isBonded: Boolean

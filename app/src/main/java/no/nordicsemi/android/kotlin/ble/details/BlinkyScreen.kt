@@ -29,43 +29,46 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.details
 
-import android.annotation.SuppressLint
-import android.content.Context
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.navigation.Navigator
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import no.nordicsemi.android.common.navigation.createDestination
+import no.nordicsemi.android.common.navigation.defineDestination
+import no.nordicsemi.android.common.theme.view.NordicAppBar
+import no.nordicsemi.android.kotlin.ble.app.R
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.details.BlinkyDestinationId
-import javax.inject.Inject
 
-@SuppressLint("MissingPermission")
-@HiltViewModel
-class ScannerViewModel @Inject constructor(
-    @ApplicationContext
-    private val context: Context,
-    private val navigator: Navigator
-) : ViewModel() {
+val BlinkyDestinationId = createDestination<BleDevice, Unit>("blinky")
 
-    private val scanner = NordicScanner(context)
+val BlinkyDestination = defineDestination(BlinkyDestinationId) { BlinkyScreen() }
 
-    private val _devices = MutableStateFlow<List<BleDevice>>(emptyList())
-    val devices = _devices.asStateFlow()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BlinkyScreen() {
+    val viewModel: BlinkyViewModel = hiltViewModel()
 
-    init {
-        scanner.scan().onEach {
-            _devices.value = it
-        }.launchIn(viewModelScope)
-    }
+    val device = viewModel.device.collectAsState().value
 
-    fun onDeviceSelected(device: BleDevice) {
-        navigator.navigateTo(BlinkyDestinationId, device)
+    Scaffold(
+        topBar = {
+            NordicAppBar(stringResource(id = R.string.app_name))
+        },
+        containerColor = MaterialTheme.colorScheme.surface,
+    ) {
+        Column(modifier = Modifier.padding(it)) {
+            Text(text = "Name: ${device?.name}")
+            Text(text = "Address: ${device?.address}")
+        }
     }
 }

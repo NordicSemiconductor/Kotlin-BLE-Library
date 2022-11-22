@@ -81,7 +81,7 @@ fun ScannerScreen() {
                         verticalArrangement = Arrangement.spacedBy(16.dp),
                         contentPadding = PaddingValues(16.dp)
                     ) {
-                        ScannerView(devices)
+                        ScannerView(devices) { viewModel.onDeviceSelected(it) }
                     }
                 }
             }
