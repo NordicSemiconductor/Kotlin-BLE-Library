@@ -29,24 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.errors
 
-group = "no.nordicsemi.android.kotlin.ble"
-
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
-
-dependencies {
-
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-}
+data class ScanningFailedException(val errorCode: Int) : Exception("Scanning failed with the code: $errorCode")

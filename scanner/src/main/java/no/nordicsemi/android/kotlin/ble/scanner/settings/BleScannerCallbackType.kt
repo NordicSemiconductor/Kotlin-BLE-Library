@@ -29,24 +29,24 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-group = "no.nordicsemi.android.kotlin.ble"
+enum class BleScannerCallbackType(internal val value: Int) {
+    /**
+     * Trigger a callback for every Bluetooth advertisement found that matches the filter criteria.
+     * If no filter is active, all advertisement packets are reported.
+     */
+    CALLBACK_TYPE_ALL_MATCHES(1),
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
+    /**
+     * A result callback is only triggered for the first advertisement packet received that matches
+     * the filter criteria.
+     */
+    CALLBACK_TYPE_FIRST_MATCH(2),
 
-dependencies {
-
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    /**
+     * Receive a callback when advertisements are no longer received from a device that has been
+     * previously reported by a first match callback.
+     */
+    CALLBACK_TYPE_MATCH_LOST(4),
 }

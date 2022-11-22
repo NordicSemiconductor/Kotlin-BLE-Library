@@ -29,24 +29,31 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-group = "no.nordicsemi.android.kotlin.ble"
+enum class BleScanMode(internal val value: Int) {
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
+    /**
+     * A special Bluetooth LE scan mode. Applications using this scan mode will passively listen for
+     * other scan results without starting BLE scans themselves.
+     */
+    SCAN_MODE_OPPORTUNISTIC(-1),
 
-dependencies {
+    /**
+     * Perform Bluetooth LE scan in low power mode. This is the default scan mode as it consumes
+     * the least power. This mode is enforced if the scanning application is not in foreground.
+     */
+    SCAN_MODE_LOW_POWER(0),
 
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
+    /**
+     * Perform Bluetooth LE scan in balanced power mode. Scan results are returned at a rate that
+     * provides a good trade-off between scan frequency and power consumption.
+     */
+    SCAN_MODE_BALANCED(1),
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    /**
+     * Scan using highest duty cycle. It's recommended to only use this mode when the application
+     * is running.
+     */
+    SCAN_MODE_LOW_LATENCY(2)
 }

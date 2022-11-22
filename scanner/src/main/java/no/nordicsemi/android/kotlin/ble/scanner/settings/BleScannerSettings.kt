@@ -29,24 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.os.Build
+import androidx.annotation.RequiresApi
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
-
-dependencies {
-
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-}
+data class BleScannerSettings(
+    val scanMode: BleScanMode = BleScanMode.SCAN_MODE_LOW_POWER,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val callbackType: BleScannerCallbackType = BleScannerCallbackType.CALLBACK_TYPE_ALL_MATCHES,
+    val reportDelay: Long = 0L,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val numOfMatches: BleNumOfMatches = BleNumOfMatches.MATCH_NUM_MAX_ADVERTISEMENT,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val matchMode: BleScannerMatchMode = BleScannerMatchMode.MATCH_MODE_AGGRESSIVE,
+    @RequiresApi(Build.VERSION_CODES.O)
+    val legacy: Boolean,
+    @RequiresApi(Build.VERSION_CODES.O)
+    val phy: BleScannerPhy = BleScannerPhy.PHY_LE_ALL_SUPPORTED,
+    val useHardwareFilteringIfSupported: Boolean = true,
+    val useHardwareBatchingIfSupported: Boolean = true,
+    val useHardwareCallbackTypesIfSupported: Boolean = true,
+    val matchOptions: MatchOptions = MatchOptions()
+)

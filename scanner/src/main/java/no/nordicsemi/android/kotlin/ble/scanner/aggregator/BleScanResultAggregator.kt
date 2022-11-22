@@ -29,24 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.aggregator
 
-group = "no.nordicsemi.android.kotlin.ble"
+import no.nordicsemi.android.kotlin.ble.scanner.device.BleDevice
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
+class BleScanResultAggregator {
+    private val cachedDevices = mutableListOf<BleDevice>()
 
-dependencies {
+    fun addNewDevice(device: BleDevice): List<BleDevice> {
+        aggregate(device)
+        return cachedDevices.toList()
+    }
 
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
+    fun addNewDevices(devices: List<BleDevice>): List<BleDevice> {
+        devices.forEach { aggregate(it) }
+        return cachedDevices.toList()
+    }
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    private fun aggregate(device: BleDevice) {
+        cachedDevices.firstOrNull { it.device == device.device }
+            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
+            ?: run { cachedDevices.add(device) }
+    }
 }

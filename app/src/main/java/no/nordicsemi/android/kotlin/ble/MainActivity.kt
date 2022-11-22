@@ -32,13 +32,13 @@
 package no.nordicsemi.android.kotlin.ble
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import no.nordicsemi.android.common.theme.NordicActivity
 
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : NordicActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-    }
 
+
+    }
 }

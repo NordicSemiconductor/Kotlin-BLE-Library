@@ -29,24 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-group = "no.nordicsemi.android.kotlin.ble"
+enum class BleScannerMatchMode(internal val value: Int) {
+    /**
+     * In Aggressive mode, hw will determine a match sooner even with feeble signal strength and
+     * few number of sightings/match in a duration.
+     */
+    MATCH_MODE_AGGRESSIVE(1),
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app"
-}
-
-dependencies {
-
-    implementation(libs.nordic.theme)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    /**
+     * For sticky mode, higher threshold of signal strength and sightings is required before
+     * reporting by hw.
+     */
+    MATCH_MODE_STICKY(2)
 }
