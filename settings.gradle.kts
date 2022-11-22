@@ -56,3 +56,5 @@ rootProject.name = "Kotlin-BLE-Library"
 
 include(":app")
 include(":scanner")
+include(":gatt")
+include(":core")

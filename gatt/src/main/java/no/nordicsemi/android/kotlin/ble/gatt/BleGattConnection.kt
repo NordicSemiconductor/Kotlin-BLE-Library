@@ -29,36 +29,48 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.gatt
 
 import android.annotation.SuppressLint
-import android.content.Context
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
+import android.bluetooth.BluetoothGatt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import javax.inject.Inject
+import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattServices
 
-@SuppressLint("MissingPermission")
-@HiltViewModel
-class ScannerViewModel @Inject constructor(
-    @ApplicationContext
-    private val context: Context
-) : ViewModel() {
+class BleGattConnection {
 
-    private val scanner = NordicScanner(context)
+    internal val gattProxy: BluetoothGattProxy = BluetoothGattProxy {
+        when (it) {
+            is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
+            is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
+            is CharacteristicEvent -> services.value?.apply { onCharacteristicEvent(it) }
+        }
+    }
 
-    private val _devices = MutableStateFlow<List<no.nordicsemi.android.kotlin.ble.core.BleDevice>>(emptyList())
-    val devices = _devices.asStateFlow()
+    private val _connectionState = MutableStateFlow(GattConnectionState.STATE_DISCONNECTED)
+    val connectionState = _connectionState.asStateFlow()
 
-    init {
-        scanner.scan().onEach {
-            _devices.value = it
-        }.launchIn(viewModelScope)
+    private val _services = MutableStateFlow<BleGattServices?>(null)
+    val services = _services.asStateFlow()
+
+    @SuppressLint("MissingPermission")
+    private fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+
+        val connectionState = GattConnectionState.create(newState)
+        _connectionState.value = connectionState
+
+        if (connectionState == GattConnectionState.STATE_CONNECTED) {
+            gatt?.discoverServices()
+        } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+            _services.value = null
+            gatt?.close()
+        }
+    }
+
+    private fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+        _services.value = gatt?.services?.let { BleGattServices(gatt, it) }
     }
 }

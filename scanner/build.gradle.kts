@@ -37,7 +37,10 @@ plugins {
 
 group = "no.nordicsemi.android.kotlin.ble"
 
-
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.scanner"
+}
+
+dependencies {
+    implementation(project(":core"))
 }

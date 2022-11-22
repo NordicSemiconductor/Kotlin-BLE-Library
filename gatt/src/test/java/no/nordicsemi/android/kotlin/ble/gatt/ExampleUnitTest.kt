@@ -29,26 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.aggregator
+package no.nordicsemi.android.kotlin.ble.gatt
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import org.junit.Test
 
-class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<no.nordicsemi.android.kotlin.ble.core.BleDevice>()
+import org.junit.Assert.*
 
-    fun addNewDevice(device: no.nordicsemi.android.kotlin.ble.core.BleDevice): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        aggregate(device)
-        return cachedDevices.toList()
-    }
-
-    fun addNewDevices(devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        devices.forEach { aggregate(it) }
-        return cachedDevices.toList()
-    }
-
-    private fun aggregate(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
-            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
-            ?: run { cachedDevices.add(device) }
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
     }
 }

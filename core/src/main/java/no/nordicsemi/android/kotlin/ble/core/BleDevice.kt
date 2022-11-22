@@ -29,26 +29,24 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.aggregator
+package no.nordicsemi.android.kotlin.ble.core
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanResult
 
-class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<no.nordicsemi.android.kotlin.ble.core.BleDevice>()
+@SuppressLint("MissingPermission")
+class BleDevice(
+    val device: BluetoothDevice,
+    val scanResult: ScanResult
+) {
+    val name: String
+    val address: String
+    val isBonded: Boolean
 
-    fun addNewDevice(device: no.nordicsemi.android.kotlin.ble.core.BleDevice): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        aggregate(device)
-        return cachedDevices.toList()
-    }
-
-    fun addNewDevices(devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        devices.forEach { aggregate(it) }
-        return cachedDevices.toList()
-    }
-
-    private fun aggregate(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
-            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
-            ?: run { cachedDevices.add(device) }
+    init {
+        name = device.name ?: "NO_NAME"
+        address = device.address ?: "NO_ADDRESS"
+        isBonded = device.bondState == BluetoothDevice.BOND_BONDED
     }
 }

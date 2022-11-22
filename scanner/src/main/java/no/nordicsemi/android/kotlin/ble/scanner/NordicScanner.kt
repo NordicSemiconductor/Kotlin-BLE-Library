@@ -41,8 +41,8 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import no.nordicsemi.android.kotlin.ble.core.toDomain
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
-import no.nordicsemi.android.kotlin.ble.scanner.device.toDomain
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
 import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative

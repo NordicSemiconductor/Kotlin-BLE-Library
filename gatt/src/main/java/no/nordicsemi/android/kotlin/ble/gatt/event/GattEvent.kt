@@ -29,26 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.aggregator
+package no.nordicsemi.android.kotlin.ble.gatt.event
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 
-class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<no.nordicsemi.android.kotlin.ble.core.BleDevice>()
+internal sealed interface GattEvent
 
-    fun addNewDevice(device: no.nordicsemi.android.kotlin.ble.core.BleDevice): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        aggregate(device)
-        return cachedDevices.toList()
-    }
+internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: Int) : GattEvent
+internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
 
-    fun addNewDevices(devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        devices.forEach { aggregate(it) }
-        return cachedDevices.toList()
-    }
+internal sealed interface CharacteristicEvent : GattEvent
 
-    private fun aggregate(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
-            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
-            ?: run { cachedDevices.add(device) }
-    }
-}
+internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
+internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: Int) : CharacteristicEvent
+internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: Int) : CharacteristicEvent
+
+internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: Int) : CharacteristicEvent
+internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: Int) : CharacteristicEvent

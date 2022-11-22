@@ -29,26 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.aggregator
+package no.nordicsemi.android.kotlin.ble.core
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
-class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<no.nordicsemi.android.kotlin.ble.core.BleDevice>()
+import org.junit.Test
+import org.junit.runner.RunWith
 
-    fun addNewDevice(device: no.nordicsemi.android.kotlin.ble.core.BleDevice): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        aggregate(device)
-        return cachedDevices.toList()
-    }
+import org.junit.Assert.*
 
-    fun addNewDevices(devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        devices.forEach { aggregate(it) }
-        return cachedDevices.toList()
-    }
-
-    private fun aggregate(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
-            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
-            ?: run { cachedDevices.add(device) }
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @Test
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("no.nordicsemi.android.kotlin.ble.core.test", appContext.packageName)
     }
 }

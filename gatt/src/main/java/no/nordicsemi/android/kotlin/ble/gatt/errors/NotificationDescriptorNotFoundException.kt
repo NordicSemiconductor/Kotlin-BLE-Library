@@ -29,26 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.aggregator
+package no.nordicsemi.android.kotlin.ble.gatt.errors
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-
-class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<no.nordicsemi.android.kotlin.ble.core.BleDevice>()
-
-    fun addNewDevice(device: no.nordicsemi.android.kotlin.ble.core.BleDevice): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        aggregate(device)
-        return cachedDevices.toList()
-    }
-
-    fun addNewDevices(devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>): List<no.nordicsemi.android.kotlin.ble.core.BleDevice> {
-        devices.forEach { aggregate(it) }
-        return cachedDevices.toList()
-    }
-
-    private fun aggregate(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
-            ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
-            ?: run { cachedDevices.add(device) }
-    }
-}
+class NotificationDescriptorNotFoundException : Exception("Notification descriptor has not been found.")

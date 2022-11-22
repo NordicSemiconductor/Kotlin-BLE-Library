@@ -35,7 +35,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.icons.Icons
@@ -49,10 +48,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.view.CircularIcon
 import no.nordicsemi.android.kotlin.ble.app.R
-import no.nordicsemi.android.kotlin.ble.scanner.device.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 fun LazyListScope.ScannerView(
-    devices: List<BleDevice>,
+    devices: List<no.nordicsemi.android.kotlin.ble.core.BleDevice>,
 ) {
     val bondedDevices = devices.filter { it.isBonded }
     val discoveredDevices = devices.filter { !it.isBonded }
@@ -84,7 +83,7 @@ fun LazyListScope.ScannerView(
 }
 
 @Composable
-private fun BleDeviceView(device: BleDevice) {
+private fun BleDeviceView(device: no.nordicsemi.android.kotlin.ble.core.BleDevice) {
     Row(
         verticalAlignment = Alignment.CenterVertically
     )

@@ -29,10 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.device
+package no.nordicsemi.android.kotlin.ble.gatt.service
 
-import android.bluetooth.le.ScanResult
+import java.util.*
 
-internal fun ScanResult.toDomain(): BleDevice {
-    return BleDevice(device, this)
+object BleGattConsts {
+    val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 }

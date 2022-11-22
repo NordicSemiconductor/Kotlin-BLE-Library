@@ -29,24 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.device
+package no.nordicsemi.android.kotlin.ble.gatt.service
 
-import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanResult
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
+import java.util.*
 
-@SuppressLint("MissingPermission")
-class BleDevice(
-    val device: BluetoothDevice,
-    val scanResult: ScanResult
-) {
-    val name: String
-    val address: String
-    val isBonded: Boolean
+class BleGattService(gatt: BluetoothGatt, service: BluetoothGattService) {
 
-    init {
-        name = device.name ?: "NO_NAME"
-        address = device.address ?: "NO_ADDRESS"
-        isBonded = device.bondState == BluetoothDevice.BOND_BONDED
+    val uuid = service.uuid
+
+    private val characteristics = service.characteristics.map {
+        it.writeType
+        BleGattCharacteristic(gatt, it)
+    }
+
+    fun findCharacteristic(uuid: UUID): BleGattCharacteristic? {
+        return characteristics.firstOrNull { it.uuid == uuid }
+    }
+
+    internal fun onEvent(event: CharacteristicEvent) {
+        characteristics.forEach { it.onEvent(event) }
     }
 }

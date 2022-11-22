@@ -41,6 +41,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
+    implementation(project(":gatt"))
     implementation(project(":scanner"))
 
     implementation(libs.nordic.theme)
