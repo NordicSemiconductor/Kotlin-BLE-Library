@@ -31,10 +31,22 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.device
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 
+@SuppressLint("MissingPermission")
 class BleDevice(
     val device: BluetoothDevice,
     val scanResult: ScanResult
-)
+) {
+    val name: String
+    val address: String
+    val isBonded: Boolean
+
+    init {
+        name = device.name ?: "NO_NAME"
+        address = device.address ?: "NO_ADDRESS"
+        isBonded = device.bondState == BluetoothDevice.BOND_BONDED
+    }
+}

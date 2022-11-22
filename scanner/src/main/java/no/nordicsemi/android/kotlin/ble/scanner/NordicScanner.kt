@@ -62,7 +62,7 @@ class NordicScanner(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
-    fun scan(settings: BleScannerSettings) = callbackFlow {
+    fun scan(settings: BleScannerSettings = BleScannerSettings()) = callbackFlow {
         val deviceAggregator = BleScanResultAggregator()
 
         val scanCallback = object : ScanCallback() {

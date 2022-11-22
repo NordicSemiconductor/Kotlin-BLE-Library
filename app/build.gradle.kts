@@ -41,10 +41,17 @@ android {
 }
 
 dependencies {
+    implementation(project(":scanner"))
 
     implementation(libs.nordic.theme)
+    implementation(libs.nordic.navigation)
+    implementation(libs.nordic.permission)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.iconsExtended)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.3")

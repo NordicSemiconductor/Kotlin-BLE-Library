@@ -44,7 +44,7 @@ data class BleScannerSettings(
     @RequiresApi(Build.VERSION_CODES.M)
     val matchMode: BleScannerMatchMode = BleScannerMatchMode.MATCH_MODE_AGGRESSIVE,
     @RequiresApi(Build.VERSION_CODES.O)
-    val legacy: Boolean,
+    val legacy: Boolean = false,
     @RequiresApi(Build.VERSION_CODES.O)
     val phy: BleScannerPhy = BleScannerPhy.PHY_LE_ALL_SUPPORTED,
     val useHardwareFilteringIfSupported: Boolean = true,

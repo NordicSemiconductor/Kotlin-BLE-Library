@@ -29,15 +29,11 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus)
-}
+package no.nordicsemi.android.kotlin.ble
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.scanner"
+@HiltAndroidApp
+class HiltApplication : Application() {
 }

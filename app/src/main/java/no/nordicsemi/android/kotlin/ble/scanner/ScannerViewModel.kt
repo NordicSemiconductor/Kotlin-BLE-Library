@@ -29,15 +29,36 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus)
-}
+package no.nordicsemi.android.kotlin.ble.scanner
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.kotlin.ble.scanner.device.BleDevice
+import javax.inject.Inject
 
+@SuppressLint("MissingPermission")
+@HiltViewModel
+class ScannerViewModel @Inject constructor(
+    @ApplicationContext
+    private val context: Context
+) : ViewModel() {
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.scanner"
+    private val scanner = NordicScanner(context)
+
+    private val _devices = MutableStateFlow<List<BleDevice>>(emptyList())
+    val devices = _devices.asStateFlow()
+
+    init {
+        scanner.scan().onEach {
+            _devices.value = it
+        }.launchIn(viewModelScope)
+    }
 }
