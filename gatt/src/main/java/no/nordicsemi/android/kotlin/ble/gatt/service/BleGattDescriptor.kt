@@ -34,6 +34,8 @@ package no.nordicsemi.android.kotlin.ble.gatt.service
 import android.Manifest
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorRead
@@ -54,15 +56,18 @@ class BleGattDescriptor(private val gatt: BluetoothGatt, private val descriptor:
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
-        descriptor.value = value
-        gatt.writeDescriptor(descriptor)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            gatt.writeDescriptor(descriptor, value)
+        } else {
+            descriptor.value = value
+            gatt.writeDescriptor(descriptor)
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
         pendingEvent = { it.onReadEvent { continuation.resume(Unit) } }
-    }.also {
         gatt.readDescriptor(descriptor)
     }
 

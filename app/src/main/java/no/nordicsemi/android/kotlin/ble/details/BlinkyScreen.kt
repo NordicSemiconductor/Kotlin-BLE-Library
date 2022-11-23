@@ -31,9 +31,10 @@
 
 package no.nordicsemi.android.kotlin.ble.details
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -60,6 +61,8 @@ fun BlinkyScreen() {
 
     val device = viewModel.device.collectAsState().value
 
+    val state = viewModel.state.collectAsState().value
+
     Scaffold(
         topBar = {
             NordicAppBar(stringResource(id = R.string.app_name))
@@ -69,6 +72,13 @@ fun BlinkyScreen() {
         Column(modifier = Modifier.padding(it)) {
             Text(text = "Name: ${device?.name}")
             Text(text = "Address: ${device?.address}")
+
+            Text(text = "Led: ${state.isLedOn}")
+            Text(text = "Button: ${state.isButtonPressed}")
+
+            Button(onClick = { viewModel.turnLed() }) {
+                Text(text = "Turn LED")
+            }
         }
     }
 }

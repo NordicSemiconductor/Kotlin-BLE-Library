@@ -33,12 +33,21 @@ package no.nordicsemi.android.kotlin.ble.gatt
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
+import android.util.Log
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattServices
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class BleGattConnection {
 
@@ -56,6 +65,8 @@ class BleGattConnection {
     private val _services = MutableStateFlow<BleGattServices?>(null)
     val services = _services.asStateFlow()
 
+    private var onServicesDiscoveredCallback: (() -> Unit)? = null
+
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
 
@@ -70,7 +81,15 @@ class BleGattConnection {
         }
     }
 
+    suspend fun getServices(): BleGattServices {
+        return services.firstOrNull()
+            ?: suspendCoroutine { continuation ->
+                onServicesDiscoveredCallback = { continuation.resume(services.value!!) }
+            }
+    }
+
     private fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         _services.value = gatt?.services?.let { BleGattServices(gatt, it) }
+        onServicesDiscoveredCallback?.invoke()
     }
 }

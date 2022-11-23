@@ -49,7 +49,10 @@ import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class BleGattCharacteristic(private val gatt: BluetoothGatt, private val characteristic: BluetoothGattCharacteristic) {
+class BleGattCharacteristic(
+    private val gatt: BluetoothGatt,
+    private val characteristic: BluetoothGattCharacteristic
+) {
 
     val uuid = characteristic.uuid
 
@@ -71,64 +74,70 @@ class BleGattCharacteristic(private val gatt: BluetoothGatt, private val charact
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
-        gatt.writeCharacteristic(
-            characteristic,
-            value,
-            BleWriteType.DEFAULT.value
-        )
+        writeCharacteristic(value, BleWriteType.DEFAULT)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    suspend fun write(value: ByteArray, writeType: BleWriteType) = suspendCoroutine { continuation ->
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
-        gatt.writeCharacteristic(
-            characteristic,
-            value,
-            writeType.value
-        )
+    suspend fun write(value: ByteArray, writeType: BleWriteType) =
+        suspendCoroutine { continuation ->
+            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+            writeCharacteristic(value, writeType)
+        }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun writeCharacteristic(value: ByteArray, writeType: BleWriteType) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            gatt.writeCharacteristic(
+                characteristic,
+                value,
+                writeType.value
+            )
+        } else {
+            characteristic.writeType = writeType.value
+            characteristic.value = value
+            gatt.writeCharacteristic(characteristic)
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
         pendingEvent = { it.onReadEvent { continuation.resume(it) } }
-    }.also {
         gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun enableIndications() = suspendCoroutine { continuation ->
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
-        findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
-            gatt.setCharacteristicNotification(characteristic, true)
-            descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-        } ?: throw NotificationDescriptorNotFoundException()
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun enableNotifications() = suspendCoroutine { continuation ->
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
+    suspend fun enableIndications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.setCharacteristicNotification(characteristic, true)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
         } ?: throw NotificationDescriptorNotFoundException()
+        suspendCoroutine { continuation ->
+            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun disableNotifications() = suspendCoroutine { continuation ->
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-    }.also {
+    suspend fun enableNotifications() {
+        findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
+            gatt.setCharacteristicNotification(characteristic, true)
+            descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
+        } ?: throw NotificationDescriptorNotFoundException()
+        suspendCoroutine { continuation ->
+            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun disableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.setCharacteristicNotification(characteristic, false)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
         } ?: throw NotificationDescriptorNotFoundException()
+        suspendCoroutine { continuation ->
+            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+        }
     }
 
     private fun CharacteristicEvent.onNotificationEvent(onSuccess: (ByteArray) -> Unit) {

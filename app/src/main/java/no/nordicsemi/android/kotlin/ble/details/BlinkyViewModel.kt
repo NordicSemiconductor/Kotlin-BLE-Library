@@ -31,17 +31,43 @@
 
 package no.nordicsemi.android.kotlin.ble.details
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnection
+import no.nordicsemi.android.kotlin.ble.gatt.connect
+import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattCharacteristic
+import java.util.*
 import javax.inject.Inject
 
+object BlinkySpecifications {
+    /** Nordic Blinky Service UUID. */
+    val UUID_SERVICE_DEVICE: UUID = UUID.fromString("00001523-1212-efde-1523-785feabcd123")
+
+    /** LED characteristic UUID. */
+    val UUID_LED_CHAR: UUID by lazy { UUID.fromString("00001525-1212-efde-1523-785feabcd123") }
+
+    /** BUTTON characteristic UUID. */
+    val UUID_BUTTON_CHAR: UUID by lazy { UUID.fromString("00001524-1212-efde-1523-785feabcd123") }
+}
+
+@SuppressLint("MissingPermission")
 @HiltViewModel
 class BlinkyViewModel @Inject constructor(
+    @ApplicationContext
+    private val context: Context,
     private val navigator: Navigator,
     private val savedStateHandle: SavedStateHandle
 ) : SimpleNavigationViewModel(navigator, savedStateHandle) {
@@ -49,7 +75,48 @@ class BlinkyViewModel @Inject constructor(
     private val _device = MutableStateFlow<BleDevice?>(null)
     val device = _device.asStateFlow()
 
+    private val _state = MutableStateFlow(BlinkyState())
+    val state = _state.asStateFlow()
+
+    private val gattConnection by lazy { device.value!!.connect(context) }
+
+    private lateinit var ledCharacteristic: BleGattCharacteristic
+    private lateinit var buttonCharacteristic: BleGattCharacteristic
+
     init {
         _device.value = parameterOf(BlinkyDestinationId)
+
+        val connection = _device.value!!.connect(context)
+
+        viewModelScope.launch {
+            initGatt(connection)
+        }
+    }
+
+    private suspend fun initGatt(connection: BleGattConnection) {
+        val services = connection.getServices()
+
+        val service = services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
+        ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
+        buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+
+        buttonCharacteristic.notification.onEach {
+            _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
+        }.launchIn(viewModelScope)
+
+        buttonCharacteristic.enableNotifications()
+    }
+
+    @SuppressLint("NewApi")
+    fun turnLed() {
+        viewModelScope.launch {
+            if (state.value.isLedOn) {
+                _state.value = _state.value.copy(isLedOn = false)
+                ledCharacteristic.write(byteArrayOf(0x00))
+            } else {
+                _state.value = _state.value.copy(isLedOn = true)
+                ledCharacteristic.write(byteArrayOf(0x01))
+            }
+        }
     }
 }
