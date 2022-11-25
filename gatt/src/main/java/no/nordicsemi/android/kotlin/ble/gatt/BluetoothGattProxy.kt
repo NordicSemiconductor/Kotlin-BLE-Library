@@ -64,6 +64,16 @@ internal class BluetoothGattProxy(
         onEvent(OnCharacteristicChanged(characteristic, value))
     }
 
+    @Deprecated("In use for Android < 13")
+    override fun onCharacteristicChanged(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?
+    ) {
+        characteristic?.let {
+            onEvent(OnCharacteristicChanged(characteristic, characteristic.value))
+        }
+    }
+
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -71,6 +81,17 @@ internal class BluetoothGattProxy(
         status: Int
     ) {
         onEvent(OnCharacteristicRead(characteristic, value, status))
+    }
+
+    @Deprecated("In use for Android < 13")
+    override fun onCharacteristicRead(
+        gatt: BluetoothGatt?,
+        characteristic: BluetoothGattCharacteristic?,
+        status: Int
+    ) {
+        characteristic?.let {
+            onEvent(OnCharacteristicChanged(characteristic, characteristic.value))
+        }
     }
 
     override fun onCharacteristicWrite(
@@ -88,6 +109,17 @@ internal class BluetoothGattProxy(
         value: ByteArray
     ) {
         onEvent(OnDescriptorRead(descriptor, value, status))
+    }
+
+    @Deprecated("In use for Android < 13")
+    override fun onDescriptorRead(
+        gatt: BluetoothGatt?,
+        descriptor: BluetoothGattDescriptor?,
+        status: Int
+    ) {
+        descriptor?.let {
+            onEvent(OnDescriptorRead(descriptor, descriptor.value, status))
+        }
     }
 
     override fun onDescriptorWrite(
