@@ -45,8 +45,10 @@ class BleGattService(gatt: BluetoothGatt, service: BluetoothGattService) {
         BleGattCharacteristic(gatt, it)
     }
 
-    fun findCharacteristic(uuid: UUID): BleGattCharacteristic? {
-        return characteristics.firstOrNull { it.uuid == uuid }
+    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleGattCharacteristic? {
+        return characteristics.firstOrNull { characteristic ->
+            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+        }
     }
 
     internal fun onEvent(event: CharacteristicEvent) {

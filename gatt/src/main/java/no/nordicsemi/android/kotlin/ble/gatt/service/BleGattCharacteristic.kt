@@ -54,6 +54,8 @@ class BleGattCharacteristic(
 
     val uuid = characteristic.uuid
 
+    val instanceId = characteristic.instanceId
+
     private val _notification = MutableStateFlow(byteArrayOf())
     val notification = _notification.asStateFlow()
 
@@ -72,20 +74,8 @@ class BleGattCharacteristic(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
+    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-        writeCharacteristic(value, BleWriteType.DEFAULT)
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray, writeType: BleWriteType) =
-        suspendCoroutine { continuation ->
-            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-            writeCharacteristic(value, writeType)
-        }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private fun writeCharacteristic(value: ByteArray, writeType: BleWriteType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             gatt.writeCharacteristic(
                 characteristic,
