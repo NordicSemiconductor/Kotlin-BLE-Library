@@ -45,7 +45,7 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnection
+import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
 import no.nordicsemi.android.kotlin.ble.gatt.connect
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattCharacteristic
 import java.util.*

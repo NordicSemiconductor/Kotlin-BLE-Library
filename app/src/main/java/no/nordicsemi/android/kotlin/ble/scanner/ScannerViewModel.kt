@@ -44,6 +44,9 @@ import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.details.BlinkyDestinationId
+import no.nordicsemi.android.kotlin.ble.scanner.settings.BleNumOfMatches
+import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerCallbackType
+import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
 import javax.inject.Inject
 
 @SuppressLint("MissingPermission")
@@ -60,6 +63,10 @@ class ScannerViewModel @Inject constructor(
     val devices = _devices.asStateFlow()
 
     init {
+        val scannerSettings = BleScannerSettings(
+            callbackType = BleScannerCallbackType.CALLBACK_TYPE_FIRST_MATCH,
+            numOfMatches = BleNumOfMatches.MATCH_NUM_ONE_ADVERTISEMENT
+        )
         scanner.scan().onEach {
             _devices.value = it
         }.launchIn(viewModelScope)

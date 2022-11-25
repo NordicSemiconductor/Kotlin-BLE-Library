@@ -31,16 +31,30 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-enum class BleScannerMatchMode(internal val value: Int) {
+import android.bluetooth.le.ScanSettings
+import android.os.Build
+import androidx.annotation.RequiresApi
+
+enum class BleScannerMatchMode{
     /**
      * In Aggressive mode, hw will determine a match sooner even with feeble signal strength and
      * few number of sightings/match in a duration.
      */
-    MATCH_MODE_AGGRESSIVE(1),
+    @RequiresApi(Build.VERSION_CODES.M)
+    MATCH_MODE_AGGRESSIVE,
 
     /**
      * For sticky mode, higher threshold of signal strength and sightings is required before
      * reporting by hw.
      */
-    MATCH_MODE_STICKY(2)
+    @RequiresApi(Build.VERSION_CODES.M)
+    MATCH_MODE_STICKY;
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    fun toNative(): Int {
+        return when (this) {
+            MATCH_MODE_AGGRESSIVE -> ScanSettings.MATCH_MODE_AGGRESSIVE
+            MATCH_MODE_STICKY -> ScanSettings.MATCH_MODE_STICKY
+        }
+    }
 }

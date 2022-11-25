@@ -29,13 +29,15 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt
+package no.nordicsemi.android.kotlin.ble.gatt.callback
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
+import no.nordicsemi.android.kotlin.ble.gatt.BluetoothGattProxy
+import no.nordicsemi.android.kotlin.ble.gatt.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
@@ -61,6 +63,7 @@ class BleGattConnection {
     val services = _services.asStateFlow()
 
     private var onServicesDiscoveredCallback: (() -> Unit)? = null
+    private var onConnectionStateChangedCallback: (() -> Unit)? = null
 
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {

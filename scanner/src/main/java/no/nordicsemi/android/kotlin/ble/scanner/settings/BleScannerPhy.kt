@@ -31,14 +31,28 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.settings
 
-enum class BleScannerPhy(internal val value: Int) {
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanSettings
+import android.os.Build
+import androidx.annotation.RequiresApi
 
-    PHY_LE_1M(1),
-    PHY_LE_CODED(3),
+enum class BleScannerPhy {
+
+    PHY_LE_1M,
+    PHY_LE_CODED,
 
     /**
      * Use all supported PHYs for scanning. This will check the controller capabilities,
      * and start the scan on 1Mbit and LE Coded PHYs if supported, or on the 1Mbit PHY only.
      */
-    PHY_LE_ALL_SUPPORTED(255)
+    PHY_LE_ALL_SUPPORTED;
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
+            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
+            PHY_LE_ALL_SUPPORTED -> ScanSettings.PHY_LE_ALL_SUPPORTED
+        }
+    }
 }

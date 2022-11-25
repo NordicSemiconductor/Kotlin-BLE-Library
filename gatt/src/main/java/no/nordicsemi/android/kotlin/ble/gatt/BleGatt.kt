@@ -32,13 +32,44 @@
 package no.nordicsemi.android.kotlin.ble.gatt
 
 import android.Manifest
+import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleDevice.connect(context: Context): BleGattConnection {
+fun BleDevice.connect(
+    context: Context,
+    options: ConnectOptions = ConnectOptions()
+): BleGattConnection {
     val output = BleGattConnection()
-    device.connectGatt(context, true, output.gattProxy)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        device.connectGatt(context, true, output.gattProxy, BluetoothDevice.TRANSPORT_LE)
+    } else {
+        device.connectGatt(context, true, output.gattProxy)
+    }
     return output
+}
+
+data class ConnectOptions(
+    val autoConnect: Boolean = true,
+    val phy: List<ConnectPhy>? = null
+)
+
+enum class ConnectPhy {
+    PHY_1,
+    PHY_2,
+    PHY_ALL_CODED;
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            PHY_1 -> BluetoothDevice.PHY_LE_1M_MASK
+            PHY_2 -> BluetoothDevice.PHY_LE_2M_MASK
+            PHY_ALL_CODED -> BluetoothDevice.PHY_LE_CODED_MASK
+        }
+    }
 }
