@@ -31,8 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.details
 
-import android.util.Log
-
 object BlinkyButtonParser {
 
     private val STATE_OFF = byteArrayOf(0x00)

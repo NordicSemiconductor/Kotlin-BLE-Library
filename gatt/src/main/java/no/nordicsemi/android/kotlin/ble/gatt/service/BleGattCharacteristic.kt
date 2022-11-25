@@ -39,7 +39,6 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.kotlin.ble.gatt.errors.NotificationDescriptorNotFoundException
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnCharacteristicRead
@@ -111,10 +110,12 @@ class BleGattCharacteristic(
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.setCharacteristicNotification(characteristic, true)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-        } ?: throw NotificationDescriptorNotFoundException()
-        suspendCoroutine { continuation ->
-            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
         }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun disableIndications() {
+        disableNotifications()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -122,9 +123,6 @@ class BleGattCharacteristic(
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.setCharacteristicNotification(characteristic, true)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-        } ?: throw NotificationDescriptorNotFoundException()
-        suspendCoroutine { continuation ->
-            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
         }
     }
 
@@ -133,9 +131,6 @@ class BleGattCharacteristic(
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.setCharacteristicNotification(characteristic, false)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-        } ?: throw NotificationDescriptorNotFoundException()
-        suspendCoroutine { continuation ->
-            pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
         }
     }
 

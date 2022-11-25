@@ -29,23 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.event
+package no.nordicsemi.android.kotlin.ble.gatt.service
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
+enum class BleGattOperationStatus(internal val value: Int) {
 
-internal sealed interface GattEvent
+    GATT_SUCCESS(0),
 
-internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
+    GATT_CONNECTION_CONGESTED(143),
+    GATT_FAILURE(257),
+    GATT_INSUFFICIENT_AUTHENTICATION(5),
+    GATT_INSUFFICIENT_AUTHORIZATION(8),
+    GATT_INSUFFICIENT_ENCRYPTION(15),
+    GATT_INVALID_ATTRIBUTE_LENGTH(13),
+    GATT_INVALID_OFFSET(7),
+    GATT_READ_NOT_PERMITTED(2),
+    GATT_REQUEST_NOT_SUPPORTED(6),
+    GATT_WRITE_NOT_PERMITTED(3);
 
-internal sealed interface CharacteristicEvent : GattEvent
-
-internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
-internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: BleGattOperationStatus) : CharacteristicEvent
-
-internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
+    companion object {
+        fun create(value: Int): BleGattOperationStatus {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalStateException("Cannot create status object for value: $value")
+        }
+    }
+}

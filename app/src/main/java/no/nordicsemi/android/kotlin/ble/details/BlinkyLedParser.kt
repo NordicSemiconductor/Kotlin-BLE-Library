@@ -29,23 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.event
+package no.nordicsemi.android.kotlin.ble.details
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
+import android.util.Log
 
-internal sealed interface GattEvent
+object BlinkyLedParser {
 
-internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
+    private val STATE_OFF = byteArrayOf(0x00)
+    private val STATE_ON = byteArrayOf(0x01)
 
-internal sealed interface CharacteristicEvent : GattEvent
+    fun isLedOn(data: ByteArray): Boolean {
+        return if (data.contentEquals(STATE_ON)) {
+            true
+        } else if (data.contentEquals(STATE_OFF)) {
+            false
+        } else {
+            false
+        }
+    }
 
-internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
-internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: BleGattOperationStatus) : CharacteristicEvent
-
-internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
+    fun ByteArray.toDisplayString(): String {
+        return this.joinToString(".") {
+            it.toUByte().toString()
+        }
+    }
+}

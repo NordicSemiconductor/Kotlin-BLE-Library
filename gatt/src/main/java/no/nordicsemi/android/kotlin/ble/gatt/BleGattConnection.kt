@@ -33,18 +33,13 @@ package no.nordicsemi.android.kotlin.ble.gatt
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
-import android.util.Log
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattServices
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -88,7 +83,7 @@ class BleGattConnection {
             }
     }
 
-    private fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+    private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
         _services.value = gatt?.services?.let { BleGattServices(gatt, it) }
         onServicesDiscoveredCallback?.invoke()
     }

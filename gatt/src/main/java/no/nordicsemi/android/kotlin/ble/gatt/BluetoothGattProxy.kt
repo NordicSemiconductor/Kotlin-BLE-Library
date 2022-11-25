@@ -43,13 +43,14 @@ import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
 
 internal class BluetoothGattProxy(
     private val onEvent: (GattEvent) -> Unit
 ) : BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-        gatt?.let { onEvent(OnServicesDiscovered(it, status)) }
+        gatt?.let { onEvent(OnServicesDiscovered(it, BleGattOperationStatus.create(status))) }
     }
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -80,7 +81,7 @@ internal class BluetoothGattProxy(
         value: ByteArray,
         status: Int
     ) {
-        onEvent(OnCharacteristicRead(characteristic, value, status))
+        onEvent(OnCharacteristicRead(characteristic, value, BleGattOperationStatus.create(status)))
     }
 
     @Deprecated("In use for Android < 13")
@@ -90,7 +91,7 @@ internal class BluetoothGattProxy(
         status: Int
     ) {
         characteristic?.let {
-            onEvent(OnCharacteristicChanged(characteristic, characteristic.value))
+            onEvent(OnCharacteristicRead(characteristic, characteristic.value, BleGattOperationStatus.create(status)))
         }
     }
 
@@ -99,7 +100,7 @@ internal class BluetoothGattProxy(
         characteristic: BluetoothGattCharacteristic?,
         status: Int
     ) {
-        characteristic?.let { onEvent(OnCharacteristicWrite(it, status)) }
+        characteristic?.let { onEvent(OnCharacteristicWrite(it, BleGattOperationStatus.create(status))) }
     }
 
     override fun onDescriptorRead(
@@ -108,7 +109,7 @@ internal class BluetoothGattProxy(
         status: Int,
         value: ByteArray
     ) {
-        onEvent(OnDescriptorRead(descriptor, value, status))
+        onEvent(OnDescriptorRead(descriptor, value, BleGattOperationStatus.create(status)))
     }
 
     @Deprecated("In use for Android < 13")
@@ -118,7 +119,7 @@ internal class BluetoothGattProxy(
         status: Int
     ) {
         descriptor?.let {
-            onEvent(OnDescriptorRead(descriptor, descriptor.value, status))
+            onEvent(OnDescriptorRead(descriptor, descriptor.value, BleGattOperationStatus.create(status)))
         }
     }
 
@@ -127,6 +128,6 @@ internal class BluetoothGattProxy(
         descriptor: BluetoothGattDescriptor?,
         status: Int
     ) {
-        descriptor?.let { onEvent(OnDescriptorWrite(it, status)) }
+        descriptor?.let { onEvent(OnDescriptorWrite(it, BleGattOperationStatus.create(status))) }
     }
 }

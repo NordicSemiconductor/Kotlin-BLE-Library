@@ -77,8 +77,6 @@ class BlinkyViewModel @Inject constructor(
     private val _state = MutableStateFlow(BlinkyState())
     val state = _state.asStateFlow()
 
-    private val gattConnection by lazy { device.value!!.connect(context) }
-
     private lateinit var ledCharacteristic: BleGattCharacteristic
     private lateinit var buttonCharacteristic: BleGattCharacteristic
 
@@ -104,6 +102,8 @@ class BlinkyViewModel @Inject constructor(
         }.launchIn(viewModelScope)
 
         buttonCharacteristic.enableNotifications()
+
+        _state.value = _state.value.copy(isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read()))
     }
 
     @SuppressLint("NewApi")
