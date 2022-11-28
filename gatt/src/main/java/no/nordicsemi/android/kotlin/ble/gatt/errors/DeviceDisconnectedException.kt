@@ -29,27 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.service
+package no.nordicsemi.android.kotlin.ble.gatt.errors
 
-enum class BleGattOperationStatus(internal val value: Int) {
+import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 
-    GATT_SUCCESS(0),
-
-    GATT_CONNECTION_CONGESTED(143),
-    GATT_FAILURE(257),
-    GATT_INSUFFICIENT_AUTHENTICATION(5),
-    GATT_INSUFFICIENT_AUTHORIZATION(8),
-    GATT_INSUFFICIENT_ENCRYPTION(15),
-    GATT_INVALID_ATTRIBUTE_LENGTH(13),
-    GATT_INVALID_OFFSET(7),
-    GATT_READ_NOT_PERMITTED(2),
-    GATT_REQUEST_NOT_SUPPORTED(6),
-    GATT_WRITE_NOT_PERMITTED(3);
-
-    companion object {
-        fun create(value: Int): BleGattOperationStatus {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannot create status object for value: $value")
-        }
-    }
-}
+class DeviceDisconnectedException(status: BleGattOperationStatus) : Exception("Connection failed with status: $status")

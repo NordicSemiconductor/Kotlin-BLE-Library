@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.gatt.event
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
 
 internal sealed interface GattEvent
 

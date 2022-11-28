@@ -29,22 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt
+package no.nordicsemi.android.kotlin.ble.gatt.event
 
-import android.Manifest
-import android.content.Context
-import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
+enum class BleGattOperationStatus(internal val value: Int) {
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-suspend fun BleDevice.connect(
-    context: Context,
-    options: BleGattConnectOptions = BleGattConnectOptions()
-): BleGattConnection {
-    val connection = BleGattConnection()
+    GATT_SUCCESS(0),
 
-    return BleGattConnection().also {
-        connection.connect(context, options, this.device)
+    GATT_CONNECTION_CONGESTED(143),
+    GATT_FAILURE(257),
+    GATT_INSUFFICIENT_AUTHENTICATION(5),
+    GATT_INSUFFICIENT_AUTHORIZATION(8),
+    GATT_INSUFFICIENT_ENCRYPTION(15),
+    GATT_INVALID_ATTRIBUTE_LENGTH(13),
+    GATT_INVALID_OFFSET(7),
+    GATT_READ_NOT_PERMITTED(2),
+    GATT_REQUEST_NOT_SUPPORTED(6),
+    GATT_WRITE_NOT_PERMITTED(3);
+
+    companion object {
+        fun create(value: Int): BleGattOperationStatus {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalStateException("Cannot create status object for value: $value")
+        }
     }
 }

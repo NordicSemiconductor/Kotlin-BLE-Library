@@ -77,11 +77,7 @@ class BleGattCharacteristic(
     suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(
-                characteristic,
-                value,
-                writeType.value
-            )
+            gatt.writeCharacteristic(characteristic, value, writeType.value)
         } else {
             characteristic.writeType = writeType.value
             characteristic.value = value

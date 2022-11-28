@@ -81,11 +81,12 @@ class BlinkyViewModel @Inject constructor(
     private lateinit var buttonCharacteristic: BleGattCharacteristic
 
     init {
-        _device.value = parameterOf(BlinkyDestinationId)
-
-        val connection = _device.value!!.connect(context)
+        val blinkyDevice = parameterOf(BlinkyDestinationId)
+        _device.value = blinkyDevice
 
         viewModelScope.launch {
+            val connection = blinkyDevice.connect(context)
+
             initGatt(connection)
         }
     }

@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt
+package no.nordicsemi.android.kotlin.ble.gatt.callback
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -43,7 +43,7 @@ import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 
 internal class BluetoothGattProxy(
     private val onEvent: (GattEvent) -> Unit

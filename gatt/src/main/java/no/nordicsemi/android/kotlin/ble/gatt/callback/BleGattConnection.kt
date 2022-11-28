@@ -31,24 +31,31 @@
 
 package no.nordicsemi.android.kotlin.ble.gatt.callback
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
+import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
-import no.nordicsemi.android.kotlin.ble.gatt.BluetoothGattProxy
+import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.gatt.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.gatt.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattServices
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattConnection {
 
-    internal val gattProxy: BluetoothGattProxy = BluetoothGattProxy {
+    private val gattProxy: BluetoothGattProxy = BluetoothGattProxy {
         when (it) {
             is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
             is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
@@ -63,7 +70,28 @@ class BleGattConnection {
     val services = _services.asStateFlow()
 
     private var onServicesDiscoveredCallback: (() -> Unit)? = null
-    private var onConnectionStateChangedCallback: (() -> Unit)? = null
+    private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    internal suspend fun connect(
+        context: Context,
+        options: BleGattConnectOptions,
+        device: BluetoothDevice
+    ) = suspendCoroutine { continuation ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            device.connectGatt(context, options.autoConnect, gattProxy, BluetoothDevice.TRANSPORT_LE, options.getPhy())
+        } else {
+            device.connectGatt(context, options.autoConnect, gattProxy)
+        }
+
+        onConnectionStateChangedCallback = { connectionState, status ->
+            if (connectionState == GattConnectionState.STATE_CONNECTED) {
+                continuation.resume(Unit)
+            } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+                continuation.resumeWithException(DeviceDisconnectedException(status))
+            }
+        }
+    }
 
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
