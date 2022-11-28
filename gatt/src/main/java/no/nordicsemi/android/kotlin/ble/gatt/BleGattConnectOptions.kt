@@ -31,24 +31,46 @@
 
 package no.nordicsemi.android.kotlin.ble.gatt
 
-import android.Manifest
 import android.bluetooth.BluetoothDevice
-import android.content.Context
 import android.os.Build
-import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
+import androidx.annotation.RequiresApi
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleDevice.connect(
-    context: Context,
-    options: BleGattConnectOptions = BleGattConnectOptions()
-): BleGattConnection {
-    val output = BleGattConnection()
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        device.connectGatt(context, options.autoConnect, output.gattProxy, BluetoothDevice.TRANSPORT_LE, options.getPhy())
-    } else {
-        device.connectGatt(context, options.autoConnect, output.gattProxy)
+data class BleGattConnectOptions(
+    val autoConnect: Boolean = true,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe1Phy: Boolean = true,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe2Phy: Boolean = false,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLeCoded: Boolean = false
+) {
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getPhy(): Int {
+        var result = 0
+
+        if (useLe1Phy) {
+            result = result or BluetoothDevice.PHY_LE_1M_MASK
+        }
+        if (useLe2Phy) {
+            result = result or BluetoothDevice.PHY_LE_2M_MASK
+        }
+        if (useLeCoded) {
+            result = result or BluetoothDevice.PHY_LE_CODED_MASK
+        }
+
+        return result
     }
-    return output
 }
