@@ -32,7 +32,6 @@
 package no.nordicsemi.android.kotlin.ble.gatt.callback
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
@@ -44,16 +43,19 @@ import kotlinx.coroutines.flow.firstOrNull
 import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.gatt.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.gatt.errors.DeviceDisconnectedException
+import no.nordicsemi.android.kotlin.ble.gatt.errors.ServicesNotDiscoveredException
+import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattServices
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattConnection {
+
+    private var gatt: BluetoothGatt? = null
 
     private val gattProxy: BluetoothGattProxy = BluetoothGattProxy {
         when (it) {
@@ -69,7 +71,7 @@ class BleGattConnection {
     private val _services = MutableStateFlow<BleGattServices?>(null)
     val services = _services.asStateFlow()
 
-    private var onServicesDiscoveredCallback: (() -> Unit)? = null
+    private var onServicesDiscoveredCallback: ((BleGattServices?, BleGattOperationStatus) -> Unit)? = null
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -78,44 +80,53 @@ class BleGattConnection {
         options: BleGattConnectOptions,
         device: BluetoothDevice
     ) = suspendCoroutine { continuation ->
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            device.connectGatt(context, options.autoConnect, gattProxy, BluetoothDevice.TRANSPORT_LE, options.getPhy())
-        } else {
-            device.connectGatt(context, options.autoConnect, gattProxy)
-        }
-
         onConnectionStateChangedCallback = { connectionState, status ->
             if (connectionState == GattConnectionState.STATE_CONNECTED) {
                 continuation.resume(Unit)
             } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
                 continuation.resumeWithException(DeviceDisconnectedException(status))
             }
+            onConnectionStateChangedCallback = null
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            device.connectGatt(context, options.autoConnect, gattProxy, BluetoothDevice.TRANSPORT_LE, options.getPhy())
+        } else {
+            device.connectGatt(context, options.autoConnect, gattProxy)
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-
         val connectionState = GattConnectionState.create(newState)
         _connectionState.value = connectionState
-
-        if (connectionState == GattConnectionState.STATE_CONNECTED) {
-            gatt?.discoverServices()
-        } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
-            _services.value = null
-            gatt?.close()
-        }
+        gatt?.let { this.gatt = it }
+        onConnectionStateChangedCallback?.invoke(connectionState, BleGattOperationStatus.create(status))
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun getServices(): BleGattServices {
-        return services.firstOrNull()
-            ?: suspendCoroutine { continuation ->
-                onServicesDiscoveredCallback = { continuation.resume(services.value!!) }
+        if (_connectionState.value != GattConnectionState.STATE_CONNECTED) {
+            throw IllegalStateException("Gatt should be connected before service discovery.")
+        }
+
+        services.firstOrNull()?.let { return it }
+
+        return suspendCoroutine { continuation ->
+            onServicesDiscoveredCallback = { services, status ->
+                if (services != null) {
+                    continuation.resume(services)
+                } else {
+                    continuation.resumeWithException(ServicesNotDiscoveredException(status))
+                }
+                onServicesDiscoveredCallback = null
             }
+            gatt?.discoverServices()
+        }
     }
 
     private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
-        _services.value = gatt?.services?.let { BleGattServices(gatt, it) }
-        onServicesDiscoveredCallback?.invoke()
+        val services = gatt?.services?.let { BleGattServices(gatt, it) }
+        _services.value = services
+        onServicesDiscoveredCallback?.invoke(services, status)
     }
 }

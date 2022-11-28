@@ -29,20 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt
+package no.nordicsemi.android.kotlin.ble.gatt.errors
 
-import android.Manifest
-import android.content.Context
-import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
+import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-suspend fun BleDevice.connect(
-    context: Context,
-    options: BleGattConnectOptions = BleGattConnectOptions()
-): BleGattConnection {
-    return BleGattConnection().also {
-        it.connect(context, options, this.device)
-    }
-}
+class ServicesNotDiscoveredException(status: BleGattOperationStatus) : Exception("Service discovery failed with status: $status")

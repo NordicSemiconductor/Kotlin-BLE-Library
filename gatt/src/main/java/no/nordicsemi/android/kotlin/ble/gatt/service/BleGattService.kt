@@ -41,7 +41,6 @@ class BleGattService(gatt: BluetoothGatt, service: BluetoothGattService) {
     val uuid = service.uuid
 
     private val characteristics = service.characteristics.map {
-        it.writeType
         BleGattCharacteristic(gatt, it)
     }
 

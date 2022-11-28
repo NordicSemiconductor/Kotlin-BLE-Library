@@ -32,7 +32,18 @@
 package no.nordicsemi.android.kotlin.ble.gatt.service
 
 enum class BleWriteType(internal val value: Int) {
+    /**
+     * Write characteristic, requesting acknowledgement by the remote device.
+     */
     DEFAULT(2),
+
+    /**
+     * Write characteristic without requiring a response by the remote device.
+     */
     NO_RESPONSE(1),
+
+    /**
+     * Write characteristic including authentication signature.
+     */
     SIGNED(4);
 }
