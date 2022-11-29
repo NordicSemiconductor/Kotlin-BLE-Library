@@ -29,37 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server
+package no.nordicsemi.android.kotlin.ble.advertiser.data
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.content.Context
-import androidx.annotation.RequiresPermission
+import android.os.Build
+import android.os.ParcelUuid
+import androidx.annotation.RequiresApi
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleGattServer(context: Context) {
+data class BleAdvertiseData(
+    val serviceUuid: ParcelUuid,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val serviceSolicitationUuid: ParcelUuid,
+    val includeDeviceName: Boolean,
+    val includeTxPowerLever: Boolean,
+    val manufacturerData: List<ManufacturerData>,
+    val serviceData: List<ServiceData>
+)
 
-    val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+data class ManufacturerData(
+    val id: Int,
+    val data: ByteArray
+)
 
-    val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-
-    bluetoothGattServer.sendResponse()
-    val service = BluetoothGattService(your_service_uuid, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-
-    val characteristic = BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
-    characteristic.value
-
-    service.addCharacteristic(characteristic)
-
-    bluetoothGattServer.addService(service)
-
-    bluetoothGattServer.notifyCharacteristicChanged()
-
-    bluetoothGattServer.connect()
-}
+data class ServiceData(
+    val uuid: ParcelUuid,
+    val data: ByteArray
+)

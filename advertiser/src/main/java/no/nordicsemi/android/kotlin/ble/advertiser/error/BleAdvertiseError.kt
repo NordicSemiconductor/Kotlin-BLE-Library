@@ -29,37 +29,38 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server
+package no.nordicsemi.android.kotlin.ble.advertiser.error
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.content.Context
-import androidx.annotation.RequiresPermission
+enum class BleAdvertiseError(internal val value: Int) {
+    /**
+     * Failed to start advertising as the advertising is already started.
+     */
+    ADVERTISE_FAILED_ALREADY_STARTED(3),
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleGattServer(context: Context) {
+    /**
+     * Failed to start advertising as the advertise data to be broadcasted is larger than 31 bytes.
+     */
+    ADVERTISE_FAILED_DATA_TOO_LARGE(1),
 
-    val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+    /**
+     * This feature is not supported on this platform.
+     */
+    ADVERTISE_FAILED_FEATURE_UNSUPPORTED(5),
 
-    val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
+    /**
+     * Operation failed due to an internal error.
+     */
+    ADVERTISE_FAILED_INTERNAL_ERROR(4),
 
-    bluetoothGattServer.sendResponse()
-    val service = BluetoothGattService(your_service_uuid, BluetoothGattService.SERVICE_TYPE_PRIMARY)
+    /**
+     * Failed to start advertising because no advertising instance is available.
+     */
+    ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(2);
 
-    val characteristic = BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
-    characteristic.value
-
-    service.addCharacteristic(characteristic)
-
-    bluetoothGattServer.addService(service)
-
-    bluetoothGattServer.notifyCharacteristicChanged()
-
-    bluetoothGattServer.connect()
+    companion object {
+        fun create(value: Int): BleAdvertiseError {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalArgumentException("Can't create an error for value: $value")
+        }
+    }
 }

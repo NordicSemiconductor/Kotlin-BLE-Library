@@ -29,37 +29,34 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server
+package no.nordicsemi.android.kotlin.ble.advertiser.data
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.content.Context
-import androidx.annotation.RequiresPermission
+import android.bluetooth.le.AdvertiseData
+import android.bluetooth.le.AdvertiseSettings
+import android.os.Build
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleGattServer(context: Context) {
+internal fun BleAdvertiseSettings.toNative(): AdvertiseSettings {
+    val builder = AdvertiseSettings.Builder()
+    builder.setConnectable(connectable)
+    builder.setTimeout(timeout)
+    advertiseMode?.let { builder.setAdvertiseMode(it.toNative()) }
+    txPowerLevel?.let { builder.setTxPowerLevel(it) }
+    return builder.build()
+}
 
-    val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-
-    val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-
-    bluetoothGattServer.sendResponse()
-    val service = BluetoothGattService(your_service_uuid, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-
-    val characteristic = BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
-    characteristic.value
-
-    service.addCharacteristic(characteristic)
-
-    bluetoothGattServer.addService(service)
-
-    bluetoothGattServer.notifyCharacteristicChanged()
-
-    bluetoothGattServer.connect()
+internal fun BleAdvertiseData.toNative(): AdvertiseData {
+    val builder = AdvertiseData.Builder()
+    builder.setIncludeTxPowerLevel(includeTxPowerLever)
+    builder.setIncludeDeviceName(includeDeviceName)
+    builder.addServiceUuid(serviceUuid)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        builder.addServiceSolicitationUuid(serviceSolicitationUuid)
+    }
+    serviceData.forEach {
+        builder.addServiceData(it.uuid, it.data)
+    }
+    manufacturerData.forEach {
+        builder.addManufacturerData(it.id, it.data)
+    }
+    return builder.build()
 }

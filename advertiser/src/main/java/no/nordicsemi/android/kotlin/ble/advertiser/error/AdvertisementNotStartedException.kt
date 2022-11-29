@@ -29,37 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server
+package no.nordicsemi.android.kotlin.ble.advertiser.error
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.content.Context
-import androidx.annotation.RequiresPermission
-
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleGattServer(context: Context) {
-
-    val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-
-    val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-
-    bluetoothGattServer.sendResponse()
-    val service = BluetoothGattService(your_service_uuid, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-
-    val characteristic = BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
-    characteristic.value
-
-    service.addCharacteristic(characteristic)
-
-    bluetoothGattServer.addService(service)
-
-    bluetoothGattServer.notifyCharacteristicChanged()
-
-    bluetoothGattServer.connect()
-}
+data class AdvertisementNotStartedException(val error: BleAdvertiseError) : Exception("Starting advertising failed with an exception: $error")

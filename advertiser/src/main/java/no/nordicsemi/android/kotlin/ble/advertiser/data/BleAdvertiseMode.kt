@@ -29,37 +29,21 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server
+package no.nordicsemi.android.kotlin.ble.advertiser.data
 
-import android.Manifest
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
-import android.bluetooth.le.BluetoothLeScanner
-import android.content.Context
-import androidx.annotation.RequiresPermission
+import android.bluetooth.le.AdvertiseSettings
 
-@RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-fun BleGattServer(context: Context) {
+enum class BleAdvertiseMode {
 
-    val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
-    val bluetoothLeScanner: BluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
+    LOW_POWER,
+    BALANCED,
+    LOW_LATENCY;
 
-    val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-
-    bluetoothGattServer.sendResponse()
-    val service = BluetoothGattService(your_service_uuid, BluetoothGattService.SERVICE_TYPE_PRIMARY)
-
-    val characteristic = BluetoothGattCharacteristic(your_characteristic_uuid, BluetoothGattCharacteristic.PROPERTY_READ, BluetoothGattCharacteristic.PERMISSION_READ)
-    characteristic.value
-
-    service.addCharacteristic(characteristic)
-
-    bluetoothGattServer.addService(service)
-
-    bluetoothGattServer.notifyCharacteristicChanged()
-
-    bluetoothGattServer.connect()
+    fun toNative(): Int {
+        return when (this) {
+            LOW_POWER -> AdvertiseSettings.ADVERTISE_MODE_LOW_POWER
+            BALANCED -> AdvertiseSettings.ADVERTISE_MODE_BALANCED
+            LOW_LATENCY -> AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY
+        }
+    }
 }

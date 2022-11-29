@@ -108,5 +108,4 @@ class BleGattServerCallback  : BluetoothGattServerCallback() {
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
 
     }
-
 }
