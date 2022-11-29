@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.details
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,7 +45,6 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.gatt.callback.BleGattConnection
 import no.nordicsemi.android.kotlin.ble.gatt.connect
 import no.nordicsemi.android.kotlin.ble.gatt.service.BleGattCharacteristic
 import java.util.*
@@ -84,28 +82,32 @@ class BlinkyViewModel @Inject constructor(
     init {
         val blinkyDevice = parameterOf(BlinkyDestinationId)
         _device.value = blinkyDevice
-
-        viewModelScope.launch {
-            val connection = blinkyDevice.connect(context)
-
-            initGatt(connection)
-        }
+        startGattClient(blinkyDevice)
     }
 
-    private suspend fun initGatt(connection: BleGattConnection) {
+    private fun startGattClient(blinkyDevice: BleDevice) = viewModelScope.launch {
+        //Connect a Bluetooth LE device.
+        val connection = blinkyDevice.connect(context)
+
+        //Discover services on the Bluetooth LE Device.
         val services = connection.getServices()
 
+        //Remember needed service and characteristics which are used to communicate with the DK.
         val service = services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
         ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
         buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
+        //Observe button characteristics which detects when button is pressed.
         buttonCharacteristic.notification.onEach {
             _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
         }.launchIn(viewModelScope)
 
+        //Enables notifications on DK.
         buttonCharacteristic.enableNotifications()
 
-        _state.value = _state.value.copy(isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read()))
+        //Check initial state of the Led.
+        val isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read())
+        _state.value = _state.value.copy(isLedOn = isLedOn)
     }
 
     @SuppressLint("NewApi")
