@@ -55,7 +55,8 @@ dependencyResolutionManagement {
 rootProject.name = "Kotlin-BLE-Library"
 
 include(":app")
+include(":advertiser")
 include(":scanner")
-include(":gatt")
 include(":core")
+include(":gatt")
 include(":server")

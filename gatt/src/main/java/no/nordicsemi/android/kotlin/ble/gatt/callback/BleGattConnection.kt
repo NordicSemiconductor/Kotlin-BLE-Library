@@ -44,7 +44,7 @@ import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.gatt.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.gatt.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.gatt.errors.ServicesNotDiscoveredException
-import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.gatt.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
@@ -57,7 +57,7 @@ class BleGattConnection {
 
     private var gatt: BluetoothGatt? = null
 
-    private val gattProxy: BluetoothGattProxy = BluetoothGattProxy {
+    private val gattProxy: BluetoothGattClientCallback = BluetoothGattClientCallback {
         when (it) {
             is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
             is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)

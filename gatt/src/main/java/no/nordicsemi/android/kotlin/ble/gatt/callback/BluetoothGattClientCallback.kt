@@ -43,9 +43,9 @@ import no.nordicsemi.android.kotlin.ble.gatt.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.gatt.event.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.gatt.event.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 
-internal class BluetoothGattProxy(
+internal class BluetoothGattClientCallback(
     private val onEvent: (GattEvent) -> Unit
 ) : BluetoothGattCallback() {
 

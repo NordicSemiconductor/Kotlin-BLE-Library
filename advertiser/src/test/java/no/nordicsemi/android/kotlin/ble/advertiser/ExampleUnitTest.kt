@@ -29,23 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.event
+package no.nordicsemi.android.kotlin.ble.advertiser
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import org.junit.Test
 
-internal sealed interface GattEvent
+import org.junit.Assert.*
 
-internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
-
-internal sealed interface CharacteristicEvent : GattEvent
-
-internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
-internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: BleGattOperationStatus) : CharacteristicEvent
-
-internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
+}

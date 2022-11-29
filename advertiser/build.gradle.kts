@@ -29,27 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.event
+plugins {
+    alias(libs.plugins.nordic.library)
+    alias(libs.plugins.nordic.nexus)
+}
 
-enum class BleGattOperationStatus(internal val value: Int) {
+group = "no.nordicsemi.android.kotlin.ble.advertiser"
 
-    GATT_SUCCESS(0),
+android {
+    namespace = "no.nordicsemi.android.kotlin.ble.advertiser"
+}
 
-    GATT_CONNECTION_CONGESTED(143),
-    GATT_FAILURE(257),
-    GATT_INSUFFICIENT_AUTHENTICATION(5),
-    GATT_INSUFFICIENT_AUTHORIZATION(8),
-    GATT_INSUFFICIENT_ENCRYPTION(15),
-    GATT_INVALID_ATTRIBUTE_LENGTH(13),
-    GATT_INVALID_OFFSET(7),
-    GATT_READ_NOT_PERMITTED(2),
-    GATT_REQUEST_NOT_SUPPORTED(6),
-    GATT_WRITE_NOT_PERMITTED(3);
+dependencies {
+    implementation(project(":core"))
 
-    companion object {
-        fun create(value: Int): BleGattOperationStatus {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannot create status object for value: $value")
-        }
-    }
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.kotlinx.coroutines.core)
 }

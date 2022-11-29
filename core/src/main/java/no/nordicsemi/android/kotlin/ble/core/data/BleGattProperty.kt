@@ -29,23 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.event
+package no.nordicsemi.android.kotlin.ble.core.data
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+enum class BleGattProperty(internal val value: Int) {
 
-internal sealed interface GattEvent
+    PROPERTY_BROADCAST(1),
+    PROPERTY_EXTENDED_PROPS(128),
+    PROPERTY_INDICATE(32),
+    PROPERTY_NOTIFY(16),
+    PROPERTY_READ(2),
+    PROPERTY_SIGNED_WRITE(64),
+    PROPERTY_WRITE(8),
+    PROPERTY_WRITE_NO_RESPONSE(4);
 
-internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
+    companion object {
+        fun createProperties(properties: Int): List<BleGattProperty> {
+            return values().filter { (it.value and properties) > 0 }
+        }
 
-internal sealed interface CharacteristicEvent : GattEvent
-
-internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
-internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: BleGattOperationStatus) : CharacteristicEvent
-
-internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
+        fun create(value: Int): BleGattProperty {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalStateException("Cannto create property for value: $value")
+        }
+    }
+}

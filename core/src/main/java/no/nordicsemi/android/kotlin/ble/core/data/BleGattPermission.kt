@@ -29,26 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.gatt.service
+package no.nordicsemi.android.kotlin.ble.core.data
 
-enum class BleGattProperty(internal val value: Int) {
-    PROPERTY_BROADCAST(1),
-    PROPERTY_EXTENDED_PROPS(128),
-    PROPERTY_INDICATE(32),
-    PROPERTY_NOTIFY(16),
-    PROPERTY_READ(2),
-    PROPERTY_SIGNED_WRITE(64),
-    PROPERTY_WRITE(8),
-    PROPERTY_WRITE_NO_RESPONSE(4);
+enum class BleGattPermission(internal val value: Int) {
+
+    PERMISSION_READ(1),
+    PERMISSION_READ_ENCRYPTED(2),
+    PERMISSION_READ_ENCRYPTED_MITM(4),
+    PERMISSION_WRITE(16),
+    PERMISSION_WRITE_ENCRYPTED(32),
+    PERMISSION_WRITE_ENCRYPTED_MITM(64),
+    PERMISSION_WRITE_SIGNED(128),
+    PERMISSION_WRITE_SIGNED_MITM(256);
 
     companion object {
-        fun createProperties(properties: Int): List<BleGattProperty> {
-            return values().filter { (it.value and properties) > 0 }
+        fun createPermissions(permissions: Int): List<BleGattPermission> {
+            return values().filter { (it.value and permissions) > 0 }
         }
 
-        fun create(value: Int): BleGattProperty {
+        fun create(value: Int): BleGattPermission {
             return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannto create property for value: $value")
+                ?: throw IllegalStateException("Cannot create permission for value: $value")
         }
     }
 }
