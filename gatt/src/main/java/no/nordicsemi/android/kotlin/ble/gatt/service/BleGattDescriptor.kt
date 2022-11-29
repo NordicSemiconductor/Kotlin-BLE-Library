@@ -46,6 +46,8 @@ class BleGattDescriptor(private val gatt: BluetoothGatt, private val descriptor:
 
     val uuid = descriptor.uuid
 
+    val permissions = BleGattPermission.createPermissions(descriptor.permissions)
+
     private var pendingEvent: ((CharacteristicEvent) -> Unit)? = null
 
     internal fun onEvent(event: CharacteristicEvent) {

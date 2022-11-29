@@ -56,6 +56,10 @@ class BleGattCharacteristic(
 
     val instanceId = characteristic.instanceId
 
+    val permissions = BleGattPermission.createPermissions(characteristic.permissions)
+
+    val properties = BleGattProperty.createProperties(characteristic.properties)
+
     private val _notification = MutableStateFlow(byteArrayOf())
     val notification = _notification.asStateFlow()
 
