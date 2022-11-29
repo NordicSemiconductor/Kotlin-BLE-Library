@@ -61,9 +61,12 @@ viewModelScope.launch {
     if (state.value.isLedOn) {
         //_state is a MutableStateFlow which propagates data to UI.
         _state.value = _state.value.copy(isLedOn = false)
+        //Write is a suspend function which waits for the operation to finish.
         ledCharacteristic.write(byteArrayOf(0x00))
     } else {
+        //_state is a MutableStateFlow which propagates data to UI.
         _state.value = _state.value.copy(isLedOn = true)
+        //Write is a suspend function which waits for the operation to finish.
         ledCharacteristic.write(byteArrayOf(0x01))
     }
 }
