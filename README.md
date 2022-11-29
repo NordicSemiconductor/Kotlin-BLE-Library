@@ -6,7 +6,7 @@ natural according to the BLE specification.
 
 ## BLE Core
 This module contains shared classes that are used between other modules. Currently the most important
-class is [BleDevice] which is a wrapper around Android [BluetoothDevice].
+class is [BleDevice](core/src/main/java/no/nordicsemi/android/kotlin/ble/core/BleDevice.kt) which is a wrapper around Android [BluetoothDevice](https://developer.android.com/reference/android/bluetooth/BluetoothDevice).
 
 ## BLE Scanner
 This module contains scanner class which provides the list of available Bluetooth LE devices. Scanning
