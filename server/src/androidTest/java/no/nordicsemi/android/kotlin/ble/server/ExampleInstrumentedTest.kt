@@ -29,20 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.nexus)
-}
+package no.nordicsemi.android.kotlin.ble.server
 
-group = "no.nordicsemi.android.kotlin.ble"
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.gatt"
-}
+import org.junit.Test
+import org.junit.runner.RunWith
 
-dependencies {
-    implementation(project(":core"))
+import org.junit.Assert.*
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.kotlinx.coroutines.core)
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @Test
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("no.nordicsemi.android.kotlin.ble.server.test", appContext.packageName)
+    }
 }

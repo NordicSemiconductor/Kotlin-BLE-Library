@@ -29,20 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.nexus)
-}
+package no.nordicsemi.android.kotlin.ble.server
 
-group = "no.nordicsemi.android.kotlin.ble"
+import org.junit.Test
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.gatt"
-}
+import org.junit.Assert.*
 
-dependencies {
-    implementation(project(":core"))
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.kotlinx.coroutines.core)
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(4, 2 + 2)
+    }
 }

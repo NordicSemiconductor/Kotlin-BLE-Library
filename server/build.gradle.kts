@@ -34,10 +34,10 @@ plugins {
     alias(libs.plugins.nordic.nexus)
 }
 
-group = "no.nordicsemi.android.kotlin.ble"
+group = "no.nordicsemi.android.kotlin.ble.server"
 
 android {
-    namespace = "no.nordicsemi.android.kotlin.ble.gatt"
+    namespace = "no.nordicsemi.android.kotlin.ble.server"
 }
 
 dependencies {
