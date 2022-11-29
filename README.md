@@ -24,7 +24,7 @@ scanner.scan().onEach { devices ->
 This module is responsible for handling connection between the phone and the BLE device. It uses
 Kotlin Coroutines instead of JAVA callbacks to handle asynchronous requests.
 
-Below example is based on [Blinky app](https://github.com/NordicSemiconductor/Android-nRF-Blinky).
+Below example is based on [the Blinky app](https://github.com/NordicSemiconductor/Android-nRF-Blinky).
 
 Connection to the Blinky DK may look like that:
 ```kotlin
