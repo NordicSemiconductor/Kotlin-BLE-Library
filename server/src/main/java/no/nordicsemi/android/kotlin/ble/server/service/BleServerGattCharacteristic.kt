@@ -29,33 +29,30 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.core.data
+package no.nordicsemi.android.kotlin.ble.server.service
 
-enum class BleGattProperty(internal val value: Int) {
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattServer
+import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
+import java.util.*
 
-    PROPERTY_BROADCAST(1),
-    PROPERTY_EXTENDED_PROPS(128),
-    PROPERTY_INDICATE(32),
-    PROPERTY_NOTIFY(16),
-    PROPERTY_READ(2),
-    PROPERTY_SIGNED_WRITE(64),
-    PROPERTY_WRITE(8),
-    PROPERTY_WRITE_NO_RESPONSE(4);
+class BleServerGattCharacteristic(
+    private val server: BluetoothGattServer,
+    private val characteristic: BluetoothGattCharacteristic
+) {
 
-    companion object {
-        fun createProperties(properties: Int): List<BleGattProperty> {
-            return values().filter { (it.value and properties) > 0 }
-        }
+    val uuid = characteristic.uuid
+    val instanceId = characteristic.instanceId
 
-        fun create(value: Int): BleGattProperty {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannot create property for value: $value")
-        }
+    private val descriptors = characteristic.descriptors.map {
+        BleServerGattDescriptor(server, it)
+    }
 
-        fun toInt(properties: List<BleGattProperty>): Int {
-            return properties.fold(0) { current, next ->
-                current or next.value
-            }
-        }
+    fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {
+        return descriptors.firstOrNull { it.uuid == uuid }
+    }
+
+    internal fun onEvent(event: CharacteristicEvent) {
+        descriptors.forEach { it.onEvent(event) }
     }
 }

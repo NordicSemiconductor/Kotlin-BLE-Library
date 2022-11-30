@@ -51,5 +51,11 @@ enum class BleGattPermission(internal val value: Int) {
             return values().firstOrNull { it.value == value }
                 ?: throw IllegalStateException("Cannot create permission for value: $value")
         }
+
+        fun toInt(permissions: List<BleGattPermission>): Int {
+            return permissions.fold(0) { current, next ->
+                current or next.value
+            }
+        }
     }
 }

@@ -29,33 +29,15 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.core.data
+package no.nordicsemi.android.kotlin.ble.server.service
 
-enum class BleGattProperty(internal val value: Int) {
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import java.util.*
 
-    PROPERTY_BROADCAST(1),
-    PROPERTY_EXTENDED_PROPS(128),
-    PROPERTY_INDICATE(32),
-    PROPERTY_NOTIFY(16),
-    PROPERTY_READ(2),
-    PROPERTY_SIGNED_WRITE(64),
-    PROPERTY_WRITE(8),
-    PROPERTY_WRITE_NO_RESPONSE(4);
-
-    companion object {
-        fun createProperties(properties: Int): List<BleGattProperty> {
-            return values().filter { (it.value and properties) > 0 }
-        }
-
-        fun create(value: Int): BleGattProperty {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannot create property for value: $value")
-        }
-
-        fun toInt(properties: List<BleGattProperty>): Int {
-            return properties.fold(0) { current, next ->
-                current or next.value
-            }
-        }
-    }
-}
+data class BleServerGattCharacteristicConfig(
+    val uuid: UUID,
+    val properties: List<BleGattProperty> = emptyList(),
+    val permissions: List<BleGattPermission> = emptyList(),
+    val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList()
+)
