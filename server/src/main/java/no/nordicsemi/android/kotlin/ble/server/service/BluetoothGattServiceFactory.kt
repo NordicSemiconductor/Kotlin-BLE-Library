@@ -8,6 +8,21 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 
 internal object BluetoothGattServiceFactory {
 
+    fun copy(service: BluetoothGattService): BluetoothGattService {
+        return BluetoothGattService(service.uuid, service.type).apply {
+            characteristics.forEach {
+                val characteristic = BluetoothGattCharacteristic(it.uuid, it.properties, it.permissions)
+
+                it.descriptors.forEach {
+                    val descriptor = BluetoothGattDescriptor(it.uuid, it.permissions)
+
+                    characteristic.addDescriptor(descriptor)
+                }
+                addCharacteristic(characteristic)
+            }
+        }
+    }
+
     fun create(config: BleGattServerServiceConfig): BluetoothGattService {
         val service = BluetoothGattService(config.uuid, config.type.toNative())
 

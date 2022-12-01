@@ -29,31 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.core.data
 
-import android.bluetooth.BluetoothGattServer
-import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
-import java.util.*
+import android.bluetooth.BluetoothProfile
 
-class BleGattServerService(
-    val server: BluetoothGattServer,
-    val service: BluetoothGattService
-) {
+enum class GattConnectionState(internal val value: Int) {
+    STATE_DISCONNECTED(BluetoothProfile.STATE_DISCONNECTED),
+    STATE_CONNECTING(BluetoothProfile.STATE_CONNECTING),
+    STATE_CONNECTED(BluetoothProfile.STATE_CONNECTED),
+    STATE_DISCONNECTING(BluetoothProfile.STATE_DISCONNECTING);
 
-    val uuid = service.uuid
-
-    private val characteristics = service.characteristics.map {
-        BleServerGattCharacteristic(server, it)
-    }
-
-    internal fun onEvent(event: CharacteristicEvent) {
-        characteristics.onEach { it.onEvent(event) }
-    }
-
-    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
-        return characteristics.firstOrNull { characteristic ->
-            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+    companion object {
+        fun create(value: Int): GattConnectionState {
+            return values().firstOrNull { it.value == value } ?: throw IllegalStateException("Cannot create GattConnectionState for value: $value")
         }
     }
 }

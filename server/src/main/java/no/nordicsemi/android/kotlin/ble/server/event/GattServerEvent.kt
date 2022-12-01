@@ -44,64 +44,64 @@ internal data class OnConnectionStateChanged(val device: BluetoothDevice, val st
 internal sealed interface CharacteristicEvent : GattServerEvent
 
 internal data class OnCharacteristicReadRequest(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val requestId: Int,
     val offset: Int,
-    val characteristic: BluetoothGattCharacteristic?
+    val characteristic: BluetoothGattCharacteristic
 ) : CharacteristicEvent
 
 internal data class OnCharacteristicWriteRequest(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val requestId: Int,
-    val characteristic: BluetoothGattCharacteristic?,
+    val characteristic: BluetoothGattCharacteristic,
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,
-    val value: ByteArray?
+    val value: ByteArray
 ) : CharacteristicEvent
 
 internal data class OnDescriptorReadRequest(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val requestId: Int,
     val offset: Int,
-    val descriptor: BluetoothGattDescriptor?
+    val descriptor: BluetoothGattDescriptor
 ) : CharacteristicEvent
 
 internal data class OnDescriptorWriteRequest(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val requestId: Int,
-    val descriptor: BluetoothGattDescriptor?,
+    val descriptor: BluetoothGattDescriptor,
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,
-    val value: ByteArray?
+    val value: ByteArray
 ) : CharacteristicEvent
 
 internal data class OnExecuteWrite(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val requestId: Int,
     val execute: Boolean
 ) : CharacteristicEvent
 
 internal data class OnMtuChanged(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val mtu: Int
 ) : CharacteristicEvent
 
 internal data class OnNotificationSent(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val status: Int
 ) : CharacteristicEvent
 
 internal data class OnPhyRead(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val txPhy: Int,
     val rxPhy: Int,
     val status: Int
 ) : CharacteristicEvent
 
 internal data class OnPhyUpdate(
-    val device: BluetoothDevice?,
+    val device: BluetoothDevice,
     val txPhy: Int,
     val rxPhy: Int,
     val status: Int

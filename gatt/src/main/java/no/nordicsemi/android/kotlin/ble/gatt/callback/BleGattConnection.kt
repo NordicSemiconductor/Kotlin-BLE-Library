@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import no.nordicsemi.android.kotlin.ble.gatt.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.gatt.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.gatt.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.gatt.errors.ServicesNotDiscoveredException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus

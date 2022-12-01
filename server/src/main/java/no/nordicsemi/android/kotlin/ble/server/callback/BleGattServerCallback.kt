@@ -59,7 +59,7 @@ internal class BleGattServerCallback(
         offset: Int,
         characteristic: BluetoothGattCharacteristic?
     ) {
-        onEvent(OnCharacteristicReadRequest(device, requestId, offset, characteristic))
+        onEvent(OnCharacteristicReadRequest(device!!, requestId, offset, characteristic!!))
     }
 
     override fun onCharacteristicWriteRequest(
@@ -71,7 +71,7 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(OnCharacteristicWriteRequest(device, requestId, characteristic, preparedWrite, responseNeeded, offset, value))
+        onEvent(OnCharacteristicWriteRequest(device!!, requestId, characteristic!!, preparedWrite, responseNeeded, offset, value!!))
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
@@ -84,7 +84,7 @@ internal class BleGattServerCallback(
         offset: Int,
         descriptor: BluetoothGattDescriptor?
     ) {
-        onEvent(OnDescriptorReadRequest(device, requestId, offset, descriptor))
+        onEvent(OnDescriptorReadRequest(device!!, requestId, offset, descriptor!!))
     }
 
     override fun onDescriptorWriteRequest(
@@ -96,27 +96,27 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(OnDescriptorWriteRequest(device, requestId, descriptor, preparedWrite, responseNeeded, offset, value))
+        onEvent(OnDescriptorWriteRequest(device!!, requestId, descriptor!!, preparedWrite, responseNeeded, offset, value!!))
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
-        onEvent(OnExecuteWrite(device, requestId, execute))
+        onEvent(OnExecuteWrite(device!!, requestId, execute))
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
-        onEvent(OnMtuChanged(device, mtu))
+        onEvent(OnMtuChanged(device!!, mtu))
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
-        onEvent(OnNotificationSent(device, status))
+        onEvent(OnNotificationSent(device!!, status))
     }
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyRead(device, txPhy, rxPhy, status))
+        onEvent(OnPhyRead(device!!, txPhy, rxPhy, status))
     }
 
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyUpdate(device, txPhy, rxPhy, status))
+        onEvent(OnPhyUpdate(device!!, txPhy, rxPhy, status))
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {

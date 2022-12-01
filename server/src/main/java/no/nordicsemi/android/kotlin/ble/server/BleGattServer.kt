@@ -39,21 +39,25 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
 
 class BleGattServer {
+
+    private val connections = mutableMapOf<BluetoothDevice, BleGattServerServices>()
 
     private val callback = BleGattServerCallback { event ->
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
-            is CharacteristicEvent -> services.forEach { it.onEvent(event) }
+            is CharacteristicEvent -> connections.values.forEach { it.onEvent(event) }
         }
     }
 
@@ -62,7 +66,19 @@ class BleGattServer {
     private var bluetoothGattServer: BluetoothGattServer? = null
 
     private fun onConnectionStateChanged(device: BluetoothDevice, status: Int, newState: Int) {
+        val bleStatus = BleGattOperationStatus.create(status) //TODO consume status?
+        val connectionState = GattConnectionState.create(newState)
 
+        val copiedServices = services.map {
+            BleGattServerService(bluetoothGattServer!!, BluetoothGattServiceFactory.copy(it.service))
+        }
+
+        when (connectionState) {
+            GattConnectionState.STATE_CONNECTED -> connections[device] = BleGattServerServices(bluetoothGattServer!!, copiedServices)
+            GattConnectionState.STATE_DISCONNECTED,
+            GattConnectionState.STATE_CONNECTING,
+            GattConnectionState.STATE_DISCONNECTING -> connections.remove(device)
+        }
     }
 
     private fun onServiceAdded(service: BluetoothGattService, status: Int) {
