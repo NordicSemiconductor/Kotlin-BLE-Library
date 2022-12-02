@@ -53,7 +53,7 @@ import no.nordicsemi.android.common.permission.RequireBluetooth
 import no.nordicsemi.android.common.permission.RequireLocation
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.common.theme.view.SectionTitle
-import no.nordicsemi.android.kotlin.ble.app.R
+import no.nordicsemi.android.kotlin.ble.app.client.R
 
 val ScannerDestinationId = createSimpleDestination("scanner")
 

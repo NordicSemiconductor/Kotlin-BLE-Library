@@ -29,35 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package no.nordicsemi.android.kotlin.ble.server
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.0.11")
-        }
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
+import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-include(":app_client")
-include(":app_server")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":gatt")
-include(":server")
+@HiltAndroidApp
+class HiltApplication : Application()

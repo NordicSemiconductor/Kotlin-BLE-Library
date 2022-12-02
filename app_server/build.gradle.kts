@@ -29,35 +29,35 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+plugins {
+    alias(libs.plugins.nordic.application.compose)
+    alias(libs.plugins.nordic.hilt)
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.0.11")
-        }
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
+group = "no.nordicsemi.android.kotlin.ble.app.server"
 
-include(":app_client")
-include(":app_server")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":gatt")
-include(":server")
+android {
+    namespace = "no.nordicsemi.android.kotlin.ble.app.server"
+}
+
+dependencies {
+    implementation(project(":advertiser"))
+    implementation(project(":core"))
+    implementation(project(":gatt"))
+    implementation(project(":scanner"))
+    implementation(project(":server"))
+
+    implementation(libs.nordic.theme)
+    implementation(libs.nordic.navigation)
+    implementation(libs.nordic.permission)
+
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.iconsExtended)
+
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.3")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+}

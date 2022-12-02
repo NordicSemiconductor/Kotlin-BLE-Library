@@ -46,7 +46,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.defineDestination
 import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.kotlin.ble.app.R
+import no.nordicsemi.android.kotlin.ble.app.client.R
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 val BlinkyDestinationId = createDestination<BleDevice, Unit>("blinky")

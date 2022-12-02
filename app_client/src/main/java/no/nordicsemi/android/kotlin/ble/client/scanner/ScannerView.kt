@@ -48,7 +48,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.view.CircularIcon
-import no.nordicsemi.android.kotlin.ble.app.R
+import no.nordicsemi.android.kotlin.ble.app.client.R
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 fun LazyListScope.ScannerView(
