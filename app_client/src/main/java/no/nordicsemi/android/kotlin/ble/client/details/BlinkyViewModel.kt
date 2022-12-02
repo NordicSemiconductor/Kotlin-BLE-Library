@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.details
+package no.nordicsemi.android.kotlin.ble.client.details
 
 import android.annotation.SuppressLint
 import android.content.Context

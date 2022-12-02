@@ -29,40 +29,38 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.client.details
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import no.nordicsemi.android.common.navigation.createSimpleDestination
+import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.defineDestination
-import no.nordicsemi.android.common.permission.RequireBluetooth
-import no.nordicsemi.android.common.permission.RequireLocation
 import no.nordicsemi.android.common.theme.view.NordicAppBar
-import no.nordicsemi.android.common.theme.view.SectionTitle
 import no.nordicsemi.android.kotlin.ble.app.R
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
-val ScannerDestinationId = createSimpleDestination("scanner")
+val BlinkyDestinationId = createDestination<BleDevice, Unit>("blinky")
 
-val ScannerDestination = defineDestination(ScannerDestinationId) { ScannerScreen() }
+val BlinkyDestination = defineDestination(BlinkyDestinationId) { BlinkyScreen() }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScannerScreen() {
-    SectionTitle(icon = Icons.Default.Home, title = stringResource(id = R.string.scanner_title))
+fun BlinkyScreen() {
+    val viewModel: BlinkyViewModel = hiltViewModel()
+
+    val device = viewModel.device.collectAsState().value
+
+    val state = viewModel.state.collectAsState().value
 
     Scaffold(
         topBar = {
@@ -70,20 +68,15 @@ fun ScannerScreen() {
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) {
-        Box(modifier = Modifier.padding(it)) {
-            RequireBluetooth {
-                RequireLocation {
-                    val viewModel: ScannerViewModel = hiltViewModel()
+        Column(modifier = Modifier.padding(it)) {
+            Text(text = "Name: ${device?.name}")
+            Text(text = "Address: ${device?.address}")
 
-                    val devices = viewModel.devices.collectAsState().value
+            Text(text = "Led: ${state.isLedOn}")
+            Text(text = "Button: ${state.isButtonPressed}")
 
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
-                        ScannerView(devices) { viewModel.onDeviceSelected(it) }
-                    }
-                }
+            Button(onClick = { viewModel.turnLed() }) {
+                Text(text = "Turn LED")
             }
         }
     }

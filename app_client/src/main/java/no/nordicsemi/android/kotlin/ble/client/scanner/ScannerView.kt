@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.client.scanner
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

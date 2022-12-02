@@ -29,43 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.client.details
 
-import android.annotation.SuppressLint
-import android.content.Context
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.navigation.Navigator
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.details.BlinkyDestinationId
-import javax.inject.Inject
+object BlinkyButtonParser {
 
-@SuppressLint("MissingPermission")
-@HiltViewModel
-class ScannerViewModel @Inject constructor(
-    @ApplicationContext
-    private val context: Context,
-    private val navigator: Navigator
-) : ViewModel() {
+    private val STATE_OFF = byteArrayOf(0x00)
+    private val STATE_ON = byteArrayOf(0x01)
 
-    private val scanner = NordicScanner(context)
-
-    private val _devices = MutableStateFlow<List<BleDevice>>(emptyList())
-    val devices = _devices.asStateFlow()
-
-    init {
-        scanner.scan().onEach {
-            _devices.value = it
-        }.launchIn(viewModelScope)
+    fun isButtonPressed(data: ByteArray): Boolean {
+        return if (data.contentEquals(STATE_ON)) {
+            true
+        } else if (data.contentEquals(STATE_OFF)) {
+            false
+        } else {
+//            throw IllegalStateException("Cannot parse button data.")
+            false
+        }
     }
 
-    fun onDeviceSelected(device: BleDevice) {
-        navigator.navigateTo(BlinkyDestinationId, device)
+    fun ByteArray.toDisplayString(): String {
+        return this.joinToString(".") {
+            it.toUByte().toString()
+        }
     }
 }

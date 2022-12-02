@@ -29,9 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.details
+package no.nordicsemi.android.kotlin.ble.client.details
 
-data class BlinkyState(
-    val isButtonPressed: Boolean = false,
-    val isLedOn: Boolean = false
-)
+object BlinkyLedParser {
+
+    private val STATE_OFF = byteArrayOf(0x00)
+    private val STATE_ON = byteArrayOf(0x01)
+
+    fun isLedOn(data: ByteArray): Boolean {
+        return if (data.contentEquals(STATE_ON)) {
+            true
+        } else if (data.contentEquals(STATE_OFF)) {
+            false
+        } else {
+            false
+        }
+    }
+
+    fun ByteArray.toDisplayString(): String {
+        return this.joinToString(".") {
+            it.toUByte().toString()
+        }
+    }
+}

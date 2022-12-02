@@ -29,32 +29,44 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble
+package no.nordicsemi.android.kotlin.ble.client.scanner
 
-import android.os.Bundle
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import dagger.hilt.android.AndroidEntryPoint
-import no.nordicsemi.android.common.navigation.NavigationView
-import no.nordicsemi.android.common.theme.NordicActivity
-import no.nordicsemi.android.common.theme.NordicTheme
-import no.nordicsemi.android.kotlin.ble.details.BlinkyDestination
-import no.nordicsemi.android.kotlin.ble.scanner.ScannerDestination
+import android.annotation.SuppressLint
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.common.navigation.Navigator
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.client.details.BlinkyDestinationId
+import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
+import javax.inject.Inject
 
-@AndroidEntryPoint
-class MainActivity : NordicActivity() {
+@SuppressLint("MissingPermission")
+@HiltViewModel
+class ScannerViewModel @Inject constructor(
+    @ApplicationContext
+    private val context: Context,
+    private val navigator: Navigator
+) : ViewModel() {
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private val scanner = NordicScanner(context)
 
-        setContent {
-            NordicTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    NavigationView(listOf(ScannerDestination, BlinkyDestination))
-                }
-            }
-        }
+    private val _devices = MutableStateFlow<List<BleDevice>>(emptyList())
+    val devices = _devices.asStateFlow()
+
+    init {
+        scanner.scan().onEach {
+            _devices.value = it
+        }.launchIn(viewModelScope)
+    }
+
+    fun onDeviceSelected(device: BleDevice) {
+        navigator.navigateTo(BlinkyDestinationId, device)
     }
 }

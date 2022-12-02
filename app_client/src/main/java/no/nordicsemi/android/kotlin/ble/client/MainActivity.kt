@@ -29,27 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.details
+package no.nordicsemi.android.kotlin.ble.client
 
-object BlinkyButtonParser {
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Modifier
+import dagger.hilt.android.AndroidEntryPoint
+import no.nordicsemi.android.common.navigation.NavigationView
+import no.nordicsemi.android.common.theme.NordicActivity
+import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.android.kotlin.ble.client.details.BlinkyDestination
+import no.nordicsemi.android.kotlin.ble.client.scanner.ScannerDestination
 
-    private val STATE_OFF = byteArrayOf(0x00)
-    private val STATE_ON = byteArrayOf(0x01)
+@AndroidEntryPoint
+class MainActivity : NordicActivity() {
 
-    fun isButtonPressed(data: ByteArray): Boolean {
-        return if (data.contentEquals(STATE_ON)) {
-            true
-        } else if (data.contentEquals(STATE_OFF)) {
-            false
-        } else {
-//            throw IllegalStateException("Cannot parse button data.")
-            false
-        }
-    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
 
-    fun ByteArray.toDisplayString(): String {
-        return this.joinToString(".") {
-            it.toUByte().toString()
+        setContent {
+            NordicTheme {
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    NavigationView(listOf(ScannerDestination, BlinkyDestination))
+                }
+            }
         }
     }
 }
