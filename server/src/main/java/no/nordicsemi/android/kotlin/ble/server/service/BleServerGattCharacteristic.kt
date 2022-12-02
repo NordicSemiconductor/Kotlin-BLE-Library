@@ -34,8 +34,8 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
+import android.os.Build
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
@@ -53,8 +53,11 @@ class BleServerGattCharacteristic(
     val uuid = characteristic.uuid
     val instanceId = characteristic.instanceId
 
+    private var transactionalValue = byteArrayOf()
+    private var value = byteArrayOf()
+
     private val descriptors = characteristic.descriptors.map {
-        BleServerGattDescriptor(server, it)
+        BleServerGattDescriptor(server, instanceId, it)
     }
 
     fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {
@@ -63,20 +66,11 @@ class BleServerGattCharacteristic(
 
     internal fun onEvent(event: ServiceEvent) {
         when (event) {
-            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicRead(event) }
-            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWrite(event) }
-            is OnExecuteWrite -> TODO()
-            is OnNotificationSent -> TODO()
+            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
+            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
+            is OnExecuteWrite -> onExecuteWrite(event)
+            is OnNotificationSent -> onNotificationSent(event)
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
-        }
-    }
-
-    private fun onLocalEvent(event: CharacteristicEvent, block: (CharacteristicEvent) -> Unit) {
-        when (event) {
-            is OnCharacteristicReadRequest -> onLocalEvent(event) { block(event) }
-            is OnCharacteristicWriteRequest -> onLocalEvent(event) { block(event) }
-            is OnNotificationSent -> onLocalEvent(event) { block(event) }
-            is OnExecuteWrite -> onLocalEvent(event) { block(event) }
         }
     }
 
@@ -86,14 +80,32 @@ class BleServerGattCharacteristic(
         }
     }
 
-    private fun onCharacteristicWrite(event: OnCharacteristicWriteRequest) {
-        val status = BleGattOperationStatus.GATT_SUCCESS
-        characteristic.value = event.value
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, characteristic.value)
+    private fun onExecuteWrite(event: OnExecuteWrite) {
+        value = transactionalValue
+        transactionalValue = byteArrayOf()
+        server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 
-    private fun onCharacteristicRead(event: OnCharacteristicReadRequest) {
+    private fun onNotificationSent(event: OnNotificationSent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            server.notifyCharacteristicChanged(event.device, characteristic, false, value)
+        } else {
+            server.notifyCharacteristicChanged(event.device, characteristic, false)
+        }
+    }
+
+    private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, characteristic.value)
+        if (event.preparedWrite) {
+            transactionalValue += event.value
+        } else {
+            value = event.value
+        }
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
+    }
+
+    private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
+        val status = BleGattOperationStatus.GATT_SUCCESS
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, value)
     }
 }

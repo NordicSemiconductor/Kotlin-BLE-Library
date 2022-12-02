@@ -31,25 +31,59 @@
 
 package no.nordicsemi.android.kotlin.ble.server.service
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
 
+@SuppressLint("MissingPermission")
 class BleServerGattDescriptor(
     private val server: BluetoothGattServer,
+    private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor
 ) {
 
     val uuid = descriptor.uuid
 
+    private var transactionalValue = byteArrayOf()
+    private var value = byteArrayOf()
+
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
-            is OnDescriptorReadRequest -> TODO()
-            is OnDescriptorWriteRequest -> TODO()
-            is OnExecuteWrite -> TODO()
+            is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
+            is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
+            is OnExecuteWrite -> onExecuteWrite(event)
         }
+    }
+
+    private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
+        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
+            block()
+        }
+    }
+
+    private fun onExecuteWrite(event: OnExecuteWrite) {
+        value = transactionalValue
+        transactionalValue = byteArrayOf()
+        server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
+    }
+
+    private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
+        val status = BleGattOperationStatus.GATT_SUCCESS
+        if (event.preparedWrite) {
+            transactionalValue += event.value
+        } else {
+            value = event.value
+        }
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
+    }
+
+    private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
+        val status = BleGattOperationStatus.GATT_SUCCESS
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, value)
     }
 }
