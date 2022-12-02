@@ -31,20 +31,30 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
-enum class BleGattOperationStatus(internal val value: Int) {
+import android.bluetooth.BluetoothGatt
+import android.os.Build
 
-    GATT_SUCCESS(0),
+enum class BleGattOperationStatus(val value: Int) {
 
-    GATT_CONNECTION_CONGESTED(143),
-    GATT_FAILURE(257),
-    GATT_INSUFFICIENT_AUTHENTICATION(5),
-    GATT_INSUFFICIENT_AUTHORIZATION(8),
-    GATT_INSUFFICIENT_ENCRYPTION(15),
-    GATT_INVALID_ATTRIBUTE_LENGTH(13),
-    GATT_INVALID_OFFSET(7),
-    GATT_READ_NOT_PERMITTED(2),
-    GATT_REQUEST_NOT_SUPPORTED(6),
-    GATT_WRITE_NOT_PERMITTED(3);
+    GATT_SUCCESS(BluetoothGatt.GATT_SUCCESS),
+
+    GATT_CONNECTION_CONGESTED(BluetoothGatt.GATT_CONNECTION_CONGESTED),
+    GATT_FAILURE(BluetoothGatt.GATT_FAILURE),
+    GATT_INSUFFICIENT_AUTHENTICATION(BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION),
+    GATT_INSUFFICIENT_ENCRYPTION(BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION),
+    GATT_INVALID_ATTRIBUTE_LENGTH(BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH),
+    GATT_INVALID_OFFSET(BluetoothGatt.GATT_INVALID_OFFSET),
+    GATT_READ_NOT_PERMITTED(BluetoothGatt.GATT_READ_NOT_PERMITTED),
+    GATT_REQUEST_NOT_SUPPORTED(BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED),
+    GATT_WRITE_NOT_PERMITTED(BluetoothGatt.GATT_WRITE_NOT_PERMITTED),
+
+    GATT_INSUFFICIENT_AUTHORIZATION(
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            BluetoothGatt.GATT_INSUFFICIENT_AUTHORIZATION
+        } else {
+            8
+        }
+    );
 
     companion object {
         fun create(value: Int): BleGattOperationStatus {

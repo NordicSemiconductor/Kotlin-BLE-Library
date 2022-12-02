@@ -41,9 +41,12 @@ import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
+import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
@@ -57,7 +60,10 @@ class BleGattServer {
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
-            is CharacteristicEvent -> connections.values.forEach { it.onEvent(event) }
+            is ServiceEvent -> connections.values.forEach { it.onEvent(event) }
+            is OnMtuChanged -> TODO()
+            is OnPhyRead -> TODO()
+            is OnPhyUpdate -> TODO()
         }
     }
 

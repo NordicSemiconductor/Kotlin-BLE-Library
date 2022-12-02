@@ -31,11 +31,20 @@
 
 package no.nordicsemi.android.kotlin.ble.server.service
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
+import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.event.OnNotificationSent
+import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import java.util.*
 
+@SuppressLint("MissingPermission")
 class BleServerGattCharacteristic(
     private val server: BluetoothGattServer,
     private val characteristic: BluetoothGattCharacteristic
@@ -52,7 +61,39 @@ class BleServerGattCharacteristic(
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
-    internal fun onEvent(event: CharacteristicEvent) {
-        descriptors.forEach { it.onEvent(event) }
+    internal fun onEvent(event: ServiceEvent) {
+        when (event) {
+            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicRead(event) }
+            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWrite(event) }
+            is OnExecuteWrite -> TODO()
+            is OnNotificationSent -> TODO()
+            is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
+        }
+    }
+
+    private fun onLocalEvent(event: CharacteristicEvent, block: (CharacteristicEvent) -> Unit) {
+        when (event) {
+            is OnCharacteristicReadRequest -> onLocalEvent(event) { block(event) }
+            is OnCharacteristicWriteRequest -> onLocalEvent(event) { block(event) }
+            is OnNotificationSent -> onLocalEvent(event) { block(event) }
+            is OnExecuteWrite -> onLocalEvent(event) { block(event) }
+        }
+    }
+
+    private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
+        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
+            block()
+        }
+    }
+
+    private fun onCharacteristicWrite(event: OnCharacteristicWriteRequest) {
+        val status = BleGattOperationStatus.GATT_SUCCESS
+        characteristic.value = event.value
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, characteristic.value)
+    }
+
+    private fun onCharacteristicRead(event: OnCharacteristicReadRequest) {
+        val status = BleGattOperationStatus.GATT_SUCCESS
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, characteristic.value)
     }
 }

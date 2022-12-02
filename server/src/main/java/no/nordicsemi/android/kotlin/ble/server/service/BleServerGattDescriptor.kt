@@ -33,7 +33,10 @@ package no.nordicsemi.android.kotlin.ble.server.service
 
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
+import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
 
 class BleServerGattDescriptor(
     private val server: BluetoothGattServer,
@@ -42,7 +45,11 @@ class BleServerGattDescriptor(
 
     val uuid = descriptor.uuid
 
-    internal fun onEvent(event: CharacteristicEvent) {
-
+    internal fun onEvent(event: DescriptorEvent) {
+        when (event) {
+            is OnDescriptorReadRequest -> TODO()
+            is OnDescriptorWriteRequest -> TODO()
+            is OnExecuteWrite -> TODO()
+        }
     }
 }

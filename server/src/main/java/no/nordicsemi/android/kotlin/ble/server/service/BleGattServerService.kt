@@ -33,7 +33,7 @@ package no.nordicsemi.android.kotlin.ble.server.service
 
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import java.util.*
 
 class BleGattServerService(
@@ -47,7 +47,7 @@ class BleGattServerService(
         BleServerGattCharacteristic(server, it)
     }
 
-    internal fun onEvent(event: CharacteristicEvent) {
+    internal fun onEvent(event: ServiceEvent) {
         characteristics.onEach { it.onEvent(event) }
     }
 
