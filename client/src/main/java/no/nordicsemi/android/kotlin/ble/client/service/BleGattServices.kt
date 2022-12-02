@@ -29,35 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.client.service
 
-group = "no.nordicsemi.android.kotlin.ble.app.server"
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app.server"
-}
+class BleGattServices(gatt: BluetoothGatt, androidGattServices: List<BluetoothGattService>) {
 
-dependencies {
-    implementation(project(":advertiser"))
-    implementation(project(":core"))
-    implementation(project(":client"))
-    implementation(project(":scanner"))
-    implementation(project(":server"))
+    private val services = androidGattServices.map { BleGattService(gatt, it) }
 
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
+    fun findService(uuid: UUID): BleGattService? {
+        return services.firstOrNull { it.uuid == uuid }
+    }
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    internal fun onCharacteristicEvent(event: CharacteristicEvent) {
+        services.forEach { it.onEvent(event) }
+    }
 }

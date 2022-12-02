@@ -43,7 +43,7 @@ android {
 dependencies {
     implementation(project(":advertiser"))
     implementation(project(":core"))
-    implementation(project(":gatt"))
+    implementation(project(":client"))
     implementation(project(":scanner"))
     implementation(project(":server"))
 

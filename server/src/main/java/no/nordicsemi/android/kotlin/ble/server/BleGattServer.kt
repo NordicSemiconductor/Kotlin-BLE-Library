@@ -100,4 +100,9 @@ class BleGattServer {
             bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
         }
     }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun stopServer() {
+        bluetoothGattServer?.close()
+    }
 }

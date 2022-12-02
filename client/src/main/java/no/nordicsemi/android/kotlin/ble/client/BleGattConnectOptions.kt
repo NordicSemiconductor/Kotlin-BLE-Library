@@ -29,35 +29,51 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.client
 
-group = "no.nordicsemi.android.kotlin.ble.app.server"
+import android.bluetooth.BluetoothDevice
+import android.os.Build
+import androidx.annotation.RequiresApi
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app.server"
-}
+data class BleGattConnectOptions(
+    /**
+     * boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+     */
+    val autoConnect: Boolean = true,
 
-dependencies {
-    implementation(project(":advertiser"))
-    implementation(project(":core"))
-    implementation(project(":client"))
-    implementation(project(":scanner"))
-    implementation(project(":server"))
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe1Phy: Boolean = true,
 
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe2Phy: Boolean = false,
 
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.compose.material.iconsExtended)
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLeCoded: Boolean = false
+) {
 
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getPhy(): Int {
+        var result = 0
+
+        if (useLe1Phy) {
+            result = result or BluetoothDevice.PHY_LE_1M_MASK
+        }
+        if (useLe2Phy) {
+            result = result or BluetoothDevice.PHY_LE_2M_MASK
+        }
+        if (useLeCoded) {
+            result = result or BluetoothDevice.PHY_LE_CODED_MASK
+        }
+
+        return result
+    }
 }
