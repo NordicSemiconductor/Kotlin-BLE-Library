@@ -35,6 +35,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
@@ -58,7 +59,7 @@ class BleServerGattCharacteristic(
     private var transactionalValue = byteArrayOf()
     private var value = byteArrayOf()
 
-    private var mtu = 0
+    private var mtu = BleGattConsts.MIN_MTU
 
     private val descriptors = characteristic.descriptors.map {
         BleServerGattDescriptor(server, instanceId, it)

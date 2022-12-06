@@ -61,8 +61,8 @@ class BleGattServer {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
             is ServiceEvent -> connections.values.forEach { it.onEvent(event) }
-            is OnPhyRead -> TODO()
-            is OnPhyUpdate -> TODO()
+            is OnPhyRead -> onPhyRead()
+            is OnPhyUpdate -> onPhyUpdate()
         }
     }
 
@@ -114,5 +114,13 @@ class BleGattServer {
                 services = services + BleGattServerService(server, service)
             }
         }
+    }
+
+    private fun onPhyRead() {
+        //TODO
+    }
+
+    private fun onPhyUpdate() {
+        //TODO
     }
 }

@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
@@ -53,7 +54,7 @@ class BleServerGattDescriptor(
     private var transactionalValue = byteArrayOf()
     private var value = byteArrayOf()
 
-    private var mtu = 0
+    private var mtu = BleGattConsts.MIN_MTU
 
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
