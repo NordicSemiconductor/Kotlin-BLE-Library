@@ -50,7 +50,7 @@ internal fun BleAdvertiseData.toNative(): AdvertiseData {
     builder.setIncludeDeviceName(includeDeviceName)
     builder.addServiceUuid(serviceUuid)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        builder.addServiceSolicitationUuid(serviceSolicitationUuid)
+        serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
     }
     serviceData.forEach {
         builder.addServiceData(it.uuid, it.data)

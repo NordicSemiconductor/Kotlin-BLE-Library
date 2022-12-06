@@ -33,9 +33,15 @@ package no.nordicsemi.android.kotlin.ble.server
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.ParcelUuid
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceType
@@ -84,5 +90,12 @@ class ServerViewModel @Inject constructor(
         )
 
         server.start(context, serviceConfig)
+
+        val advertiser = BleAdvertiser(context)
+
+        advertiser.advertise(advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE)))
+            .onEach {
+
+            }.launchIn(viewModelScope)
     }
 }

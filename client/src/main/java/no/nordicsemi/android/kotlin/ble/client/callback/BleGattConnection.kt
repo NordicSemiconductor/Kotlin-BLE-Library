@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,6 +59,7 @@ class BleGattConnection {
     private var gatt: BluetoothGatt? = null
 
     private val gattProxy: BluetoothGattClientCallback = BluetoothGattClientCallback {
+        Log.d("AAATESTAAA", "Client event: $it")
         when (it) {
             is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
             is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)

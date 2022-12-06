@@ -66,9 +66,9 @@ class BleAdvertiser(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_ADVERTISE)
     fun advertise(
-        settings: BleAdvertiseSettings,
+        settings: BleAdvertiseSettings = BleAdvertiseSettings(),
         advertiseData: BleAdvertiseData,
-        scanResponseData: BleAdvertiseData
+        scanResponseData: BleAdvertiseData? = null
     ) = callbackFlow {
 
         val callback = object : AdvertiseCallback() {
@@ -81,7 +81,7 @@ class BleAdvertiser(
             }
         }
 
-        bluetoothLeAdvertiser.startAdvertising(settings.toNative(), advertiseData.toNative(), scanResponseData.toNative(), callback)
+        bluetoothLeAdvertiser.startAdvertising(settings.toNative(), advertiseData.toNative(), scanResponseData?.toNative(), callback)
 
         awaitClose {
             bluetoothLeAdvertiser.stopAdvertising(callback)

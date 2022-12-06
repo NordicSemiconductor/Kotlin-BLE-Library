@@ -38,11 +38,11 @@ import androidx.annotation.RequiresApi
 data class BleAdvertiseData(
     val serviceUuid: ParcelUuid,
     @RequiresApi(Build.VERSION_CODES.M)
-    val serviceSolicitationUuid: ParcelUuid,
-    val includeDeviceName: Boolean,
-    val includeTxPowerLever: Boolean,
-    val manufacturerData: List<ManufacturerData>,
-    val serviceData: List<ServiceData>
+    val serviceSolicitationUuid: ParcelUuid? = null,
+    val includeDeviceName: Boolean = true,
+    val includeTxPowerLever: Boolean = false,
+    val manufacturerData: List<ManufacturerData> = emptyList(),
+    val serviceData: List<ServiceData> = emptyList()
 )
 
 data class ManufacturerData(

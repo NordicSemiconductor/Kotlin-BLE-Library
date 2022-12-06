@@ -38,6 +38,7 @@ import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -57,6 +58,7 @@ class BleGattServer {
     private val connections = mutableMapOf<BluetoothDevice, BleGattServerServices>()
 
     private val callback = BleGattServerCallback { event ->
+        Log.d("AAATESTAAA", "Server event: $event")
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
