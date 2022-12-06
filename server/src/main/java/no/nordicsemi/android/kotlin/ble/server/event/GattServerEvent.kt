@@ -41,11 +41,6 @@ internal sealed interface GattServerEvent
 internal data class OnServiceAdded(val service: BluetoothGattService, val status: Int) : GattServerEvent
 internal data class OnConnectionStateChanged(val device: BluetoothDevice, val status: Int, val newState: Int) : GattServerEvent
 
-internal data class OnMtuChanged(
-    val device: BluetoothDevice,
-    val mtu: Int
-) : GattServerEvent
-
 internal data class OnPhyRead(
     val device: BluetoothDevice,
     val txPhy: Int,
@@ -63,6 +58,11 @@ internal data class OnPhyUpdate(
 internal sealed interface ServiceEvent : GattServerEvent
 
 internal sealed interface CharacteristicEvent : ServiceEvent
+
+internal data class OnMtuChanged(
+    val device: BluetoothDevice,
+    val mtu: Int
+) : CharacteristicEvent, DescriptorEvent
 
 internal data class OnExecuteWrite(
     val device: BluetoothDevice,

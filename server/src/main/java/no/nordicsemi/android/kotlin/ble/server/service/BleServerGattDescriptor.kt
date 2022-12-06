@@ -39,6 +39,7 @@ import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
 
 @SuppressLint("MissingPermission")
 class BleServerGattDescriptor(
@@ -52,11 +53,14 @@ class BleServerGattDescriptor(
     private var transactionalValue = byteArrayOf()
     private var value = byteArrayOf()
 
+    private var mtu = 0
+
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
             is OnExecuteWrite -> onExecuteWrite(event)
+            is OnMtuChanged -> mtu = event.mtu
         }
     }
 
@@ -84,6 +88,7 @@ class BleServerGattDescriptor(
 
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, value)
+        val offset = event.offset
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, value.copyOfRange(offset, offset + mtu - 3))
     }
 }

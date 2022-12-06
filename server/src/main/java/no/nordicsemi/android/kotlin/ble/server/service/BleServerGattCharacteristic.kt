@@ -36,10 +36,12 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.event.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import java.util.*
@@ -56,6 +58,8 @@ class BleServerGattCharacteristic(
     private var transactionalValue = byteArrayOf()
     private var value = byteArrayOf()
 
+    private var mtu = 0
+
     private val descriptors = characteristic.descriptors.map {
         BleServerGattDescriptor(server, instanceId, it)
     }
@@ -65,12 +69,17 @@ class BleServerGattCharacteristic(
     }
 
     internal fun onEvent(event: ServiceEvent) {
-        when (event) {
-            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
-            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
-            is OnExecuteWrite -> onExecuteWrite(event)
-            is OnNotificationSent -> onNotificationSent(event)
-            is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
+        (event as? DescriptorEvent)?.let {
+            descriptors.forEach { it.onEvent(event) }
+        }
+        (event as? CharacteristicEvent)?.let {
+            when (event) {
+                is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
+                is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
+                is OnExecuteWrite -> onExecuteWrite(event)
+                is OnMtuChanged -> mtu = event.mtu
+                is OnNotificationSent -> onNotificationSent(event)
+            }
         }
     }
 
@@ -106,6 +115,7 @@ class BleServerGattCharacteristic(
 
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, value)
+        val offset = event.offset
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, value.copyOfRange(offset, offset + mtu - 3))
     }
 }

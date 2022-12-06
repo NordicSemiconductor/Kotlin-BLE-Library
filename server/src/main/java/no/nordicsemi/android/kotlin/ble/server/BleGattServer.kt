@@ -43,14 +43,13 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
-import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
+import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
 
 class BleGattServer {
@@ -62,7 +61,6 @@ class BleGattServer {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
             is ServiceEvent -> connections.values.forEach { it.onEvent(event) }
-            is OnMtuChanged -> TODO()
             is OnPhyRead -> TODO()
             is OnPhyUpdate -> TODO()
         }
@@ -71,6 +69,22 @@ class BleGattServer {
     private var services: List<BleGattServerService> = emptyList()
 
     private var bluetoothGattServer: BluetoothGattServer? = null
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun start(context: Context, vararg config: BleServerGattServiceConfig) {
+        val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+
+        val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
+
+        config.forEach {
+            bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun stopServer() {
+        bluetoothGattServer?.close()
+    }
 
     private fun onConnectionStateChanged(device: BluetoothDevice, status: Int, newState: Int) {
         val bleStatus = BleGattOperationStatus.create(status) //TODO consume status?
@@ -100,21 +114,5 @@ class BleGattServer {
                 services = services + BleGattServerService(server, service)
             }
         }
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun start(context: Context, vararg config: BleServerGattServiceConfig) {
-        val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-        val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-
-        config.forEach {
-            bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
-        }
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun stopServer() {
-        bluetoothGattServer?.close()
     }
 }
