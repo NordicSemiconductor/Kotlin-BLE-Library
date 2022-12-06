@@ -3,6 +3,7 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 
@@ -23,7 +24,7 @@ internal object BluetoothGattServiceFactory {
         }
     }
 
-    fun create(config: BleGattServerServiceConfig): BluetoothGattService {
+    fun create(config: BleServerGattServiceConfig): BluetoothGattService {
         val service = BluetoothGattService(config.uuid, config.type.toNative())
 
         config.characteristicConfigs.forEach {
@@ -39,6 +40,17 @@ internal object BluetoothGattServiceFactory {
                     BleGattPermission.toInt(it.permissions)
                 )
                 characteristic.addDescriptor(descriptor)
+            }
+
+            if (it.hasNotifications) {
+                val cccd = BluetoothGattDescriptor(
+                    BleGattConsts.NOTIFICATION_DESCRIPTOR,
+                    BleGattPermission.toInt(listOf(BleGattPermission.PERMISSION_READ_ENCRYPTED_MITM, BleGattPermission.PERMISSION_WRITE_ENCRYPTED_MITM))
+                )
+
+                cccd.value = byteArrayOf(0, 0)
+
+                characteristic.addDescriptor(cccd)
             }
 
             service.addCharacteristic(characteristic)

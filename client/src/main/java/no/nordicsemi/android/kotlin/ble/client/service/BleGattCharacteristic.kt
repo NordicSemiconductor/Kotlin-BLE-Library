@@ -45,6 +45,7 @@ import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicWrite
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

@@ -32,6 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.server
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
@@ -48,7 +49,7 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
-import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
 
@@ -75,16 +76,21 @@ class BleGattServer {
         val bleStatus = BleGattOperationStatus.create(status) //TODO consume status?
         val connectionState = GattConnectionState.create(newState)
 
-        val copiedServices = services.map {
-            BleGattServerService(bluetoothGattServer!!, BluetoothGattServiceFactory.copy(it.service))
-        }
-
         when (connectionState) {
-            GattConnectionState.STATE_CONNECTED -> connections[device] = BleGattServerServices(bluetoothGattServer!!, copiedServices)
+            GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
             GattConnectionState.STATE_CONNECTING,
             GattConnectionState.STATE_DISCONNECTING -> connections.remove(device)
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun connectDevice(device: BluetoothDevice) {
+        val copiedServices = services.map {
+            BleGattServerService(bluetoothGattServer!!, BluetoothGattServiceFactory.copy(it.service))
+        }
+        connections[device] = BleGattServerServices(bluetoothGattServer!!, copiedServices)
+        bluetoothGattServer?.connect(device, true)
     }
 
     private fun onServiceAdded(service: BluetoothGattService, status: Int) {
@@ -97,7 +103,7 @@ class BleGattServer {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun create(context: Context, config: List<BleGattServerServiceConfig>) {
+    fun start(context: Context, vararg config: BleServerGattServiceConfig) {
         val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)

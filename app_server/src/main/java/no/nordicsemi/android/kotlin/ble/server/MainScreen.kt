@@ -29,12 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.server
 
-import java.util.UUID
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import no.nordicsemi.android.common.permission.RequireBluetooth
+import no.nordicsemi.android.common.permission.RequireLocation
 
-data class BleGattServerServiceConfig(
-    val uuid: UUID,
-    val type: BleGattServerServiceType,
-    val characteristicConfigs: List<BleServerGattCharacteristicConfig>
-)
+@Composable
+fun MainScreen() {
+    RequireBluetooth {
+        RequireLocation { isLocationRequiredAndDisabled ->
+            Text("Server is up and running")
+        }
+    }
+}

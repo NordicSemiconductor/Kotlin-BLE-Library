@@ -29,21 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.core.data
 
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import java.util.*
 
-data class BleServerGattCharacteristicConfig(
-    val uuid: UUID,
-    val properties: List<BleGattProperty> = emptyList(),
-    val permissions: List<BleGattPermission> = emptyList(),
-    val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList(),
-) {
-
-    val hasNotifications: Boolean
-        get() {
-            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
-        }
+object BleGattConsts {
+    val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 }

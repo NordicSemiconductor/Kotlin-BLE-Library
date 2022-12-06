@@ -29,10 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.service
+package no.nordicsemi.android.kotlin.ble.server.service
 
-import java.util.*
+import java.util.UUID
 
-object BleGattConsts {
-    val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
-}
+data class BleServerGattServiceConfig(
+    val uuid: UUID,
+    val type: BleGattServerServiceType,
+    val characteristicConfigs: List<BleServerGattCharacteristicConfig>
+)
