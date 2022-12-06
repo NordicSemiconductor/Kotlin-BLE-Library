@@ -31,30 +31,23 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.data
 
-import android.bluetooth.le.AdvertiseData
-import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
+import androidx.annotation.RequiresApi
 
-internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
-    return AdvertisingSetParameters.Builder().apply {
+enum class BleTxPowerLevel {
+    TX_POWER_ULTRA_LOW,
+    TX_POWER_LOW,
+    TX_POWER_MEDIUM,
+    TX_POWER_HIGH;
 
-    }.build()
-}
-
-internal fun BleAdvertiseData.toNative(): AdvertiseData {
-    val builder = AdvertiseData.Builder()
-    builder.setIncludeTxPowerLevel(includeTxPowerLever)
-    builder.setIncludeDeviceName(includeDeviceName)
-    builder.addServiceUuid(serviceUuid)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            TX_POWER_ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
+            TX_POWER_LOW -> AdvertisingSetParameters.TX_POWER_LOW
+            TX_POWER_MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
+            TX_POWER_HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
+        }
     }
-    serviceData.forEach {
-        builder.addServiceData(it.uuid, it.data)
-    }
-    manufacturerData.forEach {
-        builder.addManufacturerData(it.id, it.data)
-    }
-    return builder.build()
 }

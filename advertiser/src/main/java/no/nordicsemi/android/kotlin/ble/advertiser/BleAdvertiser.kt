@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
+import android.bluetooth.le.AdvertisingSetParameters
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
@@ -80,6 +81,8 @@ class BleAdvertiser(
                 close(AdvertisementNotStartedException(BleAdvertiseError.create(errorCode)))
             }
         }
+
+        bluetoothLeAdvertiser.startAdvertisingSet()
 
         bluetoothLeAdvertiser.startAdvertising(settings.toNative(), advertiseData.toNative(), scanResponseData?.toNative(), callback)
 

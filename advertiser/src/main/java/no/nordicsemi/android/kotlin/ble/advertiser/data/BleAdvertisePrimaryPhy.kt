@@ -31,30 +31,19 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.data
 
-import android.bluetooth.le.AdvertiseData
-import android.bluetooth.le.AdvertiseSettings
-import android.bluetooth.le.AdvertisingSetParameters
+import android.bluetooth.BluetoothDevice
 import android.os.Build
+import androidx.annotation.RequiresApi
 
-internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
-    return AdvertisingSetParameters.Builder().apply {
+enum class BleAdvertisePrimaryPhy {
+    PHY_LE_1M,
+    PHY_LE_CODED;
 
-    }.build()
-}
-
-internal fun BleAdvertiseData.toNative(): AdvertiseData {
-    val builder = AdvertiseData.Builder()
-    builder.setIncludeTxPowerLevel(includeTxPowerLever)
-    builder.setIncludeDeviceName(includeDeviceName)
-    builder.addServiceUuid(serviceUuid)
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
+            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
+        }
     }
-    serviceData.forEach {
-        builder.addServiceData(it.uuid, it.data)
-    }
-    manufacturerData.forEach {
-        builder.addManufacturerData(it.id, it.data)
-    }
-    return builder.build()
 }
