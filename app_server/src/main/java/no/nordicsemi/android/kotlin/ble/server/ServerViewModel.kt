@@ -34,14 +34,19 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertisePrimaryPhy
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceType
@@ -55,10 +60,10 @@ object BlinkySpecifications {
     val UUID_SERVICE_DEVICE: UUID = UUID.fromString("00001523-1212-efde-1523-785feabcd123")
 
     /** LED characteristic UUID. */
-    val UUID_LED_CHAR: UUID by lazy { UUID.fromString("00001525-1212-efde-1523-785feabcd123") }
+    val UUID_LED_CHAR: UUID = UUID.fromString("00001525-1212-efde-1523-785feabcd123")
 
     /** BUTTON characteristic UUID. */
-    val UUID_BUTTON_CHAR: UUID by lazy { UUID.fromString("00001524-1212-efde-1523-785feabcd123") }
+    val UUID_BUTTON_CHAR: UUID = UUID.fromString("00001524-1212-efde-1523-785feabcd123")
 }
 
 @SuppressLint("MissingPermission")
@@ -67,6 +72,9 @@ class ServerViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context
 ) : ViewModel() {
+
+    private val _state = MutableStateFlow(false)
+    val state = _state.asStateFlow()
 
     init {
         val server = BleGattServer()
@@ -91,11 +99,16 @@ class ServerViewModel @Inject constructor(
 
         server.start(context, serviceConfig)
 
-        val advertiser = BleAdvertiser(context)
+        val advertiser = BleAdvertiser.create(context)
 
-        advertiser.advertise(advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE)))
-            .onEach {
+        advertiser.advertise(
+            settings = BleAdvertiseSettings(
+                deviceName = "Super Server",
+                primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
+            ),
+            advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
+        ).onEach {
 
-            }.launchIn(viewModelScope)
+        }.launchIn(viewModelScope)
     }
 }

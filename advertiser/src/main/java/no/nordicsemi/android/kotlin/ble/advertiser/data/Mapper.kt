@@ -35,10 +35,29 @@ import android.bluetooth.le.AdvertiseData
 import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
+import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.O)
 internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
     return AdvertisingSetParameters.Builder().apply {
+        anonymous?.let { setAnonymous(it) }
+        txPowerLevel?.toNative()?.let { setTxPowerLevel(it) }
+        interval?.toNative()?.let { setInterval(it) }
+        connectable?.let { setConnectable(it) }
+        includeTxPower?.let { setIncludeTxPower(it) }
+        setLegacyMode(legacyMode)
+        primaryPhy?.toNative()?.let { setPrimaryPhy(it) }
+        scannable?.let { setScannable(it) }
+        secondaryPhy?.toNative()?.let { setSecondaryPhy(it) }
+    }.build()
+}
 
+internal fun BleAdvertiseSettings.toLegacy(): AdvertiseSettings {
+    return AdvertiseSettings.Builder().apply {
+        txPowerLevel?.toLegacy()?.let { setTxPowerLevel(it) }
+        interval?.toLegacy()?.let { setAdvertiseMode(it) }
+        setTimeout(timeout)
+        connectable?.let { setConnectable(it) }
     }.build()
 }
 

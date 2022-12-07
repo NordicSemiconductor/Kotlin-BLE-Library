@@ -29,35 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.advertiser.callback
 
-import android.bluetooth.le.AdvertiseSettings
-import android.bluetooth.le.AdvertisingSetParameters
-import android.os.Build
-import androidx.annotation.RequiresApi
+enum class BleAdvertiseStatus(internal val value: Int) {
+    ADVERTISE_FAILED_ALREADY_STARTED(3),
+    ADVERTISE_FAILED_DATA_TOO_LARGE(1),
+    ADVERTISE_FAILED_FEATURE_UNSUPPORTED(5),
+    ADVERTISE_FAILED_INTERNAL_ERROR(4),
+    ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(2),
+    ADVERTISE_SUCCESS(0);
 
-enum class BleTxPowerLevel {
-    TX_POWER_ULTRA_LOW,
-    TX_POWER_LOW,
-    TX_POWER_MEDIUM,
-    TX_POWER_HIGH;
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun toNative(): Int {
-        return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertisingSetParameters.TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
-        }
-    }
-
-    fun toLegacy(): Int {
-        return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertiseSettings.ADVERTISE_TX_POWER_HIGH
+    companion object {
+        fun create(value: Int): BleAdvertiseStatus {
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalStateException("Can't create status for value: $value")
         }
     }
 }

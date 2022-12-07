@@ -58,7 +58,6 @@ class BleGattServer {
     private val connections = mutableMapOf<BluetoothDevice, BleGattServerServices>()
 
     private val callback = BleGattServerCallback { event ->
-        Log.d("AAATESTAAA", "Server event: $event")
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)

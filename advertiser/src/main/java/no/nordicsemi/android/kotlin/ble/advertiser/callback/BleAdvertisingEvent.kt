@@ -29,35 +29,57 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.advertiser.callback
 
-import android.bluetooth.le.AdvertiseSettings
-import android.bluetooth.le.AdvertisingSetParameters
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.bluetooth.le.AdvertisingSet
 
-enum class BleTxPowerLevel {
-    TX_POWER_ULTRA_LOW,
-    TX_POWER_LOW,
-    TX_POWER_MEDIUM,
-    TX_POWER_HIGH;
+sealed interface BleAdvertisingEvent
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun toNative(): Int {
-        return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertisingSetParameters.TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
-        }
-    }
+data class OnAdvertisingDataSet(
+    val advertisingSet: AdvertisingSet,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
 
-    fun toLegacy(): Int {
-        return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertiseSettings.ADVERTISE_TX_POWER_HIGH
-        }
-    }
-}
+data class OnAdvertisingEnabled(
+    val advertisingSet: AdvertisingSet,
+    val enable: Boolean,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnAdvertisingParametersUpdated(
+    val advertisingSet: AdvertisingSet,
+    val txPower: Int,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnAdvertisingSetStarted(
+    /**
+     * Returns null for legacy advertisement for Android < Oreo.
+     */
+    val advertisingSet: AdvertisingSet?,
+    val txPower: Int,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnAdvertisingSetStopped(val advertisingSet: AdvertisingSet) : BleAdvertisingEvent
+
+data class OnPeriodicAdvertisingDataSet(
+    val advertisingSet: AdvertisingSet,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnPeriodicAdvertisingEnabled(
+    val advertisingSet: AdvertisingSet,
+    val enable: Boolean,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnPeriodicAdvertisingParametersUpdated(
+    val advertisingSet: AdvertisingSet,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent
+
+data class OnScanResponseDataSet(
+    val advertisingSet: AdvertisingSet,
+    val status: BleAdvertiseStatus
+) : BleAdvertisingEvent

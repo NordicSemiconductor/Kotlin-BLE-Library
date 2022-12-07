@@ -32,13 +32,15 @@
 package no.nordicsemi.android.kotlin.ble.advertiser.data
 
 data class BleAdvertiseSettings(
-    val connectable: Boolean = true,
-    val anonymous: Boolean = false,
-    val includeTxPower: Boolean = false,
-    val interval: Int = 0,
+    val deviceName: String? = null,
+    val connectable: Boolean? = true,
+    val anonymous: Boolean? = null,
+    val includeTxPower: Boolean? = null,
+    val interval: BleAdvertiseInterval? = null,
+    val timeout: Int = 0,
     val legacyMode: Boolean = false,
     val primaryPhy: BleAdvertisePrimaryPhy? = null,
     val secondaryPhy: BleAdvertiseSecondaryPhy? = null,
-    val scannable: Boolean = false,
+    val scannable: Boolean? = false,
     val txPowerLevel: BleTxPowerLevel? = null
 )
