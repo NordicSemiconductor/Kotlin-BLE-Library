@@ -31,14 +31,20 @@
 
 package no.nordicsemi.android.kotlin.ble.server
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -61,7 +67,24 @@ fun MainScreen() {
                 RequireLocation { isLocationRequiredAndDisabled ->
                     val viewModel = hiltViewModel<ServerViewModel>()
                     val state = viewModel.state.collectAsState().value
-                    Text("Server is up and running: $state")
+
+                    val interactionSource = remember { MutableInteractionSource() }
+                    val isPressed = interactionSource.collectIsPressedAsState().value
+
+                    Column {
+                        Text("Server is up and running: $state")
+
+                        Button(
+                            onClick = { },
+                            interactionSource = interactionSource
+                        ) {
+                            Text("Button")
+                        }
+                    }
+
+                    LaunchedEffect(isPressed) {
+                        viewModel.onButtonPressedChanged(isPressed)
+                    }
                 }
             }
         }

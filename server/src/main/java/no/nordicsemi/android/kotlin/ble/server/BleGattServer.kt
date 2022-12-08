@@ -38,8 +38,9 @@ import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
@@ -55,19 +56,20 @@ import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFacto
 
 class BleGattServer {
 
-    private val connections = mutableMapOf<BluetoothDevice, BleGattServerServices>()
+    private val _connections = MutableStateFlow(mapOf<BluetoothDevice, BleGattServerServices>())
+    val connections = _connections.asStateFlow()
 
     private val callback = BleGattServerCallback { event ->
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
-            is ServiceEvent -> connections.values.forEach { it.onEvent(event) }
+            is ServiceEvent -> connections.value.values.forEach { it.onEvent(event) }
             is OnPhyRead -> onPhyRead()
             is OnPhyUpdate -> onPhyUpdate()
         }
     }
 
-    private var services: List<BleGattServerService> = emptyList()
+    private var services: List<BluetoothGattService> = emptyList()
 
     private var bluetoothGattServer: BluetoothGattServer? = null
 
@@ -95,24 +97,32 @@ class BleGattServer {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
             GattConnectionState.STATE_CONNECTING,
-            GattConnectionState.STATE_DISCONNECTING -> connections.remove(device)
+            GattConnectionState.STATE_DISCONNECTING -> removeDevice(device)
         }
+    }
+
+    private fun removeDevice(device: BluetoothDevice) {
+        val mutableMap = connections.value.toMutableMap()
+        mutableMap.remove(device)
+        _connections.value = mutableMap.toMap()
     }
 
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: BluetoothDevice) {
         val copiedServices = services.map {
-            BleGattServerService(bluetoothGattServer!!, BluetoothGattServiceFactory.copy(it.service))
+            BleGattServerService(bluetoothGattServer!!, device, BluetoothGattServiceFactory.copy(it))
         }
-        connections[device] = BleGattServerServices(bluetoothGattServer!!, copiedServices)
+        val mutableMap = connections.value.toMutableMap()
+        mutableMap[device] = BleGattServerServices(bluetoothGattServer!!, device, copiedServices)
+        _connections.value = mutableMap.toMap()
         bluetoothGattServer?.connect(device, true)
     }
 
     private fun onServiceAdded(service: BluetoothGattService, status: Int) {
         val serviceStatus = BleGattOperationStatus.create(status)
-        bluetoothGattServer?.let { server ->
+        bluetoothGattServer?.let { _ ->
             if (serviceStatus == BleGattOperationStatus.GATT_SUCCESS) {
-                services = services + BleGattServerService(server, service)
+                services = services + service
             }
         }
     }

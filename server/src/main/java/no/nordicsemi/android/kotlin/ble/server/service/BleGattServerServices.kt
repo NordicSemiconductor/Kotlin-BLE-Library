@@ -31,12 +31,14 @@
 
 package no.nordicsemi.android.kotlin.ble.server.service
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattServer
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import java.util.*
 
 class BleGattServerServices(
     val server: BluetoothGattServer,
+    val device: BluetoothDevice,
     val services: List<BleGattServerService>
 ) {
 

@@ -34,6 +34,8 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
@@ -52,7 +54,8 @@ class BleServerGattDescriptor(
     val uuid = descriptor.uuid
 
     private var transactionalValue = byteArrayOf()
-    private var value = byteArrayOf()
+    private val _value = MutableStateFlow(byteArrayOf())
+    val value = _value.asStateFlow()
 
     private var mtu = BleGattConsts.MIN_MTU
 
@@ -72,7 +75,7 @@ class BleServerGattDescriptor(
     }
 
     private fun onExecuteWrite(event: OnExecuteWrite) {
-        value = transactionalValue
+        _value.value = transactionalValue
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -82,7 +85,7 @@ class BleServerGattDescriptor(
         if (event.preparedWrite) {
             transactionalValue += event.value
         } else {
-            value = event.value
+            _value.value = event.value
         }
         server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
     }
@@ -90,6 +93,7 @@ class BleServerGattDescriptor(
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, value.copyOfRange(offset, offset + mtu - 3))
+        val currentValue = _value.value
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, currentValue.copyOfRange(offset, offset + mtu - 3))
     }
 }

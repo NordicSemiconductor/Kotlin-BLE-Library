@@ -32,11 +32,16 @@
 package no.nordicsemi.android.kotlin.ble.server.service
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
@@ -50,6 +55,7 @@ import java.util.*
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic(
     private val server: BluetoothGattServer,
+    private val device: BluetoothDevice,
     private val characteristic: BluetoothGattCharacteristic
 ) {
 
@@ -57,7 +63,15 @@ class BleServerGattCharacteristic(
     val instanceId = characteristic.instanceId
 
     private var transactionalValue = byteArrayOf()
-    private var value = byteArrayOf()
+
+    private val _value = MutableStateFlow(byteArrayOf())
+    val value = _value.asStateFlow()
+
+    val permissions: List<BleGattPermission>
+        get() = BleGattPermission.createPermissions(characteristic.permissions)
+
+    val properties: List<BleGattProperty>
+        get() = BleGattProperty.createProperties(characteristic.properties)
 
     private var mtu = BleGattConsts.MIN_MTU
 
@@ -67,6 +81,21 @@ class BleServerGattCharacteristic(
 
     fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
+    }
+
+    fun setValue(value: ByteArray) {
+        _value.value = value
+        val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
+        val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
+
+        if (isNotification || isIndication) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                server.notifyCharacteristicChanged(device, characteristic, isIndication, _value.value)
+            } else {
+                characteristic.value = _value.value
+                server.notifyCharacteristicChanged(device, characteristic, isNotification)
+            }
+        }
     }
 
     internal fun onEvent(event: ServiceEvent) {
@@ -91,14 +120,14 @@ class BleServerGattCharacteristic(
     }
 
     private fun onExecuteWrite(event: OnExecuteWrite) {
-        value = transactionalValue
+        _value.value = transactionalValue
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 
     private fun onNotificationSent(event: OnNotificationSent) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            server.notifyCharacteristicChanged(event.device, characteristic, false, value)
+            server.notifyCharacteristicChanged(event.device, characteristic, false, _value.value)
         } else {
             server.notifyCharacteristicChanged(event.device, characteristic, false)
         }
@@ -109,7 +138,7 @@ class BleServerGattCharacteristic(
         if (event.preparedWrite) {
             transactionalValue += event.value
         } else {
-            value = event.value
+            _value.value = event.value
         }
         server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
     }
@@ -117,6 +146,7 @@ class BleServerGattCharacteristic(
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, value.copyOfRange(offset, offset + mtu - 3))
+        val currentValue = _value.value
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, currentValue.copyOfRange(offset, offset + mtu - 3))
     }
 }

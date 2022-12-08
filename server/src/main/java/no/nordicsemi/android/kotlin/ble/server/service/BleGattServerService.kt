@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.service
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
@@ -38,13 +39,14 @@ import java.util.*
 
 class BleGattServerService(
     val server: BluetoothGattServer,
+    val device: BluetoothDevice,
     val service: BluetoothGattService
 ) {
 
     val uuid = service.uuid
 
     private val characteristics = service.characteristics.map {
-        BleServerGattCharacteristic(server, it)
+        BleServerGattCharacteristic(server, device, it)
     }
 
     internal fun onEvent(event: ServiceEvent) {
