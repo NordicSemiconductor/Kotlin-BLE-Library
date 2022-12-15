@@ -38,6 +38,7 @@ import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -60,6 +61,7 @@ class BleGattServer {
     val connections = _connections.asStateFlow()
 
     private val callback = BleGattServerCallback { event ->
+        Log.d("AAATESTAAA", "On server event: $event")
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
@@ -78,6 +80,7 @@ class BleGattServer {
         val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
+        this.bluetoothGattServer = bluetoothGattServer
 
         config.forEach {
             bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
@@ -120,6 +123,7 @@ class BleGattServer {
 
     private fun onServiceAdded(service: BluetoothGattService, status: Int) {
         val serviceStatus = BleGattOperationStatus.create(status)
+
         bluetoothGattServer?.let { _ ->
             if (serviceStatus == BleGattOperationStatus.GATT_SUCCESS) {
                 services = services + service

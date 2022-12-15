@@ -46,7 +46,7 @@ interface BleAdvertiser {
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
     fun advertise(
         settings: BleAdvertiseSettings = BleAdvertiseSettings(),
-        advertiseData: BleAdvertiseData,
+        advertiseData: BleAdvertiseData? = null,
         scanResponseData: BleAdvertiseData? = null
     ): Flow<BleAdvertisingEvent>
 

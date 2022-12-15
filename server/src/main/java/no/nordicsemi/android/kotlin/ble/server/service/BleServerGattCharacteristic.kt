@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
@@ -99,6 +100,7 @@ class BleServerGattCharacteristic(
     }
 
     internal fun onEvent(event: ServiceEvent) {
+        Log.d("AAATESTAAA", "On event: $event")
         (event as? DescriptorEvent)?.let {
             descriptors.forEach { it.onEvent(event) }
         }
@@ -114,7 +116,9 @@ class BleServerGattCharacteristic(
     }
 
     private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
-        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
+        //TODO add instance id
+//        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
+        if (eventCharacteristic.uuid == characteristic.uuid) {
             block()
         }
     }
@@ -140,13 +144,22 @@ class BleServerGattCharacteristic(
         } else {
             _value.value = event.value
         }
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
+        if (event.responseNeeded) {
+            server.sendResponse(
+                event.device,
+                event.requestId,
+                status.value,
+                event.offset,
+                event.value
+            )
+        }
     }
 
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val currentValue = _value.value
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, currentValue.copyOfRange(offset, offset + mtu - 3))
+        val maxSize = mtu - 3
+        val data = _value.value.getChunk(offset, maxSize)
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

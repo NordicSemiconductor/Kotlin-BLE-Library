@@ -45,7 +45,7 @@ class BleGattServerService(
 
     val uuid = service.uuid
 
-    private val characteristics = service.characteristics.map {
+    val characteristics = service.characteristics.map {
         BleServerGattCharacteristic(server, device, it)
     }
 

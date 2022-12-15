@@ -11,7 +11,7 @@ internal object BluetoothGattServiceFactory {
 
     fun copy(service: BluetoothGattService): BluetoothGattService {
         return BluetoothGattService(service.uuid, service.type).apply {
-            characteristics.forEach {
+            service.characteristics.forEach {
                 val characteristic = BluetoothGattCharacteristic(it.uuid, it.properties, it.permissions)
 
                 it.descriptors.forEach {
@@ -45,10 +45,10 @@ internal object BluetoothGattServiceFactory {
             if (it.hasNotifications) {
                 val cccd = BluetoothGattDescriptor(
                     BleGattConsts.NOTIFICATION_DESCRIPTOR,
-                    BleGattPermission.toInt(listOf(BleGattPermission.PERMISSION_READ_ENCRYPTED_MITM, BleGattPermission.PERMISSION_WRITE_ENCRYPTED_MITM))
+                    BleGattPermission.toInt(listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE))
                 )
 
-                cccd.value = byteArrayOf(0, 0)
+                cccd.value = byteArrayOf(0x00)
 
                 characteristic.addDescriptor(cccd)
             }

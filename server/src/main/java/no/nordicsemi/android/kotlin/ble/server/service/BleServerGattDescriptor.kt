@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServer
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
@@ -60,6 +61,7 @@ class BleServerGattDescriptor(
     private var mtu = BleGattConsts.MIN_MTU
 
     internal fun onEvent(event: DescriptorEvent) {
+        Log.d("AAATESTAAA", "Descriptor event: $event")
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
@@ -68,8 +70,14 @@ class BleServerGattDescriptor(
         }
     }
 
+    fun setValue(value: ByteArray) {
+        _value.value = value
+    }
+
     private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
-        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
+        //todo add instance id
+//        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
+        if (eventDescriptor.uuid == descriptor.uuid) {
             block()
         }
     }
@@ -81,19 +89,31 @@ class BleServerGattDescriptor(
     }
 
     private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
+        Log.d("AAATESTAAA", "onDescriptorWriteRequest()")
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
             transactionalValue += event.value
         } else {
             _value.value = event.value
         }
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, event.value)
+        if (event.responseNeeded) {
+            server.sendResponse(
+                event.device,
+                event.requestId,
+                status.value,
+                event.offset,
+                event.value
+            )
+        }
     }
 
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
+        Log.d("AAATESTAAA", "onDescriptorReadRequest()")
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val currentValue = _value.value
-        server.sendResponse(event.device, event.requestId, status.value, event.offset, currentValue.copyOfRange(offset, offset + mtu - 3))
+        val maxSize = mtu - 3
+        val data = _value.value.getChunk(offset, maxSize)
+        Log.d("AAATESTAAA", "descriptor read data: ${data.toReadableString()}")
+        server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

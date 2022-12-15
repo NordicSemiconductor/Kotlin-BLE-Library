@@ -38,7 +38,6 @@ import android.bluetooth.le.BluetoothLeAdvertiser
 import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
@@ -72,7 +71,7 @@ class BleAdvertiserOreo(
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
     override fun advertise(
         settings: BleAdvertiseSettings,
-        advertiseData: BleAdvertiseData,
+        advertiseData: BleAdvertiseData?,
         scanResponseData: BleAdvertiseData?
     ): Flow<BleAdvertisingEvent> = callbackFlow {
 
@@ -82,7 +81,7 @@ class BleAdvertiserOreo(
 
         bluetoothLeAdvertiser.startAdvertisingSet(
             settings.toNative(),
-            advertiseData.toNative(),
+            advertiseData?.toNative(),
             scanResponseData?.toNative(),
             null,
             null,

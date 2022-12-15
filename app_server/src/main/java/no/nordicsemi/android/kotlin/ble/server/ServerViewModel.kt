@@ -86,7 +86,7 @@ class ServerViewModel @Inject constructor(
     private var ledCharacteristic: BleServerGattCharacteristic? = null
     private var buttonCharacteristic: BleServerGattCharacteristic? = null
 
-    init {
+    fun advertise() {
         val server = BleGattServer()
 
         val ledCharacteristic = BleServerGattCharacteristicConfig(
@@ -131,16 +131,17 @@ class ServerViewModel @Inject constructor(
     }
 
     private fun setUpServices(services: BleGattServerService) {
+
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
         val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
             _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))
-        }
+        }.launchIn(viewModelScope)
 
         buttonCharacteristic.value.onEach {
             _state.value = _state.value.copy(isButtonPressed = !it.contentEquals(byteArrayOf(0x00)))
-        }
+        }.launchIn(viewModelScope)
 
         this.ledCharacteristic = ledCharacteristic
         this.buttonCharacteristic = buttonCharacteristic

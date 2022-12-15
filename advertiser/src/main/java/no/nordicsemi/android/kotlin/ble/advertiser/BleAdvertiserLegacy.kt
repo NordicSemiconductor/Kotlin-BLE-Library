@@ -72,7 +72,7 @@ class BleAdvertiserLegacy(
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
     override fun advertise(
         settings: BleAdvertiseSettings,
-        advertiseData: BleAdvertiseData,
+        advertiseData: BleAdvertiseData?,
         scanResponseData: BleAdvertiseData?
     ): Flow<BleAdvertisingEvent> = callbackFlow {
         val callback = object : AdvertiseCallback() {
@@ -93,7 +93,7 @@ class BleAdvertiserLegacy(
 
         bluetoothLeAdvertiser.startAdvertising(
             settings.toLegacy(),
-            advertiseData.toNative(),
+            advertiseData?.toNative(),
             scanResponseData?.toNative(),
             callback
         )

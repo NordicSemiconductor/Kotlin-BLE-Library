@@ -80,6 +80,13 @@ fun MainScreen() {
                         ) {
                             Text("Button")
                         }
+
+                        Button(
+                            onClick = { viewModel.advertise() },
+                            interactionSource = interactionSource
+                        ) {
+                            Text("Advertise")
+                        }
                     }
 
                     LaunchedEffect(isPressed) {
