@@ -61,7 +61,6 @@ class BleServerGattDescriptor(
     private var mtu = BleGattConsts.MIN_MTU
 
     internal fun onEvent(event: DescriptorEvent) {
-        Log.d("AAATESTAAA", "Descriptor event: $event")
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
@@ -89,13 +88,13 @@ class BleServerGattDescriptor(
     }
 
     private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
-        Log.d("AAATESTAAA", "onDescriptorWriteRequest()")
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
             transactionalValue += event.value
         } else {
             _value.value = event.value
         }
+        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
         if (event.responseNeeded) {
             server.sendResponse(
                 event.device,
@@ -108,12 +107,9 @@ class BleServerGattDescriptor(
     }
 
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
-        Log.d("AAATESTAAA", "onDescriptorReadRequest()")
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val maxSize = mtu - 3
-        val data = _value.value.getChunk(offset, maxSize)
-        Log.d("AAATESTAAA", "descriptor read data: ${data.toReadableString()}")
+        val data = _value.value.getChunk(offset, mtu)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

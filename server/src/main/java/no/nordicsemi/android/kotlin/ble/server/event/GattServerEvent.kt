@@ -35,24 +35,33 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 
 internal sealed interface GattServerEvent
 
-internal data class OnServiceAdded(val service: BluetoothGattService, val status: Int) : GattServerEvent
-internal data class OnConnectionStateChanged(val device: BluetoothDevice, val status: Int, val newState: Int) : GattServerEvent
+internal data class OnServiceAdded(
+    val service: BluetoothGattService,
+    val status: BleGattOperationStatus
+) : GattServerEvent
+
+internal data class OnConnectionStateChanged(
+    val device: BluetoothDevice,
+    val status: BleGattOperationStatus,
+    val newState: Int
+) : GattServerEvent
 
 internal data class OnPhyRead(
     val device: BluetoothDevice,
     val txPhy: Int,
     val rxPhy: Int,
-    val status: Int
+    val status: BleGattOperationStatus
 ) : GattServerEvent
 
 internal data class OnPhyUpdate(
     val device: BluetoothDevice,
     val txPhy: Int,
     val rxPhy: Int,
-    val status: Int
+    val status: BleGattOperationStatus
 ) : GattServerEvent
 
 internal sealed interface ServiceEvent : GattServerEvent
@@ -89,7 +98,7 @@ internal data class OnCharacteristicWriteRequest(
 
 internal data class OnNotificationSent(
     val device: BluetoothDevice,
-    val status: Int
+    val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
 internal sealed interface DescriptorEvent : ServiceEvent

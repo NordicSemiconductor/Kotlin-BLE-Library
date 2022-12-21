@@ -92,8 +92,7 @@ class BleGattServer {
         bluetoothGattServer?.close()
     }
 
-    private fun onConnectionStateChanged(device: BluetoothDevice, status: Int, newState: Int) {
-        val bleStatus = BleGattOperationStatus.create(status) //TODO consume status?
+    private fun onConnectionStateChanged(device: BluetoothDevice, status: BleGattOperationStatus, newState: Int) {
         val connectionState = GattConnectionState.create(newState)
 
         when (connectionState) {
@@ -121,11 +120,9 @@ class BleGattServer {
         bluetoothGattServer?.connect(device, true)
     }
 
-    private fun onServiceAdded(service: BluetoothGattService, status: Int) {
-        val serviceStatus = BleGattOperationStatus.create(status)
-
+    private fun onServiceAdded(service: BluetoothGattService, status: BleGattOperationStatus) {
         bluetoothGattServer?.let { _ ->
-            if (serviceStatus == BleGattOperationStatus.GATT_SUCCESS) {
+            if (status == BleGattOperationStatus.GATT_SUCCESS) {
                 services = services + service
             }
         }

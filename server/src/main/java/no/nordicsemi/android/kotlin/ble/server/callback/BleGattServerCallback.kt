@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
@@ -75,7 +76,7 @@ internal class BleGattServerCallback(
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
-        onEvent(OnConnectionStateChanged(device!!, status, newState))
+        onEvent(OnConnectionStateChanged(device!!, BleGattOperationStatus.create(status), newState))
     }
 
     override fun onDescriptorReadRequest(
@@ -108,18 +109,18 @@ internal class BleGattServerCallback(
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
-        onEvent(OnNotificationSent(device!!, status))
+        onEvent(OnNotificationSent(device!!, BleGattOperationStatus.create(status)))
     }
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyRead(device!!, txPhy, rxPhy, status))
+        onEvent(OnPhyRead(device!!, txPhy, rxPhy, BleGattOperationStatus.create(status)))
     }
 
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyUpdate(device!!, txPhy, rxPhy, status))
+        onEvent(OnPhyUpdate(device!!, txPhy, rxPhy, BleGattOperationStatus.create(status)))
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-        onEvent(OnServiceAdded(service!!, status))
+        onEvent(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
     }
 }

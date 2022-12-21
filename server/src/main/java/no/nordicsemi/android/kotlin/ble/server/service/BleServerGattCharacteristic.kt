@@ -86,6 +86,8 @@ class BleServerGattCharacteristic(
 
     fun setValue(value: ByteArray) {
         _value.value = value
+        characteristic.value = value
+
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 
@@ -94,7 +96,7 @@ class BleServerGattCharacteristic(
                 server.notifyCharacteristicChanged(device, characteristic, isIndication, _value.value)
             } else {
                 characteristic.value = _value.value
-                server.notifyCharacteristicChanged(device, characteristic, isNotification)
+                server.notifyCharacteristicChanged(device, characteristic, isIndication)
             }
         }
     }
@@ -130,11 +132,6 @@ class BleServerGattCharacteristic(
     }
 
     private fun onNotificationSent(event: OnNotificationSent) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            server.notifyCharacteristicChanged(event.device, characteristic, false, _value.value)
-        } else {
-            server.notifyCharacteristicChanged(event.device, characteristic, false)
-        }
     }
 
     private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
@@ -158,8 +155,7 @@ class BleServerGattCharacteristic(
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val maxSize = mtu - 3
-        val data = _value.value.getChunk(offset, maxSize)
+        val data = _value.value.getChunk(offset, mtu)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }
