@@ -31,4 +31,12 @@
 
 <resources>
     <string name="app_name">Blinky Server</string>
+    <string name="characteristics">Characteristics</string>
+    <string name="button">Button</string>
+    <string name="advertise">Advertise</string>
+    <string name="advertisement_state">Advertisement state: %s</string>
+    <string name="led_state">Led state: %s</string>
+    <string name="button_state">Button state: %s</string>
+    <string name="state_on">ON</string>
+    <string name="state_off">OFF</string>
 </resources>

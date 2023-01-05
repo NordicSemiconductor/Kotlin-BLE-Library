@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +44,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertisePrimaryPhy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
@@ -70,6 +71,7 @@ object BlinkySpecifications {
 }
 
 data class ServerState(
+    val isAdvertising: Boolean = false,
     val isLedOn: Boolean = false,
     val isButtonPressed: Boolean = false
 )
@@ -119,7 +121,12 @@ class ServerViewModel @Inject constructor(
             ),
             advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
         ).onEach {
-
+            if (it is OnAdvertisingSetStarted) {
+                _state.value = _state.value.copy(isAdvertising = true)
+            }
+            if (it is OnAdvertisingSetStopped) {
+                _state.value = _state.value.copy(isAdvertising = false)
+            }
         }.launchIn(viewModelScope)
 
         server.connections
