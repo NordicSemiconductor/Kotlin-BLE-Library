@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.advertiser
 import android.Manifest
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent

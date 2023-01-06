@@ -34,15 +34,19 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
@@ -89,59 +93,76 @@ class ServerViewModel @Inject constructor(
     private var ledCharacteristic: BleServerGattCharacteristic? = null
     private var buttonCharacteristic: BleServerGattCharacteristic? = null
 
+    private var advertisementJob: Job? = null
+
     fun advertise() {
-        val server = BleGattServer()
+        advertisementJob = viewModelScope.launch {
+            val server = BleGattServer()
 
-        val ledCharacteristic = BleServerGattCharacteristicConfig(
-            BlinkySpecifications.UUID_LED_CHAR,
-            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-        )
+            val ledCharacteristic = BleServerGattCharacteristicConfig(
+                BlinkySpecifications.UUID_LED_CHAR,
+                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
+                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+            )
 
-        val buttonCharacteristic = BleServerGattCharacteristicConfig(
-            BlinkySpecifications.UUID_BUTTON_CHAR,
-            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
-            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-        )
+            val buttonCharacteristic = BleServerGattCharacteristicConfig(
+                BlinkySpecifications.UUID_BUTTON_CHAR,
+                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
+                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+            )
 
-        val serviceConfig = BleServerGattServiceConfig(
-            BlinkySpecifications.UUID_SERVICE_DEVICE,
-            BleGattServerServiceType.SERVICE_TYPE_PRIMARY,
-            listOf(ledCharacteristic, buttonCharacteristic)
-        )
+            val serviceConfig = BleServerGattServiceConfig(
+                BlinkySpecifications.UUID_SERVICE_DEVICE,
+                BleGattServerServiceType.SERVICE_TYPE_PRIMARY,
+                listOf(ledCharacteristic, buttonCharacteristic)
+            )
 
-        server.start(context, serviceConfig)
+            server.start(context, serviceConfig)
 
-        val advertiser = BleAdvertiser.create(context)
+            val advertiser = BleAdvertiser.create(context)
 
-        advertiser.advertise(
-            settings = BleAdvertiseSettings(
-                deviceName = "Super Server",
-                primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
-            ),
-            advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
-        ).onEach {
-            if (it is OnAdvertisingSetStarted) {
-                _state.value = _state.value.copy(isAdvertising = true)
+            viewModelScope.launch {
+                advertiser.advertise(
+                    settings = BleAdvertiseSettings(
+                        deviceName = "Super Server",
+                        primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
+                    ),
+                    advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
+                )
+                    .cancellable()
+                    .collect {
+                        Log.d("AAATESTAAA", "Event: $it")
+                        if (it is OnAdvertisingSetStarted) {
+                            _state.value = _state.value.copy(isAdvertising = true)
+                        }
+                        if (it is OnAdvertisingSetStopped) {
+                            _state.value = _state.value.copy(isAdvertising = false)
+                        }
+                    }
             }
-            if (it is OnAdvertisingSetStopped) {
-                _state.value = _state.value.copy(isAdvertising = false)
-            }
-        }.launchIn(viewModelScope)
 
-        server.connections
-            .mapNotNull { it.values.firstOrNull() }
-            .onEach {
-                it.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
-                    setUpServices(it)
-                }
-            }.launchIn(viewModelScope)
+            viewModelScope.launch {
+                server.connections
+                    .mapNotNull { it.values.firstOrNull() }
+                    .collect {
+                        it.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                            setUpServices(it)
+                        }
+                    }
+            }
+        }
+    }
+
+    fun stopAdvertise() {
+        advertisementJob?.cancel()
+        _state.value = _state.value.copy(isAdvertising = false)
     }
 
     private fun setUpServices(services: BleGattServerService) {
 
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
-        val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+        val buttonCharacteristic =
+            services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
             _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))

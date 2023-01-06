@@ -36,10 +36,10 @@ fun AdvertiseView(state: ServerState, viewModel: ServerViewModel) {
                 val icon = if (state.isAdvertising) {
                     painterResource(id = R.drawable.ic_advertisements)
                 } else {
-                    painterResource(id = R.drawable.ic_advertisements)
+                    painterResource(id = R.drawable.ic_advertisements_off)
                 }
 
-                val color = if (state.isLedOn) {
+                val color = if (state.isAdvertising) {
                     colorResource(id = R.color.green)
                 } else {
                     colorResource(id = R.color.gray)
@@ -55,7 +55,7 @@ fun AdvertiseView(state: ServerState, viewModel: ServerViewModel) {
                 Spacer(modifier = Modifier.size(16.dp))
 
                 Text(
-                    text = stringResource(id = R.string.advertisement_state, state.isLedOn.toDisplayString()),
+                    text = stringResource(id = R.string.advertisement_state, state.isAdvertising.toDisplayString()),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -65,11 +65,20 @@ fun AdvertiseView(state: ServerState, viewModel: ServerViewModel) {
             Row(modifier = Modifier.fillMaxWidth()) {
                 Spacer(modifier = Modifier.weight(1f))
 
-                Button(
-                    onClick = { viewModel.advertise() },
-                    modifier = Modifier.padding(horizontal = 8.dp)
-                ) {
-                    Text(stringResource(id = R.string.advertise))
+                if (state.isAdvertising) {
+                    Button(
+                        onClick = { viewModel.stopAdvertise() },
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(stringResource(id = R.string.stop))
+                    }
+                } else {
+                    Button(
+                        onClick = { viewModel.advertise() },
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    ) {
+                        Text(stringResource(id = R.string.advertise))
+                    }
                 }
             }
         }

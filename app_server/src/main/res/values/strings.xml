@@ -33,6 +33,7 @@
     <string name="app_name">Blinky Server</string>
     <string name="characteristics">Characteristics</string>
     <string name="button">Button</string>
+    <string name="stop">Stop</string>
     <string name="advertise">Advertise</string>
     <string name="advertisement_state">Advertisement state: %s</string>
     <string name="led_state">Led state: %s</string>
