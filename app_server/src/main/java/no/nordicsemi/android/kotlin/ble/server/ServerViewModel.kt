@@ -40,6 +40,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
@@ -121,7 +122,7 @@ class ServerViewModel @Inject constructor(
 
             val advertiser = BleAdvertiser.create(context)
 
-            viewModelScope.launch {
+            launch {
                 advertiser.advertise(
                     settings = BleAdvertiseSettings(
                         deviceName = "Super Server",
@@ -131,7 +132,6 @@ class ServerViewModel @Inject constructor(
                 )
                     .cancellable()
                     .collect {
-                        Log.d("AAATESTAAA", "Event: $it")
                         if (it is OnAdvertisingSetStarted) {
                             _state.value = _state.value.copy(isAdvertising = true)
                         }
@@ -141,7 +141,7 @@ class ServerViewModel @Inject constructor(
                     }
             }
 
-            viewModelScope.launch {
+            launch {
                 server.connections
                     .mapNotNull { it.values.firstOrNull() }
                     .collect {
@@ -154,7 +154,7 @@ class ServerViewModel @Inject constructor(
     }
 
     fun stopAdvertise() {
-        advertisementJob?.cancel()
+        advertisementJob?.cancelChildren()
         _state.value = _state.value.copy(isAdvertising = false)
     }
 

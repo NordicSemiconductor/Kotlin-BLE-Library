@@ -97,7 +97,6 @@ class BleAdvertiserOreo(
         }
 
         awaitClose {
-            Log.d("AAATESTAAA", "Stop advertising")
             bluetoothLeAdvertiser.stopAdvertisingSet(callback)
         }
     }
