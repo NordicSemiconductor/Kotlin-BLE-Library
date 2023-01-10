@@ -38,6 +38,14 @@
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 
+    <string name="device">Device</string>
+    <string name="name">Name: %s</string>
+    <string name="address">Address: %s</string>
+
+    <string name="led">Led: %s</string>
+    <string name="button">Button: %s</string>
+    <string name="turn_led">Turn LED</string>
+
     <string name="scanner_title">Scanner</string>
     <string name="bonded_devices">Bonded devices</string>
     <string name="discovered_devices">Discovered devices</string>
