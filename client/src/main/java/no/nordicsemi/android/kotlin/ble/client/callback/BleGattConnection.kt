@@ -82,6 +82,7 @@ class BleGattConnection {
         device: BluetoothDevice
     ) = suspendCoroutine { continuation ->
         onConnectionStateChangedCallback = { connectionState, status ->
+            Log.d("AAATESTAAA", "State: $connectionState, Status: $status")
             if (connectionState == GattConnectionState.STATE_CONNECTED) {
                 continuation.resume(Unit)
             } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {

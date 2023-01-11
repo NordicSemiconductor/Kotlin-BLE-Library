@@ -25,9 +25,12 @@ fun DeviceView(device: BleDevice) {
                 title = stringResource(id = R.string.device)
             )
 
-            Spacer(modifier = Modifier.size(8.dp))
+            Spacer(modifier = Modifier.size(4.dp))
 
-            Text(text = stringResource(id = R.string.device, device.name))
+            Text(text = stringResource(id = R.string.device_name, device.name))
+
+            Spacer(modifier = Modifier.size(4.dp))
+
             Text(text = stringResource(id = R.string.address, device.address))
         }
     }

@@ -95,6 +95,8 @@ class BleGattServer {
     private fun onConnectionStateChanged(device: BluetoothDevice, status: BleGattOperationStatus, newState: Int) {
         val connectionState = GattConnectionState.create(newState)
 
+        Log.d("AAATESTAAA", "On connection state change: $status, $newState")
+
         when (connectionState) {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
@@ -117,6 +119,7 @@ class BleGattServer {
         val mutableMap = connections.value.toMutableMap()
         mutableMap[device] = BleGattServerServices(bluetoothGattServer!!, device, copiedServices)
         _connections.value = mutableMap.toMap()
+        Log.d("AAATESTAAA", "Connect device $bluetoothGattServer")
         bluetoothGattServer?.connect(device, true)
     }
 

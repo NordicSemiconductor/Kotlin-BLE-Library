@@ -1,7 +1,9 @@
 package no.nordicsemi.android.kotlin.ble.client.details
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -10,6 +12,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -28,10 +31,20 @@ fun CharacteristicView(state: BlinkyState, onButtonClick: () -> Unit) {
             Spacer(modifier = Modifier.size(8.dp))
 
             Text(text = stringResource(id = R.string.led, state.isLedOn))
+
+            Spacer(modifier = Modifier.size(4.dp))
+
             Text(text = stringResource(id = R.string.button, state.isButtonPressed))
 
-            Button(onClick = { onButtonClick() }) {
-                Text(text = stringResource(id = R.string.turn_led))
+            Spacer(modifier = Modifier.size(4.dp))
+
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = { onButtonClick() },
+                    modifier = Modifier.align(Alignment.BottomEnd)
+                ) {
+                    Text(text = stringResource(id = R.string.turn_led))
+                }
             }
         }
     }

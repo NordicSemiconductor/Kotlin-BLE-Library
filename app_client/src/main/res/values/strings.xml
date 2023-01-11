@@ -39,6 +39,7 @@
     <string name="previous">Previous</string>
 
     <string name="device">Device</string>
+    <string name="device_name">Device: %s</string>
     <string name="name">Name: %s</string>
     <string name="address">Address: %s</string>
 

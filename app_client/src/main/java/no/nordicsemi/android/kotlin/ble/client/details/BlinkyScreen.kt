@@ -71,6 +71,8 @@ fun BlinkyScreen() {
     ) {
         Column(modifier = Modifier.padding(it)) {
 
+            Spacer(modifier = Modifier.size(16.dp))
+
             device?.let { DeviceView(it) }
 
             Spacer(modifier = Modifier.size(16.dp))
