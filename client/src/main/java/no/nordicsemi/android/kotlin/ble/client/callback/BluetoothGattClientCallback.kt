@@ -50,6 +50,7 @@ import no.nordicsemi.android.kotlin.ble.client.event.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.client.event.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
 internal class BluetoothGattClientCallback(
     private val onEvent: (GattEvent) -> Unit
@@ -60,7 +61,7 @@ internal class BluetoothGattClientCallback(
     }
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        gatt?.let { onEvent(OnConnectionStateChanged(it, status, newState)) }
+        gatt?.let { onEvent(OnConnectionStateChanged(it, BleGattOperationStatus.create(status), newState)) }
     }
 
     override fun onCharacteristicChanged(
@@ -97,7 +98,13 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         characteristic?.let {
-            onEvent(OnCharacteristicRead(characteristic, characteristic.value, BleGattOperationStatus.create(status)))
+            onEvent(
+                OnCharacteristicRead(
+                    characteristic,
+                    characteristic.value,
+                    BleGattOperationStatus.create(status)
+                )
+            )
         }
     }
 
@@ -106,7 +113,14 @@ internal class BluetoothGattClientCallback(
         characteristic: BluetoothGattCharacteristic?,
         status: Int
     ) {
-        characteristic?.let { onEvent(OnCharacteristicWrite(it, BleGattOperationStatus.create(status))) }
+        characteristic?.let {
+            onEvent(
+                OnCharacteristicWrite(
+                    it,
+                    BleGattOperationStatus.create(status)
+                )
+            )
+        }
     }
 
     override fun onDescriptorRead(
@@ -125,7 +139,13 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         descriptor?.let {
-            onEvent(OnDescriptorRead(descriptor, descriptor.value, BleGattOperationStatus.create(status)))
+            onEvent(
+                OnDescriptorRead(
+                    descriptor,
+                    descriptor.value,
+                    BleGattOperationStatus.create(status)
+                )
+            )
         }
     }
 
@@ -138,23 +158,37 @@ internal class BluetoothGattClientCallback(
     }
 
     override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
-        onEvent(OnMtuChanged(gatt, mtu, status))
+        onEvent(OnMtuChanged(gatt, mtu, BleGattOperationStatus.create(status)))
     }
 
     override fun onPhyRead(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyRead(gatt, txPhy, rxPhy, status))
+        onEvent(
+            OnPhyRead(
+                gatt,
+                BleGattPhy.create(txPhy),
+                BleGattPhy.create(rxPhy),
+                BleGattOperationStatus.create(status)
+            )
+        )
     }
 
     override fun onPhyUpdate(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyUpdate(gatt, txPhy, rxPhy, status))
+        onEvent(
+            OnPhyUpdate(
+                gatt,
+                BleGattPhy.create(txPhy),
+                BleGattPhy.create(rxPhy),
+                BleGattOperationStatus.create(status)
+            )
+        )
     }
 
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
-        onEvent(OnReadRemoteRssi(gatt, rssi, status))
+        onEvent(OnReadRemoteRssi(gatt, rssi, BleGattOperationStatus.create(status)))
     }
 
     override fun onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int) {
-        onEvent(OnReliableWriteCompleted(gatt, status))
+        onEvent(OnReliableWriteCompleted(gatt, BleGattOperationStatus.create(status)))
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {

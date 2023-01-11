@@ -35,15 +35,16 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
 internal sealed interface GattEvent
 
 internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: Int, val newState: Int) : GattEvent
-internal class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: Int) : GattEvent
-internal class OnPhyRead(val gatt: BluetoothGatt?, val txPhy: Int, val rxPhy: Int, val status: Int) : GattEvent
-internal class OnPhyUpdate(val gatt: BluetoothGatt?, val txPhy: Int, val rxPhy: Int, val status: Int) : GattEvent
-internal class OnReadRemoteRssi(val gatt: BluetoothGatt?, val rssi: Int, val status: Int) : GattEvent
+internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: BleGattOperationStatus, val newState: Int) : GattEvent
+internal class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: BleGattOperationStatus) : GattEvent
+internal class OnPhyRead(val gatt: BluetoothGatt?, val txPhy: BleGattPhy, val rxPhy: BleGattPhy, val status: BleGattOperationStatus) : GattEvent
+internal class OnPhyUpdate(val gatt: BluetoothGatt?, val txPhy: BleGattPhy, val rxPhy: BleGattPhy, val status: BleGattOperationStatus) : GattEvent
+internal class OnReadRemoteRssi(val gatt: BluetoothGatt?, val rssi: Int, val status: BleGattOperationStatus) : GattEvent
 internal class OnServiceChanged(val gatt: BluetoothGatt) : GattEvent
 
 internal sealed interface CharacteristicEvent : GattEvent
@@ -55,4 +56,4 @@ internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteri
 internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
 internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
 
-internal class OnReliableWriteCompleted(val gatt: BluetoothGatt?, val status: Int) : CharacteristicEvent
+internal class OnReliableWriteCompleted(val gatt: BluetoothGatt?, val status: BleGattOperationStatus) : CharacteristicEvent
