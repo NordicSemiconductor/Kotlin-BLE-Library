@@ -39,7 +39,7 @@ data class BleGattConnectOptions(
     /**
      * boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
      */
-    val autoConnect: Boolean = true,
+    val autoConnect: Boolean = false,
 
     /**
      * Only takes effect if [autoConnect] is set to false.

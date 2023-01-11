@@ -42,6 +42,12 @@ import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.client.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.event.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.client.event.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.client.event.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.client.event.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.client.event.OnReadRemoteRssi
+import no.nordicsemi.android.kotlin.ble.client.event.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.event.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 
@@ -129,5 +135,29 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         descriptor?.let { onEvent(OnDescriptorWrite(it, BleGattOperationStatus.create(status))) }
+    }
+
+    override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+        onEvent(OnMtuChanged(gatt, mtu, status))
+    }
+
+    override fun onPhyRead(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
+        onEvent(OnPhyRead(gatt, txPhy, rxPhy, status))
+    }
+
+    override fun onPhyUpdate(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
+        onEvent(OnPhyUpdate(gatt, txPhy, rxPhy, status))
+    }
+
+    override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
+        onEvent(OnReadRemoteRssi(gatt, rssi, status))
+    }
+
+    override fun onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int) {
+        onEvent(OnReliableWriteCompleted(gatt, status))
+    }
+
+    override fun onServiceChanged(gatt: BluetoothGatt) {
+        onEvent(OnServiceChanged(gatt))
     }
 }
