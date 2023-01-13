@@ -39,6 +39,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -47,6 +48,7 @@ import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewMod
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.client.connect
 import no.nordicsemi.android.kotlin.ble.client.service.BleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.client.service.BleGattServices
 import java.util.*
 import javax.inject.Inject
 
@@ -90,8 +92,14 @@ class BlinkyViewModel @Inject constructor(
         val connection = blinkyDevice.connect(context)
 
         //Discover services on the Bluetooth LE Device.
-        val services = connection.getServices()
+        connection.getServices()
+            .filterNotNull()
+            .onEach {
+                configureGatt(it)
+            }.launchIn(viewModelScope)
+    }
 
+    private suspend fun configureGatt(services: BleGattServices) {
         //Remember needed service and characteristics which are used to communicate with the DK.
         val service = services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
         ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!

@@ -39,12 +39,11 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.firstOrNull
 import no.nordicsemi.android.kotlin.ble.client.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.client.errors.DeviceDisconnectedException
-import no.nordicsemi.android.kotlin.ble.client.errors.ServicesNotDiscoveredException
 import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnMtuChanged
@@ -68,7 +67,7 @@ class BleGattConnection {
         when (it) {
             is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
             is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
-            is CharacteristicEvent -> services.value?.apply { onCharacteristicEvent(it) }
+            is CharacteristicEvent -> _services.value?.apply { onCharacteristicEvent(it) }
             is OnMtuChanged -> onEvent(it)
             is OnPhyRead -> onEvent(it)
             is OnPhyUpdate -> onEvent(it)
@@ -84,9 +83,8 @@ class BleGattConnection {
     val connectionParams = _connectionParams.asStateFlow()
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
-    val services = _services.asStateFlow()
+//    val services = _services.asStateFlow()
 
-    private var onServicesDiscoveredCallback: ((BleGattServices?, BleGattOperationStatus) -> Unit)? = null
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -120,30 +118,20 @@ class BleGattConnection {
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun getServices(): BleGattServices {
+    suspend fun getServices(): Flow<BleGattServices?> {
         if (_connectionState.value != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Gatt should be connected before service discovery.")
         }
 
-        services.firstOrNull()?.let { return it }
+        gatt?.discoverServices()
 
-        return suspendCoroutine { continuation ->
-            onServicesDiscoveredCallback = { services, status ->
-                if (services != null) {
-                    continuation.resume(services)
-                } else {
-                    continuation.resumeWithException(ServicesNotDiscoveredException(status))
-                }
-                onServicesDiscoveredCallback = null
-            }
-            gatt?.discoverServices()
-        }
+        return _services
     }
 
     private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
+        Log.d("AAATESTAAA", "onServicesDiscovered")
         val services = gatt?.services?.let { BleGattServices(gatt, it) }
         _services.value = services
-        onServicesDiscoveredCallback?.invoke(services, status)
     }
 
     private fun onEvent(event: OnMtuChanged) {
