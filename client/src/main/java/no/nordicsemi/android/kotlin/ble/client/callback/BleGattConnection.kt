@@ -83,7 +83,6 @@ class BleGattConnection {
     val connectionParams = _connectionParams.asStateFlow()
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
-//    val services = _services.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
 
@@ -129,7 +128,6 @@ class BleGattConnection {
     }
 
     private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
-        Log.d("AAATESTAAA", "onServicesDiscovered")
         val services = gatt?.services?.let { BleGattServices(gatt, it) }
         _services.value = services
     }

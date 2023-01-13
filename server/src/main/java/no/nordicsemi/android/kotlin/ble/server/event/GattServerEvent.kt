@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
 internal sealed interface GattServerEvent
 
@@ -52,15 +53,15 @@ internal data class OnConnectionStateChanged(
 
 internal data class OnPhyRead(
     val device: BluetoothDevice,
-    val txPhy: Int,
-    val rxPhy: Int,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
 internal data class OnPhyUpdate(
     val device: BluetoothDevice,
-    val txPhy: Int,
-    val rxPhy: Int,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 

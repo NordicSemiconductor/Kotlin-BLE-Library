@@ -98,13 +98,7 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         characteristic?.let {
-            onEvent(
-                OnCharacteristicRead(
-                    characteristic,
-                    characteristic.value,
-                    BleGattOperationStatus.create(status)
-                )
-            )
+            onEvent(OnCharacteristicRead(characteristic, characteristic.value, BleGattOperationStatus.create(status)))
         }
     }
 
@@ -114,12 +108,7 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         characteristic?.let {
-            onEvent(
-                OnCharacteristicWrite(
-                    it,
-                    BleGattOperationStatus.create(status)
-                )
-            )
+            onEvent(OnCharacteristicWrite(it, BleGattOperationStatus.create(status)))
         }
     }
 
@@ -139,13 +128,7 @@ internal class BluetoothGattClientCallback(
         status: Int
     ) {
         descriptor?.let {
-            onEvent(
-                OnDescriptorRead(
-                    descriptor,
-                    descriptor.value,
-                    BleGattOperationStatus.create(status)
-                )
-            )
+            onEvent(OnDescriptorRead(descriptor, descriptor.value, BleGattOperationStatus.create(status)))
         }
     }
 

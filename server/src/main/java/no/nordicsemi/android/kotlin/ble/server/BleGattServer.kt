@@ -53,11 +53,12 @@ import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServerConnection
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
 
 class BleGattServer {
 
-    private val _connections = MutableStateFlow(mapOf<BluetoothDevice, BleGattServerServices>())
+    private val _connections = MutableStateFlow(mapOf<BluetoothDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
 
     private val callback = BleGattServerCallback { event ->
@@ -65,9 +66,9 @@ class BleGattServer {
         when (event) {
             is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
             is OnServiceAdded -> onServiceAdded(event.service, event.status)
-            is ServiceEvent -> connections.value.values.forEach { it.onEvent(event) }
-            is OnPhyRead -> onPhyRead()
-            is OnPhyUpdate -> onPhyUpdate()
+            is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
+            is OnPhyRead -> onPhyRead(event)
+            is OnPhyUpdate -> onPhyUpdate(event)
         }
     }
 
@@ -117,7 +118,7 @@ class BleGattServer {
             BleGattServerService(bluetoothGattServer!!, device, BluetoothGattServiceFactory.copy(it))
         }
         val mutableMap = connections.value.toMutableMap()
-        mutableMap[device] = BleGattServerServices(bluetoothGattServer!!, device, copiedServices)
+        mutableMap[device] = BluetoothGattServerConnection(BleGattServerServices(bluetoothGattServer!!, device, copiedServices))
         _connections.value = mutableMap.toMap()
         Log.d("AAATESTAAA", "Connect device $bluetoothGattServer")
         bluetoothGattServer?.connect(device, true)
@@ -131,11 +132,23 @@ class BleGattServer {
         }
     }
 
-    private fun onPhyRead() {
-        //TODO
+    private fun onPhyRead(event: OnPhyRead) {
+        _connections.value = _connections.value.toMutableMap().also {
+            val connection = it.getValue(event.device).copy(
+                txPhy = event.txPhy,
+                rxPhy = event.rxPhy
+            )
+            it[event.device] = connection
+        }.toMap()
     }
 
-    private fun onPhyUpdate() {
-        //TODO
+    private fun onPhyUpdate(event: OnPhyUpdate) {
+        _connections.value = _connections.value.toMutableMap().also {
+            val connection = it.getValue(event.device).copy(
+                txPhy = event.txPhy,
+                rxPhy = event.rxPhy
+            )
+            it[event.device] = connection
+        }.toMap()
     }
 }

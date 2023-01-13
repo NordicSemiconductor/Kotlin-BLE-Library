@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
@@ -72,7 +73,17 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(OnCharacteristicWriteRequest(device!!, requestId, characteristic!!, preparedWrite, responseNeeded, offset, value!!))
+        onEvent(
+            OnCharacteristicWriteRequest(
+                device!!,
+                requestId,
+                characteristic!!,
+                preparedWrite,
+                responseNeeded,
+                offset,
+                value!!
+            )
+        )
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
@@ -97,7 +108,17 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(OnDescriptorWriteRequest(device!!, requestId, descriptor!!, preparedWrite, responseNeeded, offset, value!!))
+        onEvent(
+            OnDescriptorWriteRequest(
+                device!!,
+                requestId,
+                descriptor!!,
+                preparedWrite,
+                responseNeeded,
+                offset,
+                value!!
+            )
+        )
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
@@ -113,11 +134,25 @@ internal class BleGattServerCallback(
     }
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyRead(device!!, txPhy, rxPhy, BleGattOperationStatus.create(status)))
+        onEvent(
+            OnPhyRead(
+                device!!,
+                BleGattPhy.create(txPhy),
+                BleGattPhy.create(rxPhy),
+                BleGattOperationStatus.create(status)
+            )
+        )
     }
 
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(OnPhyUpdate(device!!, txPhy, rxPhy, BleGattOperationStatus.create(status)))
+        onEvent(
+            OnPhyUpdate(
+                device!!,
+                BleGattPhy.create(txPhy),
+                BleGattPhy.create(rxPhy),
+                BleGattOperationStatus.create(status)
+            )
+        )
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {

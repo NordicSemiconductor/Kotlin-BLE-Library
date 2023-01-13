@@ -144,7 +144,7 @@ class ServerViewModel @Inject constructor(
                 server.connections
                     .mapNotNull { it.values.firstOrNull() }
                     .collect {
-                        it.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                        it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
                             setUpServices(it)
                         }
                     }
@@ -158,10 +158,8 @@ class ServerViewModel @Inject constructor(
     }
 
     private fun setUpServices(services: BleGattServerService) {
-
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
-        val buttonCharacteristic =
-            services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+        val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
             _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))
