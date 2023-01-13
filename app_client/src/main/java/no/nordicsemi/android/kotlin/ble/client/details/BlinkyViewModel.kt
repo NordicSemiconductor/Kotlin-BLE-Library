@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
@@ -89,10 +90,11 @@ class BlinkyViewModel @Inject constructor(
 
     private fun startGattClient(blinkyDevice: BleDevice) = viewModelScope.launch {
         //Connect a Bluetooth LE device.
-        val connection = blinkyDevice.connect(context)
+        val client = blinkyDevice.connect(context)
 
         //Discover services on the Bluetooth LE Device.
-        connection.getServices()
+        client.connection
+            .map { it.services }
             .filterNotNull()
             .onEach {
                 configureGatt(it)

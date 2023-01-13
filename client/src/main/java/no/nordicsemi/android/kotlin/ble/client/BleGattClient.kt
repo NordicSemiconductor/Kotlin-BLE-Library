@@ -35,14 +35,14 @@ import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.client.callback.BleGattConnection
+import no.nordicsemi.android.kotlin.ble.client.callback.BleGattClient
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 suspend fun BleDevice.connect(
     context: Context,
     options: BleGattConnectOptions = BleGattConnectOptions()
-): BleGattConnection {
-    return BleGattConnection().also {
+): BleGattClient {
+    return BleGattClient().also {
         it.connect(context, options, this.device)
     }
 }
