@@ -32,18 +32,20 @@
 package no.nordicsemi.android.kotlin.ble.client.service
 
 import android.Manifest
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattDescriptor
-import android.os.Build
 import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.event.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.event.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.client.native.BleGatt
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class BleGattDescriptor(private val gatt: BluetoothGatt, private val descriptor: BluetoothGattDescriptor) {
+class BleGattDescriptor internal constructor(
+    private val gatt: BleGatt,
+    private val descriptor: BluetoothGattDescriptor
+) {
 
     val uuid = descriptor.uuid
 
@@ -59,12 +61,7 @@ class BleGattDescriptor(private val gatt: BluetoothGatt, private val descriptor:
     suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeDescriptor(descriptor, value)
-        } else {
-            descriptor.value = value
-            gatt.writeDescriptor(descriptor)
-        }
+        gatt.writeDescriptor(descriptor, value)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

@@ -32,26 +32,25 @@
 package no.nordicsemi.android.kotlin.ble.client.service
 
 import android.Manifest
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.event.OnCharacteristicWrite
+import no.nordicsemi.android.kotlin.ble.client.native.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-class BleGattCharacteristic(
-    private val gatt: BluetoothGatt,
+class BleGattCharacteristic internal constructor(
+    private val gatt: BleGatt,
     private val characteristic: BluetoothGattCharacteristic
 ) {
 
@@ -83,13 +82,7 @@ class BleGattCharacteristic(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(characteristic, value, writeType.value)
-        } else {
-            characteristic.writeType = writeType.value
-            characteristic.value = value
-            gatt.writeCharacteristic(characteristic)
-        }
+        gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -101,7 +94,7 @@ class BleGattCharacteristic(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun enableIndications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
-            gatt.setCharacteristicNotification(characteristic, true)
+            gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
         }
     }
@@ -114,7 +107,7 @@ class BleGattCharacteristic(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun enableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
-            gatt.setCharacteristicNotification(characteristic, true)
+            gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
         }
     }
@@ -122,7 +115,7 @@ class BleGattCharacteristic(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun disableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
-            gatt.setCharacteristicNotification(characteristic, false)
+            gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
         }
     }

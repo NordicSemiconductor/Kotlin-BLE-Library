@@ -31,12 +31,12 @@
 
 package no.nordicsemi.android.kotlin.ble.client.service
 
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.client.event.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.client.native.BleGatt
 import java.util.*
 
-class BleGattService(gatt: BluetoothGatt, service: BluetoothGattService) {
+class BleGattService internal constructor(gatt: BleGatt, service: BluetoothGattService) {
 
     val uuid = service.uuid
 

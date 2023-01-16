@@ -51,6 +51,7 @@ import no.nordicsemi.android.kotlin.ble.client.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.client.event.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.client.event.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.event.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.client.native.BluetoothGattWrapper
 import no.nordicsemi.android.kotlin.ble.client.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -116,7 +117,9 @@ class BleGattClient {
     }
 
     private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
-        val services = gatt?.services?.let { BleGattServices(gatt, it) }
+        //TODO inject?
+        val gattWrapper = BluetoothGattWrapper(gatt!!)
+        val services = gatt.services?.let { BleGattServices(gattWrapper, it) }
         _connection.value = _connection.value.copy(services = services)
     }
 
