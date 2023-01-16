@@ -34,8 +34,8 @@ package no.nordicsemi.android.kotlin.ble.client
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.client.callback.BleGattClient
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 suspend fun BleDevice.connect(

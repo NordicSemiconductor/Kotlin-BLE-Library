@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -50,6 +49,8 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.server.native.BleGattServer
+import no.nordicsemi.android.kotlin.ble.server.native.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
@@ -74,14 +75,15 @@ class BleGattServer {
 
     private var services: List<BluetoothGattService> = emptyList()
 
-    private var bluetoothGattServer: BluetoothGattServer? = null
+    private var bluetoothGattServer: BleGattServer? = null
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun start(context: Context, vararg config: BleServerGattServiceConfig) {
         val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
+        //todo inject?
         val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-        this.bluetoothGattServer = bluetoothGattServer
+        this.bluetoothGattServer = BluetoothGattServerWrapper(bluetoothGattServer)
 
         config.forEach {
             bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))

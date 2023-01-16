@@ -34,8 +34,6 @@ package no.nordicsemi.android.kotlin.ble.server.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattServer
-import android.os.Build
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,11 +49,12 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.event.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.server.native.BleGattServer
 import java.util.*
 
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic(
-    private val server: BluetoothGattServer,
+    private val server: BleGattServer,
     private val device: BluetoothDevice,
     private val characteristic: BluetoothGattCharacteristic
 ) {
@@ -92,12 +91,7 @@ class BleServerGattCharacteristic(
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 
         if (isNotification || isIndication) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                server.notifyCharacteristicChanged(device, characteristic, isIndication, _value.value)
-            } else {
-                characteristic.value = _value.value
-                server.notifyCharacteristicChanged(device, characteristic, isIndication)
-            }
+            server.notifyCharacteristicChanged(device, characteristic, isIndication, _value.value)
         }
     }
 

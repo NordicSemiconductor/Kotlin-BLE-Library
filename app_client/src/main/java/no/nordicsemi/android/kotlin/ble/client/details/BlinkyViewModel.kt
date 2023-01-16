@@ -46,10 +46,10 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.client.connect
 import no.nordicsemi.android.kotlin.ble.client.service.BleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import java.util.*
 import javax.inject.Inject
 
