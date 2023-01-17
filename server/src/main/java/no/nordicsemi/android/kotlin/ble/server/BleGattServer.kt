@@ -49,7 +49,7 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.native.BleGattServer
+import no.nordicsemi.android.kotlin.ble.server.native.BleServer
 import no.nordicsemi.android.kotlin.ble.server.native.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
@@ -75,7 +75,7 @@ class BleGattServer {
 
     private var services: List<BluetoothGattService> = emptyList()
 
-    private var bluetoothGattServer: BleGattServer? = null
+    private var bluetoothGattServer: BleServer? = null
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun start(context: Context, vararg config: BleServerGattServiceConfig) {

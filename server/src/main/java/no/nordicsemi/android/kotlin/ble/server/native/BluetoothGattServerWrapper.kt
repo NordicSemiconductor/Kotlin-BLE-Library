@@ -5,14 +5,13 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
-import androidx.annotation.RequiresApi
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
 @SuppressLint("MissingPermission")
 class BluetoothGattServerWrapper(
     private val server: BluetoothGattServer
-) : BleGattServer {
+) : BleServer {
 
     override fun sendResponse(
         device: BluetoothDevice,
@@ -46,13 +45,17 @@ class BluetoothGattServerWrapper(
         server.connect(device, autoConnect)
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun readPhy(device: BluetoothDevice) {
-        server.readPhy(device)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            server.readPhy(device)
+        } else {
+
+        }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun requestPhy(device: BluetoothDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        server.setPreferredPhy(device, txPhy.value, rxPhy.value, phyOption.value)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            server.setPreferredPhy(device, txPhy.value, rxPhy.value, phyOption.value)
+        }
     }
 }

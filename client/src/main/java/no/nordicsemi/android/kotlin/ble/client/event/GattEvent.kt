@@ -40,6 +40,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 internal sealed interface GattEvent
 
 internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
+
 internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: BleGattOperationStatus, val newState: Int) : GattEvent
 internal class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: BleGattOperationStatus) : GattEvent
 internal class OnPhyRead(val gatt: BluetoothGatt?, val txPhy: BleGattPhy, val rxPhy: BleGattPhy, val status: BleGattOperationStatus) : GattEvent

@@ -42,11 +42,11 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.server.native.BleGattServer
+import no.nordicsemi.android.kotlin.ble.server.native.BleServer
 
 @SuppressLint("MissingPermission")
 class BleServerGattDescriptor(
-    private val server: BleGattServer,
+    private val server: BleServer,
     private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor
 ) {

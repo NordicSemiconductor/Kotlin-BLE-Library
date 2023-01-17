@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
-interface BleGattServer {
+interface BleServer {
 
     fun sendResponse(
         device: BluetoothDevice,
