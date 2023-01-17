@@ -29,26 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.core.data
 
 import android.bluetooth.BluetoothDevice
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
-import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.server.native.BleGattServer
 
-data class BluetoothGattServerConnection(
-    private val device: BluetoothDevice,
-    private val server: BleGattServer,
-    val services: BleGattServerServices,
-    val txPhy: BleGattPhy? = null,
-    val rxPhy: BleGattPhy? = null
-) {
+enum class PhyOption(val value: Int) {
+    NO_PREFERRED(BluetoothDevice.PHY_OPTION_NO_PREFERRED),
+    S2(BluetoothDevice.PHY_OPTION_S2),
+    S8(BluetoothDevice.PHY_OPTION_S8);
 
-    fun readPhy() {
-        server.readPhy(device)
-    }
 
-    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        server.requestPhy(device, txPhy, rxPhy, phyOption)
+    companion object {
+        fun create(value: Int): PhyOption {
+            return PhyOption.values().find { it.value == value }
+                ?: throw IllegalArgumentException("Cannot create PhyOption for value: $value")
+        }
     }
 }

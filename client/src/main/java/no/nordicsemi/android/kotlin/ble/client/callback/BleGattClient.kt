@@ -54,7 +54,9 @@ import no.nordicsemi.android.kotlin.ble.client.event.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.native.BluetoothGattWrapper
 import no.nordicsemi.android.kotlin.ble.client.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -80,6 +82,29 @@ class BleGattClient {
     val connection = _connection.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun readRemoteRssi() {
+        gatt?.readRemoteRssi()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun readPhy() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            gatt?.readPhy()
+        } else {
+            onEvent(OnPhyRead(gatt, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            gatt?.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
+        } else {
+            onEvent(OnPhyUpdate(gatt, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+        }
+    }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     internal suspend fun connect(
@@ -130,12 +155,14 @@ class BleGattClient {
 
     private fun onEvent(event: OnPhyRead) {
         val params = _connection.value.connectionParams
-        _connection.value = _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
+        _connection.value =
+            _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
     }
 
     private fun onEvent(event: OnPhyUpdate) {
         val params = _connection.value.connectionParams
-        _connection.value = _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
+        _connection.value =
+            _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
     }
 
     private fun onEvent(event: OnReadRemoteRssi) {

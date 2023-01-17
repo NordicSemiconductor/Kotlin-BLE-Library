@@ -120,7 +120,7 @@ class BleGattServer {
             BleGattServerService(bluetoothGattServer!!, device, BluetoothGattServiceFactory.copy(it))
         }
         val mutableMap = connections.value.toMutableMap()
-        mutableMap[device] = BluetoothGattServerConnection(BleGattServerServices(bluetoothGattServer!!, device, copiedServices))
+        mutableMap[device] = BluetoothGattServerConnection(device, bluetoothGattServer!!, BleGattServerServices(bluetoothGattServer!!, device, copiedServices))
         _connections.value = mutableMap.toMap()
         Log.d("AAATESTAAA", "Connect device $bluetoothGattServer")
         bluetoothGattServer?.connect(device, true)
