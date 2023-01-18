@@ -8,8 +8,6 @@ import no.nordicsemi.android.kotlin.ble.client.service.BleWriteType
 
 internal interface BleGatt {
 
-    val event: SharedFlow<GattEvent>
-
     fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,

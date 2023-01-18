@@ -36,6 +36,9 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothGattService
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
@@ -51,9 +54,13 @@ import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 
-internal class BleGattServerCallback(
-    private val onEvent: (GattServerEvent) -> Unit
-) : BluetoothGattServerCallback() {
+internal class BleGattServerCallback : BluetoothGattServerCallback() {
+
+    private val _event = MutableSharedFlow<GattServerEvent>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val event = _event.asSharedFlow()
 
     override fun onCharacteristicReadRequest(
         device: BluetoothDevice?,
@@ -61,7 +68,7 @@ internal class BleGattServerCallback(
         offset: Int,
         characteristic: BluetoothGattCharacteristic?
     ) {
-        onEvent(OnCharacteristicReadRequest(device!!, requestId, offset, characteristic!!))
+        _event.tryEmit(OnCharacteristicReadRequest(device!!, requestId, offset, characteristic!!))
     }
 
     override fun onCharacteristicWriteRequest(
@@ -73,7 +80,7 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(
+        _event.tryEmit(
             OnCharacteristicWriteRequest(
                 device!!,
                 requestId,
@@ -87,7 +94,7 @@ internal class BleGattServerCallback(
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
-        onEvent(OnConnectionStateChanged(device!!, BleGattOperationStatus.create(status), newState))
+        _event.tryEmit(OnConnectionStateChanged(device!!, BleGattOperationStatus.create(status), newState))
     }
 
     override fun onDescriptorReadRequest(
@@ -96,7 +103,7 @@ internal class BleGattServerCallback(
         offset: Int,
         descriptor: BluetoothGattDescriptor?
     ) {
-        onEvent(OnDescriptorReadRequest(device!!, requestId, offset, descriptor!!))
+        _event.tryEmit(OnDescriptorReadRequest(device!!, requestId, offset, descriptor!!))
     }
 
     override fun onDescriptorWriteRequest(
@@ -108,7 +115,7 @@ internal class BleGattServerCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        onEvent(
+        _event.tryEmit(
             OnDescriptorWriteRequest(
                 device!!,
                 requestId,
@@ -122,19 +129,19 @@ internal class BleGattServerCallback(
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
-        onEvent(OnExecuteWrite(device!!, requestId, execute))
+        _event.tryEmit(OnExecuteWrite(device!!, requestId, execute))
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
-        onEvent(OnMtuChanged(device!!, mtu))
+        _event.tryEmit(OnMtuChanged(device!!, mtu))
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
-        onEvent(OnNotificationSent(device!!, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnNotificationSent(device!!, BleGattOperationStatus.create(status)))
     }
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(
+        _event.tryEmit(
             OnPhyRead(
                 device!!,
                 BleGattPhy.create(txPhy),
@@ -145,7 +152,7 @@ internal class BleGattServerCallback(
     }
 
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
-        onEvent(
+        _event.tryEmit(
             OnPhyUpdate(
                 device!!,
                 BleGattPhy.create(txPhy),
@@ -156,6 +163,10 @@ internal class BleGattServerCallback(
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-        onEvent(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
+    }
+
+    fun onEvent(event: GattServerEvent) {
+        _event.tryEmit(event)
     }
 }

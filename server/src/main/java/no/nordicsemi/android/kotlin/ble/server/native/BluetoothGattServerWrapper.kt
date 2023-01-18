@@ -5,13 +5,21 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
+import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
+import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 
 @SuppressLint("MissingPermission")
-class BluetoothGattServerWrapper(
-    private val server: BluetoothGattServer
+internal class BluetoothGattServerWrapper(
+    private val server: BluetoothGattServer,
+    private val callback: BleGattServerCallback
 ) : BleServer {
+
+    override val event: SharedFlow<GattServerEvent> = callback.event
 
     override fun sendResponse(
         device: BluetoothDevice,
@@ -49,7 +57,7 @@ class BluetoothGattServerWrapper(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             server.readPhy(device)
         } else {
-
+            callback.onEvent(OnPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_2M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 

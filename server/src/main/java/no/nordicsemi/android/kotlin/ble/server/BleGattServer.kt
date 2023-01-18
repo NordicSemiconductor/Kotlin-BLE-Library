@@ -41,49 +41,57 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.native.BleServer
-import no.nordicsemi.android.kotlin.ble.server.native.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServerConnection
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
 
-class BleGattServer {
+class BleGattServer internal constructor(
+    private val server: BleServer
+) {
 
-    private val _connections = MutableStateFlow(mapOf<BluetoothDevice, BluetoothGattServerConnection>())
+    private val _connections =
+        MutableStateFlow(mapOf<BluetoothDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
-
-    private val callback = BleGattServerCallback { event ->
-        Log.d("AAATESTAAA", "On server event: $event")
-        when (event) {
-            is OnConnectionStateChanged -> onConnectionStateChanged(event.device, event.status, event.newState)
-            is OnServiceAdded -> onServiceAdded(event.service, event.status)
-            is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
-            is OnPhyRead -> onPhyRead(event)
-            is OnPhyUpdate -> onPhyUpdate(event)
-        }
-    }
 
     private var services: List<BluetoothGattService> = emptyList()
 
-    private var bluetoothGattServer: BleServer? = null
+    init {
+        server.event.onEach { event ->
+            Log.d("AAATESTAAA", "On server event: $event")
+            when (event) {
+                is OnConnectionStateChanged -> onConnectionStateChanged(
+                    event.device,
+                    event.status,
+                    event.newState
+                )
+                is OnServiceAdded -> onServiceAdded(event.service, event.status)
+                is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
+                is OnPhyRead -> onPhyRead(event)
+                is OnPhyUpdate -> onPhyUpdate(event)
+            }
+        }.launchIn(ServerScope)
+    }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun start(context: Context, vararg config: BleServerGattServiceConfig) {
-        val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager: BluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
         //todo inject?
         val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-        this.bluetoothGattServer = BluetoothGattServerWrapper(bluetoothGattServer)
+//        this.server = BluetoothGattServerWrapper(bluetoothGattServer)
 
         config.forEach {
             bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
@@ -92,10 +100,14 @@ class BleGattServer {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun stopServer() {
-        bluetoothGattServer?.close()
+        server.close()
     }
 
-    private fun onConnectionStateChanged(device: BluetoothDevice, status: BleGattOperationStatus, newState: Int) {
+    private fun onConnectionStateChanged(
+        device: BluetoothDevice,
+        status: BleGattOperationStatus,
+        newState: Int
+    ) {
         val connectionState = GattConnectionState.create(newState)
 
         Log.d("AAATESTAAA", "On connection state change: $status, $newState")
@@ -117,17 +129,25 @@ class BleGattServer {
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: BluetoothDevice) {
         val copiedServices = services.map {
-            BleGattServerService(bluetoothGattServer!!, device, BluetoothGattServiceFactory.copy(it))
+            BleGattServerService(
+                server,
+                device,
+                BluetoothGattServiceFactory.copy(it)
+            )
         }
         val mutableMap = connections.value.toMutableMap()
-        mutableMap[device] = BluetoothGattServerConnection(device, bluetoothGattServer!!, BleGattServerServices(bluetoothGattServer!!, device, copiedServices))
+        mutableMap[device] = BluetoothGattServerConnection(
+            device,
+            server,
+            BleGattServerServices(server, device, copiedServices)
+        )
         _connections.value = mutableMap.toMap()
-        Log.d("AAATESTAAA", "Connect device $bluetoothGattServer")
-        bluetoothGattServer?.connect(device, true)
+        Log.d("AAATESTAAA", "Connect device $server")
+        server.connect(device, true)
     }
 
     private fun onServiceAdded(service: BluetoothGattService, status: BleGattOperationStatus) {
-        bluetoothGattServer?.let { _ ->
+        server.let { _ ->
             if (status == BleGattOperationStatus.GATT_SUCCESS) {
                 services = services + service
             }

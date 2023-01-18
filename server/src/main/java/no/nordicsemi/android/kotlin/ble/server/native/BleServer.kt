@@ -2,10 +2,14 @@ package no.nordicsemi.android.kotlin.ble.server.native
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
+import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
 
-interface BleServer {
+internal interface BleServer {
+
+    val event: SharedFlow<GattServerEvent>
 
     fun sendResponse(
         device: BluetoothDevice,
