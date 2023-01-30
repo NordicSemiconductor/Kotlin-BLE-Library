@@ -29,20 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.protobuf) apply false
-    alias(libs.plugins.nordic.application) apply false
-    alias(libs.plugins.nordic.application.compose) apply false
-    alias(libs.plugins.nordic.library) apply false
-    alias(libs.plugins.nordic.library.compose) apply false
-    alias(libs.plugins.nordic.hilt) apply false
-    alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
-    id("com.android.library") version "7.3.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.21" apply false
-}
+package no.nordicsemi.android.kotlin.ble.server.nativ.service
+
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import java.util.*
+
+data class BleServerGattDescriptorConfig(
+    val uuid: UUID,
+    val permissions: List<BleGattPermission>
+)

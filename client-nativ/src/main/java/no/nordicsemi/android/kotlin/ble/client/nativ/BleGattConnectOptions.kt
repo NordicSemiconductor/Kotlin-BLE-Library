@@ -29,20 +29,51 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.protobuf) apply false
-    alias(libs.plugins.nordic.application) apply false
-    alias(libs.plugins.nordic.application.compose) apply false
-    alias(libs.plugins.nordic.library) apply false
-    alias(libs.plugins.nordic.library.compose) apply false
-    alias(libs.plugins.nordic.hilt) apply false
-    alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
-    id("com.android.library") version "7.3.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.21" apply false
+package no.nordicsemi.android.kotlin.ble.client.nativ
+
+import android.bluetooth.BluetoothDevice
+import android.os.Build
+import androidx.annotation.RequiresApi
+
+data class BleGattConnectOptions(
+    /**
+     * boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+     */
+    val autoConnect: Boolean = false,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe1Phy: Boolean = true,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLe2Phy: Boolean = false,
+
+    /**
+     * Only takes effect if [autoConnect] is set to false.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    val useLeCoded: Boolean = false
+) {
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun getPhy(): Int {
+        var result = 0
+
+        if (useLe1Phy) {
+            result = result or BluetoothDevice.PHY_LE_1M_MASK
+        }
+        if (useLe2Phy) {
+            result = result or BluetoothDevice.PHY_LE_2M_MASK
+        }
+        if (useLeCoded) {
+            result = result or BluetoothDevice.PHY_LE_CODED_MASK
+        }
+
+        return result
+    }
 }

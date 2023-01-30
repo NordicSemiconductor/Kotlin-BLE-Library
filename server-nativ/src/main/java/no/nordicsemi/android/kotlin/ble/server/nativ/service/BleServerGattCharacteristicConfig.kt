@@ -29,20 +29,21 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.protobuf) apply false
-    alias(libs.plugins.nordic.application) apply false
-    alias(libs.plugins.nordic.application.compose) apply false
-    alias(libs.plugins.nordic.library) apply false
-    alias(libs.plugins.nordic.library.compose) apply false
-    alias(libs.plugins.nordic.hilt) apply false
-    alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
-    id("com.android.library") version "7.3.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.21" apply false
+package no.nordicsemi.android.kotlin.ble.server.nativ.service
+
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import java.util.*
+
+data class BleServerGattCharacteristicConfig(
+    val uuid: UUID,
+    val properties: List<BleGattProperty> = emptyList(),
+    val permissions: List<BleGattPermission> = emptyList(),
+    val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList(),
+) {
+
+    val hasNotifications: Boolean
+        get() {
+            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
+        }
 }

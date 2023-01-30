@@ -55,11 +55,12 @@ import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertisePrimaryPhy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
-import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServiceType
-import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattCharacteristicConfig
-import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.nativ.BleGattServer
+import no.nordicsemi.android.kotlin.ble.server.nativ.service.BleGattServerService
+import no.nordicsemi.android.kotlin.ble.server.nativ.service.BleGattServerServiceType
+import no.nordicsemi.android.kotlin.ble.server.nativ.service.BleServerGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.server.nativ.service.BleServerGattCharacteristicConfig
+import no.nordicsemi.android.kotlin.ble.server.nativ.service.BleServerGattServiceConfig
 import java.util.*
 import javax.inject.Inject
 

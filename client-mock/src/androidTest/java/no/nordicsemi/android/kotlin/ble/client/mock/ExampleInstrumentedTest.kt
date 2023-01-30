@@ -29,20 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.protobuf) apply false
-    alias(libs.plugins.nordic.application) apply false
-    alias(libs.plugins.nordic.application.compose) apply false
-    alias(libs.plugins.nordic.library) apply false
-    alias(libs.plugins.nordic.library.compose) apply false
-    alias(libs.plugins.nordic.hilt) apply false
-    alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
-    id("com.android.library") version "7.3.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.21" apply false
+package no.nordicsemi.android.kotlin.ble.client.mock
+
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
+
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import org.junit.Assert.*
+
+/**
+ * Instrumented test, which will execute on an Android device.
+ *
+ * See [testing documentation](http://d.android.com/tools/testing).
+ */
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @Test
+    fun useAppContext() {
+        // Context of the app under test.
+        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
+        assertEquals("no.nordicsemi.android.kotlin.ble.client.mock.test", appContext.packageName)
+    }
 }

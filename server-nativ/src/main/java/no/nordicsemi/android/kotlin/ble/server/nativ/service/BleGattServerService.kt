@@ -29,20 +29,33 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.serialization) apply false
-    alias(libs.plugins.hilt) apply false
-    alias(libs.plugins.secrets) apply false
-    alias(libs.plugins.protobuf) apply false
-    alias(libs.plugins.nordic.application) apply false
-    alias(libs.plugins.nordic.application.compose) apply false
-    alias(libs.plugins.nordic.library) apply false
-    alias(libs.plugins.nordic.library.compose) apply false
-    alias(libs.plugins.nordic.hilt) apply false
-    alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
-    id("com.android.library") version "7.3.1" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.21" apply false
+package no.nordicsemi.android.kotlin.ble.server.nativ.service
+
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
+import java.util.*
+
+class BleGattServerService internal constructor(
+    private val server: BleServer,
+    private val device: BluetoothDevice,
+    private val service: BluetoothGattService
+) {
+
+    val uuid = service.uuid
+
+    val characteristics = service.characteristics.map {
+        BleServerGattCharacteristic(server, device, it)
+    }
+
+    internal fun onEvent(event: ServiceEvent) {
+        characteristics.onEach { it.onEvent(event) }
+    }
+
+    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
+        return characteristics.firstOrNull { characteristic ->
+            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+        }
+    }
 }
