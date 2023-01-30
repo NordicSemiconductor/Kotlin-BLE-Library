@@ -45,21 +45,42 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
-import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.native.BleServer
+import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
+import no.nordicsemi.android.kotlin.ble.server.native.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServerConnection
 import no.nordicsemi.android.kotlin.ble.server.service.BluetoothGattServiceFactory
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
+import no.nordicsemi.android.kotlin.ble.core.server.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
+import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
 
 class BleGattServer internal constructor(
     private val server: BleServer
 ) {
+
+    companion object {
+
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        fun create(context: Context, vararg config: BleServerGattServiceConfig) : BleGattServer {
+            val bluetoothManager: BluetoothManager =
+                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+
+            val callback = BleGattServerCallback()
+            val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
+            val server = BluetoothGattServerWrapper(bluetoothGattServer, callback)
+
+            config.forEach {
+                bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
+            }
+
+            return BleGattServer(server)
+        }
+    }
 
     private val _connections =
         MutableStateFlow(mapOf<BluetoothDevice, BluetoothGattServerConnection>())
@@ -82,20 +103,6 @@ class BleGattServer internal constructor(
                 is OnPhyUpdate -> onPhyUpdate(event)
             }
         }.launchIn(ServerScope)
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun start(context: Context, vararg config: BleServerGattServiceConfig) {
-        val bluetoothManager: BluetoothManager =
-            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-        //todo inject?
-        val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-//        this.server = BluetoothGattServerWrapper(bluetoothGattServer)
-
-        config.forEach {
-            bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
-        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

@@ -29,33 +29,38 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.core.server
 
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.server.BleServer
-import java.util.*
+import android.bluetooth.BluetoothGattCharacteristic
+import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
-class BleGattServerService internal constructor(
-    private val server: BleServer,
-    private val device: BluetoothDevice,
-    private val service: BluetoothGattService
-) {
+interface BleServer {
 
-    val uuid = service.uuid
+    val event: SharedFlow<GattServerEvent>
 
-    val characteristics = service.characteristics.map {
-        BleServerGattCharacteristic(server, device, it)
-    }
+    fun sendResponse(
+        device: BluetoothDevice,
+        requestId: Int,
+        status: Int,
+        offset: Int,
+        value: ByteArray?
+    )
 
-    internal fun onEvent(event: ServiceEvent) {
-        characteristics.onEach { it.onEvent(event) }
-    }
+    fun notifyCharacteristicChanged(
+        device: BluetoothDevice,
+        characteristic: BluetoothGattCharacteristic,
+        confirm: Boolean,
+        value: ByteArray
+    )
 
-    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
-        return characteristics.firstOrNull { characteristic ->
-            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
-        }
-    }
+    fun close()
+
+    fun connect(device: BluetoothDevice, autoConnect: Boolean)
+
+    fun readPhy(device: BluetoothDevice)
+
+    fun requestPhy(device: BluetoothDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 }

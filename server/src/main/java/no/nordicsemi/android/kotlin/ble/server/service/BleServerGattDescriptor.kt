@@ -37,15 +37,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
-import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
-import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.server.native.BleServer
+import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 
 @SuppressLint("MissingPermission")
-class BleServerGattDescriptor(
+class BleServerGattDescriptor internal constructor(
     private val server: BleServer,
     private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor

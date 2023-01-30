@@ -41,18 +41,18 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
-import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
-import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorReadRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnDescriptorWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.server.event.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.server.event.OnPhyUpdate
-import no.nordicsemi.android.kotlin.ble.server.event.OnServiceAdded
+import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicWriteRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnNotificationSent
+import no.nordicsemi.android.kotlin.ble.core.server.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 
 internal class BleGattServerCallback : BluetoothGattServerCallback() {
 

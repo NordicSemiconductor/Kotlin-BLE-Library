@@ -29,33 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.service
+package no.nordicsemi.android.kotlin.ble.core.client
 
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.server.BleServer
-import java.util.*
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
 
-class BleGattServerService internal constructor(
-    private val server: BleServer,
-    private val device: BluetoothDevice,
-    private val service: BluetoothGattService
-) {
+interface BleGatt {
 
-    val uuid = service.uuid
+    fun writeCharacteristic(
+        characteristic: BluetoothGattCharacteristic,
+        value: ByteArray,
+        writeType: BleWriteType
+    )
 
-    val characteristics = service.characteristics.map {
-        BleServerGattCharacteristic(server, device, it)
-    }
+    fun readCharacteristic(
+        characteristic: BluetoothGattCharacteristic
+    )
 
-    internal fun onEvent(event: ServiceEvent) {
-        characteristics.onEach { it.onEvent(event) }
-    }
+    fun enableCharacteristicNotification(characteristic: BluetoothGattCharacteristic)
 
-    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
-        return characteristics.firstOrNull { characteristic ->
-            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
-        }
-    }
+    fun disableCharacteristicNotification(characteristic: BluetoothGattCharacteristic)
+
+    fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray)
+
+    fun readDescriptor(descriptor: BluetoothGattDescriptor)
 }

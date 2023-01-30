@@ -32,14 +32,14 @@
 package no.nordicsemi.android.kotlin.ble.server.service
 
 import android.bluetooth.BluetoothDevice
-import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.native.BleServer
+import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 import java.util.*
 
-class BleGattServerServices(
-    val server: BleServer,
-    val device: BluetoothDevice,
-    val services: List<BleGattServerService>
+class BleGattServerServices internal constructor(
+    private val server: BleServer,
+    private val device: BluetoothDevice,
+    private val services: List<BleGattServerService>
 ) {
 
     fun findService(uuid: UUID): BleGattServerService? {

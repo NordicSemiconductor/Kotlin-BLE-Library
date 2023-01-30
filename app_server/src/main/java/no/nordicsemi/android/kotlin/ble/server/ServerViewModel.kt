@@ -97,8 +97,6 @@ class ServerViewModel @Inject constructor(
 
     fun advertise() {
         advertisementJob = viewModelScope.launch {
-            val server = BleGattServer()
-
             val ledCharacteristic = BleServerGattCharacteristicConfig(
                 BlinkySpecifications.UUID_LED_CHAR,
                 listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
@@ -117,7 +115,7 @@ class ServerViewModel @Inject constructor(
                 listOf(ledCharacteristic, buttonCharacteristic)
             )
 
-            server.start(context, serviceConfig)
+            val server = BleGattServer.create(context, serviceConfig)
 
             val advertiser = BleAdvertiser.create(context)
 

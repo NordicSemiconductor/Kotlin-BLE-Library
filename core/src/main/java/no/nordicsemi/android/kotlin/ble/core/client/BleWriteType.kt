@@ -29,9 +29,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.service
+package no.nordicsemi.android.kotlin.ble.core.client
 
-enum class BleWriteType(internal val value: Int) {
+enum class BleWriteType(val value: Int) {
     /**
      * Write characteristic, requesting acknowledgement by the remote device.
      */

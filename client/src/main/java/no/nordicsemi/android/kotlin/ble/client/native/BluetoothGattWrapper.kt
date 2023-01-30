@@ -6,7 +6,8 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.client.service.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 
 internal class BluetoothGattWrapper(
     private val gatt: BluetoothGatt

@@ -9,9 +9,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 import no.nordicsemi.android.kotlin.ble.server.callback.BleGattServerCallback
-import no.nordicsemi.android.kotlin.ble.server.event.GattServerEvent
-import no.nordicsemi.android.kotlin.ble.server.event.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.core.server.OnPhyRead
 
 @SuppressLint("MissingPermission")
 internal class BluetoothGattServerWrapper(

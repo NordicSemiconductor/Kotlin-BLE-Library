@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.server.event
+package no.nordicsemi.android.kotlin.ble.core.server
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
@@ -38,56 +38,56 @@ import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
-internal sealed interface GattServerEvent
+sealed interface GattServerEvent
 
-internal data class OnServiceAdded(
+data class OnServiceAdded(
     val service: BluetoothGattService,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-internal data class OnConnectionStateChanged(
+data class OnConnectionStateChanged(
     val device: BluetoothDevice,
     val status: BleGattOperationStatus,
     val newState: Int
 ) : GattServerEvent
 
-internal data class OnPhyRead(
+data class OnPhyRead(
     val device: BluetoothDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-internal data class OnPhyUpdate(
+data class OnPhyUpdate(
     val device: BluetoothDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-internal sealed interface ServiceEvent : GattServerEvent
+sealed interface ServiceEvent : GattServerEvent
 
-internal sealed interface CharacteristicEvent : ServiceEvent
+sealed interface CharacteristicEvent : ServiceEvent
 
-internal data class OnMtuChanged(
+data class OnMtuChanged(
     val device: BluetoothDevice,
     val mtu: Int
 ) : CharacteristicEvent, DescriptorEvent
 
-internal data class OnExecuteWrite(
+data class OnExecuteWrite(
     val device: BluetoothDevice,
     val requestId: Int,
     val execute: Boolean
 ) : CharacteristicEvent, DescriptorEvent
 
-internal data class OnCharacteristicReadRequest(
+data class OnCharacteristicReadRequest(
     val device: BluetoothDevice,
     val requestId: Int,
     val offset: Int,
     val characteristic: BluetoothGattCharacteristic
 ) : CharacteristicEvent
 
-internal data class OnCharacteristicWriteRequest(
+data class OnCharacteristicWriteRequest(
     val device: BluetoothDevice,
     val requestId: Int,
     val characteristic: BluetoothGattCharacteristic,
@@ -97,21 +97,21 @@ internal data class OnCharacteristicWriteRequest(
     val value: ByteArray
 ) : CharacteristicEvent
 
-internal data class OnNotificationSent(
+data class OnNotificationSent(
     val device: BluetoothDevice,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
-internal sealed interface DescriptorEvent : ServiceEvent
+sealed interface DescriptorEvent : ServiceEvent
 
-internal data class OnDescriptorReadRequest(
+data class OnDescriptorReadRequest(
     val device: BluetoothDevice,
     val requestId: Int,
     val offset: Int,
     val descriptor: BluetoothGattDescriptor
 ) : DescriptorEvent
 
-internal data class OnDescriptorWriteRequest(
+data class OnDescriptorWriteRequest(
     val device: BluetoothDevice,
     val requestId: Int,
     val descriptor: BluetoothGattDescriptor,

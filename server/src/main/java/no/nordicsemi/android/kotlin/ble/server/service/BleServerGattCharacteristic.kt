@@ -41,19 +41,19 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.server.event.CharacteristicEvent
-import no.nordicsemi.android.kotlin.ble.server.event.DescriptorEvent
-import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicReadRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnCharacteristicWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.event.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.event.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.server.event.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.event.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.native.BleServer
+import no.nordicsemi.android.kotlin.ble.core.server.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicWriteRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnNotificationSent
+import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 import java.util.*
 
 @SuppressLint("MissingPermission")
-class BleServerGattCharacteristic(
+class BleServerGattCharacteristic internal constructor(
     private val server: BleServer,
     private val device: BluetoothDevice,
     private val characteristic: BluetoothGattCharacteristic

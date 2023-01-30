@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.event
+package no.nordicsemi.android.kotlin.ble.core.client
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
@@ -37,24 +37,62 @@ import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
-internal sealed interface GattEvent
+sealed interface GattEvent
 
-internal class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
+class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
 
-internal class OnConnectionStateChanged(val gatt: BluetoothGatt?, val status: BleGattOperationStatus, val newState: Int) : GattEvent
-internal class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: BleGattOperationStatus) : GattEvent
-internal class OnPhyRead(val gatt: BluetoothGatt?, val txPhy: BleGattPhy, val rxPhy: BleGattPhy, val status: BleGattOperationStatus) : GattEvent
-internal class OnPhyUpdate(val gatt: BluetoothGatt?, val txPhy: BleGattPhy, val rxPhy: BleGattPhy, val status: BleGattOperationStatus) : GattEvent
-internal class OnReadRemoteRssi(val gatt: BluetoothGatt?, val rssi: Int, val status: BleGattOperationStatus) : GattEvent
-internal class OnServiceChanged(val gatt: BluetoothGatt) : GattEvent
+class OnConnectionStateChanged(
+    val gatt: BluetoothGatt?,
+    val status: BleGattOperationStatus,
+    val newState: Int
+) : GattEvent
 
-internal sealed interface CharacteristicEvent : GattEvent
+class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: BleGattOperationStatus) : GattEvent
 
-internal class OnCharacteristicChanged(val characteristic: BluetoothGattCharacteristic, val value: ByteArray) : CharacteristicEvent
-internal class OnCharacteristicRead(val characteristic: BluetoothGattCharacteristic, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnCharacteristicWrite(val characteristic: BluetoothGattCharacteristic, val status: BleGattOperationStatus) : CharacteristicEvent
+class OnPhyRead(
+    val gatt: BluetoothGatt?,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
+    val status: BleGattOperationStatus
+) : GattEvent
 
-internal class OnDescriptorRead(val descriptor: BluetoothGattDescriptor, val value: ByteArray, val status: BleGattOperationStatus) : CharacteristicEvent
-internal class OnDescriptorWrite(val descriptor: BluetoothGattDescriptor, val status: BleGattOperationStatus) : CharacteristicEvent
+class OnPhyUpdate(
+    val gatt: BluetoothGatt?,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
+    val status: BleGattOperationStatus
+) : GattEvent
 
-internal class OnReliableWriteCompleted(val gatt: BluetoothGatt?, val status: BleGattOperationStatus) : CharacteristicEvent
+class OnReadRemoteRssi(val gatt: BluetoothGatt?, val rssi: Int, val status: BleGattOperationStatus) : GattEvent
+class OnServiceChanged(val gatt: BluetoothGatt) : GattEvent
+
+sealed interface CharacteristicEvent : GattEvent
+
+class OnCharacteristicChanged(
+    val characteristic: BluetoothGattCharacteristic,
+    val value: ByteArray
+) : CharacteristicEvent
+
+class OnCharacteristicRead(
+    val characteristic: BluetoothGattCharacteristic,
+    val value: ByteArray,
+    val status: BleGattOperationStatus
+) : CharacteristicEvent
+
+class OnCharacteristicWrite(
+    val characteristic: BluetoothGattCharacteristic,
+    val status: BleGattOperationStatus
+) : CharacteristicEvent
+
+class OnDescriptorRead(
+    val descriptor: BluetoothGattDescriptor,
+    val value: ByteArray,
+    val status: BleGattOperationStatus
+) : CharacteristicEvent
+
+class OnDescriptorWrite(
+    val descriptor: BluetoothGattDescriptor,
+    val status: BleGattOperationStatus
+) : CharacteristicEvent
+
+class OnReliableWriteCompleted(val gatt: BluetoothGatt?, val status: BleGattOperationStatus) : CharacteristicEvent
