@@ -33,8 +33,11 @@ package no.nordicsemi.android.kotlin.ble.core.client
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import kotlinx.coroutines.flow.SharedFlow
 
 interface BleGatt {
+
+    val event: SharedFlow<GattEvent>
 
     fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
@@ -53,4 +56,12 @@ interface BleGatt {
     fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray)
 
     fun readDescriptor(descriptor: BluetoothGattDescriptor)
+
+    fun readRemoteRssi()
+
+    fun readPhy()
+
+    fun discoverServices()
+
+    fun setPreferredPhy(txPhy: Int, rxPhy: Int, phyOptions: Int)
 }

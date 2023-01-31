@@ -42,29 +42,26 @@ sealed interface GattEvent
 class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperationStatus) : GattEvent
 
 class OnConnectionStateChanged(
-    val gatt: BluetoothGatt?,
     val status: BleGattOperationStatus,
     val newState: Int
 ) : GattEvent
 
-class OnMtuChanged(val gatt: BluetoothGatt?, val mtu: Int, val status: BleGattOperationStatus) : GattEvent
+class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
 
 class OnPhyRead(
-    val gatt: BluetoothGatt?,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattEvent
 
 class OnPhyUpdate(
-    val gatt: BluetoothGatt?,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattEvent
 
-class OnReadRemoteRssi(val gatt: BluetoothGatt?, val rssi: Int, val status: BleGattOperationStatus) : GattEvent
-class OnServiceChanged(val gatt: BluetoothGatt) : GattEvent
+class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
+object OnServiceChanged : GattEvent
 
 sealed interface CharacteristicEvent : GattEvent
 
@@ -95,4 +92,4 @@ class OnDescriptorWrite(
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
-class OnReliableWriteCompleted(val gatt: BluetoothGatt?, val status: BleGattOperationStatus) : CharacteristicEvent
+class OnReliableWriteCompleted(val status: BleGattOperationStatus) : CharacteristicEvent

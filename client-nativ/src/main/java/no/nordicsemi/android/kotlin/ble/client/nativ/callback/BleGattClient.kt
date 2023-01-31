@@ -36,13 +36,17 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.client.nativ.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.client.nativ.ClientScope
 import no.nordicsemi.android.kotlin.ble.client.nativ.errors.DeviceDisconnectedException
+import no.nordicsemi.android.kotlin.ble.client.nativ.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnMtuChanged
@@ -51,59 +55,34 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.client.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.core.client.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.client.nativ.BluetoothGattWrapper
-import no.nordicsemi.android.kotlin.ble.client.nativ.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class BleGattClient {
-
-    private var gatt: BluetoothGatt? = null
-
-    private val gattProxy: BluetoothGattClientCallback = BluetoothGattClientCallback {
-        when (it) {
-            is OnConnectionStateChanged -> onConnectionStateChange(it.gatt, it.status, it.newState)
-            is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
-            is CharacteristicEvent -> _connection.value.services?.apply { onCharacteristicEvent(it) }
-            is OnMtuChanged -> onEvent(it)
-            is OnPhyRead -> onEvent(it)
-            is OnPhyUpdate -> onEvent(it)
-            is OnReadRemoteRssi -> onEvent(it)
-            is OnServiceChanged -> onEvent(it)
-        }
-    }
+class BleGattClient(
+    private val gatt: BleGatt
+) {
 
     private val _connection = MutableStateFlow(BleGattConnection())
     val connection = _connection.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun readRemoteRssi() {
-        gatt?.readRemoteRssi()
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun readPhy() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            gatt?.readPhy()
-        } else {
-            onEvent(OnPhyRead(gatt, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
-        }
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            gatt?.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
-        } else {
-            onEvent(OnPhyUpdate(gatt, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
-        }
+    init {
+        gatt.event.onEach {
+            when (it) {
+                is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
+                is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
+                is CharacteristicEvent -> _connection.value.services?.apply { onCharacteristicEvent(it) }
+                is OnMtuChanged -> onEvent(it)
+                is OnPhyRead -> onEvent(it)
+                is OnPhyUpdate -> onEvent(it)
+                is OnReadRemoteRssi -> onEvent(it)
+                is OnServiceChanged -> onEvent(it)
+            }
+        }.launchIn(ClientScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -121,30 +100,21 @@ class BleGattClient {
             }
             onConnectionStateChangedCallback = null
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            device.connectGatt(context, options.autoConnect, gattProxy, BluetoothDevice.TRANSPORT_LE, options.getPhy())
-        } else {
-            device.connectGatt(context, options.autoConnect, gattProxy)
-        }
     }
 
     @SuppressLint("MissingPermission")
-    private fun onConnectionStateChange(gatt: BluetoothGatt?, status: BleGattOperationStatus, newState: Int) {
+    private fun onConnectionStateChange(status: BleGattOperationStatus, newState: Int) {
         val connectionState = GattConnectionState.create(newState)
         _connection.value = _connection.value.copy(connectionState = connectionState)
-        gatt?.let { this.gatt = it }
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_CONNECTED) {
-            gatt?.discoverServices()
+            gatt.discoverServices()
         }
     }
 
-    private fun onServicesDiscovered(gatt: BluetoothGatt?, status: BleGattOperationStatus) {
-        //TODO inject?
-        val gattWrapper = BluetoothGattWrapper(gatt!!)
-        val services = gatt.services?.let { BleGattServices(gattWrapper, it) }
+    private fun onServicesDiscovered(g: BluetoothGatt?, status: BleGattOperationStatus) {
+        val services = g?.services?.let { BleGattServices(gatt, it) }
         _connection.value = _connection.value.copy(services = services)
     }
 
@@ -172,6 +142,6 @@ class BleGattClient {
 
     @SuppressLint("MissingPermission")
     private fun onEvent(event: OnServiceChanged) {
-        gatt?.discoverServices()
+        gatt.discoverServices()
     }
 }

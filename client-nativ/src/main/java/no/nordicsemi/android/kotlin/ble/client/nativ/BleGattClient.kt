@@ -32,9 +32,12 @@
 package no.nordicsemi.android.kotlin.ble.client.nativ
 
 import android.Manifest
+import android.bluetooth.BluetoothDevice
 import android.content.Context
+import android.os.Build
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.nativ.callback.BleGattClient
+import no.nordicsemi.android.kotlin.ble.client.nativ.callback.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -42,7 +45,15 @@ suspend fun BleDevice.connect(
     context: Context,
     options: BleGattConnectOptions = BleGattConnectOptions()
 ): BleGattClient {
-    return BleGattClient().also {
+    val gattCallback = BluetoothGattClientCallback()
+
+    val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        device.connectGatt(context, options.autoConnect, gattCallback, BluetoothDevice.TRANSPORT_LE, options.getPhy())
+    } else {
+        device.connectGatt(context, options.autoConnect, gattCallback)
+    }
+
+    return BleGattClient(BluetoothGattWrapper(gatt, gattCallback)).also {
         it.connect(context, options, this.device)
     }
 }
