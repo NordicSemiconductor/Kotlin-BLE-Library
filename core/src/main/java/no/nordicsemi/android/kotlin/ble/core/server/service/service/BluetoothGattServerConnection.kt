@@ -29,33 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
-group = "no.nordicsemi.android.kotlin.ble.app.client"
+import android.bluetooth.BluetoothDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app.client"
-}
+data class BluetoothGattServerConnection internal constructor(
+    private val device: BluetoothDevice,
+    private val server: BleServerAPI,
+    val services: BleGattServerServices,
+    val txPhy: BleGattPhy? = null,
+    val rxPhy: BleGattPhy? = null
+) {
 
-dependencies {
-    implementation(project(":advertiser"))
-    implementation(project(":core"))
-    implementation(project(":scanner"))
+    fun readPhy() {
+        server.readPhy(device)
+    }
 
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        server.requestPhy(device, txPhy, rxPhy, phyOption)
+    }
 }

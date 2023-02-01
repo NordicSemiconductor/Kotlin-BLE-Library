@@ -29,33 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
-group = "no.nordicsemi.android.kotlin.ble.app.client"
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app.client"
-}
-
-dependencies {
-    implementation(project(":advertiser"))
-    implementation(project(":core"))
-    implementation(project(":scanner"))
-
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
-}
+data class BleServerGattServiceConfig(
+    val uuid: UUID,
+    val type: BleGattServerServiceType,
+    val characteristicConfigs: List<BleServerGattCharacteristicConfig>
+)
