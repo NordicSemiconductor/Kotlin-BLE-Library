@@ -32,7 +32,6 @@
 plugins {
     alias(libs.plugins.nordic.feature)
     alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus)
     id("kotlin-parcelize")
 }
 

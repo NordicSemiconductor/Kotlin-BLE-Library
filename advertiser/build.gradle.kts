@@ -31,7 +31,6 @@
 
 plugins {
     alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.nexus)
 }
 
 group = "no.nordicsemi.android.kotlin.ble.advertiser"
