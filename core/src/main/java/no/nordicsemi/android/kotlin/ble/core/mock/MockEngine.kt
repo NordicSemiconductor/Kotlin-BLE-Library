@@ -29,34 +29,15 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
-}
+package no.nordicsemi.android.kotlin.ble.core.mock
 
-group = "no.nordicsemi.android.kotlin.ble.app.server"
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.app.server"
-}
+class MockEngine {
+    private val registeredServers = mapOf<BleDevice, BleServer>()
 
-dependencies {
-    implementation(project(":advertiser"))
-    implementation(project(":core"))
-    implementation(project(":scanner"))
+    private fun registerServer(server: BleServer) {
 
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
-
-    implementation(libs.kotlinx.coroutines.core)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.compose.material.iconsExtended)
-
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.3")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
+    }
 }
