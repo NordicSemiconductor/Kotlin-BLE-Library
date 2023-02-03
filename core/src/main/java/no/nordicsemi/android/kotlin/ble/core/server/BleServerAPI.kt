@@ -31,9 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.core.server
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
@@ -42,7 +42,7 @@ interface BleServerAPI {
     val event: SharedFlow<GattServerEvent>
 
     fun sendResponse(
-        device: BluetoothDevice,
+        device: BleDevice,
         requestId: Int,
         status: Int,
         offset: Int,
@@ -50,7 +50,7 @@ interface BleServerAPI {
     )
 
     fun notifyCharacteristicChanged(
-        device: BluetoothDevice,
+        device: BleDevice,
         characteristic: BluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
@@ -58,9 +58,9 @@ interface BleServerAPI {
 
     fun close()
 
-    fun connect(device: BluetoothDevice, autoConnect: Boolean)
+    fun connect(device: BleDevice, autoConnect: Boolean)
 
-    fun readPhy(device: BluetoothDevice)
+    fun readPhy(device: BleDevice)
 
-    fun requestPhy(device: BluetoothDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
+    fun requestPhy(device: BleDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 }

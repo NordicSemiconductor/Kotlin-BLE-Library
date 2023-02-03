@@ -31,13 +31,59 @@
 
 package no.nordicsemi.android.kotlin.ble.core.mock
 
+import android.bluetooth.BluetoothGattCharacteristic
+import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.client.BleClient
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.server.BleServer
+import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
+import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
 
-class MockEngine {
-    private val registeredServers = mapOf<BleDevice, BleServer>()
+class MockEngine : BleServerAPI {
+    private val registeredServers = mutableMapOf<BleDevice, BleServer>()
+    private val registeredClients = mutableMapOf<BleServer, BleClient>()
 
-    private fun registerServer(server: BleServer) {
+    private fun registerServer(device: BleDevice, server: BleServer) {
+        registeredServers[device] = server
+    }
 
+    private fun connectClient(client: BleClient, device: BleDevice) {
+        val server = registeredServers[device]
+    }
+
+    override val event: SharedFlow<GattServerEvent>
+        get() = TODO("Not yet implemented")
+
+    override fun sendResponse(device: BleDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+        val client = registeredClients[registeredServers[device]]
+
+        client.
+    }
+
+    override fun notifyCharacteristicChanged(
+        device: BleDevice,
+        characteristic: BluetoothGattCharacteristic,
+        confirm: Boolean,
+        value: ByteArray
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override fun close() {
+        TODO("Not yet implemented")
+    }
+
+    override fun connect(device: BleDevice, autoConnect: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun readPhy(device: BleDevice) {
+        TODO("Not yet implemented")
+    }
+
+    override fun requestPhy(device: BleDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        TODO("Not yet implemented")
     }
 }
