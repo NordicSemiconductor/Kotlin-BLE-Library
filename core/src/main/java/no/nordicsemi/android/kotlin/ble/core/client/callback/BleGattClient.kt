@@ -66,20 +66,6 @@ class BleGattClient(
     private val gatt: BleGatt
 ) : BleClient {
 
-    companion object {
-
-        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        suspend fun create(
-            device: BleDevice,
-            context: Context,
-            options: BleGattConnectOptions = BleGattConnectOptions()
-        ) : BleGattClient {
-            return BleGattClient(device.createConnection(context, options)).also {
-                it.connect()
-            }
-        }
-    }
-
     private val _connection = MutableStateFlow(BleGattConnection())
     override val connection = _connection.asStateFlow()
 

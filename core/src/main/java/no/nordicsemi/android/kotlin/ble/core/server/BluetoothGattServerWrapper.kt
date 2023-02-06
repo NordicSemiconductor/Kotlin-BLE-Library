@@ -32,67 +32,105 @@
 package no.nordicsemi.android.kotlin.ble.core.server
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.os.Build
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
+import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.core.server.callback.BleGattServerCallback
 
 @SuppressLint("MissingPermission")
 internal class BluetoothGattServerWrapper(
     private val server: BluetoothGattServer,
-    private val callback: BleGattServerCallback
-) : BleServerAPI {
+    private val callback: BleGattServerCallback,
+    private val mockEngine: MockEngine
+) {
 
-    override val event: SharedFlow<GattServerEvent> = callback.event
+    val event: SharedFlow<GattServerEvent> = callback.event
 
-    override fun sendResponse(
-        device: BluetoothDevice,
+    fun sendResponse(
+        device: ClientDevice,
         requestId: Int,
         status: Int,
         offset: Int,
         value: ByteArray?
     ) {
-        server.sendResponse(device, requestId, status, offset, value)
+        when (device) {
+            is MockClientDevice -> mockEngine.sendResponse(device, requestId, status, offset, value)
+            is RealClientDevice -> server.sendResponse(device.device, requestId, status, offset, value)
+        }
     }
 
-    override fun notifyCharacteristicChanged(
-        device: BluetoothDevice,
+    fun notifyCharacteristicChanged(
+        device: ClientDevice,
+        characteristic: BluetoothGattCharacteristic,
+        confirm: Boolean,
+        value: ByteArray
+    ) {
+        when (device) {
+            is MockClientDevice -> mockEngine.notifyCharacteristicChanged(device, characteristic, confirm, value)
+            is RealClientDevice -> notifyCharacteristicChanged(device, characteristic, confirm, value)
+        }
+    }
+
+    private fun notifyCharacteristicChanged(
+        device: RealClientDevice,
         characteristic: BluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            server.notifyCharacteristicChanged(device, characteristic, confirm, value)
+            server.notifyCharacteristicChanged(device.device, characteristic, confirm, value)
         } else {
             characteristic.value = value
-            server.notifyCharacteristicChanged(device, characteristic, confirm)
+            server.notifyCharacteristicChanged(device.device, characteristic, confirm)
         }
     }
 
-    override fun close() {
-        server.close()
+    fun close() {
+        server.close() //TODO
     }
 
-    override fun connect(device: BluetoothDevice, autoConnect: Boolean) {
-        server.connect(device, autoConnect)
+    fun connect(device: ClientDevice, autoConnect: Boolean) {
+        when (device) {
+            is MockClientDevice -> mockEngine.connect(device, autoConnect)
+            is RealClientDevice -> server.connect(device.device, autoConnect)
+        }
     }
 
-    override fun readPhy(device: BluetoothDevice) {
+    fun readPhy(device: ClientDevice) {
+        when (device) {
+            is MockClientDevice -> mockEngine.readPhy(device)
+            is RealClientDevice -> readPhy(device)
+        }
+    }
+
+    private fun readPhy(device: RealClientDevice) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            server.readPhy(device)
+            server.readPhy(device.device)
         } else {
-            callback.onEvent(OnPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_2M, BleGattOperationStatus.GATT_SUCCESS))
+            callback.onEvent(OnPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 
-    override fun requestPhy(device: BluetoothDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+    fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        when (device) {
+            is MockClientDevice -> mockEngine.requestPhy(device, txPhy, rxPhy, phyOption)
+            is RealClientDevice -> requestPhy(device, txPhy, rxPhy, phyOption)
+        }
+    }
+
+    private fun requestPhy(device: RealClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            server.setPreferredPhy(device, txPhy.value, rxPhy.value, phyOption.value)
+            server.setPreferredPhy(device.device, txPhy.value, rxPhy.value, phyOption.value)
+        } else {
+            callback.onEvent(OnPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 }

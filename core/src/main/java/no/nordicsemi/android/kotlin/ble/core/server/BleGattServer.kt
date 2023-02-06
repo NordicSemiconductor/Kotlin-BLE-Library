@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.core.server
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -43,8 +42,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.core.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleGattServerServices
@@ -53,8 +55,8 @@ import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGat
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGattServiceFactory
 
 class BleGattServer internal constructor(
-    private val server: BleServerAPI
-) : BleServer {
+    private val server: BluetoothGattServerWrapper
+) {
 
     companion object {
 
@@ -65,7 +67,7 @@ class BleGattServer internal constructor(
 
             val callback = BleGattServerCallback()
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-            val server = BluetoothGattServerWrapper(bluetoothGattServer, callback)
+            val server = BluetoothGattServerWrapper(bluetoothGattServer, callback, MockEngine)
 
             config.forEach {
                 bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
@@ -76,8 +78,8 @@ class BleGattServer internal constructor(
     }
 
     private val _connections =
-        MutableStateFlow(mapOf<BluetoothDevice, BluetoothGattServerConnection>())
-    override val connections = _connections.asStateFlow()
+        MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
+    val connections = _connections.asStateFlow()
 
     private var services: List<BluetoothGattService> = emptyList()
 
@@ -99,12 +101,12 @@ class BleGattServer internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun stopServer() {
+    fun stopServer() {
         server.close()
     }
 
     private fun onConnectionStateChanged(
-        device: BluetoothDevice,
+        device: ClientDevice,
         status: BleGattOperationStatus,
         newState: Int
     ) {
@@ -120,14 +122,14 @@ class BleGattServer internal constructor(
         }
     }
 
-    private fun removeDevice(device: BluetoothDevice) {
+    private fun removeDevice(device: ClientDevice) {
         val mutableMap = connections.value.toMutableMap()
         mutableMap.remove(device)
         _connections.value = mutableMap.toMap()
     }
 
     @SuppressLint("MissingPermission")
-    private fun connectDevice(device: BluetoothDevice) {
+    private fun connectDevice(device: ClientDevice) {
         val copiedServices = services.map {
             BleGattServerService(
                 server,

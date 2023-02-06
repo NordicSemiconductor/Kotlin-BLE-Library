@@ -49,6 +49,8 @@ import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewMod
 import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattClient
 import java.util.*
 import javax.inject.Inject
@@ -73,7 +75,7 @@ class BlinkyViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : SimpleNavigationViewModel(navigator, savedStateHandle) {
 
-    private val _device = MutableStateFlow<BleDevice?>(null)
+    private val _device = MutableStateFlow<ServerDevice?>(null)
     val device = _device.asStateFlow()
 
     private val _state = MutableStateFlow(BlinkyState())
@@ -88,9 +90,9 @@ class BlinkyViewModel @Inject constructor(
         startGattClient(blinkyDevice)
     }
 
-    private fun startGattClient(blinkyDevice: BleDevice) = viewModelScope.launch {
+    private fun startGattClient(blinkyDevice: ServerDevice) = viewModelScope.launch {
         //Connect a Bluetooth LE device.
-        val client = BleGattClient.create(blinkyDevice, context)
+        val client = blinkyDevice.connect(context)
 
         //Discover services on the Bluetooth LE Device.
         client.connection

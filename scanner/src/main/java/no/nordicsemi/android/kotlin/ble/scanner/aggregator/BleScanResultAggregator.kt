@@ -31,23 +31,23 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.aggregator
 
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 
 class BleScanResultAggregator {
-    private val cachedDevices = mutableListOf<BleDevice>()
+    private val cachedDevices = mutableListOf<ClientDevice>()
 
-    fun addNewDevice(device: BleDevice): List<BleDevice> {
+    fun addNewDevice(device: ClientDevice): List<ClientDevice> {
         aggregate(device)
         return cachedDevices.toList()
     }
 
-    fun addNewDevices(devices: List<BleDevice>): List<BleDevice> {
+    fun addNewDevices(devices: List<ClientDevice>): List<ClientDevice> {
         devices.forEach { aggregate(it) }
         return cachedDevices.toList()
     }
 
-    private fun aggregate(device: BleDevice) {
-        cachedDevices.firstOrNull { it.device == device.device }
+    private fun aggregate(device: ClientDevice) {
+        cachedDevices.firstOrNull { it == device }
             ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
             ?: run { cachedDevices.add(device) }
     }

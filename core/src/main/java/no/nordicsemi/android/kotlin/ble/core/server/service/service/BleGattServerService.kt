@@ -31,15 +31,15 @@
 
 package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.server.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
 import java.util.*
 
 class BleGattServerService internal constructor(
-    private val server: BleServerAPI,
-    private val device: BluetoothDevice,
+    private val server: BluetoothGattServerWrapper,
+    private val device: ClientDevice,
     private val service: BluetoothGattService
 ) {
 

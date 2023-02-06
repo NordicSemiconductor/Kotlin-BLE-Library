@@ -34,36 +34,35 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.server.BleServer
-import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
 
-internal object MockEngine : BleServerAPI {
-    private val registeredServers = mutableMapOf<BleDevice, BleServer>()
-    private val registeredClients = mutableMapOf<BleServer, BleClient>()
-
-    private fun registerServer(device: BleDevice, server: BleServer) {
-        registeredServers[device] = server
-    }
+internal object MockEngine {
+//    private val registeredServers = mutableMapOf<BleDevice, BleServer>()
+//    private val registeredClients = mutableMapOf<BleServer, BleClient>()
+//
+//    private fun registerServer(device: BleDevice, server: BleServer) {
+//        registeredServers[device] = server
+//    }
 
     private fun connectClient(client: BleClient, device: BleDevice) {
-        val server = registeredServers[device]
+//        val server = registeredServers[device]
     }
 
-    override val event: SharedFlow<GattServerEvent>
+    val event: SharedFlow<GattServerEvent>
         get() = TODO("Not yet implemented")
 
-    override fun sendResponse(device: BleDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
-        val client = registeredClients[registeredServers[device]]
+    fun sendResponse(device: MockClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+//        val client = registeredClients[registeredServers[device]]
 
 
     }
 
-    override fun notifyCharacteristicChanged(
-        device: BleDevice,
+    fun notifyCharacteristicChanged(
+        device: MockClientDevice,
         characteristic: BluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
@@ -71,19 +70,19 @@ internal object MockEngine : BleServerAPI {
         TODO("Not yet implemented")
     }
 
-    override fun close() {
+    fun close() {
         TODO("Not yet implemented")
     }
 
-    override fun connect(device: BleDevice, autoConnect: Boolean) {
+    fun connect(device: MockClientDevice, autoConnect: Boolean) {
         TODO("Not yet implemented")
     }
 
-    override fun readPhy(device: BleDevice) {
+    fun readPhy(device: MockClientDevice) {
         TODO("Not yet implemented")
     }
 
-    override fun requestPhy(device: BleDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+    fun requestPhy(device: MockClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         TODO("Not yet implemented")
     }
 }

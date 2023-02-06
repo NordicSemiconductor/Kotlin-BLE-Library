@@ -32,15 +32,16 @@
 package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.server.BluetoothGattServerWrapper
 import no.nordicsemi.android.kotlin.ble.core.server.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
@@ -49,13 +50,12 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.core.server.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
 import java.util.*
 
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic internal constructor(
-    private val server: BleServerAPI,
-    private val device: BluetoothDevice,
+    private val server: BluetoothGattServerWrapper,
+    private val device: ClientDevice,
     private val characteristic: BluetoothGattCharacteristic
 ) {
 

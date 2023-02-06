@@ -31,16 +31,19 @@
 
 package no.nordicsemi.android.kotlin.ble.core
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Build
 import android.os.Parcelable
+import androidx.annotation.RequiresPermission
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.client.BluetoothGattWrapper
+import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.core.mock.MockClientAPI
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
@@ -50,7 +53,86 @@ sealed interface BleDevice {
     fun createConnection(
         context: Context,
         options: BleGattConnectOptions = BleGattConnectOptions()
-    ) : BleGatt
+    ): BleGatt
+}
+
+sealed interface ServerDevice {
+
+    val name: String
+    val address: String
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun connect(
+        context: Context,
+        options: BleGattConnectOptions = BleGattConnectOptions()
+    ): BleGattClient
+}
+
+sealed interface ClientDevice {
+
+
+}
+
+class RealClientDevice(
+    val device: BluetoothDevice
+) : ClientDevice
+
+class RealServerDevice(
+    private val device: BluetoothDevice
+) : ServerDevice {
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override val name: String = device.name
+
+    override val address: String
+        get() = device.address
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override suspend fun connect(
+        context: Context,
+        options: BleGattConnectOptions
+    ): BleGattClient {
+        return BleGattClient(createConnection(context, options)).also {
+            it.connect()
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private fun createConnection(
+        context: Context,
+        options: BleGattConnectOptions,
+    ): BleGatt {
+        val gattCallback = BluetoothGattClientCallback()
+
+        val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            device.connectGatt(
+                context,
+                options.autoConnect,
+                gattCallback,
+                BluetoothDevice.TRANSPORT_LE,
+                options.getPhy()
+            )
+        } else {
+            device.connectGatt(context, options.autoConnect, gattCallback)
+        }
+
+        return BluetoothGattWrapper(gatt, gattCallback)
+    }
+}
+
+class MockClientDevice() : ClientDevice
+
+class MockServerDevice() : ServerDevice  {
+    override val name: String = "NAME"
+    override val address: String = "11:22:33:44:55"
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override suspend fun connect(
+        context: Context,
+        options: BleGattConnectOptions
+    ): BleGattClient {
+        TODO()
+    }
 }
 
 @SuppressLint("MissingPermission")
@@ -72,11 +154,17 @@ class RealBleDevice(
     override fun createConnection(
         context: Context,
         options: BleGattConnectOptions
-    ) : BleGatt {
+    ): BleGatt {
         val gattCallback = BluetoothGattClientCallback()
 
         val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            device.connectGatt(context, options.autoConnect, gattCallback, BluetoothDevice.TRANSPORT_LE, options.getPhy())
+            device.connectGatt(
+                context,
+                options.autoConnect,
+                gattCallback,
+                BluetoothDevice.TRANSPORT_LE,
+                options.getPhy()
+            )
         } else {
             device.connectGatt(context, options.autoConnect, gattCallback)
         }

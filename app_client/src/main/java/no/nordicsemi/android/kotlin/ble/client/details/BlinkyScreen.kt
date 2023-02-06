@@ -49,8 +49,10 @@ import no.nordicsemi.android.common.navigation.defineDestination
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.kotlin.ble.app.client.R
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
-val BlinkyDestinationId = createDestination<BleDevice, Unit>("blinky")
+val BlinkyDestinationId = createDestination<ServerDevice, Unit>("blinky")
 
 val BlinkyDestination = defineDestination(BlinkyDestinationId) { BlinkyScreen() }
 

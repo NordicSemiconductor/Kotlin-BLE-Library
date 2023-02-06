@@ -39,6 +39,7 @@ import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
@@ -68,7 +69,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
         offset: Int,
         characteristic: BluetoothGattCharacteristic?
     ) {
-        _event.tryEmit(OnCharacteristicReadRequest(device!!, requestId, offset, characteristic!!))
+        _event.tryEmit(OnCharacteristicReadRequest(RealClientDevice(device!!), requestId, offset, characteristic!!))
     }
 
     override fun onCharacteristicWriteRequest(
@@ -82,7 +83,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     ) {
         _event.tryEmit(
             OnCharacteristicWriteRequest(
-                device!!,
+                RealClientDevice(device!!),
                 requestId,
                 characteristic!!,
                 preparedWrite,
@@ -94,7 +95,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
-        _event.tryEmit(OnConnectionStateChanged(device!!, BleGattOperationStatus.create(status), newState))
+        _event.tryEmit(OnConnectionStateChanged(RealClientDevice(device!!), BleGattOperationStatus.create(status), newState))
     }
 
     override fun onDescriptorReadRequest(
@@ -103,7 +104,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
         offset: Int,
         descriptor: BluetoothGattDescriptor?
     ) {
-        _event.tryEmit(OnDescriptorReadRequest(device!!, requestId, offset, descriptor!!))
+        _event.tryEmit(OnDescriptorReadRequest(RealClientDevice(device!!), requestId, offset, descriptor!!))
     }
 
     override fun onDescriptorWriteRequest(
@@ -117,7 +118,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     ) {
         _event.tryEmit(
             OnDescriptorWriteRequest(
-                device!!,
+                RealClientDevice(device!!),
                 requestId,
                 descriptor!!,
                 preparedWrite,
@@ -129,21 +130,21 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
-        _event.tryEmit(OnExecuteWrite(device!!, requestId, execute))
+        _event.tryEmit(OnExecuteWrite(RealClientDevice(device!!), requestId, execute))
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
-        _event.tryEmit(OnMtuChanged(device!!, mtu))
+        _event.tryEmit(OnMtuChanged(RealClientDevice(device!!), mtu))
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
-        _event.tryEmit(OnNotificationSent(device!!, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnNotificationSent(RealClientDevice(device!!), BleGattOperationStatus.create(status)))
     }
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
             OnPhyRead(
-                device!!,
+                RealClientDevice(device!!),
                 BleGattPhy.create(txPhy),
                 BleGattPhy.create(rxPhy),
                 BleGattOperationStatus.create(status)
@@ -154,7 +155,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
             OnPhyUpdate(
-                device!!,
+                RealClientDevice(device!!),
                 BleGattPhy.create(txPhy),
                 BleGattPhy.create(rxPhy),
                 BleGattOperationStatus.create(status)
