@@ -34,15 +34,31 @@ package no.nordicsemi.android.kotlin.ble.core
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
+import android.content.Context
+import android.os.Build
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
+import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.client.BluetoothGattWrapper
+import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClientCallback
+import no.nordicsemi.android.kotlin.ble.core.mock.MockClientAPI
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
+
+sealed interface BleDevice {
+
+    fun createConnection(
+        context: Context,
+        options: BleGattConnectOptions = BleGattConnectOptions()
+    ) : BleGatt
+}
 
 @SuppressLint("MissingPermission")
 @Parcelize
-class BleDevice(
-    val device: BluetoothDevice,
+class RealBleDevice(
+    private val device: BluetoothDevice,
     val scanResult: ScanResult
-) : Parcelable {
+) : BleDevice, Parcelable {
     val name: String
     val address: String
     val isBonded: Boolean
@@ -51,5 +67,27 @@ class BleDevice(
         name = device.name ?: "NO_NAME"
         address = device.address ?: "NO_ADDRESS"
         isBonded = device.bondState == BluetoothDevice.BOND_BONDED
+    }
+
+    override fun createConnection(
+        context: Context,
+        options: BleGattConnectOptions
+    ) : BleGatt {
+        val gattCallback = BluetoothGattClientCallback()
+
+        val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            device.connectGatt(context, options.autoConnect, gattCallback, BluetoothDevice.TRANSPORT_LE, options.getPhy())
+        } else {
+            device.connectGatt(context, options.autoConnect, gattCallback)
+        }
+
+        return BluetoothGattWrapper(gatt, gattCallback)
+    }
+}
+
+class MockBleDevice : BleDevice {
+
+    override fun createConnection(context: Context, options: BleGattConnectOptions): BleGatt {
+        return MockClientAPI(MockEngine)
     }
 }

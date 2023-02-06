@@ -33,10 +33,8 @@ package no.nordicsemi.android.kotlin.ble.core.client.callback
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
-import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +45,6 @@ import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.core.client.BluetoothGattWrapper
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.ClientScope
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
@@ -77,17 +74,7 @@ class BleGattClient(
             context: Context,
             options: BleGattConnectOptions = BleGattConnectOptions()
         ) : BleGattClient {
-            val device = device.device
-
-            val gattCallback = BluetoothGattClientCallback()
-
-            val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                device.connectGatt(context, options.autoConnect, gattCallback, BluetoothDevice.TRANSPORT_LE, options.getPhy())
-            } else {
-                device.connectGatt(context, options.autoConnect, gattCallback)
-            }
-
-            return BleGattClient(BluetoothGattWrapper(gatt, gattCallback)).also {
+            return BleGattClient(device.createConnection(context, options)).also {
                 it.connect()
             }
         }

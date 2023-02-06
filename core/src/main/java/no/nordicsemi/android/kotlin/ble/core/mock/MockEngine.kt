@@ -41,7 +41,7 @@ import no.nordicsemi.android.kotlin.ble.core.server.BleServer
 import no.nordicsemi.android.kotlin.ble.core.server.BleServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
 
-class MockEngine : BleServerAPI {
+internal object MockEngine : BleServerAPI {
     private val registeredServers = mutableMapOf<BleDevice, BleServer>()
     private val registeredClients = mutableMapOf<BleServer, BleClient>()
 
@@ -59,7 +59,7 @@ class MockEngine : BleServerAPI {
     override fun sendResponse(device: BleDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
         val client = registeredClients[registeredServers[device]]
 
-        client.
+
     }
 
     override fun notifyCharacteristicChanged(

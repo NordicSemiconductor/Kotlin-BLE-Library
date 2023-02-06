@@ -7,7 +7,10 @@ import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.GattEvent
 
-class MockClientAPI : BleGatt {
+class MockClientAPI internal constructor(
+    private val mockEngine: MockEngine
+) : BleGatt {
+
     override val event: SharedFlow<GattEvent>
         get() = TODO("Not yet implemented")
 
