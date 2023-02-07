@@ -34,10 +34,10 @@ package no.nordicsemi.android.kotlin.ble.core.client.service
 import android.Manifest
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
+import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
-import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

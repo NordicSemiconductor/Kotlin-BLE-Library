@@ -49,11 +49,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.view.CircularIcon
 import no.nordicsemi.android.kotlin.ble.app.client.R
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
 fun LazyListScope.ScannerView(
-    devices: List<BleDevice>,
-    onClick: (BleDevice) -> Unit
+    devices: List<ServerDevice>,
+    onClick: (ServerDevice) -> Unit
 ) {
     val bondedDevices = devices.filter { it.isBonded }
     val discoveredDevices = devices.filter { !it.isBonded }
@@ -86,8 +86,8 @@ fun LazyListScope.ScannerView(
 
 @Composable
 private fun BleDeviceView(
-    device: BleDevice,
-    onClick: (BleDevice) -> Unit
+    device: ServerDevice,
+    onClick: (ServerDevice) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,

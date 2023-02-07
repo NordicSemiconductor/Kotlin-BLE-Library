@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.kotlin.ble.client.details.BlinkyDestinationId
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
 import javax.inject.Inject
 
@@ -57,7 +57,7 @@ class ScannerViewModel @Inject constructor(
 
     private val scanner = NordicScanner(context)
 
-    private val _devices = MutableStateFlow<List<BleDevice>>(emptyList())
+    private val _devices = MutableStateFlow<List<ServerDevice>>(emptyList())
     val devices = _devices.asStateFlow()
 
     init {
@@ -66,7 +66,7 @@ class ScannerViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    fun onDeviceSelected(device: BleDevice) {
+    fun onDeviceSelected(device: ServerDevice) {
         navigator.navigateTo(BlinkyDestinationId, device)
     }
 }

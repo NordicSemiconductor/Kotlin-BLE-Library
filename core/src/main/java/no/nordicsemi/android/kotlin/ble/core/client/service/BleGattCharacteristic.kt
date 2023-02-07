@@ -37,12 +37,12 @@ import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
+import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
-import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty

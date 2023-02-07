@@ -34,17 +34,14 @@ package no.nordicsemi.android.kotlin.ble.core.client.callback
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
-import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.ClientScope
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged

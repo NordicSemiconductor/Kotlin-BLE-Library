@@ -32,8 +32,8 @@
 package no.nordicsemi.android.kotlin.ble.core.client.service
 
 import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
+import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
 import java.util.*
 
 class BleGattService internal constructor(gatt: BleGatt, service: BluetoothGattService) {
