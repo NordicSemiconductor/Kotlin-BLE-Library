@@ -34,9 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core.server
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
-import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,8 +43,6 @@ import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
-import no.nordicsemi.android.kotlin.ble.core.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattServiceConfig
@@ -54,25 +50,18 @@ import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGat
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGattServiceFactory
 
 class BleGattServer internal constructor(
-    private val server: BluetoothGattServerWrapper
+    private val server: ServerAPI
 ) {
 
     companion object {
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        fun create(context: Context, vararg config: BleServerGattServiceConfig) : BleGattServer {
-            val bluetoothManager: BluetoothManager =
-                context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-            val callback = BleGattServerCallback()
-            val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-            val server = BluetoothGattServerWrapper(bluetoothGattServer, callback, MockEngine)
-
-            config.forEach {
-                bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
+        fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false) : BleGattServer {
+            return if (mock) {
+                BleGattServer(MockServerAPI.create(*config))
+            } else {
+                BleGattServer(NativeServerAPI.create(context, *config))
             }
-
-            return BleGattServer(server)
         }
     }
 
@@ -84,7 +73,6 @@ class BleGattServer internal constructor(
 
     init {
         server.event.onEach { event ->
-            Log.d("AAATESTAAA", "On server event: $event")
             when (event) {
                 is OnConnectionStateChanged -> onConnectionStateChanged(
                     event.device,
@@ -110,8 +98,6 @@ class BleGattServer internal constructor(
         newState: Int
     ) {
         val connectionState = GattConnectionState.create(newState)
-
-        Log.d("AAATESTAAA", "On connection state change: $status, $newState")
 
         when (connectionState) {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
@@ -143,7 +129,7 @@ class BleGattServer internal constructor(
             BleGattServerServices(server, device, copiedServices)
         )
         _connections.value = mutableMap.toMap()
-        Log.d("AAATESTAAA", "Connect device $server")
+
         server.connect(device, true)
     }
 

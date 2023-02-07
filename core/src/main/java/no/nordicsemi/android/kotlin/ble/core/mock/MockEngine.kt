@@ -34,7 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
-import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -48,6 +48,8 @@ internal object MockEngine {
 //        registeredServers[device] = server
 //    }
 
+
+
     private fun connectClient(client: BleClient, device: BleDevice) {
 //        val server = registeredServers[device]
     }
@@ -55,14 +57,14 @@ internal object MockEngine {
     val event: SharedFlow<GattServerEvent>
         get() = TODO("Not yet implemented")
 
-    fun sendResponse(device: MockClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+    fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
 //        val client = registeredClients[registeredServers[device]]
 
 
     }
 
     fun notifyCharacteristicChanged(
-        device: MockClientDevice,
+        device: ClientDevice,
         characteristic: BluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
@@ -74,15 +76,15 @@ internal object MockEngine {
         TODO("Not yet implemented")
     }
 
-    fun connect(device: MockClientDevice, autoConnect: Boolean) {
+    fun connect(device: ClientDevice, autoConnect: Boolean) {
         TODO("Not yet implemented")
     }
 
-    fun readPhy(device: MockClientDevice) {
+    fun readPhy(device: ClientDevice) {
         TODO("Not yet implemented")
     }
 
-    fun requestPhy(device: MockClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+    fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         TODO("Not yet implemented")
     }
 }

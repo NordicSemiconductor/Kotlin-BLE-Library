@@ -41,7 +41,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.server.BluetoothGattServerWrapper
+import no.nordicsemi.android.kotlin.ble.core.server.ServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
@@ -54,7 +54,7 @@ import java.util.*
 
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic internal constructor(
-    private val server: BluetoothGattServerWrapper,
+    private val server: ServerAPI,
     private val device: ClientDevice,
     private val characteristic: BluetoothGattCharacteristic
 ) {

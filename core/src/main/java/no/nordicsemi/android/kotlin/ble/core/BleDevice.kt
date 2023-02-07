@@ -89,6 +89,9 @@ class RealServerDevice(
         get() = device.address
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override suspend fun connect(
         context: Context,
         options: BleGattConnectOptions
@@ -97,9 +100,6 @@ class RealServerDevice(
             it.connect()
         }
     }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun createConnection(
