@@ -32,15 +32,18 @@
 package no.nordicsemi.android.kotlin.ble.core
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BluetoothGattWrapper
 import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClientCallback
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
 sealed interface BleDevice {
 
@@ -63,35 +66,31 @@ sealed interface ServerDevice : BleDevice {
 
 sealed interface ClientDevice : BleDevice
 
+@SuppressLint("MissingPermission")
 class RealClientDevice(
     val device: BluetoothDevice
 ) : ClientDevice {
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override val name: String = device.name
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override val address: String = device.address
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
 }
 
+@SuppressLint("MissingPermission")
 class RealServerDevice(
     private val device: BluetoothDevice
 ) : ServerDevice {
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override val name: String = device.name ?: ""
 
     override val address: String
         get() = device.address
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override suspend fun connect(
         context: Context,
         options: BleGattConnectOptions
@@ -101,7 +100,6 @@ class RealServerDevice(
         }
     }
 
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun createConnection(
         context: Context,
         options: BleGattConnectOptions,
@@ -140,6 +138,9 @@ class MockServerDevice : ServerDevice  {
         context: Context,
         options: BleGattConnectOptions
     ): BleGattClient {
-        TODO()
+        val gatt = BleMockGatt(MockEngine, this)
+        return BleGattClient(gatt)
+            .also { it.connect() }
+            .also { MockEngine.connectToServer(this, gatt) }
     }
 }

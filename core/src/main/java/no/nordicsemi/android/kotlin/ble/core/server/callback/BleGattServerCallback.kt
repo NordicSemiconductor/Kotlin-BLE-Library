@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicWriteRequest
@@ -95,7 +96,9 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
-        _event.tryEmit(OnConnectionStateChanged(RealClientDevice(device!!), BleGattOperationStatus.create(status), newState))
+        val operationStatus = BleGattOperationStatus.create(status)
+        val state = GattConnectionState.create(newState)
+        _event.tryEmit(OnConnectionStateChanged(RealClientDevice(device!!), operationStatus, state))
     }
 
     override fun onDescriptorReadRequest(

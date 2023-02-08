@@ -56,7 +56,7 @@ class BleGattServer internal constructor(
     companion object {
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false) : BleGattServer {
+        fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false): BleGattServer {
             return if (mock) {
                 BleGattServer(MockServerAPI.create(*config))
             } else {
@@ -95,11 +95,9 @@ class BleGattServer internal constructor(
     private fun onConnectionStateChanged(
         device: ClientDevice,
         status: BleGattOperationStatus,
-        newState: Int
+        newState: GattConnectionState
     ) {
-        val connectionState = GattConnectionState.create(newState)
-
-        when (connectionState) {
+        when (newState) {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
             GattConnectionState.STATE_CONNECTING,
@@ -134,10 +132,8 @@ class BleGattServer internal constructor(
     }
 
     private fun onServiceAdded(service: BluetoothGattService, status: BleGattOperationStatus) {
-        server.let { _ ->
-            if (status == BleGattOperationStatus.GATT_SUCCESS) {
-                services = services + service
-            }
+        if (status == BleGattOperationStatus.GATT_SUCCESS) {
+            services = services + service
         }
     }
 

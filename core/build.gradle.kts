@@ -32,7 +32,6 @@
 plugins {
     alias(libs.plugins.nordic.feature)
     alias(libs.plugins.nordic.hilt)
-    id("kotlin-parcelize")
 }
 
 group = "no.nordicsemi.android.kotlin.ble"
@@ -40,4 +39,8 @@ group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.core"
+}
+
+dependencies {
+    implementation(libs.nordic.core)
 }

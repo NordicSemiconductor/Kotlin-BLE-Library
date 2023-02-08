@@ -38,6 +38,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -80,8 +82,12 @@ internal class MockServerAPI(
     private val mockEngine: MockEngine
 ) : ServerAPI {
 
-    override val event: SharedFlow<GattServerEvent>
-        get() = TODO("Not yet implemented")
+    private val _event = simpleSharedFlow<GattServerEvent>()
+    override val event: SharedFlow<GattServerEvent> = _event.asSharedFlow()
+
+    fun onEvent(event: GattServerEvent) {
+        _event.tryEmit(event)
+    }
 
     companion object {
         fun create(vararg config: BleServerGattServiceConfig): ServerAPI {

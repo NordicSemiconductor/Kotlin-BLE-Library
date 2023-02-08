@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 sealed interface GattServerEvent
 
@@ -48,7 +49,7 @@ data class OnServiceAdded(
 data class OnConnectionStateChanged(
     val device: ClientDevice,
     val status: BleGattOperationStatus,
-    val newState: Int
+    val newState: GattConnectionState
 ) : GattServerEvent
 
 data class OnPhyRead(

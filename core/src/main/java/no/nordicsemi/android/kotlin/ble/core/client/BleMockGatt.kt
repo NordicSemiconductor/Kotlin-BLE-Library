@@ -1,25 +1,27 @@
-package no.nordicsemi.android.kotlin.ble.core.mock
+package no.nordicsemi.android.kotlin.ble.core.client
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
-import no.nordicsemi.android.kotlin.ble.core.client.GattEvent
+import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
-class MockClientAPI internal constructor(
-    private val mockEngine: MockEngine
+internal class BleMockGatt(
+    private val mockEngine: MockEngine,
+    private val serverDevice: MockServerDevice
 ) : BleGatt {
 
-    override val event: SharedFlow<GattEvent>
-        get() = TODO("Not yet implemented")
+    val _event = MutableSharedFlow<GattEvent>()
+    override val event: SharedFlow<GattEvent> = _event.asSharedFlow()
 
     override fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
         writeType: BleWriteType
     ) {
-        TODO("Not yet implemented")
+
     }
 
     override fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
