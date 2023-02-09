@@ -41,7 +41,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.server.ServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
@@ -50,6 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.core.server.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.api.ServerAPI
 import java.util.*
 
 @SuppressLint("MissingPermission")

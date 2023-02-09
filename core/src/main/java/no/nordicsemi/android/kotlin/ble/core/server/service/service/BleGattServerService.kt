@@ -33,8 +33,8 @@ package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.core.server.ServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.api.ServerAPI
 import java.util.*
 
 class BleGattServerService internal constructor(

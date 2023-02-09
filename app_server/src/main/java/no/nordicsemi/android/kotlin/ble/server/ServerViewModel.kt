@@ -116,7 +116,7 @@ class ServerViewModel @Inject constructor(
                 listOf(ledCharacteristic, buttonCharacteristic)
             )
 
-            val server = BleGattServer.create(context, serviceConfig)
+            val server = BleGattServer.create(context, serviceConfig, mock = true)
 
             val advertiser = BleAdvertiser.create(context)
 

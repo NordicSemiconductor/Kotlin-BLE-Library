@@ -37,12 +37,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
-import no.nordicsemi.android.kotlin.ble.core.server.ServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.core.server.api.ServerAPI
 
 @SuppressLint("MissingPermission")
 class BleServerGattDescriptor internal constructor(

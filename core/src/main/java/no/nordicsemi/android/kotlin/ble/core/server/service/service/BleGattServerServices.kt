@@ -32,8 +32,8 @@
 package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.core.server.ServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.server.api.ServerAPI
 import java.util.*
 
 class BleGattServerServices internal constructor(

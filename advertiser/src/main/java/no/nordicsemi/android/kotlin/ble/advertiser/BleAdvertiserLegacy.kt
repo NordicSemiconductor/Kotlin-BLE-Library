@@ -53,7 +53,7 @@ import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
 import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertiseError
 
-class BleAdvertiserLegacy(
+internal class BleAdvertiserLegacy(
     context: Context
 ) : BleAdvertiser {
 

@@ -32,9 +32,6 @@
 package no.nordicsemi.android.kotlin.ble.core.mock
 
 import android.bluetooth.BluetoothGattCharacteristic
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -43,24 +40,22 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
-import no.nordicsemi.android.kotlin.ble.core.server.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 
 internal object MockEngine {
-    private val registeredServers = mutableMapOf<MockServerDevice, MockServerAPI>()
-    private val registeredServersCallbacks = mutableMapOf<MockServerDevice, MutableSharedFlow<GattServerEvent>>()
+    //TODO allow for many devices
+    private val advertisedServers = mutableListOf<MockServerDevice>()
 
+    private val registeredServers = mutableMapOf<MockServerDevice, MockServerAPI>()
     private val registeredClients = mutableMapOf<MockClientDevice, BleMockGatt>()
-    private val registeredConnection = mutableMapOf<MockServerDevice, MockClientDevice>()
 
     private val pendingClients = mutableMapOf<MockServerDevice, BleMockGatt>()
 
-    private fun registerServer(device: MockServerDevice, server: MockServerAPI): Flow<GattServerEvent> {
+    fun registerServer(server: MockServerAPI) {
+        val device = MockServerDevice()
         registeredServers[device] = server
-        return MutableSharedFlow<GattServerEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_LATEST).also {
-            registeredServersCallbacks[device] = it
-        }
+        advertiseServer(device)
     }
 
     fun connectToServer(device: MockServerDevice, client: BleMockGatt) {
@@ -68,8 +63,11 @@ internal object MockEngine {
         pendingClients[device] = client
         val clientDevice = MockClientDevice()
         registeredClients[clientDevice] = client
-        registeredConnection[device] = clientDevice
         server.onEvent(OnConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
+    }
+
+    private fun advertiseServer(device: MockServerDevice) {
+        advertisedServers.add(device)
     }
 
     fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {

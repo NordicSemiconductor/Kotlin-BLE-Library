@@ -52,7 +52,7 @@ import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 
 @RequiresApi(Build.VERSION_CODES.O)
-class BleAdvertiserOreo(
+internal class BleAdvertiserOreo(
     context: Context
 ) : BleAdvertiser {
 
