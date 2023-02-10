@@ -41,6 +41,8 @@ import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
+import no.nordicsemi.android.kotlin.ble.core.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.core.toDomain
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
@@ -64,6 +66,12 @@ class NordicScanner(
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun scan(settings: BleScannerSettings = BleScannerSettings()) = callbackFlow {
         val deviceAggregator = BleScanResultAggregator()
+
+        launch {
+            MockDevices.devices.collect {
+                deviceAggregator.addNewDevices(it)
+            }
+        }
 
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {

@@ -16,47 +16,51 @@ internal class BleMockGatt(
     val _event = MutableSharedFlow<GattEvent>()
     override val event: SharedFlow<GattEvent> = _event.asSharedFlow()
 
+    fun onEvent(event: GattEvent) {
+        _event.tryEmit(event)
+    }
+
     override fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
         writeType: BleWriteType
     ) {
-
+        mockEngine.writeCharacteristic(serverDevice, characteristic, value, writeType)
     }
 
     override fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
+        mockEngine.readCharacteristic(serverDevice, characteristic)
     }
 
     override fun enableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
+        mockEngine.enableCharacteristicNotification(serverDevice, characteristic)
     }
 
     override fun disableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
+        mockEngine.disableCharacteristicNotification(serverDevice, characteristic)
     }
 
     override fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray) {
-        TODO("Not yet implemented")
+        mockEngine.writeDescriptor(serverDevice, descriptor, value)
     }
 
     override fun readDescriptor(descriptor: BluetoothGattDescriptor) {
-        TODO("Not yet implemented")
+        mockEngine.readDescriptor(serverDevice, descriptor)
     }
 
     override fun readRemoteRssi() {
-        TODO("Not yet implemented")
+        mockEngine.readRemoteRssi(serverDevice)
     }
 
     override fun readPhy() {
-        TODO("Not yet implemented")
+        mockEngine.readPhy(serverDevice)
     }
 
     override fun discoverServices() {
-        TODO("Not yet implemented")
+        mockEngine.discoverServices(serverDevice)
     }
 
     override fun setPreferredPhy(txPhy: Int, rxPhy: Int, phyOptions: Int) {
-        TODO("Not yet implemented")
+        mockEngine.setPreferredPhy(serverDevice, txPhy, rxPhy, phyOptions)
     }
 }

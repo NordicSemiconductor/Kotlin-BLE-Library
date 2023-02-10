@@ -29,35 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package no.nordicsemi.android.kotlin.ble.app.mock.screen.repository
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-        maven(url = "https://androidx.dev/storage/compose-compiler/repository/")
+object BlinkyButtonParser {
+
+    private val STATE_OFF = byteArrayOf(0x00)
+    private val STATE_ON = byteArrayOf(0x01)
+
+    fun isButtonPressed(data: ByteArray): Boolean {
+        return if (data.contentEquals(STATE_ON)) {
+            true
+        } else if (data.contentEquals(STATE_OFF)) {
+            false
+        } else {
+//            throw IllegalStateException("Cannot parse button data.")
+            false
+        }
     }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.2.9")
+
+    fun ByteArray.toDisplayString(): String {
+        return this.joinToString(".") {
+            it.toUByte().toString()
         }
     }
 }
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":app_mock")

@@ -36,7 +36,10 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.os.Parcelable
 import androidx.annotation.RequiresPermission
+import kotlinx.parcelize.IgnoredOnParcel
+import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
@@ -67,28 +70,35 @@ sealed interface ServerDevice : BleDevice {
 sealed interface ClientDevice : BleDevice
 
 @SuppressLint("MissingPermission")
+@Parcelize
 class RealClientDevice(
     val device: BluetoothDevice
-) : ClientDevice {
+) : ClientDevice, Parcelable {
 
+    @IgnoredOnParcel
     override val name: String = device.name
 
+    @IgnoredOnParcel
     override val address: String = device.address
 
+    @IgnoredOnParcel
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
 }
 
 @SuppressLint("MissingPermission")
+@Parcelize
 class RealServerDevice(
     private val device: BluetoothDevice
-) : ServerDevice {
+) : ServerDevice, Parcelable {
 
+    @IgnoredOnParcel
     override val name: String = device.name ?: ""
 
-    override val address: String
-        get() = device.address
+    @IgnoredOnParcel
+    override val address: String = device.address
 
+    @IgnoredOnParcel
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
     override suspend fun connect(
@@ -122,16 +132,19 @@ class RealServerDevice(
     }
 }
 
-class MockClientDevice : ClientDevice {
-    override val name: String = "CLIENT"
-    override val address: String = "11:22:33:44:55"
+@Parcelize
+class MockClientDevice(
+    override val name: String = "CLIENT",
+    override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
-}
+) : ClientDevice, Parcelable
 
-class MockServerDevice : ServerDevice  {
-    override val name: String = "SERVER"
-    override val address: String = "11:22:33:44:55"
+@Parcelize
+class MockServerDevice(
+    override val name: String = "SERVER",
+    override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
+) : ServerDevice, Parcelable {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override suspend fun connect(

@@ -29,9 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
+ plugins {
     alias(libs.plugins.nordic.feature)
     alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 group = "no.nordicsemi.android.kotlin.ble"
