@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothGattService
 import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,11 +44,13 @@ import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.server.OnClientConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 
 internal object MockEngine {
@@ -57,16 +60,27 @@ internal object MockEngine {
 
     private val registeredServers = mutableMapOf<MockServerDevice, MockServerAPI>()
     private val registeredClients = mutableMapOf<MockClientDevice, BleMockGatt>()
+    private val connections = mutableMapOf<MockServerDevice, MockClientDevice>()
+
+    private var registeredServices = emptyList<BluetoothGattService>()
+
+    fun addServices(services: List<BluetoothGattService>) {
+        registeredServices = services
+    }
 
     fun registerServer(server: MockServerAPI) {
         val device = MockServerDevice()
         registeredServers[device] = server
+        registeredServices.forEach {
+            server.onEvent(OnServiceAdded(it, BleGattOperationStatus.GATT_SUCCESS))
+        }
         advertiseServer(device)
     }
 
     fun connectToServer(device: MockServerDevice, client: BleMockGatt) {
         val server = registeredServers[device]!!
         val clientDevice = MockClientDevice()
+        connections[device] = clientDevice
         registeredClients[clientDevice] = client
         server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
@@ -147,7 +161,9 @@ internal object MockEngine {
 
     fun discoverServices(device: MockServerDevice) {
         Log.d("AAATESTAAA", "Discover services")
-        TODO("Not yet implemented")
+        connections[device]?.let { client ->
+            registeredClients[client]?.onEvent(OnServicesDiscovered(registeredServices, BleGattOperationStatus.GATT_SUCCESS))
+        }
     }
 
     fun setPreferredPhy(device: MockServerDevice, txPhy: Int, rxPhy: Int, phyOptions: Int) {

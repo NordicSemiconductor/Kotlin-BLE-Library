@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core.client.callback
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattService
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -72,7 +73,7 @@ class BleGattClient(
         gatt.event.onEach {
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                is OnServicesDiscovered -> onServicesDiscovered(it.gatt, it.status)
+                is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
                 is CharacteristicEvent -> _connection.value.services?.apply { onCharacteristicEvent(it) }
                 is OnMtuChanged -> onEvent(it)
                 is OnPhyRead -> onEvent(it)
@@ -105,8 +106,8 @@ class BleGattClient(
         }
     }
 
-    private fun onServicesDiscovered(g: BluetoothGatt?, status: BleGattOperationStatus) {
-        val services = g?.services?.let { BleGattServices(gatt, it) }
+    private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+        val services = gattServices?.let { BleGattServices(gatt, it) }
         _connection.value = _connection.value.copy(services = services)
     }
 

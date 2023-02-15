@@ -66,7 +66,7 @@ internal class BluetoothGattClientCallback: BluetoothGattCallback() {
 
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-        _event.tryEmit(OnServicesDiscovered(gatt!!, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnServicesDiscovered(gatt!!.services, BleGattOperationStatus.create(status)))
     }
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {

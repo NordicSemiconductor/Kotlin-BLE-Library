@@ -10,6 +10,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGattServiceFactory
 
 internal class MockServerAPI(
     private val mockEngine: MockEngine
@@ -28,6 +29,9 @@ internal class MockServerAPI(
 
     companion object {
         fun create(vararg config: BleServerGattServiceConfig): ServerAPI {
+            val services = config.map { BluetoothGattServiceFactory.create(it) }
+            MockEngine.addServices(services)
+
             return MockServerAPI(MockEngine)
         }
     }
