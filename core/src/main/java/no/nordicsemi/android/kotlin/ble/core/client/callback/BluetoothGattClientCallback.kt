@@ -54,6 +54,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 internal class BluetoothGattClientCallback: BluetoothGattCallback() {
 
@@ -69,7 +70,7 @@ internal class BluetoothGattClientCallback: BluetoothGattCallback() {
     }
 
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-        _event.tryEmit(OnConnectionStateChanged(BleGattOperationStatus.create(status), newState))
+        _event.tryEmit(OnConnectionStateChanged(BleGattOperationStatus.create(status), GattConnectionState.create(newState)))
     }
 
     override fun onCharacteristicChanged(

@@ -71,7 +71,7 @@ sealed interface ClientDevice : BleDevice
 
 @SuppressLint("MissingPermission")
 @Parcelize
-class RealClientDevice(
+data class RealClientDevice(
     val device: BluetoothDevice
 ) : ClientDevice, Parcelable {
 
@@ -88,7 +88,7 @@ class RealClientDevice(
 
 @SuppressLint("MissingPermission")
 @Parcelize
-class RealServerDevice(
+data class RealServerDevice(
     private val device: BluetoothDevice
 ) : ServerDevice, Parcelable {
 
@@ -133,14 +133,14 @@ class RealServerDevice(
 }
 
 @Parcelize
-class MockClientDevice(
+data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
 ) : ClientDevice, Parcelable
 
 @Parcelize
-class MockServerDevice(
+data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
@@ -153,7 +153,7 @@ class MockServerDevice(
     ): BleGattClient {
         val gatt = BleMockGatt(MockEngine, this)
         return BleGattClient(gatt)
-            .also { it.connect() }
             .also { MockEngine.connectToServer(this, gatt) }
+            .also { it.connect() }
     }
 }

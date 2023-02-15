@@ -46,7 +46,7 @@ data class OnServiceAdded(
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-data class OnConnectionStateChanged(
+data class OnClientConnectionStateChanged(
     val device: ClientDevice,
     val status: BleGattOperationStatus,
     val newState: GattConnectionState

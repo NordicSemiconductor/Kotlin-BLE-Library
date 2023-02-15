@@ -96,7 +96,6 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     internal fun onEvent(event: ServiceEvent) {
-        Log.d("AAATESTAAA", "On event: $event")
         (event as? DescriptorEvent)?.let {
             descriptors.forEach { it.onEvent(event) }
         }

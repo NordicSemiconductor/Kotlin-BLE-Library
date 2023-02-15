@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
@@ -13,7 +14,7 @@ internal class BleMockGatt(
     private val serverDevice: MockServerDevice
 ) : BleGatt {
 
-    val _event = MutableSharedFlow<GattEvent>()
+    private val _event = simpleSharedFlow<GattEvent>()
     override val event: SharedFlow<GattEvent> = _event.asSharedFlow()
 
     fun onEvent(event: GattEvent) {

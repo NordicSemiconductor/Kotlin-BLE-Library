@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 sealed interface GattEvent
 
@@ -43,7 +44,7 @@ class OnServicesDiscovered(val gatt: BluetoothGatt, val status: BleGattOperation
 
 class OnConnectionStateChanged(
     val status: BleGattOperationStatus,
-    val newState: Int
+    val newState: GattConnectionState
 ) : GattEvent
 
 class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent

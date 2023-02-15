@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -41,11 +42,12 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
+import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.server.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 
 internal object MockEngine {
@@ -66,7 +68,7 @@ internal object MockEngine {
         val server = registeredServers[device]!!
         val clientDevice = MockClientDevice()
         registeredClients[clientDevice] = client
-        server.onEvent(OnConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
+        server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
 
     private fun advertiseServer(device: MockServerDevice) {
@@ -93,7 +95,7 @@ internal object MockEngine {
     }
 
     fun connect(device: ClientDevice, autoConnect: Boolean) {
-        TODO("Not yet implemented")
+        registeredClients[device]?.onEvent(OnConnectionStateChanged(BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
 
     fun readPhy(device: ClientDevice) {
@@ -144,6 +146,7 @@ internal object MockEngine {
     }
 
     fun discoverServices(device: MockServerDevice) {
+        Log.d("AAATESTAAA", "Discover services")
         TODO("Not yet implemented")
     }
 

@@ -86,7 +86,6 @@ class BleGattClient(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     internal suspend fun connect() = suspendCoroutine { continuation ->
         onConnectionStateChangedCallback = { connectionState, status ->
-            Log.d("AAATESTAAA", "State: $connectionState, Status: $status")
             if (connectionState == GattConnectionState.STATE_CONNECTED) {
                 continuation.resume(Unit)
             } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
@@ -97,8 +96,7 @@ class BleGattClient(
     }
 
     @SuppressLint("MissingPermission")
-    private fun onConnectionStateChange(status: BleGattOperationStatus, newState: Int) {
-        val connectionState = GattConnectionState.create(newState)
+    private fun onConnectionStateChange(status: BleGattOperationStatus, connectionState: GattConnectionState) {
         _connection.value = _connection.value.copy(connectionState = connectionState)
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
