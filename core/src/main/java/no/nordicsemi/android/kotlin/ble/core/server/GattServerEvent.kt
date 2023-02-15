@@ -121,7 +121,3 @@ data class OnDescriptorWriteRequest(
     val offset: Int,
     val value: ByteArray
 ) : DescriptorEvent
-
-sealed interface MockEvent : GattServerEvent
-
-

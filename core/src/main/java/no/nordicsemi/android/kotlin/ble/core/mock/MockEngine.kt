@@ -47,6 +47,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.core.client.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -70,6 +71,7 @@ internal object MockEngine {
     private val connections = mutableMapOf<MockServerDevice, MockClientDevice>()
 
     private var registeredServices = emptyList<BluetoothGattService>()
+    private val enabledNotifications = mutableMapOf<BluetoothGattCharacteristic, Boolean>()
 
     private var requests = MockRequestHolder()
 
@@ -123,7 +125,9 @@ internal object MockEngine {
         confirm: Boolean,
         value: ByteArray
     ) {
-        registeredClients[device]?.onEvent(OnCharacteristicChanged(characteristic, value))
+        if (enabledNotifications[characteristic] == true) {
+            registeredClients[device]?.onEvent(OnCharacteristicChanged(characteristic, value))
+        }
     }
 
     fun close() {
@@ -167,12 +171,11 @@ internal object MockEngine {
     }
 
     fun enableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
-
+        enabledNotifications[characteristic] = true
     }
 
     fun disableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
+        enabledNotifications[characteristic] = false
     }
 
     fun writeDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor, value: ByteArray) {
@@ -188,7 +191,8 @@ internal object MockEngine {
     }
 
     fun readRemoteRssi(device: MockServerDevice) {
-        TODO("Not yet implemented")
+        val clientDevice = connections[device]!!
+        registeredClients[clientDevice]?.onEvent(OnReadRemoteRssi(99, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun readPhy(device: MockServerDevice) {
