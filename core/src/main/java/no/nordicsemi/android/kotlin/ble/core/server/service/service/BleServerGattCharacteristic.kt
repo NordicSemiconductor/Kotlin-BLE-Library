@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.core.server.service.service
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice

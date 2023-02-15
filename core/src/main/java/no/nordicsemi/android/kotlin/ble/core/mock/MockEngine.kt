@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -43,13 +42,21 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
+import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicRead
+import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
+import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnClientConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorReadRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 
@@ -63,6 +70,8 @@ internal object MockEngine {
     private val connections = mutableMapOf<MockServerDevice, MockClientDevice>()
 
     private var registeredServices = emptyList<BluetoothGattService>()
+
+    private var requests = MockRequestHolder()
 
     fun addServices(services: List<BluetoothGattService>) {
         registeredServices = services
@@ -92,7 +101,20 @@ internal object MockEngine {
     //Server side
 
     fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+        val gattStatus = BleGattOperationStatus.create(status)
+        val client = registeredClients[device]
 
+        if (value == null) {
+            TODO("Handle properly")
+        }
+
+        val event = when (val request = requests.getRequest(requestId)) {
+            is MockCharacteristicRead -> OnCharacteristicRead(request.characteristic, value, gattStatus)
+            is MockCharacteristicWrite -> OnCharacteristicWrite(request.characteristic, gattStatus)
+            is MockDescriptorRead -> OnDescriptorRead(request.descriptor, value, gattStatus)
+            is MockDescriptorWrite -> OnDescriptorWrite(request.descriptor, gattStatus)
+        }
+        client?.onEvent(event)
     }
 
     fun notifyCharacteristicChanged(
@@ -128,15 +150,25 @@ internal object MockEngine {
         value: ByteArray,
         writeType: BleWriteType
     ) {
-        TODO("Not yet implemented")
+        val clientDevice = connections[device]!!
+        val isResponseNeeded = when (writeType) {
+            BleWriteType.NO_RESPONSE -> false
+            BleWriteType.DEFAULT,
+            BleWriteType.SIGNED -> true
+        }
+        val request = requests.newWriteRequest(characteristic)
+        registeredServers[device]?.onEvent(OnCharacteristicWriteRequest(clientDevice, request.id, characteristic, false, isResponseNeeded, 0, value))
     }
 
     fun readCharacteristic(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        TODO("Not yet implemented")
+        val clientDevice = connections[device]!!
+        val request = requests.newReadRequest(characteristic)
+        registeredServers[device]?.onEvent(OnCharacteristicReadRequest(clientDevice, request.id, 0, characteristic))
     }
 
     fun enableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
         TODO("Not yet implemented")
+
     }
 
     fun disableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
@@ -144,11 +176,15 @@ internal object MockEngine {
     }
 
     fun writeDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor, value: ByteArray) {
-        TODO("Not yet implemented")
+        val clientDevice = connections[device]!!
+        val request = requests.newReadRequest(descriptor)
+        registeredServers[device]?.onEvent(OnDescriptorWriteRequest(clientDevice, request.id, descriptor, false, false, 0, value))
     }
 
     fun readDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor) {
-        TODO("Not yet implemented")
+        val clientDevice = connections[device]!!
+        val request = requests.newReadRequest(descriptor)
+        registeredServers[device]?.onEvent(OnDescriptorReadRequest(clientDevice, request.id, 0, descriptor))
     }
 
     fun readRemoteRssi(device: MockServerDevice) {
@@ -160,10 +196,8 @@ internal object MockEngine {
     }
 
     fun discoverServices(device: MockServerDevice) {
-        Log.d("AAATESTAAA", "Discover services")
-        connections[device]?.let { client ->
-            registeredClients[client]?.onEvent(OnServicesDiscovered(registeredServices, BleGattOperationStatus.GATT_SUCCESS))
-        }
+        val clientDevice = connections[device]!!
+        registeredClients[clientDevice]?.onEvent(OnServicesDiscovered(registeredServices, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun setPreferredPhy(device: MockServerDevice, txPhy: Int, rxPhy: Int, phyOptions: Int) {
