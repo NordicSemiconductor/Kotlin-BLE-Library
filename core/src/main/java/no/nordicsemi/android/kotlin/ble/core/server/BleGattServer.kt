@@ -35,6 +35,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.api.NativeServerAPI
 import no.nordicsemi.android.kotlin.ble.core.server.api.ServerAPI
@@ -61,7 +63,8 @@ class BleGattServer internal constructor(
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false): BleGattServer {
             return if (mock) {
-                BleGattServer(MockServerAPI.create(*config))
+                val api = MockServerAPI.create(*config)
+                BleGattServer(api).also { MockEngine.registerServer(api) }
             } else {
                 BleGattServer(NativeServerAPI.create(context, *config))
             }

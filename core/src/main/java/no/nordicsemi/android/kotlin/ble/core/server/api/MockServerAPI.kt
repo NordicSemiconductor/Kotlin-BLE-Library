@@ -1,6 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.core.server.api
 
 import android.bluetooth.BluetoothGattCharacteristic
+import android.util.Log
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.simpleSharedFlow
@@ -19,16 +20,12 @@ internal class MockServerAPI(
     private val _event = simpleSharedFlow<GattServerEvent>()
     override val event: SharedFlow<GattServerEvent> = _event.asSharedFlow()
 
-    init {
-        mockEngine.registerServer(this)
-    }
-
     fun onEvent(event: GattServerEvent) {
         _event.tryEmit(event)
     }
 
     companion object {
-        fun create(vararg config: BleServerGattServiceConfig): ServerAPI {
+        fun create(vararg config: BleServerGattServiceConfig): MockServerAPI {
             val services = config.map { BluetoothGattServiceFactory.create(it) }
             MockEngine.addServices(services)
 

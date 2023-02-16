@@ -40,19 +40,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.kotlin.ble.app.mock.BlinkyDestinationId
-import no.nordicsemi.android.kotlin.ble.app.mock.screen.viewmodel.BlinkySpecifications
+import no.nordicsemi.android.kotlin.ble.app.mock.repository.BlinkyServer
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.server.BleGattServer
-import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleGattServerServiceType
-import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattCharacteristicConfig
-import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
 import javax.inject.Inject
 
@@ -61,7 +53,8 @@ import javax.inject.Inject
 class ScannerViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context,
-    private val navigator: Navigator
+    private val navigator: Navigator,
+    private val blinkyServer: BlinkyServer
 ) : ViewModel() {
 
     private val scanner = NordicScanner(context)
@@ -70,7 +63,7 @@ class ScannerViewModel @Inject constructor(
     val devices = _devices.asStateFlow()
 
     init {
-        setUpServer()
+        blinkyServer.start(context)
 
         scanner.scan().onEach {
             _devices.value = it
@@ -79,41 +72,5 @@ class ScannerViewModel @Inject constructor(
 
     fun onDeviceSelected(device: ServerDevice) {
         navigator.navigateTo(BlinkyDestinationId, device)
-    }
-
-    private fun setUpServer() = viewModelScope.launch {
-        val ledCharacteristic = BleServerGattCharacteristicConfig(
-            BlinkySpecifications.UUID_LED_CHAR,
-            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-        )
-
-        val buttonCharacteristic = BleServerGattCharacteristicConfig(
-            BlinkySpecifications.UUID_BUTTON_CHAR,
-            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
-            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-        )
-
-        val serviceConfig = BleServerGattServiceConfig(
-            BlinkySpecifications.UUID_SERVICE_DEVICE,
-            BleGattServerServiceType.SERVICE_TYPE_PRIMARY,
-            listOf(ledCharacteristic, buttonCharacteristic)
-        )
-
-        val server = BleGattServer.create(
-            context = context,
-            config = arrayOf(serviceConfig),
-            mock = true
-        )
-
-        launch {
-            server.connections
-                .mapNotNull { it.values.firstOrNull() }
-                .collect {
-                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
-//                        _state.value = _state.value.copy(servicesDiscovered = true)
-                    }
-                }
-        }
     }
 }
