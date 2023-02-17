@@ -52,8 +52,8 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.core.server.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.core.server.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.core.server.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.core.server.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 
 internal class BleGattServerCallback : BluetoothGattServerCallback() {
@@ -146,7 +146,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
 
     override fun onPhyRead(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
-            OnPhyRead(
+            OnServerPhyRead(
                 RealClientDevice(device!!),
                 BleGattPhy.create(txPhy),
                 BleGattPhy.create(rxPhy),
@@ -157,7 +157,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
 
     override fun onPhyUpdate(device: BluetoothDevice?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
-            OnPhyUpdate(
+            OnServerPhyUpdate(
                 RealClientDevice(device!!),
                 BleGattPhy.create(txPhy),
                 BleGattPhy.create(rxPhy),

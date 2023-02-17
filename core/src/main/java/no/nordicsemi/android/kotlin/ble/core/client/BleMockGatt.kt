@@ -6,6 +6,8 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
 internal class BleMockGatt(
@@ -60,7 +62,7 @@ internal class BleMockGatt(
         mockEngine.discoverServices(serverDevice)
     }
 
-    override fun setPreferredPhy(txPhy: Int, rxPhy: Int, phyOptions: Int) {
-        mockEngine.setPreferredPhy(serverDevice, txPhy, rxPhy, phyOptions)
+    override fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        mockEngine.setPreferredPhy(serverDevice, txPhy, rxPhy, phyOption)
     }
 }

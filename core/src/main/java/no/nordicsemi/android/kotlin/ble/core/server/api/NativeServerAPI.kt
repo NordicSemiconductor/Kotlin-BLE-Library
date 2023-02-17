@@ -13,8 +13,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.server.GattServerEvent
-import no.nordicsemi.android.kotlin.ble.core.server.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.core.server.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGattServiceFactory
@@ -84,7 +84,7 @@ internal class NativeServerAPI(
             server.readPhy(bleDevice)
         } else {
             callback.onEvent(
-                OnPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
+                OnServerPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }
@@ -98,7 +98,7 @@ internal class NativeServerAPI(
             server.setPreferredPhy(device.device, txPhy.value, rxPhy.value, phyOption.value)
         } else {
             callback.onEvent(
-                OnPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
+                OnServerPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }

@@ -52,14 +52,14 @@ data class OnClientConnectionStateChanged(
     val newState: GattConnectionState
 ) : GattServerEvent
 
-data class OnPhyRead(
+data class OnServerPhyRead(
     val device: ClientDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-data class OnPhyUpdate(
+data class OnServerPhyUpdate(
     val device: ClientDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,

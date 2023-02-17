@@ -86,8 +86,8 @@ class BleGattServer internal constructor(
                 )
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
-                is OnPhyRead -> onPhyRead(event)
-                is OnPhyUpdate -> onPhyUpdate(event)
+                is OnServerPhyRead -> onPhyRead(event)
+                is OnServerPhyUpdate -> onPhyUpdate(event)
             }
         }.launchIn(ServerScope)
     }
@@ -142,7 +142,7 @@ class BleGattServer internal constructor(
         }
     }
 
-    private fun onPhyRead(event: OnPhyRead) {
+    private fun onPhyRead(event: OnServerPhyRead) {
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
                 txPhy = event.txPhy,
@@ -152,7 +152,7 @@ class BleGattServer internal constructor(
         }.toMap()
     }
 
-    private fun onPhyUpdate(event: OnPhyUpdate) {
+    private fun onPhyUpdate(event: OnServerPhyUpdate) {
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
                 txPhy = event.txPhy,

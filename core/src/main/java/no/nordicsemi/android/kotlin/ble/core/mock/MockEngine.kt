@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
@@ -47,9 +48,12 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.core.client.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.core.client.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.client.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.core.client.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.core.client.callback.ConnectionParams
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -59,6 +63,8 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.core.server.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyRead
+import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.core.server.api.MockServerAPI
 
@@ -70,9 +76,13 @@ internal object MockEngine {
     private val registeredServers = mutableMapOf<MockServerDevice, MockServerAPI>()
     private val registeredClients = mutableMapOf<MockClientDevice, BleMockGatt>()
     private val connections = mutableMapOf<MockServerDevice, MockClientDevice>()
+    val reversedConnections
+        get() = connections.entries.associate{(k,v)-> v to k}
 
     private var registeredServices = emptyList<BluetoothGattService>()
     private val enabledNotifications = mutableMapOf<BluetoothGattCharacteristic, Boolean>()
+
+    private val connectionParams = mutableMapOf<Pair<ServerDevice, ClientDevice>, ConnectionParams>()
 
     private var requests = MockRequestHolder()
 
@@ -93,6 +103,7 @@ internal object MockEngine {
         val server = registeredServers[device]!!
         val clientDevice = MockClientDevice()
         connections[device] = clientDevice
+        connectionParams[device to clientDevice] = ConnectionParams()
         registeredClients[clientDevice] = client
         server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
@@ -132,20 +143,22 @@ internal object MockEngine {
         }
     }
 
-    fun close() {
-        TODO("Not yet implemented")
-    }
-
     fun connect(device: ClientDevice, autoConnect: Boolean) {
         registeredClients[device]?.onEvent(OnConnectionStateChanged(BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
 
     fun readPhy(device: ClientDevice) {
-        TODO("Not yet implemented")
+        val server = reversedConnections[device]!!
+        val params = connectionParams[server to device]!!
+        registeredServers[server]?.onEvent(OnServerPhyRead(device, params.txPhy, params.rxPhy, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        TODO("Not yet implemented")
+        val server = reversedConnections[device]!!
+        val params = connectionParams[server to device]!!
+        connectionParams[server to device] = params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
+
+        registeredServers[server]?.onEvent(OnServerPhyUpdate(device, params.txPhy, params.rxPhy, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     //Client side
@@ -194,11 +207,14 @@ internal object MockEngine {
 
     fun readRemoteRssi(device: MockServerDevice) {
         val clientDevice = connections[device]!!
-        registeredClients[clientDevice]?.onEvent(OnReadRemoteRssi(99, BleGattOperationStatus.GATT_SUCCESS))
+        val params = connectionParams[device to clientDevice]!!
+        registeredClients[clientDevice]?.onEvent(OnReadRemoteRssi(params.rssi, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun readPhy(device: MockServerDevice) {
-        TODO("Not yet implemented")
+        val client = connections[device]!!
+        val params = connectionParams[device to client]!!
+        registeredClients[client]?.onEvent(OnPhyRead(params.txPhy, params.rxPhy, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun discoverServices(device: MockServerDevice) {
@@ -206,7 +222,11 @@ internal object MockEngine {
         registeredClients[clientDevice]?.onEvent(OnServicesDiscovered(registeredServices, BleGattOperationStatus.GATT_SUCCESS))
     }
 
-    fun setPreferredPhy(device: MockServerDevice, txPhy: Int, rxPhy: Int, phyOptions: Int) {
-        TODO("Not yet implemented")
+    fun setPreferredPhy(device: MockServerDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        val clientDevice = connections[device]!!
+        val params = connectionParams[device to clientDevice]!!
+        connectionParams[device to clientDevice] = params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
+
+        registeredClients[clientDevice]?.onEvent(OnPhyUpdate(params.txPhy, params.rxPhy, BleGattOperationStatus.GATT_SUCCESS))
     }
 }

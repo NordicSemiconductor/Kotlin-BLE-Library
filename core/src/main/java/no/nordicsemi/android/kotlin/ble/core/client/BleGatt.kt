@@ -34,6 +34,8 @@ package no.nordicsemi.android.kotlin.ble.core.client
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
 interface BleGatt {
 
@@ -63,5 +65,5 @@ interface BleGatt {
 
     fun discoverServices()
 
-    fun setPreferredPhy(txPhy: Int, rxPhy: Int, phyOptions: Int)
+    fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 }
