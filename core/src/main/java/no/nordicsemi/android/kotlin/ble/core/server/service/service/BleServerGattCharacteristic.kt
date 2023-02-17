@@ -110,9 +110,7 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
-        //TODO add instance id
-//        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
-        if (eventCharacteristic.uuid == characteristic.uuid) {
+        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
             block()
         }
     }

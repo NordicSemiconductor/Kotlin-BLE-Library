@@ -73,9 +73,7 @@ class BleServerGattDescriptor internal constructor(
     }
 
     private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
-        //todo add instance id
-//        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
-        if (eventDescriptor.uuid == descriptor.uuid) {
+        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
             block()
         }
     }

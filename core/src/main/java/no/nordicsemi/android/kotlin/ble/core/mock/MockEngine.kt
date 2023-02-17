@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -49,6 +48,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnReadRemoteRssi
+import no.nordicsemi.android.kotlin.ble.core.client.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -108,7 +108,8 @@ internal object MockEngine {
         val client = registeredClients[device]
 
         if (value == null) {
-            TODO("Handle properly")
+            client?.onEvent(OnReliableWriteCompleted(BleGattOperationStatus.GATT_SUCCESS))
+            return
         }
 
         val event = when (val request = requests.getRequest(requestId)) {

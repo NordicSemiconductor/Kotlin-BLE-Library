@@ -33,9 +33,7 @@ package no.nordicsemi.android.kotlin.ble.core.client.callback
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
