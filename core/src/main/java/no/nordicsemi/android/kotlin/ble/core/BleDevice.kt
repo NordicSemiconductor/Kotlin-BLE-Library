@@ -34,8 +34,10 @@ package no.nordicsemi.android.kotlin.ble.core
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.os.Build
+import android.os.ParcelUuid
 import android.os.Parcelable
 import androidx.annotation.RequiresPermission
 import kotlinx.parcelize.IgnoredOnParcel
@@ -48,11 +50,18 @@ import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
+const val RSSI_UNKNOWN = 0
+
 sealed interface BleDevice {
 
     val name: String
     val address: String
     val isBonded: Boolean
+
+    val serviceUuids: List<ParcelUuid>
+    val highestRssi: Int
+    val hasName
+        get() = name.isNotEmpty()
 }
 
 sealed interface ServerDevice : BleDevice {
@@ -84,13 +93,22 @@ data class RealClientDevice(
     @IgnoredOnParcel
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
+    @IgnoredOnParcel
+    override val serviceUuids: List<ParcelUuid> = device.uuids.toList()
+
+    @IgnoredOnParcel
+    override val highestRssi: Int = RSSI_UNKNOWN
+
 }
 
 @SuppressLint("MissingPermission")
 @Parcelize
 data class RealServerDevice(
-    private val device: BluetoothDevice
+    private val device: BluetoothDevice,
+    override val highestRssi: Int = RSSI_UNKNOWN
 ) : ServerDevice, Parcelable {
+
+    constructor(device: BluetoothDevice, scanResult: ScanResult) : this(device, scanResult.rssi)
 
     @IgnoredOnParcel
     override val name: String = device.name ?: ""
@@ -100,6 +118,9 @@ data class RealServerDevice(
 
     @IgnoredOnParcel
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
+
+    @IgnoredOnParcel
+    override val serviceUuids: List<ParcelUuid> = device.uuids.toList()
 
     override suspend fun connect(
         context: Context,
@@ -137,7 +158,14 @@ data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
-) : ClientDevice, Parcelable
+) : ClientDevice, Parcelable {
+
+    @IgnoredOnParcel
+    override val serviceUuids: List<ParcelUuid> = emptyList()
+
+    @IgnoredOnParcel
+    override val highestRssi: Int = RSSI_UNKNOWN
+}
 
 @Parcelize
 data class MockServerDevice(
@@ -145,6 +173,12 @@ data class MockServerDevice(
     override val address: String = "11:22:33:44:55",
     override val isBonded: Boolean = false
 ) : ServerDevice, Parcelable {
+
+    @IgnoredOnParcel
+    override val serviceUuids: List<ParcelUuid> = emptyList()
+
+    @IgnoredOnParcel
+    override val highestRssi: Int = RSSI_UNKNOWN
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override suspend fun connect(
