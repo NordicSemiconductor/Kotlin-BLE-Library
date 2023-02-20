@@ -31,4 +31,4 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.errors
 
-data class ScanningFailedException(val errorCode: Int) : Exception("Scanning failed with the code: $errorCode")
+data class ScanningFailedException(val errorCode: ScanFailedError) : Exception("Scanning failed with the code: $errorCode")

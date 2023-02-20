@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.core.toDomain
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
+import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
 import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
@@ -87,7 +88,7 @@ class NordicScanner(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                close(ScanningFailedException(errorCode))
+                close(ScanningFailedException(ScanFailedError.create(errorCode)))
             }
         }
 
