@@ -45,4 +45,6 @@ plugins {
     alias(libs.plugins.nordic.nexus) apply false
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
+    id("com.android.library") version "7.4.1" apply false
+    id("org.jetbrains.kotlin.android") version "1.8.0" apply false
 }

@@ -29,35 +29,15 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package no.nordicsemi.android.kotlin.ble.profile.csc
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.3.0")
-        }
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":app_mock")
-include(":profile")
+internal data class CSCData(
+    val scanDevices: Boolean = false,
+    val speed: Float = 0f,
+    val cadence: Float = 0f,
+    val distance: Float = 0f,
+    val totalDistance: Float = 0f,
+    val gearRatio: Float = 0f,
+    val batteryLevel: Int? = null,
+    val wheelSize: WheelSize = WheelSize()
+)
