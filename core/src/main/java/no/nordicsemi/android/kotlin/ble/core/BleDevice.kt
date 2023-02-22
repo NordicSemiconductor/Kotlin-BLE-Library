@@ -94,7 +94,7 @@ data class RealClientDevice(
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
     @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = device.uuids.toList()
+    override val serviceUuids: List<ParcelUuid> = device.uuids?.toList() ?: emptyList()
 
     @IgnoredOnParcel
     override val highestRssi: Int = RSSI_UNKNOWN
@@ -120,7 +120,7 @@ data class RealServerDevice(
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
 
     @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = device.uuids.toList()
+    override val serviceUuids: List<ParcelUuid> = device.uuids?.toList() ?: emptyList()
 
     override suspend fun connect(
         context: Context,
