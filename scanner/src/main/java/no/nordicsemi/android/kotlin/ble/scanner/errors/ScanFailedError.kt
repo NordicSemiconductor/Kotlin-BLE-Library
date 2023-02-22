@@ -4,7 +4,7 @@ import android.bluetooth.le.ScanCallback
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class ScanFailedError(internal val value: Int) {
+enum class ScanFailedError(val value: Int) {
     UNKNOWN(0),
     SCAN_FAILED_ALREADY_STARTED(ScanCallback.SCAN_FAILED_ALREADY_STARTED),
     SCAN_FAILED_APPLICATION_REGISTRATION_FAILED(ScanCallback.SCAN_FAILED_APPLICATION_REGISTRATION_FAILED),

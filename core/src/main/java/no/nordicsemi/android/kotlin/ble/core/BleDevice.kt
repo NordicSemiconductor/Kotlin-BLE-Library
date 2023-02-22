@@ -52,7 +52,7 @@ import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
 const val RSSI_UNKNOWN = 0
 
-sealed interface BleDevice {
+sealed interface BleDevice : Parcelable {
 
     val name: String
     val address: String

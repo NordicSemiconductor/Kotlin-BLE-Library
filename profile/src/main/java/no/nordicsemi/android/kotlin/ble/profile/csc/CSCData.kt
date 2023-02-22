@@ -31,13 +31,12 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.csc
 
-internal data class CSCData(
+data class CSCData(
     val scanDevices: Boolean = false,
     val speed: Float = 0f,
     val cadence: Float = 0f,
     val distance: Float = 0f,
     val totalDistance: Float = 0f,
     val gearRatio: Float = 0f,
-    val batteryLevel: Int? = null,
-    val wheelSize: WheelSize = WheelSize()
+    val wheelSize: WheelSize = WheelSizes.default
 )

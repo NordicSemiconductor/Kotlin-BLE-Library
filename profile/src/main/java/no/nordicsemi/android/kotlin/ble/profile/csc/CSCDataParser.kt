@@ -6,19 +6,18 @@ import kotlin.experimental.and
 
 class CSCDataParser {
 
-    private var mInitialWheelRevolutions: Long = -1
-    private var mLastWheelRevolutions: Long = -1
-    private var mLastWheelEventTime = -1
-    private var mLastCrankRevolutions = -1
-    private var mLastCrankEventTime = -1
-    private var mWheelCadence = -1f
+    private var previousData: CSCDataSnapshot = CSCDataSnapshot()
 
-    fun parse(byteArray: ByteArray) {
+    private var wheelRevolutions: Long = -1
+    private var wheelEventTime: Int = -1
+    private var crankRevolutions: Long = -1
+    private var crankEventTime: Int = -1
+
+    fun parse(byteArray: ByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData {
         val data = Data(byteArray)
 
         if (data.size() < 1) {
             throw InvalidDataReceived()
-            return
         }
 
         // Decode the new data
@@ -31,34 +30,129 @@ class CSCDataParser {
 
         if (data.size() < 1 + (if (wheelRevPresent) 6 else 0) + (if (crankRevPreset) 4 else 0)) {
             throw InvalidDataReceived()
-            return
         }
 
         if (wheelRevPresent) {
-            val wheelRevolutions: Long = data.getIntValue(Data.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
+            wheelRevolutions = data.getIntValue(Data.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
             offset += 4
-            val lastWheelEventTime: Int = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!! // 1/1024 s
+            wheelEventTime = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!! // 1/1024 s
             offset += 2
-            if (mInitialWheelRevolutions < 0) mInitialWheelRevolutions = wheelRevolutions
-
-            // Notify listener about the new measurement
-            mLastWheelRevolutions = wheelRevolutions
-            mLastWheelEventTime = lastWheelEventTime
         }
 
         if (crankRevPreset) {
-            val crankRevolutions: Int = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!
+            crankRevolutions = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!.toLong()
             offset += 2
-            val lastCrankEventTime: Int = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!
+            crankEventTime = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!
             // offset += 2;
+        }
 
-            // Notify listener about the new measurement
-            mLastCrankRevolutions = crankRevolutions
-            mLastCrankEventTime = lastCrankEventTime
+        val wheelCircumference = wheelSize.value.toFloat()
+
+        return CSCData(
+            totalDistance = getTotalDistance(wheelSize.value.toFloat()),
+            distance = getDistance(wheelCircumference, previousData),
+            speed = getSpeed(wheelCircumference, previousData),
+            wheelSize = wheelSize,
+            cadence = getCrankCadence(previousData),
+            gearRatio = getGearRatio(previousData),
+        ).also {
+            previousData = CSCDataSnapshot(
+                wheelRevolutions,
+                wheelEventTime,
+                crankRevolutions,
+                crankEventTime
+            )
+        }
+    }
+
+    private fun getTotalDistance(wheelCircumference: Float): Float {
+        return wheelRevolutions.toFloat() * wheelCircumference / 1000.0f // [m]
+    }
+
+    /**
+     * Returns the distance traveled since the given response was received.
+     *
+     * @param wheelCircumference the wheel circumference in millimeters.
+     * @param previous a previous response.
+     * @return distance traveled since the previous response, in meters.
+     */
+    private fun getDistance(
+        wheelCircumference: Float,
+        previous: CSCDataSnapshot
+    ): Float {
+        return (wheelRevolutions - previous.wheelRevolutions).toFloat() * wheelCircumference / 1000.0f // [m]
+    }
+
+    /**
+     * Returns the average speed since the previous response was received.
+     *
+     * @param wheelCircumference the wheel circumference in millimeters.
+     * @param previous a previous response.
+     * @return speed in meters per second.
+     */
+    private fun getSpeed(
+        wheelCircumference: Float,
+        previous: CSCDataSnapshot
+    ): Float {
+        val timeDifference: Float = if (wheelEventTime < previous.wheelEventTime) {
+            (65535 + wheelEventTime - previous.wheelEventTime) / 1024.0f
+        } else {
+            (wheelEventTime - previous.wheelEventTime) / 1024.0f
+        } // [s]
+        return getDistance(wheelCircumference, previous) / timeDifference // [m/s]
+    }
+
+    /**
+     * Returns average wheel cadence since the previous message was received.
+     *
+     * @param previous a previous response.
+     * @return wheel cadence in revolutions per minute.
+     */
+    private fun getWheelCadence(previous: CSCDataSnapshot): Float {
+        val timeDifference: Float = if (wheelEventTime < previous.wheelEventTime)  {
+            (65535 + wheelEventTime - previous.wheelEventTime) / 1024.0f
+        } else {
+            (wheelEventTime - previous.wheelEventTime) / 1024.0f
+        } // [s]
+        return if (timeDifference == 0f) {
+            0.0f
+        } else {
+            (wheelRevolutions - previous.wheelRevolutions) * 60.0f / timeDifference
+        }
+        // [revolutions/minute];
+    }
+
+    /**
+     * Returns average crank cadence since the previous message was received.
+     *
+     * @param previous a previous response.
+     * @return crank cadence in revolutions per minute.
+     */
+    private fun getCrankCadence(previous: CSCDataSnapshot): Float {
+        val timeDifference: Float = if (crankEventTime < previous.crankEventTime) {
+            (65535 + crankEventTime - previous.crankEventTime) / 1024.0f // [s]
+        } else {
+            (crankEventTime - previous.crankEventTime) / 1024.0f
+        } // [s]
+        return if (timeDifference == 0f) {
+            0.0f
+        } else {
+            (crankRevolutions - previous.crankRevolutions) * 60.0f / timeDifference
+        }
+        // [revolutions/minute];
+    }
+
+    /**
+     * Returns the gear ratio (equal to wheel cadence / crank cadence).
+     * @param previous a previous response.
+     * @return gear ratio.
+     */
+    private fun getGearRatio(previous: CSCDataSnapshot): Float {
+        val crankCadence = getCrankCadence(previous)
+        return if (crankCadence > 0) {
+            getWheelCadence(previous) / crankCadence
+        } else {
+            0.0f
         }
     }
 }
-
-data class CSCDataSnapshot(
-
-)
