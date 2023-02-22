@@ -1,7 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.profile.csc
 
 import no.nordicsemi.android.kotlin.ble.profile.common.Data
-import no.nordicsemi.android.kotlin.ble.profile.error.InvalidDataReceived
 import kotlin.experimental.and
 
 class CSCDataParser {
@@ -13,11 +12,11 @@ class CSCDataParser {
     private var crankRevolutions: Long = -1
     private var crankEventTime: Int = -1
 
-    fun parse(byteArray: ByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData {
+    fun parse(byteArray: ByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData? {
         val data = Data(byteArray)
 
         if (data.size() < 1) {
-            throw InvalidDataReceived()
+            return null
         }
 
         // Decode the new data
@@ -29,7 +28,7 @@ class CSCDataParser {
         val crankRevPreset = (flags and 0x02).toInt() != 0
 
         if (data.size() < 1 + (if (wheelRevPresent) 6 else 0) + (if (crankRevPreset) 4 else 0)) {
-            throw InvalidDataReceived()
+            return null
         }
 
         if (wheelRevPresent) {
