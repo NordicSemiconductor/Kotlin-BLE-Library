@@ -32,10 +32,16 @@
 package no.nordicsemi.android.kotlin.ble.core.client
 
 import kotlinx.coroutines.flow.StateFlow
-import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattConnection
+import no.nordicsemi.android.kotlin.ble.core.client.callback.ConnectionParams
+import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 interface BleClient {
 
-    val connection: StateFlow<BleGattConnection>
+    val connectionState: StateFlow<GattConnectionState>
+
+    val connectionParams: StateFlow<ConnectionParams>
+
+    val services: StateFlow<BleGattServices?>
 
 }

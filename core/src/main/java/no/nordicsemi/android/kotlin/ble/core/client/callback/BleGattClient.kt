@@ -62,8 +62,14 @@ class BleGattClient(
     private val gatt: BleGatt
 ) : BleClient {
 
-    private val _connection = MutableStateFlow(BleGattConnection())
-    override val connection = _connection.asStateFlow()
+    private val _connectionState = MutableStateFlow(GattConnectionState.STATE_DISCONNECTED)
+    override val connectionState = _connectionState.asStateFlow()
+
+    private val _connectionParams = MutableStateFlow(ConnectionParams())
+    override val connectionParams = _connectionParams.asStateFlow()
+
+    private val _services = MutableStateFlow<BleGattServices?>(null)
+    override val services = _services.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
 
@@ -72,7 +78,7 @@ class BleGattClient(
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
                 is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                is CharacteristicEvent -> _connection.value.services?.apply { onCharacteristicEvent(it) }
+                is CharacteristicEvent -> _services.value?.apply { onCharacteristicEvent(it) }
                 is OnMtuChanged -> onEvent(it)
                 is OnPhyRead -> onEvent(it)
                 is OnPhyUpdate -> onEvent(it)
@@ -96,7 +102,7 @@ class BleGattClient(
 
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(status: BleGattOperationStatus, connectionState: GattConnectionState) {
-        _connection.value = _connection.value.copy(connectionState = connectionState)
+        _connectionState.value = connectionState
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_CONNECTED) {
@@ -106,29 +112,27 @@ class BleGattClient(
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
         val services = gattServices?.let { BleGattServices(gatt, it) }
-        _connection.value = _connection.value.copy(services = services)
+        _services.value = services
     }
 
     private fun onEvent(event: OnMtuChanged) {
-        val params = _connection.value.connectionParams
-        _connection.value = _connection.value.copy(connectionParams = params.copy(mtu = event.mtu))
+        val params = _connectionParams.value
+        _connectionParams.value = params.copy(mtu = event.mtu)
     }
 
     private fun onEvent(event: OnPhyRead) {
-        val params = _connection.value.connectionParams
-        _connection.value =
-            _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
+        val params = _connectionParams.value
+        _connectionParams.value = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
     }
 
     private fun onEvent(event: OnPhyUpdate) {
-        val params = _connection.value.connectionParams
-        _connection.value =
-            _connection.value.copy(connectionParams = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy))
+        val params = _connectionParams.value
+        _connectionParams.value = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
     }
 
     private fun onEvent(event: OnReadRemoteRssi) {
-        val params = _connection.value.connectionParams
-        _connection.value = _connection.value.copy(connectionParams = params.copy(rssi = event.rssi))
+        val params = _connectionParams.value
+        _connectionParams.value = params.copy(rssi = event.rssi)
     }
 
     @SuppressLint("MissingPermission")

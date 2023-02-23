@@ -92,12 +92,10 @@ class BlinkyViewModel @Inject constructor(
         val client = blinkyDevice.connect(context)
 
         //Discover services on the Bluetooth LE Device.
-        client.connection
-            .map { it.services }
+        client.services
             .filterNotNull()
-            .onEach {
-                configureGatt(it)
-            }.launchIn(viewModelScope)
+            .onEach { configureGatt(it) }
+            .launchIn(viewModelScope)
     }
 
     private suspend fun configureGatt(services: BleGattServices) {
