@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
@@ -70,9 +69,6 @@ class BlinkyViewModel @Inject constructor(
         buttonCharacteristic.notification.onEach {
             _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
         }.launchIn(viewModelScope)
-
-        //Enables notifications on DK.
-        buttonCharacteristic.enableNotifications()
 
         //Check initial state of the Led.
         val isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read())

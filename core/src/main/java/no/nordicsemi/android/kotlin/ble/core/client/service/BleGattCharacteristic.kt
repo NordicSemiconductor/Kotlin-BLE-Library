@@ -32,17 +32,22 @@
 package no.nordicsemi.android.kotlin.ble.core.client.service
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
+import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
+import no.nordicsemi.android.kotlin.ble.core.client.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
+import no.nordicsemi.android.kotlin.ble.core.client.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
@@ -63,21 +68,35 @@ class BleGattCharacteristic internal constructor(
 
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
-    private val _notification = MutableStateFlow(byteArrayOf())
-    val notification = _notification.asStateFlow()
+    private val _notification = simpleSharedFlow<ByteArray>()
+
+    @SuppressLint("MissingPermission")
+    val notification = _notification
+        .onStart { enableNotifications() }
+        .onCompletion { disableNotifications() }
 
     private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, it) }
 
-    private var pendingEvent: ((CharacteristicEvent) -> Unit)? = null
+    private var pendingEvent: ((DataChangedEvent) -> Unit)? = null
 
     fun findDescriptor(uuid: UUID): BleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
-    internal fun onEvent(event: CharacteristicEvent) {
-        event.onNotificationEvent { _notification.value = it }
+    internal fun onEvent(event: DataChangedEvent) {
+        when (event) {
+            is CharacteristicEvent -> onEvent(event)
+            is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
+            is OnReliableWriteCompleted -> TODO()
+        }
+    }
+
+    private fun onEvent(event: CharacteristicEvent) {
+        if (event.characteristic.instanceId != instanceId) {
+            return
+        }
+        event.onNotificationEvent { _notification.tryEmit(it) }
         pendingEvent?.invoke(event)
-        descriptors.forEach { it.onEvent(event) }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -93,7 +112,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun enableIndications() {
+    private suspend fun enableIndications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
@@ -101,12 +120,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun disableIndications() {
-        disableNotifications()
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun enableNotifications() {
+    private suspend fun enableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
@@ -114,14 +128,14 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun disableNotifications() {
+    private suspend fun disableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
         }
     }
 
-    private fun CharacteristicEvent.onNotificationEvent(onSuccess: (ByteArray) -> Unit) {
+    private fun DataChangedEvent.onNotificationEvent(onSuccess: (ByteArray) -> Unit) {
         (this as? OnCharacteristicChanged)?.let {
             if (it.characteristic == characteristic) {
                 onSuccess(it.value)
@@ -129,7 +143,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private fun CharacteristicEvent.onWriteEvent(onSuccess: () -> Unit) {
+    private fun DataChangedEvent.onWriteEvent(onSuccess: () -> Unit) {
         (this as? OnCharacteristicWrite)?.let {
             if (it.characteristic == characteristic) {
                 onSuccess()
@@ -137,7 +151,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private fun CharacteristicEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
+    private fun DataChangedEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
         (this as? OnCharacteristicRead)?.let {
             if (it.characteristic == characteristic) {
                 onSuccess(it.value)

@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.core.client.ClientScope
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnMtuChanged
@@ -78,7 +78,7 @@ class BleGattClient(
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
                 is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                is CharacteristicEvent -> _services.value?.apply { onCharacteristicEvent(it) }
+                is DataChangedEvent -> _services.value?.apply { onCharacteristicEvent(it) }
                 is OnMtuChanged -> onEvent(it)
                 is OnPhyRead -> onEvent(it)
                 is OnPhyUpdate -> onEvent(it)

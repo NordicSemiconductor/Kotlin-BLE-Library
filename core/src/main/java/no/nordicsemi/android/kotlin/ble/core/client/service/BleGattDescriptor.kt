@@ -35,7 +35,8 @@ import android.Manifest
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
+import no.nordicsemi.android.kotlin.ble.core.client.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
@@ -51,9 +52,12 @@ class BleGattDescriptor internal constructor(
 
     val permissions = BleGattPermission.createPermissions(descriptor.permissions)
 
-    private var pendingEvent: ((CharacteristicEvent) -> Unit)? = null
+    private var pendingEvent: ((DataChangedEvent) -> Unit)? = null
 
-    internal fun onEvent(event: CharacteristicEvent) {
+    internal fun onEvent(event: DescriptorEvent) {
+        if (event.descriptor.characteristic.instanceId != descriptor.characteristic.instanceId) {
+            return
+        }
         pendingEvent?.invoke(event)
     }
 
@@ -70,7 +74,7 @@ class BleGattDescriptor internal constructor(
         gatt.readDescriptor(descriptor)
     }
 
-    private fun CharacteristicEvent.onWriteEvent(onSuccess: () -> Unit) {
+    private fun DataChangedEvent.onWriteEvent(onSuccess: () -> Unit) {
         (this as? OnDescriptorWrite)?.let {
             if (it.descriptor == descriptor) {
                 onSuccess()
@@ -78,7 +82,7 @@ class BleGattDescriptor internal constructor(
         }
     }
 
-    private fun CharacteristicEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
+    private fun DataChangedEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
         (this as? OnDescriptorRead)?.let {
             if (it.descriptor == descriptor) {
                 onSuccess(it.value)

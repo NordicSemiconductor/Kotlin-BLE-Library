@@ -64,33 +64,41 @@ class OnPhyUpdate(
 class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
 object OnServiceChanged : GattEvent
 
-sealed interface CharacteristicEvent : GattEvent
+sealed interface DataChangedEvent : GattEvent
+
+sealed interface CharacteristicEvent : DataChangedEvent {
+    val characteristic: BluetoothGattCharacteristic
+}
+
+sealed interface DescriptorEvent : DataChangedEvent {
+    val descriptor: BluetoothGattDescriptor
+}
 
 class OnCharacteristicChanged(
-    val characteristic: BluetoothGattCharacteristic,
+    override val characteristic: BluetoothGattCharacteristic,
     val value: ByteArray
 ) : CharacteristicEvent
 
 class OnCharacteristicRead(
-    val characteristic: BluetoothGattCharacteristic,
+    override val characteristic: BluetoothGattCharacteristic,
     val value: ByteArray,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
 class OnCharacteristicWrite(
-    val characteristic: BluetoothGattCharacteristic,
+    override val characteristic: BluetoothGattCharacteristic,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
 class OnDescriptorRead(
-    val descriptor: BluetoothGattDescriptor,
+    override val descriptor: BluetoothGattDescriptor,
     val value: ByteArray,
     val status: BleGattOperationStatus
-) : CharacteristicEvent
+) : DescriptorEvent
 
 class OnDescriptorWrite(
-    val descriptor: BluetoothGattDescriptor,
+    override val descriptor: BluetoothGattDescriptor,
     val status: BleGattOperationStatus
-) : CharacteristicEvent
+) : DescriptorEvent
 
-class OnReliableWriteCompleted(val status: BleGattOperationStatus) : CharacteristicEvent
+class OnReliableWriteCompleted(val status: BleGattOperationStatus) : DataChangedEvent
