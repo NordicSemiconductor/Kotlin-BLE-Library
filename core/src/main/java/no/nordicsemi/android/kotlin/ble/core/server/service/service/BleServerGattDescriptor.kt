@@ -91,7 +91,6 @@ class BleServerGattDescriptor internal constructor(
         } else {
             _value.value = event.value
         }
-        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
         if (event.responseNeeded) {
             server.sendResponse(
                 event.device,

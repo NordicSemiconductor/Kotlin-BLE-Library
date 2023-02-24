@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core.mock
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -176,13 +177,13 @@ internal object MockEngine {
             BleWriteType.SIGNED -> true
         }
         val request = requests.newWriteRequest(characteristic)
-        registeredServers[device]?.onEvent(OnCharacteristicWriteRequest(clientDevice, request.id, characteristic, false, isResponseNeeded, 0, value))
+        registeredServers[device]?.onEvent(OnCharacteristicWriteRequest(clientDevice, request.requestId, characteristic, false, isResponseNeeded, 0, value))
     }
 
     fun readCharacteristic(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
         val clientDevice = connections[device]!!
         val request = requests.newReadRequest(characteristic)
-        registeredServers[device]?.onEvent(OnCharacteristicReadRequest(clientDevice, request.id, 0, characteristic))
+        registeredServers[device]?.onEvent(OnCharacteristicReadRequest(clientDevice, request.requestId, 0, characteristic))
     }
 
     fun enableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
@@ -195,14 +196,14 @@ internal object MockEngine {
 
     fun writeDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor, value: ByteArray) {
         val clientDevice = connections[device]!!
-        val request = requests.newReadRequest(descriptor)
-        registeredServers[device]?.onEvent(OnDescriptorWriteRequest(clientDevice, request.id, descriptor, false, false, 0, value))
+        val request = requests.newWriteRequest(descriptor)
+        registeredServers[device]?.onEvent(OnDescriptorWriteRequest(clientDevice, request.requestId, descriptor, false, true, 0, value))
     }
 
     fun readDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor) {
         val clientDevice = connections[device]!!
         val request = requests.newReadRequest(descriptor)
-        registeredServers[device]?.onEvent(OnDescriptorReadRequest(clientDevice, request.id, 0, descriptor))
+        registeredServers[device]?.onEvent(OnDescriptorReadRequest(clientDevice, request.requestId, 0, descriptor))
     }
 
     fun readRemoteRssi(device: MockServerDevice) {

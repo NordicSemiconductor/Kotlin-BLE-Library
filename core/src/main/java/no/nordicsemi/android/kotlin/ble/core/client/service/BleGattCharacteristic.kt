@@ -120,7 +120,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableNotifications() {
+    suspend fun enableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
