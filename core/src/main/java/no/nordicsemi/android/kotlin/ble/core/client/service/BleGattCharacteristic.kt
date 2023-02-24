@@ -72,7 +72,7 @@ class BleGattCharacteristic internal constructor(
 
     @SuppressLint("MissingPermission")
     val notification = _notification
-        .onStart { enableNotifications() }
+        .onStart { enableIndicationsOrNotifications() }
         .onCompletion { disableNotifications() }
 
     private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, it) }
@@ -112,6 +112,15 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private suspend fun enableIndicationsOrNotifications() {
+        if (properties.contains(BleGattProperty.PROPERTY_NOTIFY)) {
+            enableNotifications()
+        } else if (properties.contains(BleGattProperty.PROPERTY_INDICATE)) {
+            enableIndications()
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun enableIndications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
@@ -120,7 +129,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun enableNotifications() {
+    private suspend fun enableNotifications() {
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
