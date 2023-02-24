@@ -35,6 +35,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
@@ -92,10 +93,10 @@ class BleGattCharacteristic internal constructor(
     }
 
     private fun onEvent(event: CharacteristicEvent) {
-        if (event.characteristic.instanceId != instanceId) {
+        if (event.characteristic != characteristic && event.characteristic.instanceId != instanceId) {
             return
         }
-        event.onNotificationEvent { _notification.tryEmit(it) }
+        (event as? OnCharacteristicChanged)?.let { _notification.tryEmit(it.value) }
         pendingEvent?.invoke(event)
     }
 
@@ -141,14 +142,6 @@ class BleGattCharacteristic internal constructor(
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-        }
-    }
-
-    private fun DataChangedEvent.onNotificationEvent(onSuccess: (ByteArray) -> Unit) {
-        (this as? OnCharacteristicChanged)?.let {
-            if (it.characteristic == characteristic) {
-                onSuccess(it.value)
-            }
         }
     }
 
