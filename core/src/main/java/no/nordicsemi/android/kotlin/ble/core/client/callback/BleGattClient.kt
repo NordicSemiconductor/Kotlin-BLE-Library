@@ -41,8 +41,8 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.core.client.ClientScope
+import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.core.client.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnPhyRead

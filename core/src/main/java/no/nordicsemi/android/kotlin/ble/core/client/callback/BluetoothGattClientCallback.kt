@@ -59,7 +59,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 internal class BluetoothGattClientCallback: BluetoothGattCallback() {
 
     private val _event = MutableSharedFlow<GattEvent>(
-        extraBufferCapacity = 1,
+        extraBufferCapacity = 10, //Warning: because of this parameter we can miss notifications
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val event = _event.asSharedFlow()
