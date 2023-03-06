@@ -35,10 +35,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
@@ -72,9 +71,13 @@ class BleGattCharacteristic internal constructor(
     private val _notification = simpleSharedFlow<ByteArray>()
 
     @SuppressLint("MissingPermission")
-    val notification = _notification
-        .onStart { enableIndicationsOrNotifications() }
-        .onCompletion { disableNotifications() }
+    suspend fun getNotifications(): Flow<ByteArray> {
+        enableIndicationsOrNotifications()
+
+        return suspendCoroutine {
+            it.resume(_notification.onCompletion { disableNotifications() })
+        }
+    }
 
     private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, it) }
 
