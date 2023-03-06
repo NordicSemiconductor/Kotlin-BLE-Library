@@ -66,7 +66,7 @@ class BlinkyViewModel @Inject constructor(
         buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         //Observe button characteristics which detects when button is pressed.
-        buttonCharacteristic.notification.onEach {
+        buttonCharacteristic.getNotifications().onEach {
             _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
         }.launchIn(viewModelScope)
 
