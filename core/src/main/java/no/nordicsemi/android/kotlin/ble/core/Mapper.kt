@@ -34,5 +34,5 @@ package no.nordicsemi.android.kotlin.ble.core
 import android.bluetooth.le.ScanResult
 
 fun ScanResult.toDomain(): ServerDevice {
-    return RealServerDevice(device)
+    return RealServerDevice(device, this)
 }

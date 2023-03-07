@@ -47,7 +47,7 @@ class BleScanResultAggregator {
     }
 
     private fun aggregate(device: ServerDevice) {
-        cachedDevices.firstOrNull { it == device }
+        cachedDevices.firstOrNull { it.address == device.address }
             ?.let { cachedDevices.set(cachedDevices.indexOf(it), device) }
             ?: run { cachedDevices.add(device) }
     }
