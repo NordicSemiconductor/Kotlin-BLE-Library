@@ -62,7 +62,7 @@ class BleGattClient(
     private val gatt: BleGatt
 ) : BleClient {
 
-    private val _connectionState = MutableStateFlow(GattConnectionState.STATE_DISCONNECTED)
+    private val _connectionState = MutableStateFlow<GattConnectionState?>(null)
     override val connectionState = _connectionState.asStateFlow()
 
     private val _connectionParams = MutableStateFlow(ConnectionParams())
@@ -98,6 +98,10 @@ class BleGattClient(
             }
             onConnectionStateChangedCallback = null
         }
+    }
+
+    fun disconnect() {
+        gatt.disconnect()
     }
 
     @SuppressLint("MissingPermission")

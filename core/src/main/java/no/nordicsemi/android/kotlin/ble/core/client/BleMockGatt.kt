@@ -65,4 +65,8 @@ internal class BleMockGatt(
     override fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         mockEngine.setPreferredPhy(serverDevice, txPhy, rxPhy, phyOption)
     }
+
+    override fun disconnect() {
+        TODO("Not yet implemented")
+    }
 }

@@ -38,7 +38,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 interface BleClient {
 
-    val connectionState: StateFlow<GattConnectionState>
+    val connectionState: StateFlow<GattConnectionState?>
 
     val connectionParams: StateFlow<ConnectionParams>
 

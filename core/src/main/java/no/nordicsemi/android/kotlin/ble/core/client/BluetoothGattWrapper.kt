@@ -124,4 +124,9 @@ internal class BluetoothGattWrapper(
             callback.onEvent(OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun disconnect() {
+        gatt.disconnect()
+    }
 }
