@@ -25,7 +25,7 @@ object HTSDataParser {
             return null
         }
 
-        val temperature: Float = data.getFloatValue(Data.FORMAT_FLOAT, 1) ?: return null
+        val temperature: Float = data.getFloatValue(Data.FORMAT_FLOAT, offset) ?: return null
         offset += 4
 
         var calendar: Calendar? = null

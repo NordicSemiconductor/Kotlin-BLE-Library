@@ -29,41 +29,88 @@ import androidx.annotation.IntRange
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
-class Data {
+class Data(private val value: ByteArray) {
+
     @SuppressLint("UniqueConstants")
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = [FORMAT_UINT8, FORMAT_UINT16, FORMAT_UINT16_LE, FORMAT_UINT16_BE, FORMAT_UINT24, FORMAT_UINT24_LE, FORMAT_UINT24_BE, FORMAT_UINT32, FORMAT_UINT32_LE, FORMAT_UINT32_BE, FORMAT_SINT8, FORMAT_SINT16, FORMAT_SINT16_LE, FORMAT_SINT16_BE, FORMAT_SINT24, FORMAT_SINT24_LE, FORMAT_SINT24_BE, FORMAT_SINT32, FORMAT_SINT32_LE, FORMAT_SINT32_BE, FORMAT_FLOAT, FORMAT_SFLOAT])
+    @IntDef(
+        value = [
+            FORMAT_UINT8,
+            FORMAT_UINT16,
+            FORMAT_UINT16_LE,
+            FORMAT_UINT16_BE,
+            FORMAT_UINT24,
+            FORMAT_UINT24_LE,
+            FORMAT_UINT24_BE,
+            FORMAT_UINT32,
+            FORMAT_UINT32_LE,
+            FORMAT_UINT32_BE,
+            FORMAT_SINT8,
+            FORMAT_SINT16,
+            FORMAT_SINT16_LE,
+            FORMAT_SINT16_BE,
+            FORMAT_SINT24,
+            FORMAT_SINT24_LE,
+            FORMAT_SINT24_BE,
+            FORMAT_SINT32,
+            FORMAT_SINT32_LE,
+            FORMAT_SINT32_BE,
+            FORMAT_FLOAT,
+            FORMAT_SFLOAT
+        ]
+    )
     annotation class ValueFormat
 
     @SuppressLint("UniqueConstants")
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = [FORMAT_UINT8, FORMAT_UINT16, FORMAT_UINT16_LE, FORMAT_UINT16_BE, FORMAT_UINT24, FORMAT_UINT24_LE, FORMAT_UINT24_BE, FORMAT_UINT32, FORMAT_UINT32_LE, FORMAT_UINT32_BE, FORMAT_SINT8, FORMAT_SINT16, FORMAT_SINT16_LE, FORMAT_SINT16_BE, FORMAT_SINT24, FORMAT_SINT24_LE, FORMAT_SINT24_BE, FORMAT_SINT32, FORMAT_SINT32_LE, FORMAT_SINT32_BE])
+    @IntDef(
+        value = [
+            FORMAT_UINT8,
+            FORMAT_UINT16,
+            FORMAT_UINT16_LE,
+            FORMAT_UINT16_BE,
+            FORMAT_UINT24,
+            FORMAT_UINT24_LE,
+            FORMAT_UINT24_BE,
+            FORMAT_UINT32,
+            FORMAT_UINT32_LE,
+            FORMAT_UINT32_BE,
+            FORMAT_SINT8,
+            FORMAT_SINT16,
+            FORMAT_SINT16_LE,
+            FORMAT_SINT16_BE,
+            FORMAT_SINT24,
+            FORMAT_SINT24_LE,
+            FORMAT_SINT24_BE,
+            FORMAT_SINT32,
+            FORMAT_SINT32_LE,
+            FORMAT_SINT32_BE
+        ]
+    )
     annotation class IntFormat
 
     @SuppressLint("UniqueConstants")
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = [FORMAT_UINT32, FORMAT_UINT32_LE, FORMAT_UINT32_BE, FORMAT_SINT32, FORMAT_SINT32_LE, FORMAT_SINT32_BE])
+    @IntDef(
+        value = [
+            FORMAT_UINT32,
+            FORMAT_UINT32_LE,
+            FORMAT_UINT32_BE,
+            FORMAT_SINT32,
+            FORMAT_SINT32_LE,
+            FORMAT_SINT32_BE
+        ]
+    )
     annotation class LongFormat
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef(value = [FORMAT_FLOAT, FORMAT_SFLOAT])
+    @IntDef(
+        value = [
+            FORMAT_FLOAT,
+            FORMAT_SFLOAT
+        ]
+    )
     annotation class FloatFormat
-
-    /**
-     * Returns the underlying byte array.
-     *
-     * @return Data received.
-     */
-    var value: ByteArray?
-        protected set
-
-    constructor() {
-        value = null
-    }
-
-    constructor(value: ByteArray?) {
-        this.value = value
-    }
 
     /**
      * Return the stored value of this characteristic.
@@ -74,9 +121,13 @@ class Data {
      * @return Cached value of the characteristic
      */
     fun getStringValue(@IntRange(from = 0) offset: Int): String? {
-        if (value == null || offset > value!!.size) return null
-        val strBytes = ByteArray(value!!.size - offset)
-        for (i in 0 until value!!.size - offset) strBytes[i] = value!![offset + i]
+        if (value == null || offset > value.size) {
+            return null
+        }
+        val strBytes = ByteArray(value.size - offset)
+        for (i in 0 until value.size - offset) {
+            strBytes[i] = value[offset + i]
+        }
         return String(strBytes)
     }
 
@@ -86,19 +137,23 @@ class Data {
      * @return Length of the data.
      */
     fun size(): Int {
-        return if (value != null) value!!.size else 0
+        return value.size
     }
 
     override fun toString(): String {
-        if (size() == 0) return ""
-        val out = CharArray(value!!.size * 3 - 1)
-        for (j in value!!.indices) {
-            val v = value!![j].toInt() and 0xFF
+        if (size() == 0) {
+            return ""
+        }
+        val out = CharArray(value.size * 3 - 1)
+        for (j in value.indices) {
+            val v = value[j].toInt() and 0xFF
             out[j * 3] = HEX_ARRAY[v ushr 4]
             out[j * 3 + 1] = HEX_ARRAY[v and 0x0F]
-            if (j != value!!.size - 1) out[j * 3 + 2] = '-'
+            if (j != value.size - 1) {
+                out[j * 3 + 2] = '-'
+            }
         }
-        return "(0x) " + String(out)
+        return "(0x) $out"
     }
 
     /**
@@ -108,7 +163,7 @@ class Data {
      * @return Cached value or null of offset exceeds value size.
      */
     fun getByte(@IntRange(from = 0) offset: Int): Byte? {
-        return if (offset + 1 > size()) null else value!![offset]
+        return value.getOrNull(offset)
     }
 
     /**
@@ -130,85 +185,70 @@ class Data {
         @IntFormat formatType: Int,
         @IntRange(from = 0) offset: Int
     ): Int? {
-        if (offset + getTypeLen(formatType) > size()) return null
+        if (offset + getTypeLen(formatType) > size()) {
+            return null
+        }
+
         when (formatType) {
-            FORMAT_UINT8 -> return unsignedByteToInt(
-                value!![offset]
-            )
-            FORMAT_UINT16_LE -> return unsignedBytesToInt(
-                value!![offset], value!![offset + 1]
-            )
-            FORMAT_UINT16_BE -> return unsignedBytesToInt(
-                value!![offset + 1], value!![offset]
-            )
+            FORMAT_UINT8 -> return unsignedByteToInt(value[offset])
+            FORMAT_UINT16_LE -> return unsignedBytesToInt(value[offset], value[offset + 1])
+            FORMAT_UINT16_BE -> return unsignedBytesToInt(value[offset + 1], value[offset])
             FORMAT_UINT24_LE -> return unsignedBytesToInt(
-                value!![offset],
-                value!![offset + 1],
-                value!![offset + 2], 0.toByte()
+                value[offset],
+                value[offset + 1],
+                value[offset + 2],
+                0.toByte()
             )
             FORMAT_UINT24_BE -> return unsignedBytesToInt(
-                value!![offset + 2],
-                value!![offset + 1],
-                value!![offset], 0.toByte()
+                value[offset + 2],
+                value[offset + 1],
+                value[offset],
+                0.toByte()
             )
             FORMAT_UINT32_LE -> return unsignedBytesToInt(
-                value!![offset],
-                value!![offset + 1],
-                value!![offset + 2],
-                value!![offset + 3]
+                value[offset],
+                value[offset + 1],
+                value[offset + 2],
+                value[offset + 3]
             )
             FORMAT_UINT32_BE -> return unsignedBytesToInt(
-                value!![offset + 3],
-                value!![offset + 2],
-                value!![offset + 1],
-                value!![offset]
+                value[offset + 3],
+                value[offset + 2],
+                value[offset + 1],
+                value[offset]
             )
-            FORMAT_SINT8 -> return unsignedToSigned(
-                unsignedByteToInt(
-                    value!![offset]
-                ), 8
-            )
-            FORMAT_SINT16_LE -> return unsignedToSigned(
-                unsignedBytesToInt(
-                    value!![offset],
-                    value!![offset + 1]
-                ), 16
-            )
-            FORMAT_SINT16_BE -> return unsignedToSigned(
-                unsignedBytesToInt(
-                    value!![offset + 1],
-                    value!![offset]
-                ), 16
-            )
+            FORMAT_SINT8 -> return unsignedToSigned(unsignedByteToInt(value[offset]), 8)
+            FORMAT_SINT16_LE -> return unsignedToSigned(unsignedBytesToInt(value[offset], value[offset + 1]), 16)
+            FORMAT_SINT16_BE -> return unsignedToSigned(unsignedBytesToInt(value[offset + 1], value[offset]), 16)
             FORMAT_SINT24_LE -> return unsignedToSigned(
                 unsignedBytesToInt(
-                    value!![offset],
-                    value!![offset + 1],
-                    value!![offset + 2], 0.toByte()
+                    value[offset],
+                    value[offset + 1],
+                    value[offset + 2], 0.toByte()
                 ), 24
             )
             FORMAT_SINT24_BE -> return unsignedToSigned(
                 unsignedBytesToInt(
                     0.toByte(),
-                    value!![offset + 2],
-                    value!![offset + 1],
-                    value!![offset]
+                    value[offset + 2],
+                    value[offset + 1],
+                    value[offset]
                 ), 24
             )
             FORMAT_SINT32_LE -> return unsignedToSigned(
                 unsignedBytesToInt(
-                    value!![offset],
-                    value!![offset + 1],
-                    value!![offset + 2],
-                    value!![offset + 3]
+                    value[offset],
+                    value[offset + 1],
+                    value[offset + 2],
+                    value[offset + 3]
                 ), 32
             )
             FORMAT_SINT32_BE -> return unsignedToSigned(
                 unsignedBytesToInt(
-                    value!![offset + 3],
-                    value!![offset + 2],
-                    value!![offset + 1],
-                    value!![offset]
+                    value[offset + 3],
+                    value[offset + 2],
+                    value[offset + 1],
+                    value[offset]
                 ), 32
             )
         }
@@ -237,31 +277,31 @@ class Data {
         if (offset + getTypeLen(formatType) > size()) return null
         when (formatType) {
             FORMAT_UINT32_LE -> return unsignedBytesToLong(
-                value!![offset],
-                value!![offset + 1],
-                value!![offset + 2],
-                value!![offset + 3]
+                value[offset],
+                value[offset + 1],
+                value[offset + 2],
+                value[offset + 3]
             )
             FORMAT_UINT32_BE -> return unsignedBytesToLong(
-                value!![offset + 3],
-                value!![offset + 2],
-                value!![offset + 1],
-                value!![offset]
+                value[offset + 3],
+                value[offset + 2],
+                value[offset + 1],
+                value[offset]
             )
             FORMAT_SINT32_LE -> return unsignedToSigned(
                 unsignedBytesToLong(
-                    value!![offset],
-                    value!![offset + 1],
-                    value!![offset + 2],
-                    value!![offset + 3]
+                    value[offset],
+                    value[offset + 1],
+                    value[offset + 2],
+                    value[offset + 3]
                 ), 32
             )
             FORMAT_SINT32_BE -> return unsignedToSigned(
                 unsignedBytesToLong(
-                    value!![offset + 3],
-                    value!![offset + 2],
-                    value!![offset + 1],
-                    value!![offset]
+                    value[offset + 3],
+                    value[offset + 2],
+                    value[offset + 1],
+                    value[offset]
                 ), 32
             )
         }
@@ -279,29 +319,37 @@ class Data {
         @FloatFormat formatType: Int,
         @IntRange(from = 0) offset: Int
     ): Float? {
-        if (offset + getTypeLen(formatType) > size()) return null
+        if (offset + getTypeLen(formatType) > size()) {
+            return null
+        }
         when (formatType) {
             FORMAT_SFLOAT -> {
-                if (value!![offset + 1].toInt() == 0x07 && value!![offset] == 0xFE.toByte()) return Float.POSITIVE_INFINITY
-                if (value!![offset + 1].toInt() == 0x07 && value!![offset] == 0xFF.toByte() || value!![offset + 1].toInt() == 0x08 && value!![offset].toInt() == 0x00 || value!![offset + 1].toInt() == 0x08 && value!![offset].toInt() == 0x01) return Float.NaN
-                return if (value!![offset + 1].toInt() == 0x08 && value!![offset].toInt() == 0x02) Float.NEGATIVE_INFINITY else bytesToFloat(
-                    value!![offset], value!![offset + 1]
-                )
+                if (value[offset + 1] == 0x07.toByte() && value[offset] == 0xFE.toByte()) {
+                    return Float.POSITIVE_INFINITY
+                }
+                if (value[offset + 1].toInt() == 0x07 && value[offset] == 0xFF.toByte()
+                    || value[offset + 1].toInt() == 0x08 && value[offset].toInt() == 0x00
+                    || value[offset + 1].toInt() == 0x08 && value[offset].toInt() == 0x01
+                ) {
+                    return Float.NaN
+                }
+                return if (value[offset + 1].toInt() == 0x08 && value[offset].toInt() == 0x02) {
+                    Float.NEGATIVE_INFINITY
+                } else {
+                    bytesToFloat(value[offset], value[offset + 1])
+                }
             }
             FORMAT_FLOAT -> {
-                if (value!![offset + 3].toInt() == 0x00) {
-                    if (value!![offset + 2].toInt() == 0x7F && value!![offset + 1] == 0xFF.toByte()) {
-                        if (value!![offset] == 0xFE.toByte()) return Float.POSITIVE_INFINITY
-                        if (value!![offset] == 0xFF.toByte()) return Float.NaN
-                    } else if (value!![offset + 2] == 0x80.toByte() && value!![offset + 1].toInt() == 0x00) {
-                        if (value!![offset].toInt() == 0x00 || value!![offset].toInt() == 0x01) return Float.NaN
-                        if (value!![offset].toInt() == 0x02) return Float.NEGATIVE_INFINITY
+                if (value[offset + 3].toInt() == 0x00) {
+                    if (value[offset + 2].toInt() == 0x7F && value[offset + 1] == 0xFF.toByte()) {
+                        if (value[offset] == 0xFE.toByte()) return Float.POSITIVE_INFINITY
+                        if (value[offset] == 0xFF.toByte()) return Float.NaN
+                    } else if (value[offset + 2] == 0x80.toByte() && value[offset + 1].toInt() == 0x00) {
+                        if (value[offset].toInt() == 0x00 || value[offset].toInt() == 0x01) return Float.NaN
+                        if (value[offset].toInt() == 0x02) return Float.NEGATIVE_INFINITY
                     }
                 }
-                return bytesToFloat(
-                    value!![offset], value!![offset + 1],
-                    value!![offset + 2], value!![offset + 3]
-                )
+                return bytesToFloat(value[offset], value[offset + 1], value[offset + 2], value[offset + 3])
             }
         }
         return null
@@ -377,6 +425,7 @@ class Data {
          * Data value format type float (32-bit float, IEEE-11073)
          */
         const val FORMAT_FLOAT = 0x34
+
         fun from(value: String): Data {
             return Data(value.toByteArray()) // UTF-8
         }
@@ -446,8 +495,8 @@ class Data {
          */
         private fun bytesToFloat(b0: Byte, b1: Byte): Float {
             val mantissa = unsignedToSigned(
-                unsignedByteToInt(b0)
-                        + (unsignedByteToInt(b1) and 0x0F shl 8), 12
+                unsignedByteToInt(b0) + (unsignedByteToInt(b1) and 0x0F shl 8),
+                12
             )
             val exponent = unsignedToSigned(unsignedByteToInt(b1) shr 4, 4)
             return (mantissa * Math.pow(10.0, exponent.toDouble())).toFloat()
@@ -460,7 +509,8 @@ class Data {
             val mantissa = unsignedToSigned(
                 unsignedByteToInt(b0)
                         + (unsignedByteToInt(b1) shl 8)
-                        + (unsignedByteToInt(b2) shl 16), 24
+                        + (unsignedByteToInt(b2) shl 16),
+                24
             )
             return (mantissa * Math.pow(10.0, b3.toDouble())).toFloat()
         }
@@ -470,11 +520,8 @@ class Data {
          * signed value.
          */
         private fun unsignedToSigned(unsigned: Int, size: Int): Int {
-            var unsigned = unsigned
-            if (unsigned and (1 shl size) - 1 != 0) {
-                unsigned = -1 * (1 shl size - 1 - (unsigned and (1 shl size) - 1 - 1))
-            }
-            return unsigned
+            return unsigned.takeIf { unsigned and (1 shl size - 1) == 0 }
+                ?: (-1 * ((1 shl size - 1) - (unsigned and (1 shl size - 1) - 1)))
         }
 
         /**
@@ -482,12 +529,8 @@ class Data {
          * signed value.
          */
         private fun unsignedToSigned(unsigned: Long, size: Int): Long {
-            //FIXME
-            var unsigned = unsigned
-            if (unsigned and (1L shl size) - 1 != 0L) {
-                unsigned = -1 * (1L shl size - 1 - (unsigned.toInt() and (1 shl size) - 1 - 1))
-            }
-            return unsigned
+            return unsigned.takeIf { unsigned and (1L shl size - 1) == 0L }
+                ?: (-1 * ((1L shl (size - 1)) - (unsigned.toInt() and (1 shl size - 1) - 1)))
         }
     }
 }
