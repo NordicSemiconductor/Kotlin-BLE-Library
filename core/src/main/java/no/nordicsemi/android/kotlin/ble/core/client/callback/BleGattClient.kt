@@ -109,8 +109,12 @@ class BleGattClient(
         _connectionState.value = connectionState
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
-        if (connectionState == GattConnectionState.STATE_CONNECTED) {
+        if (status != BleGattOperationStatus.GATT_SUCCESS) {
+            gatt.close()
+        } else if (connectionState == GattConnectionState.STATE_CONNECTED) {
             gatt.discoverServices()
+        } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+            gatt.close()
         }
     }
 

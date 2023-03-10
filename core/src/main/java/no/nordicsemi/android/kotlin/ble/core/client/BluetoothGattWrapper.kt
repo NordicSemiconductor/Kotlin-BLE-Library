@@ -129,4 +129,9 @@ internal class BluetoothGattWrapper(
     override fun disconnect() {
         gatt.disconnect()
     }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun close() {
+        gatt.close()
+    }
 }

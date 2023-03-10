@@ -68,4 +68,6 @@ interface BleGatt {
     fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 
     fun disconnect()
+
+    fun close()
 }

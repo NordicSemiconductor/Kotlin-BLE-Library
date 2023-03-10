@@ -69,4 +69,8 @@ internal class BleMockGatt(
     override fun disconnect() {
         TODO("Not yet implemented")
     }
+
+    override fun close() {
+        TODO("Not yet implemented")
+    }
 }
