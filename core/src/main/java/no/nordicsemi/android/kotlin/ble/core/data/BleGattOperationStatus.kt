@@ -36,7 +36,7 @@ import android.os.Build
 
 enum class BleGattOperationStatus(val value: Int) {
 
-    UNKNOWN(133),
+    GATT_ERROR(133),
     GATT_SUCCESS(BluetoothGatt.GATT_SUCCESS),
 
     GATT_CONNECTION_CONGESTED(BluetoothGatt.GATT_CONNECTION_CONGESTED),
