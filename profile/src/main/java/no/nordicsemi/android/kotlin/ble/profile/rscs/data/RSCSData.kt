@@ -29,14 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.profile.csc
+package no.nordicsemi.android.kotlin.ble.profile.rscs.data
 
-data class CSCData(
-    val scanDevices: Boolean = false,
-    val speed: Float = 0f,
-    val cadence: Float = 0f,
-    val distance: Float = 0f,
-    val totalDistance: Float = 0f,
-    val gearRatio: Float = 0f,
-    val wheelSize: WheelSize = WheelSizes.default
+data class RSCSData(
+    val running: Boolean = false,
+    val instantaneousSpeed: Float = 1.0f,
+    val instantaneousCadence: Int = 0,
+    val strideLength: Int? = null,
+    val totalDistance: Long? = null
 )

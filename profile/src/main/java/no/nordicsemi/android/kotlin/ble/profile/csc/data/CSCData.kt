@@ -29,13 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.profile.hts
+package no.nordicsemi.android.kotlin.ble.profile.csc.data
 
-import java.util.*
-
-data class HTSData(
-    val temperature: Float = 0f,
-    val unit: TemperatureUnit = TemperatureUnit.CELSIUS,
-    val timestamp: Calendar? = null,
-    val type: Int? = null
+data class CSCData(
+    val scanDevices: Boolean = false,
+    val speed: Float = 0f,
+    val cadence: Float = 0f,
+    val distance: Float = 0f,
+    val totalDistance: Float = 0f,
+    val gearRatio: Float = 0f,
+    val wheelSize: WheelSize = WheelSizes.default
 )

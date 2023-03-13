@@ -29,7 +29,7 @@ import androidx.annotation.IntRange
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
-class Data(private val value: ByteArray) {
+class ByteData(private val value: ByteArray) {
 
     @SuppressLint("UniqueConstants")
     @Retention(RetentionPolicy.SOURCE)
@@ -426,24 +426,24 @@ class Data(private val value: ByteArray) {
          */
         const val FORMAT_FLOAT = 0x34
 
-        fun from(value: String): Data {
-            return Data(value.toByteArray()) // UTF-8
+        fun from(value: String): ByteData {
+            return ByteData(value.toByteArray()) // UTF-8
         }
 
-        fun from(characteristic: BluetoothGattCharacteristic): Data {
-            return Data(characteristic.value)
+        fun from(characteristic: BluetoothGattCharacteristic): ByteData {
+            return ByteData(characteristic.value)
         }
 
-        fun from(descriptor: BluetoothGattDescriptor): Data {
-            return Data(descriptor.value)
+        fun from(descriptor: BluetoothGattDescriptor): ByteData {
+            return ByteData(descriptor.value)
         }
 
-        fun opCode(opCode: Byte): Data {
-            return Data(byteArrayOf(opCode))
+        fun opCode(opCode: Byte): ByteData {
+            return ByteData(byteArrayOf(opCode))
         }
 
-        fun opCode(opCode: Byte, parameter: Byte): Data {
-            return Data(byteArrayOf(opCode, parameter))
+        fun opCode(opCode: Byte, parameter: Byte): ByteData {
+            return ByteData(byteArrayOf(opCode, parameter))
         }
 
         /**

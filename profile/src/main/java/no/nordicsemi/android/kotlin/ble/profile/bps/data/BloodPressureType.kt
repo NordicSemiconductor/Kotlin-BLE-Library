@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.profile.bps
+package no.nordicsemi.android.kotlin.ble.profile.bps.data
 
 enum class BloodPressureType(internal val value: Int) {
     UNIT_MMHG(0),

@@ -29,12 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.profile.rscs
+package no.nordicsemi.android.kotlin.ble.profile.gls.data
 
-data class RSCSData(
-    val running: Boolean = false,
-    val instantaneousSpeed: Float = 1.0f,
-    val instantaneousCadence: Int = 0,
-    val strideLength: Int? = null,
-    val totalDistance: Long? = null
+internal data class GLSData(
+    val records: List<GLSRecord> = emptyList(),
+    val batteryLevel: Int? = null,
+    val requestStatus: RequestStatus = RequestStatus.IDLE
 )

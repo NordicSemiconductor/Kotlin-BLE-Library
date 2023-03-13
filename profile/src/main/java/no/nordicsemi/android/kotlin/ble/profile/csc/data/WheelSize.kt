@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.profile.csc
+package no.nordicsemi.android.kotlin.ble.profile.csc.data
 
 data class WheelSize(
     val value: Int,

@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.profile.hts
+package no.nordicsemi.android.kotlin.ble.profile.hts.data
 
 enum class TemperatureUnit(private val value: Int) {
     CELSIUS(0),

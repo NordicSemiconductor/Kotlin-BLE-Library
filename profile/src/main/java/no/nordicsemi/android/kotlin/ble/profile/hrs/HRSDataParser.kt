@@ -1,12 +1,13 @@
 package no.nordicsemi.android.kotlin.ble.profile.hrs
 
-import no.nordicsemi.android.kotlin.ble.profile.common.Data
+import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
+import no.nordicsemi.android.kotlin.ble.profile.hrs.data.HRSData
 import java.util.*
 
 object HRSDataParser {
 
     fun parse(byteArray: ByteArray): HRSData? {
-        val data = Data(byteArray)
+        val data = ByteData(byteArray)
 
         if (data.size() < 2) {
             return null
@@ -16,8 +17,8 @@ object HRSDataParser {
 
         // Read flags
         var offset = 0
-        val flags: Int = data.getIntValue(Data.FORMAT_UINT8, offset) ?: return null
-        val hearRateType: Int = if (flags and 0x01 == 0) Data.FORMAT_UINT8 else Data.FORMAT_UINT16_LE
+        val flags: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+        val hearRateType: Int = if (flags and 0x01 == 0) ByteData.FORMAT_UINT8 else ByteData.FORMAT_UINT16_LE
         val sensorContactStatus = flags and 0x06 shr 1
         val sensorContactSupported = sensorContactStatus == 2 || sensorContactStatus == 3
         val sensorContactDetected = sensorContactStatus == 3
@@ -41,7 +42,7 @@ object HRSDataParser {
 
         var energyExpanded: Int? = null
         if (energyExpandedPresent) {
-            energyExpanded = data.getIntValue(Data.FORMAT_UINT16_LE, offset)
+            energyExpanded = data.getIntValue(ByteData.FORMAT_UINT16_LE, offset)
             offset += 2
         }
 
@@ -49,7 +50,7 @@ object HRSDataParser {
             val count: Int = (data.size() - offset) / 2
             val intervals: MutableList<Int> = ArrayList(count)
             for (i in 0 until count) {
-                intervals.add(data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!)
+                intervals.add(data.getIntValue(ByteData.FORMAT_UINT16_LE, offset)!!)
                 offset += 2
             }
             intervals.toList()

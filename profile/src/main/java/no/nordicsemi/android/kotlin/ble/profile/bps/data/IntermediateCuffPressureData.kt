@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.profile.bps
+package no.nordicsemi.android.kotlin.ble.profile.bps.data
 
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange

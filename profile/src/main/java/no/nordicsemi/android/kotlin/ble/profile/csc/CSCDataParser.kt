@@ -1,6 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.profile.csc
 
-import no.nordicsemi.android.kotlin.ble.profile.common.Data
+import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
+import no.nordicsemi.android.kotlin.ble.profile.csc.data.CSCData
+import no.nordicsemi.android.kotlin.ble.profile.csc.data.CSCDataSnapshot
+import no.nordicsemi.android.kotlin.ble.profile.csc.data.WheelSize
+import no.nordicsemi.android.kotlin.ble.profile.csc.data.WheelSizes
 import kotlin.experimental.and
 
 class CSCDataParser {
@@ -13,7 +17,7 @@ class CSCDataParser {
     private var crankEventTime: Int = -1
 
     fun parse(byteArray: ByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData? {
-        val data = Data(byteArray)
+        val data = ByteData(byteArray)
 
         if (data.size() < 1) {
             return null
@@ -32,16 +36,16 @@ class CSCDataParser {
         }
 
         if (wheelRevPresent) {
-            wheelRevolutions = data.getIntValue(Data.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
+            wheelRevolutions = data.getIntValue(ByteData.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
             offset += 4
-            wheelEventTime = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!! // 1/1024 s
+            wheelEventTime = data.getIntValue(ByteData.FORMAT_UINT16_LE, offset)!! // 1/1024 s
             offset += 2
         }
 
         if (crankRevPreset) {
-            crankRevolutions = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!.toLong()
+            crankRevolutions = data.getIntValue(ByteData.FORMAT_UINT16_LE, offset)!!.toLong()
             offset += 2
-            crankEventTime = data.getIntValue(Data.FORMAT_UINT16_LE, offset)!!
+            crankEventTime = data.getIntValue(ByteData.FORMAT_UINT16_LE, offset)!!
             // offset += 2;
         }
 

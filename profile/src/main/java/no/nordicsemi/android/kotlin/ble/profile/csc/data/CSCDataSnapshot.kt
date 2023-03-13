@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.profile.csc
+package no.nordicsemi.android.kotlin.ble.profile.csc.data
 
 internal data class CSCDataSnapshot(
     var wheelRevolutions: Long = -1,

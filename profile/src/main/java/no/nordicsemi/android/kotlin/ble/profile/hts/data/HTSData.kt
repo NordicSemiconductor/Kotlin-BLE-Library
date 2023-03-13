@@ -29,11 +29,13 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.profile.hrs
+package no.nordicsemi.android.kotlin.ble.profile.hts.data
 
-data class HRSData(
-    val heartRate: Int,
-    val sensorContact: Boolean,
-    val energyExpanded: Int?,
-    val rrIntervals: List<Int>
+import java.util.*
+
+data class HTSData(
+    val temperature: Float = 0f,
+    val unit: TemperatureUnit = TemperatureUnit.CELSIUS,
+    val timestamp: Calendar? = null,
+    val type: Int? = null
 )
