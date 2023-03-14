@@ -1,6 +1,8 @@
 package no.nordicsemi.android.kotlin.ble.profile.hts
 
 import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
+import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
+import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.HTSData
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.TemperatureUnit
@@ -16,7 +18,7 @@ object HTSDataParser {
         }
 
         var offset = 0
-        val flags: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+        val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
 
         val unit: TemperatureUnit = TemperatureUnit.create(flags and 0x01) ?: return null
 
@@ -28,7 +30,7 @@ object HTSDataParser {
             return null
         }
 
-        val temperature: Float = data.getFloatValue(ByteData.FORMAT_FLOAT, offset) ?: return null
+        val temperature: Float = data.getFloatValue(FloatFormat.FORMAT_FLOAT, offset) ?: return null
         offset += 4
 
         var calendar: Calendar? = null
@@ -39,7 +41,7 @@ object HTSDataParser {
 
         var type: Int? = null
         if (temperatureTypePresent) {
-            type = data.getIntValue(ByteData.FORMAT_UINT8, offset)
+            type = data.getIntValue(IntFormat.FORMAT_UINT8, offset)
             // offset += 1;
         }
 

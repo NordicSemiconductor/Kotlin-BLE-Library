@@ -1,6 +1,8 @@
 package no.nordicsemi.android.kotlin.ble.profile.gls
 
 import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
+import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
+import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Carbohydrate
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.GlucoseMeasurementContext
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Health
@@ -20,7 +22,7 @@ object GlucoseMeasurementContextParser {
 
         var offset = 0
 
-        val flags: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset++) ?: return null
+        val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
         val carbohydratePresent = flags and 0x01 != 0
         val mealPresent = flags and 0x02 != 0
         val testerHealthPresent = flags and 0x04 != 0
@@ -37,7 +39,7 @@ object GlucoseMeasurementContextParser {
             return null
         }
 
-        val sequenceNumber: Int = data.getIntValue(ByteData.FORMAT_UINT16_LE, offset) ?: return null
+        val sequenceNumber: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
         offset += 2
 
         // Optional fields
@@ -49,15 +51,15 @@ object GlucoseMeasurementContextParser {
         var carbohydrate: Carbohydrate? = null
         var carbohydrateAmount: Float? = null
         if (carbohydratePresent) {
-            val carbohydrateId: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+            val carbohydrateId: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
             carbohydrate = Carbohydrate.create(carbohydrateId)
-            carbohydrateAmount = data.getFloatValue(ByteData.FORMAT_SFLOAT, offset + 1) // in grams
+            carbohydrateAmount = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 1) // in grams
             offset += 3
         }
 
         var meal: Meal? = null
         if (mealPresent) {
-            val mealId: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+            val mealId: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
             meal = Meal.create(mealId)
             offset += 1
         }
@@ -65,7 +67,7 @@ object GlucoseMeasurementContextParser {
         var tester: Tester? = null
         var health: Health? = null
         if (testerHealthPresent) {
-            val testerAndHealth: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+            val testerAndHealth: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
             tester = Tester.create(testerAndHealth and 0x0F)
             health = Health.create(testerAndHealth shr 4)
             offset += 1
@@ -75,9 +77,9 @@ object GlucoseMeasurementContextParser {
         var exerciseIntensity: Int? = null
         if (exercisePresent) {
             exerciseDuration =
-                data.getIntValue(ByteData.FORMAT_UINT16_LE, offset) // in seconds
+                data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) // in seconds
             exerciseIntensity =
-                data.getIntValue(ByteData.FORMAT_UINT8, offset + 2) // in percentage
+                data.getIntValue(IntFormat.FORMAT_UINT8, offset + 2) // in percentage
             offset += 3
         }
 
@@ -86,10 +88,9 @@ object GlucoseMeasurementContextParser {
         var medicationAmount: Float? = null
         var medicationUnit: MedicationUnit? = null
         if (medicationPresent) {
-            val medicationId: Int = data.getIntValue(ByteData.FORMAT_UINT8, offset) ?: return null
+            val medicationId: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
             medication = Medication.create(medicationId)
-            medicationAmount =
-                data.getFloatValue(ByteData.FORMAT_SFLOAT, offset + 1) // mg or ml
+            medicationAmount = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 1) // mg or ml
             medicationUnit =
                 if (medicationUnitLiter) MedicationUnit.UNIT_ML else MedicationUnit.UNIT_MG
             offset += 3
@@ -97,7 +98,7 @@ object GlucoseMeasurementContextParser {
 
         var HbA1c: Float? = null
         if (HbA1cPresent) {
-            HbA1c = data.getFloatValue(ByteData.FORMAT_SFLOAT, offset)
+            HbA1c = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
             // offset += 2;
         }
 

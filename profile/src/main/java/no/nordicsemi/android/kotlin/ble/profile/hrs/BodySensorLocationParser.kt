@@ -1,6 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.profile.hrs
 
 import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
+import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 
 object BodySensorLocationParser {
 
@@ -11,6 +12,6 @@ object BodySensorLocationParser {
             return null
         }
 
-        return data.getIntValue(ByteData.FORMAT_UINT8, 0)
+        return data.getIntValue(IntFormat.FORMAT_UINT8, 0)
     }
 }

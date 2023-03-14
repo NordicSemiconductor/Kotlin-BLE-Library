@@ -21,96 +21,11 @@
  */
 package no.nordicsemi.android.kotlin.ble.profile.common
 
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
-import androidx.annotation.IntDef
 import androidx.annotation.IntRange
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
 
-class ByteData(private val value: ByteArray) {
-
-    @SuppressLint("UniqueConstants")
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-        value = [
-            FORMAT_UINT8,
-            FORMAT_UINT16,
-            FORMAT_UINT16_LE,
-            FORMAT_UINT16_BE,
-            FORMAT_UINT24,
-            FORMAT_UINT24_LE,
-            FORMAT_UINT24_BE,
-            FORMAT_UINT32,
-            FORMAT_UINT32_LE,
-            FORMAT_UINT32_BE,
-            FORMAT_SINT8,
-            FORMAT_SINT16,
-            FORMAT_SINT16_LE,
-            FORMAT_SINT16_BE,
-            FORMAT_SINT24,
-            FORMAT_SINT24_LE,
-            FORMAT_SINT24_BE,
-            FORMAT_SINT32,
-            FORMAT_SINT32_LE,
-            FORMAT_SINT32_BE,
-            FORMAT_FLOAT,
-            FORMAT_SFLOAT
-        ]
-    )
-    annotation class ValueFormat
-
-    @SuppressLint("UniqueConstants")
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-        value = [
-            FORMAT_UINT8,
-            FORMAT_UINT16,
-            FORMAT_UINT16_LE,
-            FORMAT_UINT16_BE,
-            FORMAT_UINT24,
-            FORMAT_UINT24_LE,
-            FORMAT_UINT24_BE,
-            FORMAT_UINT32,
-            FORMAT_UINT32_LE,
-            FORMAT_UINT32_BE,
-            FORMAT_SINT8,
-            FORMAT_SINT16,
-            FORMAT_SINT16_LE,
-            FORMAT_SINT16_BE,
-            FORMAT_SINT24,
-            FORMAT_SINT24_LE,
-            FORMAT_SINT24_BE,
-            FORMAT_SINT32,
-            FORMAT_SINT32_LE,
-            FORMAT_SINT32_BE
-        ]
-    )
-    annotation class IntFormat
-
-    @SuppressLint("UniqueConstants")
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-        value = [
-            FORMAT_UINT32,
-            FORMAT_UINT32_LE,
-            FORMAT_UINT32_BE,
-            FORMAT_SINT32,
-            FORMAT_SINT32_LE,
-            FORMAT_SINT32_BE
-        ]
-    )
-    annotation class LongFormat
-
-    @Retention(RetentionPolicy.SOURCE)
-    @IntDef(
-        value = [
-            FORMAT_FLOAT,
-            FORMAT_SFLOAT
-        ]
-    )
-    annotation class FloatFormat
+open class ByteData(private val value: ByteArray) {
 
     /**
      * Return the stored value of this characteristic.
@@ -121,7 +36,7 @@ class ByteData(private val value: ByteArray) {
      * @return Cached value of the characteristic
      */
     fun getStringValue(@IntRange(from = 0) offset: Int): String? {
-        if (value == null || offset > value.size) {
+        if (offset > value.size) {
             return null
         }
         val strBytes = ByteArray(value.size - offset)
@@ -182,7 +97,7 @@ class ByteData(private val value: ByteArray) {
      * @return Cached value or null of offset exceeds value size.
      */
     fun getIntValue(
-        @IntFormat formatType: Int,
+        formatType: IntFormat,
         @IntRange(from = 0) offset: Int
     ): Int? {
         if (offset + getTypeLen(formatType) > size()) {
@@ -190,44 +105,44 @@ class ByteData(private val value: ByteArray) {
         }
 
         when (formatType) {
-            FORMAT_UINT8 -> return unsignedByteToInt(value[offset])
-            FORMAT_UINT16_LE -> return unsignedBytesToInt(value[offset], value[offset + 1])
-            FORMAT_UINT16_BE -> return unsignedBytesToInt(value[offset + 1], value[offset])
-            FORMAT_UINT24_LE -> return unsignedBytesToInt(
+            IntFormat.FORMAT_UINT8 -> return unsignedByteToInt(value[offset])
+            IntFormat.FORMAT_UINT16_LE -> return unsignedBytesToInt(value[offset], value[offset + 1])
+            IntFormat.FORMAT_UINT16_BE -> return unsignedBytesToInt(value[offset + 1], value[offset])
+            IntFormat.FORMAT_UINT24_LE -> return unsignedBytesToInt(
                 value[offset],
                 value[offset + 1],
                 value[offset + 2],
                 0.toByte()
             )
-            FORMAT_UINT24_BE -> return unsignedBytesToInt(
+            IntFormat.FORMAT_UINT24_BE -> return unsignedBytesToInt(
                 value[offset + 2],
                 value[offset + 1],
                 value[offset],
                 0.toByte()
             )
-            FORMAT_UINT32_LE -> return unsignedBytesToInt(
+            IntFormat.FORMAT_UINT32_LE -> return unsignedBytesToInt(
                 value[offset],
                 value[offset + 1],
                 value[offset + 2],
                 value[offset + 3]
             )
-            FORMAT_UINT32_BE -> return unsignedBytesToInt(
+            IntFormat.FORMAT_UINT32_BE -> return unsignedBytesToInt(
                 value[offset + 3],
                 value[offset + 2],
                 value[offset + 1],
                 value[offset]
             )
-            FORMAT_SINT8 -> return unsignedToSigned(unsignedByteToInt(value[offset]), 8)
-            FORMAT_SINT16_LE -> return unsignedToSigned(unsignedBytesToInt(value[offset], value[offset + 1]), 16)
-            FORMAT_SINT16_BE -> return unsignedToSigned(unsignedBytesToInt(value[offset + 1], value[offset]), 16)
-            FORMAT_SINT24_LE -> return unsignedToSigned(
+            IntFormat.FORMAT_SINT8 -> return unsignedToSigned(unsignedByteToInt(value[offset]), 8)
+            IntFormat.FORMAT_SINT16_LE -> return unsignedToSigned(unsignedBytesToInt(value[offset], value[offset + 1]), 16)
+            IntFormat.FORMAT_SINT16_BE -> return unsignedToSigned(unsignedBytesToInt(value[offset + 1], value[offset]), 16)
+            IntFormat.FORMAT_SINT24_LE -> return unsignedToSigned(
                 unsignedBytesToInt(
                     value[offset],
                     value[offset + 1],
                     value[offset + 2], 0.toByte()
                 ), 24
             )
-            FORMAT_SINT24_BE -> return unsignedToSigned(
+            IntFormat.FORMAT_SINT24_BE -> return unsignedToSigned(
                 unsignedBytesToInt(
                     0.toByte(),
                     value[offset + 2],
@@ -235,7 +150,7 @@ class ByteData(private val value: ByteArray) {
                     value[offset]
                 ), 24
             )
-            FORMAT_SINT32_LE -> return unsignedToSigned(
+            IntFormat.FORMAT_SINT32_LE -> return unsignedToSigned(
                 unsignedBytesToInt(
                     value[offset],
                     value[offset + 1],
@@ -243,7 +158,7 @@ class ByteData(private val value: ByteArray) {
                     value[offset + 3]
                 ), 32
             )
-            FORMAT_SINT32_BE -> return unsignedToSigned(
+            IntFormat.FORMAT_SINT32_BE -> return unsignedToSigned(
                 unsignedBytesToInt(
                     value[offset + 3],
                     value[offset + 2],
@@ -252,7 +167,6 @@ class ByteData(private val value: ByteArray) {
                 ), 32
             )
         }
-        return null
     }
 
     /**
@@ -271,24 +185,24 @@ class ByteData(private val value: ByteArray) {
      * @return Cached value or null of offset exceeds value size.
      */
     fun getLongValue(
-        @LongFormat formatType: Int,
+        formatType: LongFormat,
         @IntRange(from = 0) offset: Int
     ): Long? {
         if (offset + getTypeLen(formatType) > size()) return null
         when (formatType) {
-            FORMAT_UINT32_LE -> return unsignedBytesToLong(
+            LongFormat.FORMAT_UINT32_LE -> return unsignedBytesToLong(
                 value[offset],
                 value[offset + 1],
                 value[offset + 2],
                 value[offset + 3]
             )
-            FORMAT_UINT32_BE -> return unsignedBytesToLong(
+            LongFormat.FORMAT_UINT32_BE -> return unsignedBytesToLong(
                 value[offset + 3],
                 value[offset + 2],
                 value[offset + 1],
                 value[offset]
             )
-            FORMAT_SINT32_LE -> return unsignedToSigned(
+            LongFormat.FORMAT_SINT32_LE -> return unsignedToSigned(
                 unsignedBytesToLong(
                     value[offset],
                     value[offset + 1],
@@ -296,7 +210,7 @@ class ByteData(private val value: ByteArray) {
                     value[offset + 3]
                 ), 32
             )
-            FORMAT_SINT32_BE -> return unsignedToSigned(
+            LongFormat.FORMAT_SINT32_BE -> return unsignedToSigned(
                 unsignedBytesToLong(
                     value[offset + 3],
                     value[offset + 2],
@@ -305,7 +219,6 @@ class ByteData(private val value: ByteArray) {
                 ), 32
             )
         }
-        return null
     }
 
     /**
@@ -316,14 +229,14 @@ class ByteData(private val value: ByteArray) {
      * @return Cached value at a given offset or null if the requested offset exceeds the value size.
      */
     fun getFloatValue(
-        @FloatFormat formatType: Int,
+        formatType: FloatFormat,
         @IntRange(from = 0) offset: Int
     ): Float? {
         if (offset + getTypeLen(formatType) > size()) {
             return null
         }
         when (formatType) {
-            FORMAT_SFLOAT -> {
+            FloatFormat.FORMAT_SFLOAT -> {
                 if (value[offset + 1] == 0x07.toByte() && value[offset] == 0xFE.toByte()) {
                     return Float.POSITIVE_INFINITY
                 }
@@ -339,7 +252,7 @@ class ByteData(private val value: ByteArray) {
                     bytesToFloat(value[offset], value[offset + 1])
                 }
             }
-            FORMAT_FLOAT -> {
+            FloatFormat.FORMAT_FLOAT -> {
                 if (value[offset + 3].toInt() == 0x00) {
                     if (value[offset + 2].toInt() == 0x7F && value[offset + 1] == 0xFF.toByte()) {
                         if (value[offset] == 0xFE.toByte()) return Float.POSITIVE_INFINITY
@@ -352,79 +265,10 @@ class ByteData(private val value: ByteArray) {
                 return bytesToFloat(value[offset], value[offset + 1], value[offset + 2], value[offset + 3])
             }
         }
-        return null
     }
 
     companion object {
         private val HEX_ARRAY = "0123456789ABCDEF".toCharArray()
-
-        /**
-         * Data value format type uint8
-         */
-        const val FORMAT_UINT8 = 0x11
-
-        /**
-         * Data value format type uint16
-         */
-        @Deprecated("")
-        const val FORMAT_UINT16 = 0x12
-        const val FORMAT_UINT16_LE = 0x12
-        const val FORMAT_UINT16_BE = 0x112
-
-        /**
-         * Data value format type uint24
-         */
-        @Deprecated("")
-        const val FORMAT_UINT24 = 0x13
-        const val FORMAT_UINT24_LE = 0x13
-        const val FORMAT_UINT24_BE = 0x113
-
-        /**
-         * Data value format type uint32
-         */
-        @Deprecated("")
-        const val FORMAT_UINT32 = 0x14
-        const val FORMAT_UINT32_LE = 0x14
-        const val FORMAT_UINT32_BE = 0x114
-
-        /**
-         * Data value format type sint8
-         */
-        const val FORMAT_SINT8 = 0x21
-
-        /**
-         * Data value format type sint16
-         */
-        @Deprecated("")
-        const val FORMAT_SINT16 = 0x22
-        const val FORMAT_SINT16_LE = 0x22
-        const val FORMAT_SINT16_BE = 0x122
-
-        /**
-         * Data value format type sint24
-         */
-        @Deprecated("")
-        const val FORMAT_SINT24 = 0x23
-        const val FORMAT_SINT24_LE = 0x23
-        const val FORMAT_SINT24_BE = 0x123
-
-        /**
-         * Data value format type sint32
-         */
-        @Deprecated("")
-        const val FORMAT_SINT32 = 0x24
-        const val FORMAT_SINT32_LE = 0x24
-        const val FORMAT_SINT32_BE = 0x124
-
-        /**
-         * Data value format type sfloat (16-bit float, IEEE-11073)
-         */
-        const val FORMAT_SFLOAT = 0x32
-
-        /**
-         * Data value format type float (32-bit float, IEEE-11073)
-         */
-        const val FORMAT_FLOAT = 0x34
 
         fun from(value: String): ByteData {
             return ByteData(value.toByteArray()) // UTF-8
@@ -444,13 +288,6 @@ class ByteData(private val value: ByteArray) {
 
         fun opCode(opCode: Byte, parameter: Byte): ByteData {
             return ByteData(byteArrayOf(opCode, parameter))
-        }
-
-        /**
-         * Returns the size of a give value type.
-         */
-        fun getTypeLen(@ValueFormat formatType: Int): Int {
-            return formatType and 0xF
         }
 
         /**
