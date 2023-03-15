@@ -27,7 +27,7 @@ import no.nordicsemi.android.kotlin.ble.profile.common.ByteData.Companion.opCode
 import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.common.MutableData
 
-object RecordAccessControlPointData {
+object RecordAccessControlPointInputParser {
     private const val OP_CODE_REPORT_STORED_RECORDS: Byte = 1
     private const val OP_CODE_DELETE_STORED_RECORDS: Byte = 2
     private const val OP_CODE_ABORT_OPERATION: Byte = 3
@@ -41,6 +41,7 @@ object RecordAccessControlPointData {
     private const val OPERATOR_WITHING_RANGE: Byte = 4
     private const val OPERATOR_FIRST_RECORD: Byte = 5
     private const val OPERATOR_LAST_RECORD: Byte = 6
+
     fun reportAllStoredRecords(): ByteData {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_ALL_RECORDS)
     }
@@ -57,20 +58,14 @@ object RecordAccessControlPointData {
         filter: FilterType, formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun reportStoredRecordsGreaterThenOrEqualTo(
         filter: FilterType, formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun reportStoredRecordsFromRange(
@@ -78,23 +73,26 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         start: Int, end: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_WITHING_RANGE,
-            filter, formatType, start, end
-        )
+        return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
     fun reportStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_REPORT_STORED_RECORDS,
+            OPERATOR_LESS_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
     fun reportStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_REPORT_STORED_RECORDS,
+            OPERATOR_GREATER_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
@@ -103,9 +101,12 @@ object RecordAccessControlPointData {
         @IntRange(from = 0) endSequenceNumber: Int
     ): ByteData {
         return create(
-            OP_CODE_REPORT_STORED_RECORDS, OPERATOR_WITHING_RANGE,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE,
-            startSequenceNumber, endSequenceNumber
+            OP_CODE_REPORT_STORED_RECORDS,
+            OPERATOR_WITHING_RANGE,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            startSequenceNumber,
+            endSequenceNumber
         )
     }
 
@@ -126,10 +127,7 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_DELETE_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun deleteStoredRecordsGreaterThenOrEqualTo(
@@ -137,10 +135,7 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_DELETE_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun deleteStoredRecordsFromRange(
@@ -148,23 +143,26 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         start: Int, end: Int
     ): ByteData {
-        return create(
-            OP_CODE_DELETE_STORED_RECORDS, OPERATOR_WITHING_RANGE,
-            filter, formatType, start, end
-        )
+        return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
     fun deleteStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_DELETE_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_DELETE_STORED_RECORDS,
+            OPERATOR_LESS_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
     fun deleteStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_DELETE_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_DELETE_STORED_RECORDS,
+            OPERATOR_GREATER_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
@@ -188,10 +186,7 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun reportNumberOfStoredRecordsGreaterThenOrEqualTo(
@@ -199,10 +194,7 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         parameter: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            filter, formatType, parameter
-        )
+        return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun reportNumberOfStoredRecordsFromRange(
@@ -210,23 +202,26 @@ object RecordAccessControlPointData {
         formatType: IntFormat,
         start: Int, end: Int
     ): ByteData {
-        return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_WITHING_RANGE,
-            filter, formatType, start, end
-        )
+        return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
     fun reportNumberOfStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_REPORT_NUMBER_OF_RECORDS,
+            OPERATOR_LESS_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
     fun reportNumberOfStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
         return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE, sequenceNumber
+            OP_CODE_REPORT_NUMBER_OF_RECORDS,
+            OPERATOR_GREATER_THEN_OR_EQUAL,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            sequenceNumber
         )
     }
 
@@ -235,9 +230,12 @@ object RecordAccessControlPointData {
         @IntRange(from = 0) endSequenceNumber: Int
     ): ByteData {
         return create(
-            OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_WITHING_RANGE,
-            FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE,
-            startSequenceNumber, endSequenceNumber
+            OP_CODE_REPORT_NUMBER_OF_RECORDS,
+            OPERATOR_WITHING_RANGE,
+            FilterType.SEQUENCE_NUMBER,
+            IntFormat.FORMAT_UINT16_LE,
+            startSequenceNumber,
+            endSequenceNumber
         )
     }
 

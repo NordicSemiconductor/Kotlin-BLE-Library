@@ -25,7 +25,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.IntRange
 
-open class ByteData(private val value: ByteArray) {
+open class ByteData(val value: ByteArray) {
 
     /**
      * Return the stored value of this characteristic.
