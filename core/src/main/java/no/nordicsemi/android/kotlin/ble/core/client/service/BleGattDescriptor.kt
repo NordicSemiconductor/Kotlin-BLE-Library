@@ -59,6 +59,7 @@ class BleGattDescriptor internal constructor(
             return
         }
         pendingEvent?.invoke(event)
+        pendingEvent = null
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

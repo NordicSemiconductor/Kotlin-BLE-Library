@@ -30,8 +30,11 @@
  */
 package no.nordicsemi.android.kotlin.ble.profile.gls.data
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.util.*
 
+@Parcelize
 data class GLSRecord(
     val sequenceNumber: Int,
     val time: Calendar? = null,
@@ -41,7 +44,7 @@ data class GLSRecord(
     val status: GlucoseStatus? = null,
     val sampleLocation: SampleLocation? = null,
     val contextInformationFollows: Boolean
-)
+) : Parcelable
 
 enum class RecordType(val id: Int) {
     CAPILLARY_WHOLE_BLOOD(1),
@@ -67,7 +70,8 @@ enum class RecordType(val id: Int) {
     }
 }
 
-data class GlucoseMeasurementContext(
+@Parcelize
+data class GLSMeasurementContext(
     val sequenceNumber: Int = 0,
     val carbohydrate: Carbohydrate? = null,
     val carbohydrateAmount: Float? = null,
@@ -80,7 +84,7 @@ data class GlucoseMeasurementContext(
     val medicationQuantity: Float? = null,
     val medicationUnit: MedicationUnit? = null,
     val HbA1c: Float? = null
-)
+) : Parcelable
 
 enum class ConcentrationUnit(val id: Int) {
     UNIT_KGPL(0),

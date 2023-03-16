@@ -31,6 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.gls.data
 
-internal enum class RequestStatus {
+enum class RequestStatus {
     IDLE, PENDING, SUCCESS, ABORTED, FAILED, NOT_SUPPORTED
 }

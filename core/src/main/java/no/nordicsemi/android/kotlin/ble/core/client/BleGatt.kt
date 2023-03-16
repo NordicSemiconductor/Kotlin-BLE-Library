@@ -69,5 +69,7 @@ interface BleGatt {
 
     fun disconnect()
 
+    fun clearServicesCache()
+
     fun close()
 }

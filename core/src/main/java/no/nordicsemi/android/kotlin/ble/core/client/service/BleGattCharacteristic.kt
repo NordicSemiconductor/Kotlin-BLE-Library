@@ -36,7 +36,9 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
@@ -68,7 +70,7 @@ class BleGattCharacteristic internal constructor(
 
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
-    private val _notification = simpleSharedFlow<ByteArray>()
+    private val _notification = MutableSharedFlow<ByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     @SuppressLint("MissingPermission")
     suspend fun getNotifications(): Flow<ByteArray> {
@@ -101,6 +103,7 @@ class BleGattCharacteristic internal constructor(
         }
         (event as? OnCharacteristicChanged)?.let { _notification.tryEmit(it.value) }
         pendingEvent?.invoke(event)
+        pendingEvent = null
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

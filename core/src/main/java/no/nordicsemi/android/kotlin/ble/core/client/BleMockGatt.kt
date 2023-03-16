@@ -70,6 +70,10 @@ internal class BleMockGatt(
         TODO("Not yet implemented")
     }
 
+    override fun clearServicesCache() {
+        TODO("Not yet implemented")
+    }
+
     override fun close() {
         TODO("Not yet implemented")
     }

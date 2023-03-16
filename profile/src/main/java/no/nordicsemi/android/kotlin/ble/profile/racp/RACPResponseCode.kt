@@ -3,7 +3,7 @@ package no.nordicsemi.android.kotlin.ble.profile.racp
 enum class RACPResponseCode(internal val value: Int) {
     RACP_RESPONSE_SUCCESS(1),
     RACP_ERROR_OP_CODE_NOT_SUPPORTED(2),
-    RACP_EEROR_INVALID_OPERATOR(3),
+    RACP_ERROR_INVALID_OPERATOR(3),
     RACP_ERROR_OPERATOR_NOT_SUPPORTED(4),
     RACP_ERROR_INVALID_OPERAND(5),
 

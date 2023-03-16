@@ -4,7 +4,7 @@ import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
 import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Carbohydrate
-import no.nordicsemi.android.kotlin.ble.profile.gls.data.GlucoseMeasurementContext
+import no.nordicsemi.android.kotlin.ble.profile.gls.data.GLSMeasurementContext
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Health
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Meal
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.Medication
@@ -13,7 +13,7 @@ import no.nordicsemi.android.kotlin.ble.profile.gls.data.Tester
 
 object GlucoseMeasurementContextParser {
 
-    fun parse(byteArray: ByteArray): GlucoseMeasurementContext? {
+    fun parse(byteArray: ByteArray): GLSMeasurementContext? {
         val data = ByteData(byteArray)
 
         if (data.size() < 3) {
@@ -102,7 +102,7 @@ object GlucoseMeasurementContextParser {
             // offset += 2;
         }
 
-        return GlucoseMeasurementContext(
+        return GLSMeasurementContext(
             sequenceNumber,
             carbohydrate,
             carbohydrateAmount,

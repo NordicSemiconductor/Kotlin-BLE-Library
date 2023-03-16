@@ -104,6 +104,10 @@ class BleGattClient(
         gatt.disconnect()
     }
 
+    fun clearServicesCache() {
+        gatt.clearServicesCache()
+    }
+
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(status: BleGattOperationStatus, connectionState: GattConnectionState) {
         _connectionState.value = connectionState

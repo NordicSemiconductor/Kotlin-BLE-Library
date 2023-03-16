@@ -42,6 +42,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClient
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import java.lang.reflect.Method
 
 internal class BluetoothGattWrapper(
     private val gatt: BluetoothGatt,
@@ -107,7 +108,13 @@ internal class BluetoothGattWrapper(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             gatt.readPhy()
         } else {
-            callback.onEvent(OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+            callback.onEvent(
+                OnPhyUpdate(
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattOperationStatus.GATT_SUCCESS
+                )
+            )
         }
     }
 
@@ -121,13 +128,28 @@ internal class BluetoothGattWrapper(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             gatt.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
         } else {
-            callback.onEvent(OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+            callback.onEvent(
+                OnPhyUpdate(
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattOperationStatus.GATT_SUCCESS
+                )
+            )
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun disconnect() {
         gatt.disconnect()
+    }
+
+    override fun clearServicesCache() {
+        try {
+            val refreshMethod: Method = gatt.javaClass.getMethod("refresh")
+            refreshMethod.invoke(gatt)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

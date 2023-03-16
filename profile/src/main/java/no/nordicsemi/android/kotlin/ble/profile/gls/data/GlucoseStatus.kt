@@ -1,5 +1,9 @@
 package no.nordicsemi.android.kotlin.ble.profile.gls.data
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 class GlucoseStatus(
     val deviceBatteryLow: Boolean,
     val sensorMalfunction: Boolean,
@@ -13,7 +17,7 @@ class GlucoseStatus(
     val sensorReadInterrupted: Boolean,
     val generalDeviceFault: Boolean,
     val timeFault: Boolean
-) {
+) : Parcelable {
 
     constructor(value: Int) : this(
         deviceBatteryLow = value and 0x0001 != 0,
