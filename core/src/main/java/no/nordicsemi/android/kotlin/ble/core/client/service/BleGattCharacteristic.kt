@@ -40,7 +40,6 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
-import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.client.CharacteristicEvent
@@ -50,6 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.core.client.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.core.client.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.core.client.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
@@ -108,12 +108,30 @@ class BleGattCharacteristic internal constructor(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
+        validateWriteProperties(writeType)
         pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
         gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
+    private fun validateWriteProperties(writeType: BleWriteType) {
+        when (writeType) {
+            BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
+                throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE)
+            }
+            BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
+                throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)
+            }
+            BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
+                throw MissingPropertyException(BleGattProperty.PROPERTY_SIGNED_WRITE)
+            }
+        }
+    }
+
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
+        if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
+            throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
+        }
         pendingEvent = { it.onReadEvent { continuation.resume(it) } }
         gatt.readCharacteristic(characteristic)
     }
@@ -124,6 +142,8 @@ class BleGattCharacteristic internal constructor(
             enableNotifications()
         } else if (properties.contains(BleGattProperty.PROPERTY_INDICATE)) {
             enableIndications()
+        } else {
+            throw MissingPropertyException(BleGattProperty.PROPERTY_NOTIFY)
         }
     }
 
