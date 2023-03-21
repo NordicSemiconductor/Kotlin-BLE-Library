@@ -64,6 +64,8 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     )
     val event = _event.asSharedFlow()
 
+    var onServiceAdded: (() -> Unit)? = null
+
     override fun onCharacteristicReadRequest(
         device: BluetoothDevice?,
         requestId: Int,
@@ -167,6 +169,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
+        onServiceAdded?.invoke()
         _event.tryEmit(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
     }
 

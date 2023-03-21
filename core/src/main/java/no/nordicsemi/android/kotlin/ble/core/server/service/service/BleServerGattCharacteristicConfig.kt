@@ -40,6 +40,7 @@ data class BleServerGattCharacteristicConfig(
     val properties: List<BleGattProperty> = emptyList(),
     val permissions: List<BleGattPermission> = emptyList(),
     val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList(),
+    val initialValue: ByteArray? = null
 ) {
 
     val hasNotifications: Boolean

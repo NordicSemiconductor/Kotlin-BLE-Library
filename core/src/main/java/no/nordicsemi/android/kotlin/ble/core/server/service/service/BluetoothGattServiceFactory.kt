@@ -105,6 +105,8 @@ internal object BluetoothGattServiceFactory {
                 BleGattPermission.toInt(it.permissions)
             )
 
+            characteristic.value = it.initialValue
+
             it.descriptorConfigs.forEach {
                 val descriptor = BluetoothGattDescriptor(
                     it.uuid,

@@ -63,7 +63,7 @@ class BleServerGattCharacteristic internal constructor(
 
     private var transactionalValue = byteArrayOf()
 
-    private val _value = MutableStateFlow(byteArrayOf())
+    private val _value = MutableStateFlow(characteristic.value ?: byteArrayOf())
     val value = _value.asStateFlow()
 
     val permissions: List<BleGattPermission>

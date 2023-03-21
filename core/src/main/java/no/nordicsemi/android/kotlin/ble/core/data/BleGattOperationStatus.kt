@@ -36,6 +36,7 @@ import android.os.Build
 
 enum class BleGattOperationStatus(val value: Int) {
 
+    GATT_UNKNOWN(-1),
     GATT_ERROR(133),
     GATT_SUCCESS(BluetoothGatt.GATT_SUCCESS),
 
@@ -59,8 +60,7 @@ enum class BleGattOperationStatus(val value: Int) {
 
     companion object {
         fun create(value: Int): BleGattOperationStatus {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Cannot create status object for value: $value")
+            return values().firstOrNull { it.value == value } ?: GATT_UNKNOWN
         }
     }
 }

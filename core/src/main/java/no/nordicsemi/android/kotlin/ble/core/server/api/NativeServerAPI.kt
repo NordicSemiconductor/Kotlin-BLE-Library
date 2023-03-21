@@ -31,12 +31,20 @@ internal class NativeServerAPI(
         fun create(context: Context, vararg config: BleServerGattServiceConfig): ServerAPI {
             val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
+            var index = 0
+
             val callback = BleGattServerCallback()
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
             val server = NativeServerAPI(bluetoothGattServer, callback)
 
-            config.forEach {
-                bluetoothGattServer.addService(BluetoothGattServiceFactory.create(it))
+            callback.onServiceAdded = {
+                while  (index <= config.lastIndex) {
+                    bluetoothGattServer.addService(BluetoothGattServiceFactory.create(config[index++]))
+                }
+            }
+
+            if (config.isNotEmpty()) {
+                bluetoothGattServer.addService(BluetoothGattServiceFactory.create(config[index++]))
             }
 
             return server
@@ -83,23 +91,15 @@ internal class NativeServerAPI(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             server.readPhy(bleDevice)
         } else {
-            callback.onEvent(
-                OnServerPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
-            )
+            callback.onEvent(OnServerPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 
     override fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        requestPhy(device, txPhy, rxPhy, phyOption)
-    }
-
-    private fun requestPhy(device: RealClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            server.setPreferredPhy(device.device, txPhy.value, rxPhy.value, phyOption.value)
+            server.setPreferredPhy((device as RealClientDevice).device, txPhy.value, rxPhy.value, phyOption.value)
         } else {
-            callback.onEvent(
-                OnServerPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
-            )
+            callback.onEvent(OnServerPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 }

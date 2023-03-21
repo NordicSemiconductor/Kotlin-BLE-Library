@@ -35,11 +35,14 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -70,8 +73,10 @@ class BleGattServer internal constructor(
         }
     }
 
-    private val _connections =
-        MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
+    private val _onNewConnection = simpleSharedFlow<Pair<ClientDevice, BluetoothGattServerConnection>>()
+    val onNewConnection = _onNewConnection.asSharedFlow()
+
+    private val _connections = MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
 
     private var services: List<BluetoothGattService> = emptyList()
@@ -126,11 +131,13 @@ class BleGattServer internal constructor(
             )
         }
         val mutableMap = connections.value.toMutableMap()
-        mutableMap[device] = BluetoothGattServerConnection(
+        val connection = BluetoothGattServerConnection(
             device,
             server,
             BleGattServerServices(server, device, copiedServices)
         )
+        mutableMap[device] = connection
+        _onNewConnection.tryEmit(device to connection)
         _connections.value = mutableMap.toMap()
 
         server.connect(device, true)
