@@ -38,8 +38,8 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.core.client.BleClient
 import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
 import no.nordicsemi.android.kotlin.ble.core.client.ClientScope
 import no.nordicsemi.android.kotlin.ble.core.client.DataChangedEvent
@@ -52,6 +52,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.client.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import kotlin.coroutines.resume
@@ -60,18 +61,20 @@ import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
     private val gatt: BleGatt
-) : BleClient {
+) {
 
-    private val _connectionState = MutableStateFlow<GattConnectionState?>(null)
-    override val connectionState = _connectionState.asStateFlow()
+    private val _connectionStateWithStatus = MutableStateFlow<Pair<GattConnectionState, BleGattConnectionStatus>?>(null)
+    val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
+
+    val connectionState = _connectionStateWithStatus.mapNotNull { it?.first }
 
     private val _connectionParams = MutableStateFlow(ConnectionParams())
-    override val connectionParams = _connectionParams.asStateFlow()
+    val connectionParams = _connectionParams.asStateFlow()
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
-    override val services = _services.asStateFlow()
+    val services = _services.asStateFlow()
 
-    private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattOperationStatus) -> Unit)? = null
+    private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? = null
 
     init {
         gatt.event.onEach {
@@ -109,11 +112,11 @@ class BleGattClient(
     }
 
     @SuppressLint("MissingPermission")
-    private fun onConnectionStateChange(status: BleGattOperationStatus, connectionState: GattConnectionState) {
-        _connectionState.value = connectionState
+    private fun onConnectionStateChange(status: BleGattConnectionStatus, connectionState: GattConnectionState) {
+        _connectionStateWithStatus.value = connectionState to status
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
-        if (status != BleGattOperationStatus.GATT_SUCCESS) {
+        if (status != BleGattConnectionStatus.SUCCESS) {
             gatt.close()
         } else if (connectionState == GattConnectionState.STATE_CONNECTED) {
             gatt.discoverServices()

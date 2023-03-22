@@ -41,7 +41,8 @@ enum class GattConnectionState(internal val value: Int) {
 
     companion object {
         fun create(value: Int): GattConnectionState {
-            return values().firstOrNull { it.value == value } ?: throw IllegalStateException("Cannot create GattConnectionState for value: $value")
+            return values().firstOrNull { it.value == value }
+                ?: throw IllegalStateException("Cannot create GattConnectionState for value: $value")
         }
     }
 }

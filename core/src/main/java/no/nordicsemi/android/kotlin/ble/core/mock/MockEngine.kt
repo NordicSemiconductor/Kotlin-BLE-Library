@@ -55,6 +55,7 @@ import no.nordicsemi.android.kotlin.ble.core.client.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.core.client.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.core.client.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.client.callback.ConnectionParams
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -145,7 +146,7 @@ internal object MockEngine {
     }
 
     fun connect(device: ClientDevice, autoConnect: Boolean) {
-        registeredClients[device]?.onEvent(OnConnectionStateChanged(BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
+        registeredClients[device]?.onEvent(OnConnectionStateChanged(BleGattConnectionStatus.SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
 
     fun readPhy(device: ClientDevice) {

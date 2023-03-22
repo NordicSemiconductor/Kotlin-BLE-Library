@@ -31,6 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.core.client.errors
 
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 
-class DeviceDisconnectedException(status: BleGattOperationStatus) : Exception("Connection failed with status: $status")
+class DeviceDisconnectedException(status: BleGattConnectionStatus) : Exception("Connection failed with status: $status")
