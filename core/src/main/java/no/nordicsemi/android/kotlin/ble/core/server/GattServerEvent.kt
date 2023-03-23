@@ -35,6 +35,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -48,7 +49,7 @@ data class OnServiceAdded(
 
 data class OnClientConnectionStateChanged(
     val device: ClientDevice,
-    val status: BleGattOperationStatus,
+    val status: BleGattConnectionStatus,
     val newState: GattConnectionState
 ) : GattServerEvent
 

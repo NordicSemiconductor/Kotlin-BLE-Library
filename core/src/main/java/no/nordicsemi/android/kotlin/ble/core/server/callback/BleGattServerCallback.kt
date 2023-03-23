@@ -40,6 +40,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
@@ -59,7 +60,7 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnServiceAdded
 internal class BleGattServerCallback : BluetoothGattServerCallback() {
 
     private val _event = MutableSharedFlow<GattServerEvent>(
-        extraBufferCapacity = 1,
+        extraBufferCapacity = 10,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val event = _event.asSharedFlow()
@@ -98,7 +99,7 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onConnectionStateChange(device: BluetoothDevice?, status: Int, newState: Int) {
-        val operationStatus = BleGattOperationStatus.create(status)
+        val operationStatus = BleGattConnectionStatus.create(status)
         val state = GattConnectionState.create(newState)
         _event.tryEmit(OnClientConnectionStateChanged(RealClientDevice(device!!), operationStatus, state))
     }
@@ -169,8 +170,8 @@ internal class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-        onServiceAdded?.invoke()
         _event.tryEmit(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
+        onServiceAdded?.invoke()
     }
 
     fun onEvent(event: GattServerEvent) {

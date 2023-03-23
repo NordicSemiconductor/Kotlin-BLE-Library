@@ -35,6 +35,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,6 +44,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
@@ -67,7 +69,10 @@ class BleGattServer internal constructor(
                 val api = MockServerAPI.create(*config)
                 BleGattServer(api).also { MockEngine.registerServer(api) }
             } else {
-                BleGattServer(NativeServerAPI.create(context, *config))
+                val nativeServer = NativeServerAPI.create(context)
+                BleGattServer(nativeServer).apply {
+                    nativeServer.configure(*config)
+                }
             }
         }
     }
@@ -103,7 +108,7 @@ class BleGattServer internal constructor(
 
     private fun onConnectionStateChanged(
         device: ClientDevice,
-        status: BleGattOperationStatus,
+        status: BleGattConnectionStatus,
         newState: GattConnectionState
     ) {
         when (newState) {

@@ -28,26 +28,32 @@ internal class NativeServerAPI(
     override val event: SharedFlow<GattServerEvent> = callback.event
 
     companion object {
-        fun create(context: Context, vararg config: BleServerGattServiceConfig): ServerAPI {
+        fun create(context: Context): NativeServerAPI {
             val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-            var index = 0
 
             val callback = BleGattServerCallback()
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-            val server = NativeServerAPI(bluetoothGattServer, callback)
+            return NativeServerAPI(bluetoothGattServer, callback)
+        }
+    }
 
-            callback.onServiceAdded = {
-                while  (index <= config.lastIndex) {
-                    bluetoothGattServer.addService(BluetoothGattServiceFactory.create(config[index++]))
-                }
+    internal fun configure(vararg config: BleServerGattServiceConfig) {
+        config.onEach {
+            server.addService(BluetoothGattServiceFactory.create(it))
+        }
+
+        var index = 0
+
+        callback.onServiceAdded = {
+            if  (index <= config.lastIndex) {
+                server.addService(BluetoothGattServiceFactory.create(config[index++]))
+            } else {
+                callback.onServiceAdded = null
             }
+        }
 
-            if (config.isNotEmpty()) {
-                bluetoothGattServer.addService(BluetoothGattServiceFactory.create(config[index++]))
-            }
-
-            return server
+        if (config.isNotEmpty()) {
+            server.addService(BluetoothGattServiceFactory.create(config[index++]))
         }
     }
 

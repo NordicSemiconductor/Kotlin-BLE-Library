@@ -107,7 +107,7 @@ internal object MockEngine {
         connections[device] = clientDevice
         connectionParams[device to clientDevice] = ConnectionParams()
         registeredClients[clientDevice] = client
-        server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattOperationStatus.GATT_SUCCESS, GattConnectionState.STATE_CONNECTED))
+        server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattConnectionStatus.SUCCESS, GattConnectionState.STATE_CONNECTED))
     }
 
     private fun advertiseServer(device: MockServerDevice) {

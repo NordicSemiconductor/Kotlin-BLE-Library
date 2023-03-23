@@ -39,7 +39,6 @@ enum class BleGattConnectionStatus(internal val value: Int) {
 
     companion object {
         fun create(value: Int): BleGattConnectionStatus {
-            Log.d("AAATESTAAA", "connection status: $value")
             return values().firstOrNull { it.value == value } ?: UNKNOWN
         }
     }

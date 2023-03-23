@@ -43,26 +43,26 @@ sealed interface GattEvent
 
 class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattEvent
 
-class OnConnectionStateChanged(
+data class OnConnectionStateChanged(
     val status: BleGattConnectionStatus,
     val newState: GattConnectionState
 ) : GattEvent
 
-class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
+data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
 
-class OnPhyRead(
+data class OnPhyRead(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattEvent
 
-class OnPhyUpdate(
+data class OnPhyUpdate(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
 ) : GattEvent
 
-class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
+data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
 object OnServiceChanged : GattEvent
 
 sealed interface DataChangedEvent : GattEvent
