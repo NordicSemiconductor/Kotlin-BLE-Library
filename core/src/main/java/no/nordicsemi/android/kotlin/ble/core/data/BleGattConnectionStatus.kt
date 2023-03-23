@@ -1,7 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.core.data
 
-import android.util.Log
-
 enum class BleGattConnectionStatus(internal val value: Int) {
 
     UNKNOWN(-1),
@@ -36,6 +34,9 @@ enum class BleGattConnectionStatus(internal val value: Int) {
      * or doesn't respond for another reason.
      */
     TIMEOUT(10);
+
+    val isLinkLoss
+        get() = this != SUCCESS && this != TERMINATE_PEER_USER
 
     companion object {
         fun create(value: Int): BleGattConnectionStatus {
