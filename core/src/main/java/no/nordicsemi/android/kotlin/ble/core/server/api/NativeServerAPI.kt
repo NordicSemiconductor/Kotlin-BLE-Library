@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
@@ -18,6 +19,8 @@ import no.nordicsemi.android.kotlin.ble.core.server.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.server.callback.BleGattServerCallback
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.core.server.service.service.BluetoothGattServiceFactory
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 @SuppressLint("MissingPermission")
 internal class NativeServerAPI(
@@ -37,23 +40,24 @@ internal class NativeServerAPI(
         }
     }
 
-    internal fun configure(vararg config: BleServerGattServiceConfig) {
-        config.onEach {
-            server.addService(BluetoothGattServiceFactory.create(it))
-        }
-
+    internal suspend fun configure(vararg config: BleServerGattServiceConfig) = suspendCoroutine<Unit> {
         var index = 0
 
         callback.onServiceAdded = {
             if  (index <= config.lastIndex) {
-                server.addService(BluetoothGattServiceFactory.create(config[index++]))
+                val service = BluetoothGattServiceFactory.create(config[index++])
+                server.addService(service)
             } else {
                 callback.onServiceAdded = null
+                it.resume(Unit)
             }
         }
 
         if (config.isNotEmpty()) {
-            server.addService(BluetoothGattServiceFactory.create(config[index++]))
+            val service = BluetoothGattServiceFactory.create(config[index++])
+            server.addService(service)
+        } else {
+            it.resume(Unit)
         }
     }
 
@@ -84,6 +88,7 @@ internal class NativeServerAPI(
     }
 
     override fun close() {
+        server.clearServices()
         server.close() //TODO
     }
 

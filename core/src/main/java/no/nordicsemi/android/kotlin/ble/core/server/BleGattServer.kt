@@ -64,7 +64,7 @@ class BleGattServer internal constructor(
     companion object {
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false): BleGattServer {
+        suspend fun create(context: Context, vararg config: BleServerGattServiceConfig, mock: Boolean = false): BleGattServer {
             return if (mock) {
                 val api = MockServerAPI.create(*config)
                 BleGattServer(api).also { MockEngine.registerServer(api) }
