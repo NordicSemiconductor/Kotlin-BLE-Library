@@ -99,6 +99,11 @@ internal class BluetoothGattWrapper(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun requestMtu(mtu: Int) {
+        gatt.requestMtu(mtu)
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun readRemoteRssi() {
         gatt.readRemoteRssi()
     }

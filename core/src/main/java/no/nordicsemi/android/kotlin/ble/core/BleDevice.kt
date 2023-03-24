@@ -142,7 +142,7 @@ data class RealServerDevice(
                 options.autoConnect,
                 gattCallback,
                 BluetoothDevice.TRANSPORT_LE,
-                options.getPhy()
+                options.phy?.value ?: 0
             )
         } else {
             device.connectGatt(context, options.autoConnect, gattCallback)
@@ -186,7 +186,7 @@ data class MockServerDevice(
     ): BleGattClient {
         val gatt = BleMockGatt(MockEngine, this)
         return BleGattClient(gatt)
-            .also { MockEngine.connectToServer(this, gatt) }
+            .also { MockEngine.connectToServer(this, gatt, options) }
             .also { it.connect() }
     }
 }

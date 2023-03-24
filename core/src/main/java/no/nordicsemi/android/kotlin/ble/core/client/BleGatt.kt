@@ -59,6 +59,8 @@ interface BleGatt {
 
     fun readDescriptor(descriptor: BluetoothGattDescriptor)
 
+    fun requestMtu(mtu: Int)
+
     fun readRemoteRssi()
 
     fun readPhy()

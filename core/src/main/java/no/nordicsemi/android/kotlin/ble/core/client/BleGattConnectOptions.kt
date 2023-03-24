@@ -31,9 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.core.client
 
-import android.bluetooth.BluetoothDevice
-import android.os.Build
-import androidx.annotation.RequiresApi
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
 data class BleGattConnectOptions(
     /**
@@ -44,36 +42,5 @@ data class BleGattConnectOptions(
     /**
      * Only takes effect if [autoConnect] is set to false.
      */
-    @RequiresApi(Build.VERSION_CODES.O)
-    val useLe1Phy: Boolean = true,
-
-    /**
-     * Only takes effect if [autoConnect] is set to false.
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    val useLe2Phy: Boolean = false,
-
-    /**
-     * Only takes effect if [autoConnect] is set to false.
-     */
-    @RequiresApi(Build.VERSION_CODES.O)
-    val useLeCoded: Boolean = false
-) {
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun getPhy(): Int {
-        var result = 0
-
-        if (useLe1Phy) {
-            result = result or BluetoothDevice.PHY_LE_1M_MASK
-        }
-        if (useLe2Phy) {
-            result = result or BluetoothDevice.PHY_LE_2M_MASK
-        }
-        if (useLeCoded) {
-            result = result or BluetoothDevice.PHY_LE_CODED_MASK
-        }
-
-        return result
-    }
-}
+    val phy: BleGattPhy? = null
+)

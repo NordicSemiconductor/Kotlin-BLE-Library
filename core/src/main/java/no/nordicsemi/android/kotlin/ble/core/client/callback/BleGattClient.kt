@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core.client.callback
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -54,7 +55,10 @@ import no.nordicsemi.android.kotlin.ble.core.client.errors.DeviceDisconnectedExc
 import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -68,16 +72,17 @@ class BleGattClient(
 
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.first }
 
-    private val _connectionParams = MutableStateFlow(ConnectionParams())
-    val connectionParams = _connectionParams.asStateFlow()
-
     private val _services = MutableStateFlow<BleGattServices?>(null)
     val services = _services.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? = null
+    private var mtuCallback: ((Int) -> Unit)? = null
+    private var rssiCallback: ((Int) -> Unit)? = null
+    private var phyCallback: ((PhyInfo) -> Unit)? = null
 
     init {
         gatt.event.onEach {
+            Log.d("AAATESTAAA", "Client event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
                 is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
@@ -101,6 +106,30 @@ class BleGattClient(
             }
             onConnectionStateChangedCallback = null
         }
+    }
+
+    suspend fun requestMtu(mtu: Int): Int = suspendCoroutine { continuation ->
+        mtuCallback = {
+            continuation.resume(it)
+            mtuCallback = null
+        }
+        gatt.requestMtu(mtu)
+    }
+
+    suspend fun readRssi(): Int = suspendCoroutine { continuation ->
+        rssiCallback = {
+            continuation.resume(it)
+            rssiCallback = null
+        }
+        gatt.readRemoteRssi()
+    }
+
+    suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo = suspendCoroutine { continuation ->
+        phyCallback = {
+            continuation.resume(it)
+            phyCallback = null
+        }
+        gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
     }
 
     fun disconnect() {
@@ -131,23 +160,19 @@ class BleGattClient(
     }
 
     private fun onEvent(event: OnMtuChanged) {
-        val params = _connectionParams.value
-        _connectionParams.value = params.copy(mtu = event.mtu)
+        mtuCallback?.invoke(event.mtu)
     }
 
     private fun onEvent(event: OnPhyRead) {
-        val params = _connectionParams.value
-        _connectionParams.value = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
+        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy))
     }
 
     private fun onEvent(event: OnPhyUpdate) {
-        val params = _connectionParams.value
-        _connectionParams.value = params.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
+        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy))
     }
 
     private fun onEvent(event: OnReadRemoteRssi) {
-        val params = _connectionParams.value
-        _connectionParams.value = params.copy(rssi = event.rssi)
+        rssiCallback?.invoke(event.rssi)
     }
 
     @SuppressLint("MissingPermission")

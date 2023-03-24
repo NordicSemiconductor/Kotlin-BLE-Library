@@ -87,6 +87,7 @@ class BleGattServer internal constructor(
 
     init {
         server.event.onEach { event ->
+            Log.d("AAATESTAAA", "Server event: $event")
             when (event) {
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
                     event.device,

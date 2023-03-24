@@ -50,6 +50,10 @@ internal class BleMockGatt(
         mockEngine.readDescriptor(serverDevice, descriptor)
     }
 
+    override fun requestMtu(mtu: Int) {
+        mockEngine.requestMtu(serverDevice, mtu)
+    }
+
     override fun readRemoteRssi() {
         mockEngine.readRemoteRssi(serverDevice)
     }
