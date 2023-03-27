@@ -18,9 +18,10 @@ import no.nordicsemi.android.kotlin.ble.app.mock.BlinkyDestinationId
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.repository.BlinkyButtonParser
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.repository.BlinkyLedParser
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.view.BlinkyViewState
+import no.nordicsemi.android.kotlin.ble.client.facade.connect
+import no.nordicsemi.android.kotlin.ble.client.facade.service.BleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.client.facade.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.core.client.service.BleGattServices
 import java.util.*
 import javax.inject.Inject
 

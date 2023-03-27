@@ -31,25 +31,13 @@
 
 package no.nordicsemi.android.kotlin.ble.core
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanResult
-import android.content.Context
-import android.os.Build
 import android.os.ParcelUuid
 import android.os.Parcelable
-import android.util.Log
-import androidx.annotation.RequiresPermission
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
-import no.nordicsemi.android.kotlin.ble.core.client.BleGatt
-import no.nordicsemi.android.kotlin.ble.core.client.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.core.client.BleMockGatt
-import no.nordicsemi.android.kotlin.ble.core.client.BluetoothGattWrapper
-import no.nordicsemi.android.kotlin.ble.core.client.callback.BleGattClient
-import no.nordicsemi.android.kotlin.ble.core.client.callback.BluetoothGattClientCallback
-import no.nordicsemi.android.kotlin.ble.core.mock.MockEngine
 
 const val RSSI_UNKNOWN = 0
 
@@ -69,12 +57,6 @@ sealed interface ServerDevice : BleDevice {
 
     override val name: String
     override val address: String
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun connect(
-        context: Context,
-        options: BleGattConnectOptions = BleGattConnectOptions()
-    ): BleGattClient
 }
 
 sealed interface ClientDevice : BleDevice
@@ -105,7 +87,7 @@ data class RealClientDevice(
 @SuppressLint("MissingPermission")
 @Parcelize
 data class RealServerDevice(
-    private val device: BluetoothDevice,
+    val device: BluetoothDevice,
     override val highestRssi: Int = RSSI_UNKNOWN,
     override val serviceUuids: List<ParcelUuid> = emptyList()
 ) : ServerDevice, Parcelable {
@@ -120,36 +102,6 @@ data class RealServerDevice(
 
     @IgnoredOnParcel
     override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
-
-    override suspend fun connect(
-        context: Context,
-        options: BleGattConnectOptions
-    ): BleGattClient {
-        return BleGattClient(createConnection(context, options)).also {
-            it.connect()
-        }
-    }
-
-    private fun createConnection(
-        context: Context,
-        options: BleGattConnectOptions,
-    ): BleGatt {
-        val gattCallback = BluetoothGattClientCallback()
-
-        val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            device.connectGatt(
-                context,
-                options.autoConnect,
-                gattCallback,
-                BluetoothDevice.TRANSPORT_LE,
-                options.phy?.value ?: 0
-            )
-        } else {
-            device.connectGatt(context, options.autoConnect, gattCallback)
-        }
-
-        return BluetoothGattWrapper(gatt, gattCallback)
-    }
 }
 
 @Parcelize
@@ -178,15 +130,4 @@ data class MockServerDevice(
 
     @IgnoredOnParcel
     override val highestRssi: Int = RSSI_UNKNOWN
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override suspend fun connect(
-        context: Context,
-        options: BleGattConnectOptions
-    ): BleGattClient {
-        val gatt = BleMockGatt(MockEngine, this)
-        return BleGattClient(gatt)
-            .also { MockEngine.connectToServer(this, gatt, options) }
-            .also { it.connect() }
-    }
 }

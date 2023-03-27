@@ -58,4 +58,5 @@ android {
 
 dependencies {
     api(project(":core"))
+    implementation(project(":mock"))
 }
