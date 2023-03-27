@@ -148,6 +148,7 @@ internal class BluetoothGattWrapper(
         gatt.disconnect()
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun clearServicesCache() {
         try {
             val refreshMethod: Method = gatt.javaClass.getMethod("refresh")
@@ -160,5 +161,20 @@ internal class BluetoothGattWrapper(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun close() {
         gatt.close()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun beginReliableWrite() {
+        gatt.beginReliableWrite()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun abortReliableWrite() {
+        gatt.abortReliableWrite()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun executeReliableWrite() {
+        gatt.executeReliableWrite()
     }
 }

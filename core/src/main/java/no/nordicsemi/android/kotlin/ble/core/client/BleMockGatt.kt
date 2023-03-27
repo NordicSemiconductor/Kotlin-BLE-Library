@@ -81,4 +81,16 @@ internal class BleMockGatt(
     override fun close() {
         TODO("Not yet implemented")
     }
+
+    override fun beginReliableWrite() {
+        TODO("Not yet implemented")
+    }
+
+    override fun abortReliableWrite() {
+        TODO("Not yet implemented")
+    }
+
+    override fun executeReliableWrite() {
+        TODO("Not yet implemented")
+    }
 }

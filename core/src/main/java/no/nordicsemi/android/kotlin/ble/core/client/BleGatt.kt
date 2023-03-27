@@ -74,4 +74,10 @@ interface BleGatt {
     fun clearServicesCache()
 
     fun close()
+
+    fun beginReliableWrite()
+
+    fun abortReliableWrite()
+
+    fun executeReliableWrite()
 }
