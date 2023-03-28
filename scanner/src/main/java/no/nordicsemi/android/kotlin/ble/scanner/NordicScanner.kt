@@ -42,7 +42,6 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.core.toDomain
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
