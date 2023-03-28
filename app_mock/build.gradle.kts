@@ -13,8 +13,8 @@ dependencies {
     implementation(project(":advertiser"))
     implementation(project(":core"))
     implementation(project(":scanner"))
-    implementation(project(":server-main"))
-    implementation(project(":client-main"))
+    implementation(project(":server"))
+    implementation(project(":client"))
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)

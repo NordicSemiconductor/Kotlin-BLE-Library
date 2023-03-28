@@ -44,7 +44,7 @@ dependencies {
     implementation(project(":advertiser"))
     implementation(project(":core"))
     implementation(project(":scanner"))
-    implementation(project(":client-main"))
+    implementation(project(":client"))
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
