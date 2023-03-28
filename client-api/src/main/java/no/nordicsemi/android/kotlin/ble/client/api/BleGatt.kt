@@ -42,6 +42,8 @@ interface BleGatt {
 
     val event: SharedFlow<GattEvent>
 
+    val autoConnect: Boolean
+
     fun onEvent(event: GattEvent)
 
     fun writeCharacteristic(

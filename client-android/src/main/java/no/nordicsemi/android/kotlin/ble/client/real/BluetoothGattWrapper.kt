@@ -49,7 +49,8 @@ import java.lang.reflect.Method
 
 class BluetoothGattWrapper(
     private val gatt: BluetoothGatt,
-    private val callback: BluetoothGattClientCallback
+    private val callback: BluetoothGattClientCallback,
+    override val autoConnect: Boolean
 ) : BleGatt {
 
     override val event: SharedFlow<GattEvent> = callback.event
@@ -167,7 +168,7 @@ class BluetoothGattWrapper(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun close() {
-        gatt.close()
+//        gatt.close()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

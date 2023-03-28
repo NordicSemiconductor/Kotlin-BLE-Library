@@ -150,7 +150,9 @@ class BleGattClient(
         } else if (connectionState == GattConnectionState.STATE_CONNECTED) {
             gatt.discoverServices()
         } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
-            gatt.close()
+            if (!status.isLinkLoss || !gatt.autoConnect) {
+                gatt.close()
+            }
         }
     }
 

@@ -15,7 +15,8 @@ import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 class BleMockGatt(
     private val mockEngine: MockEngine,
-    private val serverDevice: MockServerDevice
+    private val serverDevice: MockServerDevice,
+    override val autoConnect: Boolean
 ) : BleGatt {
 
     private val _event = simpleSharedFlow<GattEvent>()

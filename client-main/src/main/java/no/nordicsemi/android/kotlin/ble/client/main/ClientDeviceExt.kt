@@ -33,7 +33,7 @@ suspend fun connectDevice(
     context: Context,
     options: BleGattConnectOptions
 ): BleGattClient {
-    val gatt = BleMockGatt(MockEngine, device)
+    val gatt = BleMockGatt(MockEngine, device, options.autoConnect)
     return BleGattClient(gatt)
         .also { MockEngine.connectToServer(device, gatt, options) }
         .also { it.connect() }
@@ -69,5 +69,5 @@ private fun RealServerDevice.createConnection(
         device.connectGatt(context, options.autoConnect, gattCallback)
     }
 
-    return BluetoothGattWrapper(gatt, gattCallback)
+    return BluetoothGattWrapper(gatt, gattCallback, options.autoConnect)
 }
