@@ -27,8 +27,9 @@ android {
 }
 
 dependencies {
-    api(project(":server-api"))
-    implementation(project(":core"))
+    api(project(":core"))
+
+    implementation(project(":server-api"))
     implementation(project(":mock"))
     implementation(project(":server-mock"))
     implementation(project(":server-android"))

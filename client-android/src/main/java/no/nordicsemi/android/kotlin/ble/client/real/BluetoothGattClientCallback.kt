@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.api
+package no.nordicsemi.android.kotlin.ble.client.real
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
@@ -38,6 +38,20 @@ import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.kotlin.ble.client.api.GattEvent
+import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
+import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
+import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
+import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
+import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
+import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
+import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
+import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy

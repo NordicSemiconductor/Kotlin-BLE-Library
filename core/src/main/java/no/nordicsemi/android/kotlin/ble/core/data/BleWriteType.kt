@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.api
+package no.nordicsemi.android.kotlin.ble.core.data
 
 enum class BleWriteType(val value: Int) {
     /**

@@ -39,12 +39,11 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.BleWriteType
-import no.nordicsemi.android.kotlin.ble.client.api.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.client.api.GattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import java.lang.reflect.Method
 

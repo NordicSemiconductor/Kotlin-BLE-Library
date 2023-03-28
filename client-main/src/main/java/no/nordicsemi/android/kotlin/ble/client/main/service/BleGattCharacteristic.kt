@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.BleWriteType
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
@@ -53,6 +52,7 @@ import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyExcept
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine

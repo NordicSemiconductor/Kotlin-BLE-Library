@@ -6,9 +6,9 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
+import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattWrapper
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
