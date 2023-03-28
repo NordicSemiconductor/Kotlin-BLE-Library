@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.parcelize)
 }
 
-group = "no.nordicsemi.android.kotlin.ble.mock"
+group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.mock"

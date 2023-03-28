@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.nordic.nexus)
 }
 
-group = "no.nordicsemi.android.kotlin.ble.client.main"
+group = "no.nordicsemi.android.kotlin.ble"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "client"
@@ -23,7 +23,7 @@ nordicNexusPublishing {
 }
 
 android {
-    namespace = "no.nordicsemi.android.kotlin.ble.client.facade"
+    namespace = "no.nordicsemi.android.kotlin.ble.client.main"
 }
 
 dependencies {

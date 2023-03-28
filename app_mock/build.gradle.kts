@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.nordic.hilt)
 }
 
-group = "no.nordicsemi.android.kotlin.ble.app.mock"
+group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.app.mock"

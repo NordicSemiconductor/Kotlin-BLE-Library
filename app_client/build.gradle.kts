@@ -34,7 +34,7 @@ plugins {
     alias(libs.plugins.nordic.hilt)
 }
 
-group = "no.nordicsemi.android.kotlin.ble.app.client"
+group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.app.client"
