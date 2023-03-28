@@ -9,10 +9,10 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.viewmodel.BlinkySpecifications
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.server.facade.BleGattServer
-import no.nordicsemi.android.kotlin.ble.server.facade.service.BleGattServerServiceType
-import no.nordicsemi.android.kotlin.ble.server.facade.service.BleServerGattCharacteristicConfig
-import no.nordicsemi.android.kotlin.ble.server.facade.service.BleServerGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.main.BleGattServer
+import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServiceType
+import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattCharacteristicConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattServiceConfig
 import javax.inject.Inject
 
 @SuppressLint("MissingPermission")

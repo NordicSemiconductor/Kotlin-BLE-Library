@@ -29,18 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.client.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+class BleGattServices internal constructor(gatt: BleGatt, androidGattServices: List<BluetoothGattService>) {
 
-dependencies {
-    implementation(libs.nordic.core)
+    private val services = androidGattServices.map { BleGattService(gatt, it) }
+
+    fun findService(uuid: UUID): BleGattService? {
+        return services.firstOrNull { it.uuid == uuid }
+    }
+
+    internal fun onCharacteristicEvent(event: DataChangedEvent) {
+        services.forEach { it.onEvent(event) }
+    }
 }

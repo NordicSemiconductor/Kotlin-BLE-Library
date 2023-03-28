@@ -29,18 +29,24 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+class BleGattServerServices internal constructor(
+    private val server: ServerAPI,
+    private val device: ClientDevice,
+    private val services: List<BleGattServerService>
+) {
 
-dependencies {
-    implementation(libs.nordic.core)
+    fun findService(uuid: UUID): BleGattServerService? {
+        return services.firstOrNull { it.uuid == uuid }
+    }
+
+    internal fun onEvent(event: ServiceEvent) {
+        services.forEach { it.onEvent(event) }
+    }
 }

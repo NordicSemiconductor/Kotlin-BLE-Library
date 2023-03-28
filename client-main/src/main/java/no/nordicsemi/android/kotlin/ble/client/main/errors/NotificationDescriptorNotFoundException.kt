@@ -29,18 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.client.main.errors
 
-group = "no.nordicsemi.android.kotlin.ble"
-
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
-
-dependencies {
-    implementation(libs.nordic.core)
-}
+class NotificationDescriptorNotFoundException : Exception("Notification descriptor has not been found.")

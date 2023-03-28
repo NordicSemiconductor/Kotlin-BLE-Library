@@ -29,18 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+data class BluetoothGattServerConnection internal constructor(
+    private val device: ClientDevice,
+    private val server: ServerAPI,
+    val services: BleGattServerServices,
+    val txPhy: BleGattPhy? = null,
+    val rxPhy: BleGattPhy? = null
+) {
 
-dependencies {
-    implementation(libs.nordic.core)
+    fun readPhy() {
+        server.readPhy(device)
+    }
+
+    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
+        server.requestPhy(device, txPhy, rxPhy, phyOption)
+    }
 }

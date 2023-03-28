@@ -29,18 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.bluetooth.BluetoothGattService
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+enum class BleGattServerServiceType {
 
-dependencies {
-    implementation(libs.nordic.core)
+    SERVICE_TYPE_PRIMARY,
+    SERVICE_TYPE_SECONDARY;
+
+    fun toNative(): Int {
+        return when (this) {
+            SERVICE_TYPE_PRIMARY -> BluetoothGattService.SERVICE_TYPE_PRIMARY
+            SERVICE_TYPE_SECONDARY -> BluetoothGattService.SERVICE_TYPE_SECONDARY
+        }
+    }
 }

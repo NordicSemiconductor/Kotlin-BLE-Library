@@ -29,18 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.client.main.errors
 
-group = "no.nordicsemi.android.kotlin.ble"
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
-
-dependencies {
-    implementation(libs.nordic.core)
-}
+class DeviceDisconnectedException(status: BleGattConnectionStatus) : Exception("Connection failed with status: $status")

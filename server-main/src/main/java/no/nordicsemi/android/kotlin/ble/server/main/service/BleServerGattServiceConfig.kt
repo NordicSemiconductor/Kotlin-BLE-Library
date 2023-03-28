@@ -29,18 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
-
-dependencies {
-    implementation(libs.nordic.core)
-}
+data class BleServerGattServiceConfig(
+    val uuid: UUID,
+    val type: BleGattServerServiceType,
+    val characteristicConfigs: List<BleServerGattCharacteristicConfig>
+)

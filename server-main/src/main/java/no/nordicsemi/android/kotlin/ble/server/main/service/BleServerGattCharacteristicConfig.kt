@@ -29,18 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+data class BleServerGattCharacteristicConfig(
+    val uuid: UUID,
+    val properties: List<BleGattProperty> = emptyList(),
+    val permissions: List<BleGattPermission> = emptyList(),
+    val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList(),
+    val initialValue: ByteArray? = null
+) {
 
-dependencies {
-    implementation(libs.nordic.core)
+    val hasNotifications: Boolean
+        get() {
+            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
+        }
 }

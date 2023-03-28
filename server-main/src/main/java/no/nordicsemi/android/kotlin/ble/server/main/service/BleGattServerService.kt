@@ -29,18 +29,33 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
-group = "no.nordicsemi.android.kotlin.ble"
+import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import java.util.*
 
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.core"
-}
+class BleGattServerService internal constructor(
+    private val server: ServerAPI,
+    private val device: ClientDevice,
+    private val service: BluetoothGattService
+) {
 
-dependencies {
-    implementation(libs.nordic.core)
+    val uuid = service.uuid
+
+    val characteristics = service.characteristics.map {
+        BleServerGattCharacteristic(server, device, it)
+    }
+
+    internal fun onEvent(event: ServiceEvent) {
+        characteristics.onEach { it.onEvent(event) }
+    }
+
+    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
+        return characteristics.firstOrNull { characteristic ->
+            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+        }
+    }
 }
