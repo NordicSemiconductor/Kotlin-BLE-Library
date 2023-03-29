@@ -48,11 +48,13 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
@@ -117,6 +119,11 @@ class BleGattCharacteristic internal constructor(
         validateWriteProperties(writeType)
         pendingWriteEvent = { continuation.resume(Unit) }
         gatt.writeCharacteristic(characteristic, value, writeType)
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
+        value.split(MtuProvider.availableMtu(writeType)).forEach { write(it, writeType) }
     }
 
     private fun validateWriteProperties(writeType: BleWriteType) {

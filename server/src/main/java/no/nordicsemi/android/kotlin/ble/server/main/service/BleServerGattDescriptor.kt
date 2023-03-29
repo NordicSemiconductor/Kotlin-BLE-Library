@@ -35,8 +35,8 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
@@ -57,7 +57,7 @@ class BleServerGattDescriptor internal constructor(
     private val _value = MutableStateFlow(byteArrayOf())
     val value = _value.asStateFlow()
 
-    private var mtu = BleGattConsts.MIN_MTU
+    private var mtu = Mtu.min
 
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {

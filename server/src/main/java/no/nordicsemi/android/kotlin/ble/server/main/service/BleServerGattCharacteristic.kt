@@ -40,6 +40,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
@@ -72,7 +73,7 @@ class BleServerGattCharacteristic internal constructor(
     val properties: List<BleGattProperty>
         get() = BleGattProperty.createProperties(characteristic.properties)
 
-    private var mtu = BleGattConsts.MIN_MTU
+    private var mtu = Mtu.min
 
     private val descriptors = characteristic.descriptors.map {
         BleServerGattDescriptor(server, instanceId, it)
