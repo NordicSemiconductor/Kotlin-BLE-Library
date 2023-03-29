@@ -48,8 +48,6 @@ data class OnConnectionStateChanged(
     val newState: GattConnectionState
 ) : GattEvent
 
-data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
-
 data class OnPhyRead(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
@@ -63,43 +61,42 @@ data class OnPhyUpdate(
 ) : GattEvent
 
 data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
-object OnServiceChanged : GattEvent
 
-sealed interface DataChangedEvent : GattEvent
+class OnServiceChanged : GattEvent
 
-sealed interface CharacteristicEvent : DataChangedEvent {
-    val characteristic: BluetoothGattCharacteristic
-}
+sealed interface ServiceEvent : GattEvent
 
-sealed interface DescriptorEvent : DataChangedEvent {
-    val descriptor: BluetoothGattDescriptor
-}
+sealed interface CharacteristicEvent : ServiceEvent
 
-class OnCharacteristicChanged(
-    override val characteristic: BluetoothGattCharacteristic,
+sealed interface DescriptorEvent : ServiceEvent
+
+data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
+
+data class OnCharacteristicChanged(
+    val characteristic: BluetoothGattCharacteristic,
     val value: ByteArray
 ) : CharacteristicEvent
 
-class OnCharacteristicRead(
-    override val characteristic: BluetoothGattCharacteristic,
+data class OnCharacteristicRead(
+    val characteristic: BluetoothGattCharacteristic,
     val value: ByteArray,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
-class OnCharacteristicWrite(
-    override val characteristic: BluetoothGattCharacteristic,
+data class OnCharacteristicWrite(
+    val characteristic: BluetoothGattCharacteristic,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
-class OnDescriptorRead(
-    override val descriptor: BluetoothGattDescriptor,
+data class OnDescriptorRead(
+    val descriptor: BluetoothGattDescriptor,
     val value: ByteArray,
     val status: BleGattOperationStatus
 ) : DescriptorEvent
 
-class OnDescriptorWrite(
-    override val descriptor: BluetoothGattDescriptor,
+data class OnDescriptorWrite(
+    val descriptor: BluetoothGattDescriptor,
     val status: BleGattOperationStatus
 ) : DescriptorEvent
 
-class OnReliableWriteCompleted(val status: BleGattOperationStatus) : DataChangedEvent
+data class OnReliableWriteCompleted(val status: BleGattOperationStatus) : ServiceEvent

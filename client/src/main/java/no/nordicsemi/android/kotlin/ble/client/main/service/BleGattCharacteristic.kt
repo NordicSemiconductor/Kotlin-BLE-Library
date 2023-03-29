@@ -42,12 +42,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
-import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
@@ -81,15 +81,16 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, it) }
+    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it) }
 
-    private var pendingEvent: ((DataChangedEvent) -> Unit)? = null
+    private var pendingReadEvent: ((ByteArray) -> Unit)? = null
+    private var pendingWriteEvent: (() -> Unit)? = null
 
     fun findDescriptor(uuid: UUID): BleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
-    internal fun onEvent(event: DataChangedEvent) {
+    internal fun onEvent(event: ServiceEvent) {
         when (event) {
             is CharacteristicEvent -> onEvent(event)
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
@@ -98,18 +99,23 @@ class BleGattCharacteristic internal constructor(
     }
 
     private fun onEvent(event: CharacteristicEvent) {
-        if (event.characteristic != characteristic && event.characteristic.instanceId != instanceId) {
-            return
+        when (event) {
+            is OnCharacteristicChanged, -> onLocalEvent(event.characteristic) { _notification.tryEmit(event.value) }
+            is OnCharacteristicRead, -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event.value) }
+            is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke() }
         }
-        (event as? OnCharacteristicChanged)?.let { _notification.tryEmit(it.value) }
-        pendingEvent?.invoke(event)
-        pendingEvent = null
+    }
+
+    private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
+        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
+            block()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
         validateWriteProperties(writeType)
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+        pendingWriteEvent = { continuation.resume(Unit) }
         gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
@@ -132,7 +138,7 @@ class BleGattCharacteristic internal constructor(
         if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
             throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
         }
-        pendingEvent = { it.onReadEvent { continuation.resume(it) } }
+        pendingReadEvent = { continuation.resume(it) }
         gatt.readCharacteristic(characteristic)
     }
 
@@ -168,22 +174,6 @@ class BleGattCharacteristic internal constructor(
         findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-        }
-    }
-
-    private fun DataChangedEvent.onWriteEvent(onSuccess: () -> Unit) {
-        (this as? OnCharacteristicWrite)?.let {
-            if (it.characteristic == characteristic) {
-                onSuccess()
-            }
-        }
-    }
-
-    private fun DataChangedEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
-        (this as? OnCharacteristicRead)?.let {
-            if (it.characteristic == characteristic) {
-                onSuccess(it.value)
-            }
         }
     }
 }

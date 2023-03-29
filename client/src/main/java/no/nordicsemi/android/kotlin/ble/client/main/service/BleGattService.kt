@@ -33,7 +33,7 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import java.util.*
 
 class BleGattService internal constructor(gatt: BleGatt, service: BluetoothGattService) {
@@ -50,7 +50,7 @@ class BleGattService internal constructor(gatt: BleGatt, service: BluetoothGattS
         }
     }
 
-    internal fun onEvent(event: DataChangedEvent) {
+    internal fun onEvent(event: ServiceEvent) {
         characteristics.forEach { it.onEvent(event) }
     }
 }

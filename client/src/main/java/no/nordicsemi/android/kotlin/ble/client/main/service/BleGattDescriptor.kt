@@ -35,7 +35,6 @@ import android.Manifest
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
@@ -45,6 +44,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class BleGattDescriptor internal constructor(
     private val gatt: BleGatt,
+    private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor
 ) {
 
@@ -52,42 +52,32 @@ class BleGattDescriptor internal constructor(
 
     val permissions = BleGattPermission.createPermissions(descriptor.permissions)
 
-    private var pendingEvent: ((DataChangedEvent) -> Unit)? = null
+    private var pendingReadEvent: ((ByteArray) -> Unit)? = null
+    private var pendingWriteEvent: (() -> Unit)? = null
 
     internal fun onEvent(event: DescriptorEvent) {
-        if (event.descriptor.characteristic.instanceId != descriptor.characteristic.instanceId) {
-            return
+        when (event) {
+            is OnDescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event.value) }
+            is OnDescriptorWrite -> onLocalEvent(event.descriptor) { pendingWriteEvent?.invoke() }
         }
-        pendingEvent?.invoke(event)
-        pendingEvent = null
+    }
+
+    private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
+        if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
+            block()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
-        pendingEvent = { it.onWriteEvent { continuation.resume(Unit) } }
+        pendingWriteEvent = { continuation.resume(Unit) }
 
         gatt.writeDescriptor(descriptor, value)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
-        pendingEvent = { it.onReadEvent { continuation.resume(Unit) } }
+        pendingReadEvent = { continuation.resume(Unit) }
         gatt.readDescriptor(descriptor)
-    }
-
-    private fun DataChangedEvent.onWriteEvent(onSuccess: () -> Unit) {
-        (this as? OnDescriptorWrite)?.let {
-            if (it.descriptor == descriptor) {
-                onSuccess()
-            }
-        }
-    }
-
-    private fun DataChangedEvent.onReadEvent(onSuccess: (ByteArray) -> Unit) {
-        (this as? OnDescriptorRead)?.let {
-            if (it.descriptor == descriptor) {
-                onSuccess(it.value)
-            }
-        }
     }
 }

@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.DataChangedEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
@@ -50,13 +49,16 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
+import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
-import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.DeviceDisconnectedException
+import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import kotlin.coroutines.resume
@@ -70,6 +72,7 @@ class BleGattClient(
     private val _connectionStateWithStatus = MutableStateFlow<Pair<GattConnectionState, BleGattConnectionStatus>?>(null)
     val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
 
+    val mtu = MtuProvider.mtu.asStateFlow()
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.first }
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
@@ -85,13 +88,13 @@ class BleGattClient(
             Log.d("AAATESTAAA", "Client event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                is DataChangedEvent -> _services.value?.apply { onCharacteristicEvent(it) }
-                is OnMtuChanged -> onEvent(it)
                 is OnPhyRead -> onEvent(it)
                 is OnPhyUpdate -> onEvent(it)
                 is OnReadRemoteRssi -> onEvent(it)
                 is OnServiceChanged -> onEvent(it)
+                is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
+                is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
+                is OnMtuChanged -> onEvent(it)
             }
         }.launchIn(ClientScope)
     }
@@ -162,6 +165,8 @@ class BleGattClient(
     }
 
     private fun onEvent(event: OnMtuChanged) {
+        Log.d("AAATESTAAA", "On mtu changed: $event")
+        MtuProvider.mtu.value = event.mtu
         mtuCallback?.invoke(event.mtu)
     }
 

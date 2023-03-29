@@ -35,6 +35,12 @@ import java.util.*
 
 object BleGattConsts {
     val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+}
 
-    val MIN_MTU = 23
+object Mtu {
+    val min = 23
+    val max = 517
+
+    val defaultWrite = 3
+    val signedWrite = 3+8
 }

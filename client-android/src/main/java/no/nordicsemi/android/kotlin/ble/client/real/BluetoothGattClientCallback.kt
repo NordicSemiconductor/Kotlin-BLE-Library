@@ -183,7 +183,7 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
-        _event.tryEmit(OnServiceChanged)
+        _event.tryEmit(OnServiceChanged())
     }
 
     fun onEvent(event: GattEvent) {
