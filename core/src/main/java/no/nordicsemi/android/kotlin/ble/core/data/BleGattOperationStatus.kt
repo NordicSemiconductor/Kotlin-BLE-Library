@@ -58,6 +58,9 @@ enum class BleGattOperationStatus(val value: Int) {
         }
     );
 
+    val isSuccess
+        get() = this == GATT_SUCCESS
+
     companion object {
         fun create(value: Int): BleGattOperationStatus {
             return values().firstOrNull { it.value == value } ?: GATT_UNKNOWN

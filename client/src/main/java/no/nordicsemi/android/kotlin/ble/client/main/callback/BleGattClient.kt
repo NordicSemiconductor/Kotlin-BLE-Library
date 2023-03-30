@@ -52,7 +52,6 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
 import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
-import no.nordicsemi.android.kotlin.ble.client.main.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -61,7 +60,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
@@ -99,12 +97,12 @@ class BleGattClient(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    internal suspend fun connect() = suspendCoroutine { continuation ->
+    internal suspend fun connect(): GattConnectionState = suspendCoroutine { continuation ->
         onConnectionStateChangedCallback = { connectionState, status ->
             if (connectionState == GattConnectionState.STATE_CONNECTED) {
-                continuation.resume(Unit)
+                continuation.resume(GattConnectionState.STATE_CONNECTED)
             } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
-                continuation.resumeWithException(DeviceDisconnectedException(status))
+                continuation.resume(GattConnectionState.STATE_DISCONNECTED)
             }
             onConnectionStateChangedCallback = null
         }
@@ -147,9 +145,7 @@ class BleGattClient(
         _connectionStateWithStatus.value = connectionState to status
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
-        if (status != BleGattConnectionStatus.SUCCESS) {
-            gatt.close()
-        } else if (connectionState == GattConnectionState.STATE_CONNECTED) {
+        if (connectionState == GattConnectionState.STATE_CONNECTED) {
             gatt.discoverServices()
         } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {

@@ -85,8 +85,8 @@ class BleGattCharacteristic internal constructor(
 
     private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it) }
 
-    private var pendingReadEvent: ((ByteArray) -> Unit)? = null
-    private var pendingWriteEvent: (() -> Unit)? = null
+    private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
+    private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
 
     fun findDescriptor(uuid: UUID): BleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
@@ -103,8 +103,8 @@ class BleGattCharacteristic internal constructor(
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
             is OnCharacteristicChanged, -> onLocalEvent(event.characteristic) { _notification.tryEmit(event.value) }
-            is OnCharacteristicRead, -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event.value) }
-            is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke() }
+            is OnCharacteristicRead, -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
+            is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
         }
     }
 
@@ -115,15 +115,20 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
+    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT): Boolean = suspendCoroutine { continuation ->
         validateWriteProperties(writeType)
-        pendingWriteEvent = { continuation.resume(Unit) }
+        pendingWriteEvent = { continuation.resume(it.status.isSuccess) }
         gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
-        value.split(MtuProvider.availableMtu(writeType)).forEach { write(it, writeType) }
+    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) : Boolean {
+        value.split(MtuProvider.availableMtu(writeType)).forEach {
+            if (!write(it, writeType)) {
+                return false
+            }
+        }
+        return true
     }
 
     private fun validateWriteProperties(writeType: BleWriteType) {
@@ -145,13 +150,19 @@ class BleGattCharacteristic internal constructor(
         if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
             throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
         }
-        pendingReadEvent = { continuation.resume(it) }
+        pendingReadEvent = {
+            if (it.status.isSuccess) {
+                continuation.resume(it.value)
+            } else {
+                continuation.resume(null)
+            }
+        }
         gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableIndicationsOrNotifications() {
-        if (properties.contains(BleGattProperty.PROPERTY_NOTIFY)) {
+    private suspend fun enableIndicationsOrNotifications(): Boolean {
+        return if (properties.contains(BleGattProperty.PROPERTY_NOTIFY)) {
             enableNotifications()
         } else if (properties.contains(BleGattProperty.PROPERTY_INDICATE)) {
             enableIndications()
@@ -161,26 +172,26 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableIndications() {
-        findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
+    private suspend fun enableIndications(): Boolean {
+        return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-        }
+        } ?: false
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableNotifications() {
-        findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
+    private suspend fun enableNotifications(): Boolean {
+        return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-        }
+        } ?: false
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun disableNotifications() {
-        findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
+    private suspend fun disableNotifications(): Boolean {
+        return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-        }
+        } ?: false
     }
 }

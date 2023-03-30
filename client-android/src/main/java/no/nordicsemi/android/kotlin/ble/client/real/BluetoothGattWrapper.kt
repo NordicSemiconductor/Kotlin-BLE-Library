@@ -122,11 +122,7 @@ class BluetoothGattWrapper(
             gatt.readPhy()
         } else {
             callback.onEvent(
-                OnPhyUpdate(
-                    BleGattPhy.PHY_LE_1M,
-                    BleGattPhy.PHY_LE_1M,
-                    BleGattOperationStatus.GATT_SUCCESS
-                )
+                OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }
@@ -142,11 +138,7 @@ class BluetoothGattWrapper(
             gatt.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
         } else {
             callback.onEvent(
-                OnPhyUpdate(
-                    BleGattPhy.PHY_LE_1M,
-                    BleGattPhy.PHY_LE_1M,
-                    BleGattOperationStatus.GATT_SUCCESS
-                )
+                OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }
@@ -168,7 +160,7 @@ class BluetoothGattWrapper(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun close() {
-//        gatt.close()
+        gatt.close()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

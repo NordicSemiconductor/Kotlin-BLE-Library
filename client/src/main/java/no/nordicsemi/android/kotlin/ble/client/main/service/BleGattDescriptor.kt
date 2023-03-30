@@ -52,13 +52,13 @@ class BleGattDescriptor internal constructor(
 
     val permissions = BleGattPermission.createPermissions(descriptor.permissions)
 
-    private var pendingReadEvent: ((ByteArray) -> Unit)? = null
-    private var pendingWriteEvent: (() -> Unit)? = null
+    private var pendingReadEvent: ((OnDescriptorRead) -> Unit)? = null
+    private var pendingWriteEvent: ((OnDescriptorWrite) -> Unit)? = null
 
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
-            is OnDescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event.value) }
-            is OnDescriptorWrite -> onLocalEvent(event.descriptor) { pendingWriteEvent?.invoke() }
+            is OnDescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event) }
+            is OnDescriptorWrite -> onLocalEvent(event.descriptor) { pendingWriteEvent?.invoke(event) }
         }
     }
 
@@ -69,15 +69,21 @@ class BleGattDescriptor internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray) = suspendCoroutine { continuation ->
-        pendingWriteEvent = { continuation.resume(Unit) }
+    suspend fun write(value: ByteArray): Boolean = suspendCoroutine { continuation ->
+        pendingWriteEvent = { continuation.resume(it.status.isSuccess) }
 
         gatt.writeDescriptor(descriptor, value)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
-        pendingReadEvent = { continuation.resume(Unit) }
+        pendingReadEvent = {
+            if (it.status.isSuccess) {
+                continuation.resume(it.value)
+            } else {
+                continuation.resume(null)
+            }
+        }
         gatt.readDescriptor(descriptor)
     }
 }
