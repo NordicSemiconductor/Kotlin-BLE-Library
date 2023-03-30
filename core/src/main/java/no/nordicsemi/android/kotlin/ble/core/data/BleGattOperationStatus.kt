@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.core.data
 
 import android.bluetooth.BluetoothGatt
 import android.os.Build
+import android.util.Log
 
 enum class BleGattOperationStatus(val value: Int) {
 
@@ -65,5 +66,13 @@ enum class BleGattOperationStatus(val value: Int) {
         fun create(value: Int): BleGattOperationStatus {
             return values().firstOrNull { it.value == value } ?: GATT_UNKNOWN
         }
+    }
+}
+
+fun BleGattOperationStatus.toLogLevel(): Int {
+    return if(isSuccess) {
+        Log.DEBUG
+    } else {
+        Log.ERROR
     }
 }

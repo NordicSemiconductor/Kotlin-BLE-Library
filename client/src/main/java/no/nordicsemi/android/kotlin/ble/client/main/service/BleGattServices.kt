@@ -35,11 +35,12 @@ import android.bluetooth.BluetoothGattService
 import android.util.Log
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import java.util.*
 
-class BleGattServices internal constructor(gatt: BleGatt, androidGattServices: List<BluetoothGattService>) {
+class BleGattServices internal constructor(gatt: BleGatt, androidGattServices: List<BluetoothGattService>, logger: BlekLogger) {
 
-    private val services = androidGattServices.map { BleGattService(gatt, it) }
+    private val services = androidGattServices.map { BleGattService(gatt, it, logger) }
 
     fun findService(uuid: UUID): BleGattService? {
         return services.firstOrNull { it.uuid == uuid }

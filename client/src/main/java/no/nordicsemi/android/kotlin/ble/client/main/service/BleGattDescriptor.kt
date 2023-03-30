@@ -33,19 +33,25 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
 import android.bluetooth.BluetoothGattDescriptor
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
+import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
+import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattDescriptor internal constructor(
     private val gatt: BleGatt,
     private val characteristicInstanceId: Int,
-    private val descriptor: BluetoothGattDescriptor
+    private val descriptor: BluetoothGattDescriptor,
+    private val logger: BlekLogger
 ) {
 
     val uuid = descriptor.uuid
@@ -69,19 +75,31 @@ class BleGattDescriptor internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray): Boolean = suspendCoroutine { continuation ->
-        pendingWriteEvent = { continuation.resume(it.status.isSuccess) }
+    suspend fun write(value: ByteArray): Unit = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: ${value.toDisplayString()}")
+        pendingWriteEvent = {
+            if (it.status.isSuccess) {
+                logger.log(Log.DEBUG, "Write to descriptor - end, uuid: $uuid, result: ${it.status}")
+                continuation.resume(Unit)
+            } else {
+                logger.log(Log.ERROR, "Write to descriptor - end, uuid: $uuid, result: ${it.status}")
+                continuation.resumeWithException(GattOperationException(it.status))
+            }
+        }
 
         gatt.writeDescriptor(descriptor, value)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")
         pendingReadEvent = {
             if (it.status.isSuccess) {
+                logger.log(Log.DEBUG, "Read from descriptor - end, uuid: $uuid, value: ${it.value}")
                 continuation.resume(it.value)
             } else {
-                continuation.resume(null)
+                logger.log(Log.ERROR, "Read from descriptor - end, uuid: $uuid, result: ${it.status}")
+                continuation.resumeWithException(GattOperationException(it.status))
             }
         }
         gatt.readDescriptor(descriptor)

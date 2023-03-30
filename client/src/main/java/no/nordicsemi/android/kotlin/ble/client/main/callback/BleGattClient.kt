@@ -56,14 +56,19 @@ import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.BleOperationResult
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.data.toLogLevel
+import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.logger.DefaultBlekLogger
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
-    private val gatt: BleGatt
+    private val gatt: BleGatt,
+    private val logger: BlekLogger
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<Pair<GattConnectionState, BleGattConnectionStatus>?>(null)
@@ -76,13 +81,13 @@ class BleGattClient(
     val services = _services.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? = null
-    private var mtuCallback: ((Int) -> Unit)? = null
-    private var rssiCallback: ((Int) -> Unit)? = null
-    private var phyCallback: ((PhyInfo) -> Unit)? = null
+    private var mtuCallback: ((OnMtuChanged) -> Unit)? = null
+    private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
+    private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
 
     init {
         gatt.event.onEach {
-            Log.d("AAATESTAAA", "Client event: $it")
+            logger.log(Log.DEBUG, "On gatt event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
                 is OnPhyRead -> onEvent(it)
@@ -108,35 +113,46 @@ class BleGattClient(
         }
     }
 
-    suspend fun requestMtu(mtu: Int): Int = suspendCoroutine { continuation ->
+    suspend fun requestMtu(mtu: Int): BleOperationResult<Int> = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Request mtu - start, mtu: $mtu")
         mtuCallback = {
-            continuation.resume(it)
+            val result = BleOperationResult.createResult(it.mtu, it.status)
+            logger.log(result.toLogLevel(), "Request mtu - end, result: $result")
+            continuation.resume(result)
             mtuCallback = null
         }
         gatt.requestMtu(mtu)
     }
 
-    suspend fun readRssi(): Int = suspendCoroutine { continuation ->
+    suspend fun readRssi(): BleOperationResult<Int> = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Read rssi - start")
         rssiCallback = {
-            continuation.resume(it)
+            val result = BleOperationResult.createResult(it.rssi, it.status)
+            logger.log(result.toLogLevel(), "Read rssi - end, result: $result")
+            continuation.resume(result)
             rssiCallback = null
         }
         gatt.readRemoteRssi()
     }
 
-    suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo = suspendCoroutine { continuation ->
-        phyCallback = {
-            continuation.resume(it)
+    suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Set phy - start, txPhy: $txPhy, rxPhy: $rxPhy, phyOption: $phyOption")
+        phyCallback = { phy, status ->
+            val result = BleOperationResult.createResult(phy, status)
+            logger.log(result.toLogLevel(), "Set phy - start, result: $result")
+            continuation.resume(result)
             phyCallback = null
         }
         gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
     }
 
     fun disconnect() {
+        logger.log(Log.DEBUG, "Disconnect gatt client.")
         gatt.disconnect()
     }
 
     fun clearServicesCache() {
+        logger.log(Log.DEBUG, "Clear service cache.")
         gatt.clearServicesCache()
     }
 
@@ -155,26 +171,25 @@ class BleGattClient(
     }
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
-        val services = gattServices?.let { BleGattServices(gatt, it) }
+        val services = gattServices?.let { BleGattServices(gatt, it, logger) }
         _services.value = services
     }
 
     private fun onEvent(event: OnMtuChanged) {
-        Log.d("AAATESTAAA", "On mtu changed: $event")
         MtuProvider.mtu.value = event.mtu
-        mtuCallback?.invoke(event.mtu)
+        mtuCallback?.invoke(event)
     }
 
     private fun onEvent(event: OnPhyRead) {
-        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy))
+        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy), event.status)
     }
 
     private fun onEvent(event: OnPhyUpdate) {
-        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy))
+        phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy), event.status)
     }
 
     private fun onEvent(event: OnReadRemoteRssi) {
-        rssiCallback?.invoke(event.rssi)
+        rssiCallback?.invoke(event)
     }
 
     @SuppressLint("MissingPermission")

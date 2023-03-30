@@ -14,16 +14,19 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 suspend fun ServerDevice.connect(
     context: Context,
-    options: BleGattConnectOptions = BleGattConnectOptions()
+    options: BleGattConnectOptions = BleGattConnectOptions(),
+    logger: BlekLogger = DefaultBlekLogger()
 ): BleGattClient {
     return when (this) {
-        is MockServerDevice -> connectDevice(this, context, options)
-        is RealServerDevice -> connectDevice(this, context, options)
+        is MockServerDevice -> connectDevice(this, context, options, logger)
+        is RealServerDevice -> connectDevice(this, context, options, logger)
     }
 }
 
@@ -31,10 +34,11 @@ suspend fun ServerDevice.connect(
 suspend fun connectDevice(
     device: MockServerDevice,
     context: Context,
-    options: BleGattConnectOptions
+    options: BleGattConnectOptions,
+    logger: BlekLogger
 ): BleGattClient {
     val gatt = BleMockGatt(MockEngine, device, options.autoConnect)
-    return BleGattClient(gatt)
+    return BleGattClient(gatt, logger)
         .also { MockEngine.connectToServer(device, gatt, options) }
         .also { it.connect() }
 }
@@ -43,9 +47,10 @@ suspend fun connectDevice(
 private suspend fun connectDevice(
     device: RealServerDevice,
     context: Context,
-    options: BleGattConnectOptions
+    options: BleGattConnectOptions,
+    logger: BlekLogger
 ): BleGattClient {
-    return BleGattClient(device.createConnection(context, options)).also {
+    return BleGattClient(device.createConnection(context, options), logger).also {
         it.connect()
     }
 }

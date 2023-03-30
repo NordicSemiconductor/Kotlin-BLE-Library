@@ -35,6 +35,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -49,19 +50,29 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
+import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
+import no.nordicsemi.android.kotlin.ble.client.main.errors.NotificationDescriptorNotFoundException
+import no.nordicsemi.android.kotlin.ble.core.data.BleErrorResult
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.BleOperationResult
+import no.nordicsemi.android.kotlin.ble.core.data.BleSuccessResult
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.data.toLogLevel
+import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
+import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import java.util.*
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattCharacteristic internal constructor(
     private val gatt: BleGatt,
-    private val characteristic: BluetoothGattCharacteristic
+    private val characteristic: BluetoothGattCharacteristic,
+    private val logger: BlekLogger
 ) {
 
     val uuid = characteristic.uuid
@@ -83,7 +94,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it) }
+    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger) }
 
     private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
@@ -102,8 +113,8 @@ class BleGattCharacteristic internal constructor(
 
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
-            is OnCharacteristicChanged, -> onLocalEvent(event.characteristic) { _notification.tryEmit(event.value) }
-            is OnCharacteristicRead, -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
+            is OnCharacteristicChanged -> onLocalEvent(event.characteristic) { _notification.tryEmit(event.value) }
+            is OnCharacteristicRead -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
             is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
         }
     }
@@ -115,31 +126,42 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT): Boolean = suspendCoroutine { continuation ->
+    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
         validateWriteProperties(writeType)
-        pendingWriteEvent = { continuation.resume(it.status.isSuccess) }
+        pendingWriteEvent = {
+            if (it.status.isSuccess) {
+                logger.log(Log.DEBUG, "Write to characteristic - end, uuid: $uuid, result: ${it.status}")
+                continuation.resume(Unit)
+            } else {
+                logger.log(Log.ERROR, "Write to characteristic - end, uuid: $uuid, result: ${it.status}")
+                continuation.resumeWithException(GattOperationException(it.status))
+            }
+        }
         gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) : Boolean {
-        value.split(MtuProvider.availableMtu(writeType)).forEach {
-            if (!write(it, writeType)) {
-                return false
-            }
+    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
+        logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
+        value.split(MtuProvider.availableMtu(writeType)).forEachIndexed { i, it ->
+            write(it, writeType)
         }
-        return true
+        logger.log(Log.DEBUG, "Split write to characteristic - end, uuid: $uuid")
     }
 
     private fun validateWriteProperties(writeType: BleWriteType) {
         when (writeType) {
             BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
+                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE)
             }
             BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
+                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)
             }
             BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
+                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_SIGNED_WRITE)
             }
         }
@@ -147,21 +169,25 @@ class BleGattCharacteristic internal constructor(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read() = suspendCoroutine { continuation ->
+        logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
         if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
+            logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
             throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
         }
         pendingReadEvent = {
             if (it.status.isSuccess) {
+                logger.log(Log.DEBUG, "Read from characteristic - end, uuid: $uuid, value: ${it.value}")
                 continuation.resume(it.value)
             } else {
-                continuation.resume(null)
+                logger.log(Log.ERROR, "Read from characteristic - end, uuid: $uuid, result: ${it.status}")
+                continuation.resumeWithException(GattOperationException(it.status))
             }
         }
         gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableIndicationsOrNotifications(): Boolean {
+    private suspend fun enableIndicationsOrNotifications(): Unit {
         return if (properties.contains(BleGattProperty.PROPERTY_NOTIFY)) {
             enableNotifications()
         } else if (properties.contains(BleGattProperty.PROPERTY_INDICATE)) {
@@ -172,26 +198,44 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableIndications(): Boolean {
+    private suspend fun enableIndications() {
+        logger.log(Log.DEBUG, "Enable indications on characteristic - start, uuid: $uuid")
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
-            descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE)
-        } ?: false
+            descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE).also {
+                logger.log(Log.DEBUG, "Enable indications on characteristic - end, uuid: $uuid")
+            }
+        } ?: run {
+            logger.log(Log.ERROR, "Enable indications on characteristic - missing descriptor error, uuid: $uuid")
+            throw NotificationDescriptorNotFoundException()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableNotifications(): Boolean {
+    private suspend fun enableNotifications() {
+        logger.log(Log.DEBUG, "Enable notifications on characteristic - start, uuid: $uuid")
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
-            descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE)
-        } ?: false
+            descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE).also {
+                logger.log(Log.DEBUG, "Enable notifications on characteristic - end, uuid: $uuid")
+            }
+        } ?: run {
+            logger.log(Log.ERROR, "Enable notifications on characteristic - missing descriptor error, uuid: $uuid")
+            throw NotificationDescriptorNotFoundException()
+        }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun disableNotifications(): Boolean {
+    private suspend fun disableNotifications() {
+        logger.log(Log.DEBUG, "Disable notifications on characteristic - start, uuid: $uuid")
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
-            descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE)
-        } ?: false
+            descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE).also {
+                logger.log(Log.DEBUG, "Disable notifications on characteristic - end, uuid: $uuid")
+            }
+        } ?: run {
+            logger.log(Log.ERROR, "Disable notifications on characteristic - missing descriptor error, uuid: $uuid")
+            throw NotificationDescriptorNotFoundException()
+        }
     }
 }
