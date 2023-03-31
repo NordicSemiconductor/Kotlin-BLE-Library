@@ -158,6 +158,7 @@ class BleGattClient(
 
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(status: BleGattConnectionStatus, connectionState: GattConnectionState) {
+        logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
         _connectionStateWithStatus.value = connectionState to status
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
@@ -171,6 +172,7 @@ class BleGattClient(
     }
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+        logger.log(Log.DEBUG, "On services discovered: ${gattServices?.map { it.uuid }}, status: $status")
         val services = gattServices?.let { BleGattServices(gatt, it, logger) }
         _services.value = services
     }

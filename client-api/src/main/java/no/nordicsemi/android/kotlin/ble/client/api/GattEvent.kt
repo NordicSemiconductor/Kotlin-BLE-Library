@@ -41,7 +41,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 sealed interface GattEvent
 
-class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattEvent
+data class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattEvent
 
 data class OnConnectionStateChanged(
     val status: BleGattConnectionStatus,
