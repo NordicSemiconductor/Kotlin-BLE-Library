@@ -4,6 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
@@ -24,6 +25,7 @@ suspend fun ServerDevice.connect(
     options: BleGattConnectOptions = BleGattConnectOptions(),
     logger: BlekLogger = DefaultBlekLogger()
 ): BleGattClient {
+    logger.log(Log.INFO, "Connecting to ${this.address}")
     return when (this) {
         is MockServerDevice -> connectDevice(this, context, options, logger)
         is RealServerDevice -> connectDevice(this, context, options, logger)

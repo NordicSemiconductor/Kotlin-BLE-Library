@@ -41,6 +41,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
@@ -53,14 +54,10 @@ import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.NotificationDescriptorNotFoundException
-import no.nordicsemi.android.kotlin.ble.core.data.BleErrorResult
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.data.BleOperationResult
-import no.nordicsemi.android.kotlin.ble.core.data.BleSuccessResult
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
-import no.nordicsemi.android.kotlin.ble.core.data.toLogLevel
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
@@ -90,7 +87,7 @@ class BleGattCharacteristic internal constructor(
         enableIndicationsOrNotifications()
 
         return suspendCoroutine {
-            it.resume(_notification.onCompletion { disableNotifications() })
+            it.resume(_notification.onEach { log(it) }.onCompletion { disableNotifications() })
         }
     }
 
@@ -109,6 +106,10 @@ class BleGattCharacteristic internal constructor(
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
             is OnReliableWriteCompleted -> TODO()
         }
+    }
+
+    private fun log(data: ByteArray) {
+        logger.log(Log.VERBOSE, "On notification received: ${data.toDisplayString()}")
     }
 
     private fun onEvent(event: CharacteristicEvent) {
@@ -131,10 +132,10 @@ class BleGattCharacteristic internal constructor(
         validateWriteProperties(writeType)
         pendingWriteEvent = {
             if (it.status.isSuccess) {
-                logger.log(Log.DEBUG, "Write to characteristic - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.INFO, "Value written: ${value.toDisplayString()} to $uuid")
                 continuation.resume(Unit)
             } else {
-                logger.log(Log.ERROR, "Write to characteristic - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
                 continuation.resumeWithException(GattOperationException(it.status))
             }
         }
@@ -176,10 +177,10 @@ class BleGattCharacteristic internal constructor(
         }
         pendingReadEvent = {
             if (it.status.isSuccess) {
-                logger.log(Log.DEBUG, "Read from characteristic - end, uuid: $uuid, value: ${it.value}")
+                logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
                 continuation.resume(it.value)
             } else {
-                logger.log(Log.ERROR, "Read from characteristic - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
                 continuation.resumeWithException(GattOperationException(it.status))
             }
         }
@@ -203,7 +204,7 @@ class BleGattCharacteristic internal constructor(
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_INDICATION_VALUE).also {
-                logger.log(Log.DEBUG, "Enable indications on characteristic - end, uuid: $uuid")
+                logger.log(Log.INFO, "Indications enabled: $uuid")
             }
         } ?: run {
             logger.log(Log.ERROR, "Enable indications on characteristic - missing descriptor error, uuid: $uuid")
@@ -217,7 +218,7 @@ class BleGattCharacteristic internal constructor(
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE).also {
-                logger.log(Log.DEBUG, "Enable notifications on characteristic - end, uuid: $uuid")
+                logger.log(Log.INFO, "Notifications enabled: $uuid")
             }
         } ?: run {
             logger.log(Log.ERROR, "Enable notifications on characteristic - missing descriptor error, uuid: $uuid")
@@ -231,7 +232,7 @@ class BleGattCharacteristic internal constructor(
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE).also {
-                logger.log(Log.DEBUG, "Disable notifications on characteristic - end, uuid: $uuid")
+                logger.log(Log.INFO, "Notifications disabled: $uuid")
             }
         } ?: run {
             logger.log(Log.ERROR, "Disable notifications on characteristic - missing descriptor error, uuid: $uuid")
