@@ -23,7 +23,7 @@ enum class BleGattConnectionStatus(internal val value: Int) {
      */
     LINK_LOSS(3),
 
-    /** The device does not hav required services.  */
+    /** The device does not have required services.  */
     NOT_SUPPORTED(4),
 
     /** Connection attempt was cancelled.  */

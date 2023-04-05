@@ -58,6 +58,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
@@ -70,11 +71,11 @@ class BleGattClient(
     private val logger: BlekLogger
 ) {
 
-    private val _connectionStateWithStatus = MutableStateFlow<Pair<GattConnectionState, BleGattConnectionStatus>?>(null)
+    private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
     val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
 
     val mtu = MtuProvider.mtu.asStateFlow()
-    val connectionState = _connectionStateWithStatus.mapNotNull { it?.first }
+    val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
     val services = _services.asStateFlow()
