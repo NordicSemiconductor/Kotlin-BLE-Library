@@ -78,11 +78,12 @@ class BleGattDescriptor internal constructor(
     suspend fun write(value: ByteArray): Unit = suspendCoroutine { continuation ->
         logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: ${value.toDisplayString()}")
         pendingWriteEvent = {
+            pendingWriteEvent = null
             if (it.status.isSuccess) {
-                logger.log(Log.DEBUG, "Write to descriptor - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.DEBUG, "Write to descriptor - end, uuid: $uuid, value: ${it.status}")
                 continuation.resume(Unit)
             } else {
-                logger.log(Log.ERROR, "Write to descriptor - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.ERROR, "Write to descriptor - error, uuid: $uuid, result: ${it.status}")
                 continuation.resumeWithException(GattOperationException(it.status))
             }
         }
@@ -94,11 +95,12 @@ class BleGattDescriptor internal constructor(
     suspend fun read() = suspendCoroutine { continuation ->
         logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")
         pendingReadEvent = {
+            pendingReadEvent = null
             if (it.status.isSuccess) {
                 logger.log(Log.DEBUG, "Read from descriptor - end, uuid: $uuid, value: ${it.value}")
                 continuation.resume(it.value)
             } else {
-                logger.log(Log.ERROR, "Read from descriptor - end, uuid: $uuid, result: ${it.status}")
+                logger.log(Log.ERROR, "Read from descriptor - error, uuid: $uuid, result: ${it.status}")
                 continuation.resumeWithException(GattOperationException(it.status))
             }
         }

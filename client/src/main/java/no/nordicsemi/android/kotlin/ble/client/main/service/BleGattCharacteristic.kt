@@ -131,6 +131,7 @@ class BleGattCharacteristic internal constructor(
         logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
         validateWriteProperties(writeType)
         pendingWriteEvent = {
+            pendingWriteEvent = null
             if (it.status.isSuccess) {
                 logger.log(Log.INFO, "Value written: ${value.toDisplayString()} to $uuid")
                 continuation.resume(Unit)
@@ -176,6 +177,7 @@ class BleGattCharacteristic internal constructor(
             throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
         }
         pendingReadEvent = {
+            pendingReadEvent = null
             if (it.status.isSuccess) {
                 logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
                 continuation.resume(it.value)
