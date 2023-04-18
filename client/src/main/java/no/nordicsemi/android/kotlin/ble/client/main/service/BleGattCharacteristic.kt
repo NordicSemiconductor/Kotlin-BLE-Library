@@ -190,7 +190,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private suspend fun enableIndicationsOrNotifications(): Unit {
+    private suspend fun enableIndicationsOrNotifications() {
         return if (properties.contains(BleGattProperty.PROPERTY_NOTIFY)) {
             enableNotifications()
         } else if (properties.contains(BleGattProperty.PROPERTY_INDICATE)) {
