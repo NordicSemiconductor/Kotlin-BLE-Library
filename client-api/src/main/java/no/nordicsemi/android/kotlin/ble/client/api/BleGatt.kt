@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.client.api
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -41,6 +42,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 interface BleGatt {
 
     val event: SharedFlow<GattEvent>
+
+    val device: ServerDevice
 
     val autoConnect: Boolean
 

@@ -46,6 +46,7 @@ sealed interface BleDevice : Parcelable {
     val name: String
     val address: String
     val isBonded: Boolean
+    val isBonding: Boolean
 
     val serviceUuids: List<ParcelUuid>
     val highestRssi: Int
@@ -74,7 +75,12 @@ data class RealClientDevice(
     override val address: String = device.address
 
     @IgnoredOnParcel
-    override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
+    override val isBonded: Boolean
+        get() = device.bondState == BluetoothDevice.BOND_BONDED
+
+    @IgnoredOnParcel
+    override val isBonding: Boolean
+        get() = device.bondState == BluetoothDevice.BOND_BONDING
 
     @IgnoredOnParcel
     override val serviceUuids: List<ParcelUuid> = emptyList()
@@ -101,14 +107,20 @@ data class RealServerDevice(
     override val address: String = device.address
 
     @IgnoredOnParcel
-    override val isBonded: Boolean = device.bondState == BluetoothDevice.BOND_BONDED
+    override val isBonded: Boolean
+        get() = device.bondState == BluetoothDevice.BOND_BONDED
+
+    @IgnoredOnParcel
+    override val isBonding: Boolean
+        get() = device.bondState == BluetoothDevice.BOND_BONDING
 }
 
 @Parcelize
 data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
-    override val isBonded: Boolean = false
+    override val isBonded: Boolean = false,
+    override val isBonding: Boolean = false,
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
@@ -122,7 +134,8 @@ data class MockClientDevice(
 data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
-    override val isBonded: Boolean = false
+    override val isBonded: Boolean = false,
+    override val isBonding: Boolean = false,
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel

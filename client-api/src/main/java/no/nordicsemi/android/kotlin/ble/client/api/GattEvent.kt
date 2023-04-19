@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.BondState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 sealed interface GattEvent
@@ -61,6 +62,8 @@ data class OnPhyUpdate(
 ) : GattEvent
 
 data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
+
+data class OnBondedStateChanged(val bondState: BondState) : GattEvent
 
 class OnServiceChanged : GattEvent
 

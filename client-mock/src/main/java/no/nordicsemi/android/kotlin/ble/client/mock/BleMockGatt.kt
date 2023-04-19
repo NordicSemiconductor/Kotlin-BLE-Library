@@ -8,6 +8,7 @@ import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.GattEvent
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -21,6 +22,9 @@ class BleMockGatt(
 
     private val _event = simpleSharedFlow<GattEvent>()
     override val event: SharedFlow<GattEvent> = _event.asSharedFlow()
+
+    override val device: ServerDevice
+        get() = serverDevice
 
     override fun onEvent(event: GattEvent) {
         _event.tryEmit(event)

@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.OnBondedStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
@@ -97,6 +98,7 @@ class BleGattClient(
                 is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
                 is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
                 is OnMtuChanged -> onEvent(it)
+                is OnBondedStateChanged -> TODO()
             }
         }.launchIn(ClientScope)
     }
@@ -175,8 +177,12 @@ class BleGattClient(
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(status: BleGattConnectionStatus, connectionState: GattConnectionState) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
-        _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
         onConnectionStateChangedCallback?.invoke(connectionState, status)
+        _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
+
+        if (gatt.device.isBonding) {
+            return
+        }
 
         if (connectionState == GattConnectionState.STATE_CONNECTED) {
             logger.log(Log.VERBOSE, "Discovering services...")

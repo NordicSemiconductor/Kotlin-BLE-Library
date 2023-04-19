@@ -7,6 +7,8 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
+import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingStateHolder
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
@@ -15,6 +17,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.data.BondState
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
@@ -62,7 +65,10 @@ private fun RealServerDevice.createConnection(
     context: Context,
     options: BleGattConnectOptions,
 ): BleGatt {
+    BondingBroadcastReceiver.register(context)
+
     val gattCallback = BluetoothGattClientCallback()
+    BondingStateHolder.onBondStateUpdate(device.address, BondState.create(device.bondState))
 
     val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         device.connectGatt(
