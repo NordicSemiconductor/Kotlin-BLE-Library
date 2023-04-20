@@ -80,14 +80,14 @@ class BleGattCharacteristic internal constructor(
 
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
-    private val _notification = MutableSharedFlow<ByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _notifications = MutableSharedFlow<ByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     @SuppressLint("MissingPermission")
     suspend fun getNotifications(): Flow<ByteArray> {
         enableIndicationsOrNotifications()
 
         return suspendCoroutine {
-            it.resume(_notification.onEach { log(it) }.onCompletion { disableNotifications() })
+            it.resume(_notifications.onEach { log(it) }.onCompletion { disableNotifications() })
         }
     }
 
@@ -114,7 +114,7 @@ class BleGattCharacteristic internal constructor(
 
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
-            is OnCharacteristicChanged -> onLocalEvent(event.characteristic) { _notification.tryEmit(event.value) }
+            is OnCharacteristicChanged -> onLocalEvent(event.characteristic) { _notifications.tryEmit(event.value) }
             is OnCharacteristicRead -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
             is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
         }
