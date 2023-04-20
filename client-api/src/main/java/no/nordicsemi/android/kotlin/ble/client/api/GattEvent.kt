@@ -63,7 +63,7 @@ data class OnPhyUpdate(
 
 data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
 
-data class OnBondedStateChanged(val bondState: BondState) : GattEvent
+data class OnBondStateChanged(val bondState: BondState) : GattEvent
 
 class OnServiceChanged : GattEvent
 

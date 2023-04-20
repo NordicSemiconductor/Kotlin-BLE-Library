@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
-import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingStateHolder
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
@@ -65,10 +64,9 @@ private fun RealServerDevice.createConnection(
     context: Context,
     options: BleGattConnectOptions,
 ): BleGatt {
-    BondingBroadcastReceiver.register(context)
-
     val gattCallback = BluetoothGattClientCallback()
-    BondingStateHolder.onBondStateUpdate(device.address, BondState.create(device.bondState))
+
+    BondingBroadcastReceiver.register(context, device.address, gattCallback)
 
     val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         device.connectGatt(

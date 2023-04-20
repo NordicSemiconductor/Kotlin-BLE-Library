@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.OnBondedStateChanged
+import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
@@ -58,6 +58,7 @@ import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.data.BondState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
@@ -81,6 +82,9 @@ class BleGattClient(
     private val _services = MutableStateFlow<BleGattServices?>(null)
     val services = _services.asStateFlow()
 
+    private val _bondState = MutableStateFlow<BondState?>(null)
+    val bondState = _bondState.asStateFlow()
+
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? = null
     private var mtuCallback: ((OnMtuChanged) -> Unit)? = null
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
@@ -98,7 +102,7 @@ class BleGattClient(
                 is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
                 is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
                 is OnMtuChanged -> onEvent(it)
-                is OnBondedStateChanged -> TODO()
+                is OnBondStateChanged -> onBondStateChanged(it.bondState)
             }
         }.launchIn(ClientScope)
     }
@@ -177,12 +181,9 @@ class BleGattClient(
     @SuppressLint("MissingPermission")
     private fun onConnectionStateChange(status: BleGattConnectionStatus, connectionState: GattConnectionState) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
+
         onConnectionStateChangedCallback?.invoke(connectionState, status)
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
-
-        if (gatt.device.isBonding) {
-            return
-        }
 
         if (connectionState == GattConnectionState.STATE_CONNECTED) {
             logger.log(Log.VERBOSE, "Discovering services...")
@@ -192,6 +193,10 @@ class BleGattClient(
                 gatt.close()
             }
         }
+    }
+
+    private fun onBondStateChanged(bondState: BondState) {
+        _bondState.value = bondState
     }
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
