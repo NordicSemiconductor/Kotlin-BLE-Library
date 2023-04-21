@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
@@ -64,13 +65,15 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.sync.SingleCall
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
     private val gatt: BleGatt,
-    private val logger: BlekLogger
+    private val logger: BlekLogger,
+    private val mutex: Mutex = SingleCall.mutex
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
@@ -120,52 +123,64 @@ class BleGattClient(
         }
     }
 
-    suspend fun requestMtu(mtu: Int) = suspendCoroutine { continuation ->
-        logger.log(Log.VERBOSE, "Requesting new mtu - start, mtu: $mtu")
-        mtuCallback = { (mtu, status) ->
-            if (status.isSuccess) {
-                logger.log(Log.INFO, "MTU: $mtu")
-                continuation.resume(mtu)
-            } else {
-                logger.log(Log.ERROR, "Requesting mtu - error: $status")
-                continuation.resumeWithException(GattOperationException(status))
-            }
+    suspend fun requestMtu(mtu: Int): Int {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            logger.log(Log.VERBOSE, "Requesting new mtu - start, mtu: $mtu")
+            mtuCallback = { (mtu, status) ->
+                if (status.isSuccess) {
+                    logger.log(Log.INFO, "MTU: $mtu")
+                    continuation.resume(mtu)
+                } else {
+                    logger.log(Log.ERROR, "Requesting mtu - error: $status")
+                    continuation.resumeWithException(GattOperationException(status))
+                }
 
-            mtuCallback = null
+                mtuCallback = null
+                mutex.unlock()
+            }
+            gatt.requestMtu(mtu)
         }
-        gatt.requestMtu(mtu)
     }
 
-    suspend fun readRssi() = suspendCoroutine { continuation ->
-        logger.log(Log.DEBUG, "Reading rssi - start")
-        rssiCallback = { (rssi, status) ->
-            if (status.isSuccess) {
-                logger.log(Log.INFO, "RSSI: $rssi")
-                continuation.resume(rssi)
-            } else {
-                logger.log(Log.ERROR, "Reading rssi - error: $status")
-                continuation.resumeWithException(GattOperationException(status))
-            }
+    suspend fun readRssi(): Int {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            logger.log(Log.DEBUG, "Reading rssi - start")
+            rssiCallback = { (rssi, status) ->
+                if (status.isSuccess) {
+                    logger.log(Log.INFO, "RSSI: $rssi")
+                    continuation.resume(rssi)
+                } else {
+                    logger.log(Log.ERROR, "Reading rssi - error: $status")
+                    continuation.resumeWithException(GattOperationException(status))
+                }
 
-            rssiCallback = null
+                rssiCallback = null
+                mutex.unlock()
+            }
+            gatt.readRemoteRssi()
         }
-        gatt.readRemoteRssi()
     }
 
-    suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) = suspendCoroutine { continuation ->
-        logger.log(Log.DEBUG, "Setting phy - start, txPhy: $txPhy, rxPhy: $rxPhy, phyOption: $phyOption")
-        phyCallback = { phy, status ->
-            if (status.isSuccess) {
-                logger.log(Log.INFO, "Tx phy: ${phy.txPhy}, rx phy: ${phy.rxPhy}")
-                continuation.resume(phy)
-            } else {
-                logger.log(Log.ERROR, "Setting phy - error: $status")
-                continuation.resumeWithException(GattOperationException(status))
-            }
+    suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            logger.log(Log.DEBUG, "Setting phy - start, txPhy: $txPhy, rxPhy: $rxPhy, phyOption: $phyOption")
+            phyCallback = { phy, status ->
+                if (status.isSuccess) {
+                    logger.log(Log.INFO, "Tx phy: ${phy.txPhy}, rx phy: ${phy.rxPhy}")
+                    continuation.resume(phy)
+                } else {
+                    logger.log(Log.ERROR, "Setting phy - error: $status")
+                    continuation.resumeWithException(GattOperationException(status))
+                }
 
-            phyCallback = null
+                phyCallback = null
+                mutex.unlock()
+            }
+            gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
         }
-        gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
     }
 
     fun disconnect() {
@@ -202,7 +217,7 @@ class BleGattClient(
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
         logger.log(Log.INFO, "Services discovered")
         logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
-        val services = gattServices?.let { BleGattServices(gatt, it, logger) }
+        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
         _services.value = services
     }
 

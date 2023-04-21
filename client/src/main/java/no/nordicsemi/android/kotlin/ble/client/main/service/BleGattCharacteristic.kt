@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
@@ -69,7 +70,8 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattCharacteristic internal constructor(
     private val gatt: BleGatt,
     private val characteristic: BluetoothGattCharacteristic,
-    private val logger: BlekLogger
+    private val logger: BlekLogger,
+    private val mutex: Mutex
 ) {
 
     val uuid = characteristic.uuid
@@ -91,7 +93,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger) }
+    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger, mutex) }
 
     private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
@@ -127,20 +129,24 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) = suspendCoroutine { continuation ->
-        logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
-        validateWriteProperties(writeType)
-        pendingWriteEvent = {
-            pendingWriteEvent = null
-            if (it.status.isSuccess) {
-                logger.log(Log.INFO, "Value written: ${value.toDisplayString()} to $uuid")
-                continuation.resume(Unit)
-            } else {
-                logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
-                continuation.resumeWithException(GattOperationException(it.status))
+    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
+            validateWriteProperties(writeType)
+            pendingWriteEvent = {
+                pendingWriteEvent = null
+                if (it.status.isSuccess) {
+                    logger.log(Log.INFO, "Value written: ${value.toDisplayString()} to $uuid")
+                    continuation.resume(Unit)
+                } else {
+                    logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
+                    continuation.resumeWithException(GattOperationException(it.status))
+                }
+                mutex.unlock()
             }
+            gatt.writeCharacteristic(characteristic, value, writeType)
         }
-        gatt.writeCharacteristic(characteristic, value, writeType)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -170,23 +176,27 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun read() = suspendCoroutine { continuation ->
-        logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
-        if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
-            logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
-            throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
-        }
-        pendingReadEvent = {
-            pendingReadEvent = null
-            if (it.status.isSuccess) {
-                logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
-                continuation.resume(it.value)
-            } else {
-                logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
-                continuation.resumeWithException(GattOperationException(it.status))
+    suspend fun read(): ByteArray {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
+            if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
+                logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
+                throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
             }
+            pendingReadEvent = {
+                pendingReadEvent = null
+                if (it.status.isSuccess) {
+                    logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
+                    continuation.resume(it.value)
+                } else {
+                    logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
+                    continuation.resumeWithException(GattOperationException(it.status))
+                }
+                mutex.unlock()
+            }
+            gatt.readCharacteristic(characteristic)
         }
-        gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
