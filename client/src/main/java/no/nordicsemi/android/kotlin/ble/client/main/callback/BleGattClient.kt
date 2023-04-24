@@ -199,8 +199,8 @@ class BleGattClient(
     private fun onConnectionStateChange(status: BleGattConnectionStatus, connectionState: GattConnectionState) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
 
-        onConnectionStateChangedCallback?.invoke(connectionState, status)
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
+        onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {
