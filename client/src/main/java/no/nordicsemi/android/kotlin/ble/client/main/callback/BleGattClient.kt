@@ -74,7 +74,7 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattClient(
     private val gatt: BleGatt,
     private val logger: BlekLogger,
-    private val mutex: Mutex = Mutex(true)
+    private val mutex: Mutex = Mutex()
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
@@ -112,16 +112,19 @@ class BleGattClient(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    internal suspend fun connect(): GattConnectionState = suspendCoroutine { continuation ->
-        onConnectionStateChangedCallback = { connectionState, status ->
-            if (connectionState == GattConnectionState.STATE_CONNECTED) {
-                logger.log(Log.INFO, "Device connected")
-                continuation.resume(GattConnectionState.STATE_CONNECTED)
-            } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
-                continuation.resume(GattConnectionState.STATE_DISCONNECTED)
+    internal suspend fun connect(): GattConnectionState {
+        mutex.lock()
+        return suspendCoroutine { continuation ->
+            onConnectionStateChangedCallback = { connectionState, status ->
+                if (connectionState == GattConnectionState.STATE_CONNECTED) {
+                    logger.log(Log.INFO, "Device connected")
+                    continuation.resume(GattConnectionState.STATE_CONNECTED)
+                } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+                    continuation.resume(GattConnectionState.STATE_DISCONNECTED)
+                }
+                mutex.unlock()
+                onConnectionStateChangedCallback = null
             }
-            mutex.unlock()
-            onConnectionStateChangedCallback = null
         }
     }
 
