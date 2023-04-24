@@ -36,8 +36,10 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -200,14 +202,20 @@ class BleGattClient(
         onConnectionStateChangedCallback?.invoke(connectionState, status)
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
 
-        if (connectionState == GattConnectionState.STATE_CONNECTED) {
-            logger.log(Log.VERBOSE, "Discovering services...")
-            gatt.discoverServices()
-        } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+        if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {
                 gatt.close()
             }
         }
+    }
+
+    suspend fun discoverServices(): Flow<BleGattServices> {
+        mutex.lock()
+        if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
+            throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
+        }
+        gatt.discoverServices()
+        return services.filterNotNull()
     }
 
     private fun onBondStateChanged(bondState: BondState) {
@@ -215,6 +223,7 @@ class BleGattClient(
     }
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+        mutex.unlock()
         logger.log(Log.INFO, "Services discovered")
         logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
         val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
