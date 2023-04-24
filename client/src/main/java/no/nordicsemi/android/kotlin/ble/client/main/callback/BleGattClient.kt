@@ -67,7 +67,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
-import no.nordicsemi.android.kotlin.ble.core.sync.SingleCall
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -75,7 +74,7 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattClient(
     private val gatt: BleGatt,
     private val logger: BlekLogger,
-    private val mutex: Mutex = SingleCall.mutex
+    private val mutex: Mutex = Mutex(true)
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
@@ -121,6 +120,7 @@ class BleGattClient(
             } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
                 continuation.resume(GattConnectionState.STATE_DISCONNECTED)
             }
+            mutex.unlock()
             onConnectionStateChangedCallback = null
         }
     }
