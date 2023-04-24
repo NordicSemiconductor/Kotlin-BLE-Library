@@ -53,7 +53,6 @@ class BleGattServices internal constructor(
     }
 
     internal fun onCharacteristicEvent(event: ServiceEvent) {
-        Log.d("AAATESTAAA", "AAATESTAAA On service event: $event")
         services.forEach { it.onEvent(event) }
     }
 }

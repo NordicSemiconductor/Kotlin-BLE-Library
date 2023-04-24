@@ -53,6 +53,10 @@ class BlinkyViewModel @Inject constructor(
         //Connect a Bluetooth LE device.
         val client = blinkyDevice.connect(context)
 
+        if (!client.isConnected) {
+            return@launch
+        }
+
         //Discover services on the Bluetooth LE Device.
         client.discoverServices()
             .filterNotNull()

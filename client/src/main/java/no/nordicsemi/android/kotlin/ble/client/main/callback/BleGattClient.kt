@@ -80,6 +80,9 @@ class BleGattClient(
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
     val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
 
+    val isConnected
+        get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
+
     val mtu = MtuProvider.mtu.asStateFlow()
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
@@ -120,6 +123,7 @@ class BleGattClient(
                     logger.log(Log.INFO, "Device connected")
                     continuation.resume(GattConnectionState.STATE_CONNECTED)
                 } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
+                    logger.log(Log.INFO, "Device disconnected")
                     continuation.resume(GattConnectionState.STATE_DISCONNECTED)
                 }
                 mutex.unlock()
