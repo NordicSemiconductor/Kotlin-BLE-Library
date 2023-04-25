@@ -36,6 +36,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -96,6 +97,7 @@ class BleGattClient(
     private var mtuCallback: ((OnMtuChanged) -> Unit)? = null
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
+    private var bondStateCallback: ((BondState) -> Unit)? = null
 
     init {
         gatt.event.onEach {
@@ -216,17 +218,36 @@ class BleGattClient(
         }
     }
 
-    suspend fun discoverServices(): Flow<BleGattServices> {
+    suspend fun waitForBonding() {
         mutex.lock()
+        delay(500)
+        suspendCoroutine { continuation ->
+            if (bondState.value != BondState.BONDING) {
+                mutex.unlock()
+                continuation.resume(Unit)
+                return@suspendCoroutine
+            } else {
+                bondStateCallback = {
+                    mutex.unlock()
+                    bondStateCallback = null
+                    continuation.resume(Unit)
+                }
+            }
+        }
+    }
+
+    suspend fun discoverServices(): Flow<BleGattServices> {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
+        mutex.lock()
         gatt.discoverServices()
         return services.filterNotNull()
     }
 
     private fun onBondStateChanged(bondState: BondState) {
         _bondState.value = bondState
+        bondStateCallback?.invoke(bondState)
     }
 
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
@@ -256,6 +277,7 @@ class BleGattClient(
 
     @SuppressLint("MissingPermission")
     private fun onEvent(event: OnServiceChanged) {
+        mutex.tryLock()
         gatt.discoverServices()
     }
 }
