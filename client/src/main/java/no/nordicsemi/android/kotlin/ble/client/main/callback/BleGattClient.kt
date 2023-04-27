@@ -118,6 +118,9 @@ class BleGattClient(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     internal suspend fun connect(): GattConnectionState {
+        //emulate connecting state as it is not emitted by Android
+        _connectionStateWithStatus.value = GattConnectionStateWithStatus(GattConnectionState.STATE_CONNECTING, BleGattConnectionStatus.SUCCESS)
+
         mutex.lock()
         return suspendCoroutine { continuation ->
             onConnectionStateChangedCallback = { connectionState, status ->
@@ -195,6 +198,8 @@ class BleGattClient(
     }
 
     fun disconnect() {
+        //emulate disconnecting state as it is not emitted by Android
+        _connectionStateWithStatus.value = GattConnectionStateWithStatus(GattConnectionState.STATE_DISCONNECTING, BleGattConnectionStatus.SUCCESS)
         logger.log(Log.INFO, "Disconnecting...")
         gatt.disconnect()
     }
