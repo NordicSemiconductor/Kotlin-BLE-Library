@@ -35,7 +35,7 @@ import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
-import java.util.*
+import java.util.UUID
 
 class BleGattServerService internal constructor(
     private val server: ServerAPI,

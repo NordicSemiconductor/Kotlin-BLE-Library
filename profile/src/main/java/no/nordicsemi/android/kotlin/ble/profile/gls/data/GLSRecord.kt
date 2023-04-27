@@ -32,7 +32,7 @@ package no.nordicsemi.android.kotlin.ble.profile.gls.data
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
-import java.util.*
+import java.util.Calendar
 
 @Parcelize
 data class GLSRecord(

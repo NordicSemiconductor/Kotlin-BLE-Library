@@ -3,7 +3,6 @@ package no.nordicsemi.android.kotlin.ble.profile.hrs
 import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.hrs.data.HRSData
-import java.util.*
 
 object HRSDataParser {
 

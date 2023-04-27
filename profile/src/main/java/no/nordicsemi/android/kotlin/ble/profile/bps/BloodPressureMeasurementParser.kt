@@ -7,7 +7,7 @@ import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
 import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
-import java.util.*
+import java.util.Calendar
 
 object BloodPressureMeasurementParser {
 

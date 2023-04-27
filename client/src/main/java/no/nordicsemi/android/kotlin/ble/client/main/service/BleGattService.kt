@@ -36,7 +36,7 @@ import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
-import java.util.*
+import java.util.UUID
 
 class BleGattService internal constructor(
     gatt: BleGatt,

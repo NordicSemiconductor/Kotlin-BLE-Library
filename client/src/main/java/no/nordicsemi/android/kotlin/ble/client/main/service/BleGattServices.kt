@@ -32,12 +32,11 @@
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.bluetooth.BluetoothGattService
-import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
-import java.util.*
+import java.util.UUID
 
 class BleGattServices internal constructor(
     gatt: BleGatt,

@@ -2,7 +2,7 @@ package no.nordicsemi.android.kotlin.ble.profile.date
 
 import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
-import java.util.*
+import java.util.Calendar
 
 internal object DateTimeParser {
 

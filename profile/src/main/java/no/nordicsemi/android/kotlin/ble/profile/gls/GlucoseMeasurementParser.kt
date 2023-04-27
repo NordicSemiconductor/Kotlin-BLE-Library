@@ -9,7 +9,7 @@ import no.nordicsemi.android.kotlin.ble.profile.gls.data.GLSRecord
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.GlucoseStatus
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.RecordType
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.SampleLocation
-import java.util.*
+import java.util.Calendar
 
 object GlucoseMeasurementParser {
 

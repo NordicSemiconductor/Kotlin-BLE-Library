@@ -31,7 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.hts.data
 
-import java.util.*
+import java.util.Calendar
 
 data class HTSData(
     val temperature: Float = 0f,

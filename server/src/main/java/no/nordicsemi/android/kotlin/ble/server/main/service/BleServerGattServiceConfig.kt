@@ -31,7 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import java.util.*
+import java.util.UUID
 
 data class BleServerGattServiceConfig(
     val uuid: UUID,

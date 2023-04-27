@@ -1,6 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.profile.bps.data
 
-import java.util.*
+import java.util.Calendar
 
 data class BloodPressureMeasurementData(
     val systolic: Float,

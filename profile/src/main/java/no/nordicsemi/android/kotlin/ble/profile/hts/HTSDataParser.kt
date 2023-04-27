@@ -6,7 +6,7 @@ import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.HTSData
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.TemperatureUnit
-import java.util.*
+import java.util.Calendar
 
 object HTSDataParser {
 

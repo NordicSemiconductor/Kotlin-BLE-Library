@@ -2,7 +2,7 @@ package no.nordicsemi.android.kotlin.ble.profile.bps.data
 
 import androidx.annotation.FloatRange
 import androidx.annotation.IntRange
-import java.util.*
+import java.util.Calendar
 
 data class IntermediateCuffPressureData(
     @FloatRange(from = 0.0) val cuffPressure: Float,

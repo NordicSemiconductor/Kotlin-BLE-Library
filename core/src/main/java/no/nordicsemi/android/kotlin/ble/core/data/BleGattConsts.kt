@@ -31,7 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
-import java.util.*
+import java.util.UUID
 
 object BleGattConsts {
     val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")

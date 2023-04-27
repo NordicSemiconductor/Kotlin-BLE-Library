@@ -32,7 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import java.util.*
+import java.util.UUID
 
 data class BleServerGattDescriptorConfig(
     val uuid: UUID,

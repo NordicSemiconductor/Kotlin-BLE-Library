@@ -35,7 +35,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattService
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
