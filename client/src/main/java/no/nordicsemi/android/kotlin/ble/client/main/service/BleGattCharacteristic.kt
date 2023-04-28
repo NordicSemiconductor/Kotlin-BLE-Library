@@ -161,14 +161,17 @@ class BleGattCharacteristic internal constructor(
     private fun validateWriteProperties(writeType: BleWriteType) {
         when (writeType) {
             BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
+                mutex.unlock()
                 logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE)
             }
             BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
+                mutex.unlock()
                 logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)
             }
             BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
+                mutex.unlock()
                 logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_SIGNED_WRITE)
             }
@@ -181,6 +184,7 @@ class BleGattCharacteristic internal constructor(
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
+                mutex.unlock()
                 logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
                 throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
             }
