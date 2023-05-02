@@ -33,4 +33,4 @@ package no.nordicsemi.android.kotlin.ble.client.main.errors
 
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 
-class ServicesNotDiscoveredException(status: BleGattOperationStatus) : Exception("Service discovery failed with status: $status")
+class ServicesNotDiscoveredException(status: BleGattOperationStatus) : GattException("Service discovery failed with status: $status")

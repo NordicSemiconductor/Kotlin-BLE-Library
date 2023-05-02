@@ -31,4 +31,4 @@
 
 package no.nordicsemi.android.kotlin.ble.client.main.errors
 
-class NotificationDescriptorNotFoundException : Exception("Notification descriptor has not been found.")
+class NotificationDescriptorNotFoundException : GattException("Notification descriptor has not been found.")
