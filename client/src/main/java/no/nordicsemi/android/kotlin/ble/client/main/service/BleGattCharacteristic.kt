@@ -61,6 +61,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import java.util.*
 import kotlin.coroutines.resume
@@ -71,7 +72,7 @@ class BleGattCharacteristic internal constructor(
     private val gatt: BleGatt,
     private val characteristic: BluetoothGattCharacteristic,
     private val logger: BlekLogger,
-    private val mutex: Mutex
+    private val mutex: MutexWrapper
 ) {
 
     val uuid = characteristic.uuid

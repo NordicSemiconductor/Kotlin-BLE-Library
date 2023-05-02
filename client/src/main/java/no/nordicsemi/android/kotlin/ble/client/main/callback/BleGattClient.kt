@@ -68,6 +68,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -75,7 +76,7 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattClient(
     private val gatt: BleGatt,
     private val logger: BlekLogger,
-    private val mutex: Mutex = Mutex()
+    private val mutex: MutexWrapper = MutexWrapper()
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
@@ -225,7 +226,9 @@ class BleGattClient(
 
     suspend fun waitForBonding() {
         mutex.lock()
+        Log.d("AAATESTAAA", "Bond state before: ${bondState.value}")
         delay(500)
+        Log.d("AAATESTAAA", "Bond state after: ${bondState.value}")
         suspendCoroutine { continuation ->
             if (bondState.value != BondState.BONDING) {
                 mutex.unlock()
@@ -251,6 +254,7 @@ class BleGattClient(
     }
 
     private fun onBondStateChanged(bondState: BondState) {
+        Log.d("AAATESTAAA", "On bond state change: $bondState")
         _bondState.value = bondState
         bondStateCallback?.invoke(bondState)
     }

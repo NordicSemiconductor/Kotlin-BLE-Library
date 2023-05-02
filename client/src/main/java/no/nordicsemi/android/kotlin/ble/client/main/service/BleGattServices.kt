@@ -36,13 +36,14 @@ import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import java.util.UUID
 
 class BleGattServices internal constructor(
     gatt: BleGatt,
     androidGattServices: List<BluetoothGattService>,
     logger: BlekLogger,
-    mutex: Mutex
+    mutex: MutexWrapper
 ) {
 
     private val services = androidGattServices.map { BleGattService(gatt, it, logger, mutex) }

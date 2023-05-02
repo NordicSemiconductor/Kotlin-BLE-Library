@@ -44,6 +44,7 @@ import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationExceptio
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -53,7 +54,7 @@ class BleGattDescriptor internal constructor(
     private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor,
     private val logger: BlekLogger,
-    private val mutex: Mutex
+    private val mutex: MutexWrapper
 ) {
 
     val uuid = descriptor.uuid
