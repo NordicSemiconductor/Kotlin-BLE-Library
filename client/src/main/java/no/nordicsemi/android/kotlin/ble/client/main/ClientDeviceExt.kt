@@ -65,7 +65,7 @@ private fun RealServerDevice.createConnection(
 ): BleGatt {
     val gattCallback = BluetoothGattClientCallback()
 
-    BondingBroadcastReceiver.register(context, device.address, gattCallback)
+    BondingBroadcastReceiver.register(context, this, gattCallback)
 
     val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         device.connectGatt(

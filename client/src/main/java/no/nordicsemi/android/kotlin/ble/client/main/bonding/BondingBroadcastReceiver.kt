@@ -8,8 +8,11 @@ import android.bluetooth.BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.util.Log
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
+import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
 
 class BondingBroadcastReceiver : BroadcastReceiver() {
@@ -31,12 +34,24 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
 
         private val callbacks = mutableMapOf<String, BluetoothGattClientCallback>()
 
-        fun register(context: Context, address: String, callback: BluetoothGattClientCallback) {
-            callbacks[address] = callback
+        private var instance: BondingBroadcastReceiver? = null
+
+        fun register(context: Context, device: BleDevice, callback: BluetoothGattClientCallback) {
+            callbacks[device.address] = callback
+            callback.onEvent(OnBondStateChanged(device.bondState))
+
+            if (instance == null) {
+                instance = BondingBroadcastReceiver()
+                context.applicationContext.registerReceiver(instance, IntentFilter(ACTION_BOND_STATE_CHANGED))
+            }
         }
 
         fun unregisterReceiver(context: Context, address: String) {
             callbacks.remove(address)
+            if (callbacks.isEmpty()) {
+                context.unregisterReceiver(instance)
+                instance = null
+            }
         }
     }
 }

@@ -38,6 +38,7 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import no.nordicsemi.android.kotlin.ble.core.data.BondState
 
 const val RSSI_UNKNOWN = 0
 
@@ -45,8 +46,11 @@ sealed interface BleDevice : Parcelable {
 
     val name: String
     val address: String
+    val bondState: BondState
     val isBonded: Boolean
+        get() = bondState == BondState.BONDED
     val isBonding: Boolean
+        get() = bondState == BondState.BONDING
 
     val serviceUuids: List<ParcelUuid>
     val highestRssi: Int
@@ -74,13 +78,8 @@ data class RealClientDevice(
     @IgnoredOnParcel
     override val address: String = device.address
 
-    @IgnoredOnParcel
-    override val isBonded: Boolean
-        get() = device.bondState == BluetoothDevice.BOND_BONDED
-
-    @IgnoredOnParcel
-    override val isBonding: Boolean
-        get() = device.bondState == BluetoothDevice.BOND_BONDING
+    override val bondState: BondState
+        get() = BondState.create(device.bondState)
 
     @IgnoredOnParcel
     override val serviceUuids: List<ParcelUuid> = emptyList()
@@ -106,21 +105,15 @@ data class RealServerDevice(
     @IgnoredOnParcel
     override val address: String = device.address
 
-    @IgnoredOnParcel
-    override val isBonded: Boolean
-        get() = device.bondState == BluetoothDevice.BOND_BONDED
-
-    @IgnoredOnParcel
-    override val isBonding: Boolean
-        get() = device.bondState == BluetoothDevice.BOND_BONDING
+    override val bondState: BondState
+        get() = BondState.create(device.bondState)
 }
 
 @Parcelize
 data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
-    override val isBonded: Boolean = false,
-    override val isBonding: Boolean = false,
+    override val bondState: BondState = BondState.NONE
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
@@ -134,8 +127,7 @@ data class MockClientDevice(
 data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
-    override val isBonded: Boolean = false,
-    override val isBonding: Boolean = false,
+    override val bondState: BondState = BondState.NONE
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel

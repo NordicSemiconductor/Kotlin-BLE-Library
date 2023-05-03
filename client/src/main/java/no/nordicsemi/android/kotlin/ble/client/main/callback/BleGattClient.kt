@@ -226,9 +226,7 @@ class BleGattClient(
 
     suspend fun waitForBonding() {
         mutex.lock()
-        Log.d("AAATESTAAA", "Bond state before: ${bondState.value}")
         delay(500)
-        Log.d("AAATESTAAA", "Bond state after: ${bondState.value}")
         suspendCoroutine { continuation ->
             if (bondState.value != BondState.BONDING) {
                 mutex.unlock()

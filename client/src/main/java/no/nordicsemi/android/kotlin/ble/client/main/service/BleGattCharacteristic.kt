@@ -40,9 +40,9 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
@@ -87,7 +87,12 @@ class BleGattCharacteristic internal constructor(
 
     @SuppressLint("MissingPermission")
     suspend fun getNotifications(): Flow<ByteArray> {
-        enableIndicationsOrNotifications()
+        try {
+            enableIndicationsOrNotifications()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return flow { throw e }
+        }
 
         return suspendCoroutine {
             it.resume(_notifications.onEach { log(it) }.onCompletion { disableNotifications() })
