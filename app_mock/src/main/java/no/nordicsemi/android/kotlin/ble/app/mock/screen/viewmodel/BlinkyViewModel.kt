@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -61,6 +62,7 @@ class BlinkyViewModel @Inject constructor(
         client.discoverServices()
             .filterNotNull()
             .onEach { configureGatt(it) }
+            .catch { it.printStackTrace() }
             .launchIn(viewModelScope)
     }
 
