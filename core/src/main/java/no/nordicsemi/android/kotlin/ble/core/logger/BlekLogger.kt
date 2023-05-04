@@ -2,7 +2,7 @@ package no.nordicsemi.android.kotlin.ble.core.logger
 
 import android.util.Log
 
-interface BlekLogger {
+fun interface BlekLogger {
 
     fun log(priority: Int, log: String)
 }
