@@ -73,7 +73,7 @@ data class RealClientDevice(
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String = device.name
+    override val name: String = device.name ?: "Fix Me"
 
     @IgnoredOnParcel
     override val address: String = device.address
