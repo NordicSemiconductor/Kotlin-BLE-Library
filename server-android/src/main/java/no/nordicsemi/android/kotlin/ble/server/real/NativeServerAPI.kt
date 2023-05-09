@@ -1,6 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
@@ -68,6 +69,10 @@ class NativeServerAPI(
     override fun close() {
         server.clearServices()
         server.close() //TODO
+    }
+
+    override fun cancelConnection(device: BluetoothDevice) {
+        server.cancelConnection(device)
     }
 
     override fun connect(device: ClientDevice, autoConnect: Boolean) {
