@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.data
 
+//todo split to clases Legacy and Modern
 data class BleAdvertiseSettings(
     val deviceName: String? = null,
     val connectable: Boolean? = true,

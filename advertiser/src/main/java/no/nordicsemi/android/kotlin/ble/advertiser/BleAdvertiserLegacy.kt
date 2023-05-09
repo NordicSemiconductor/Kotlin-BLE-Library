@@ -87,7 +87,7 @@ internal class BleAdvertiserLegacy(
             }
         }
 
-        settings.deviceName?.let {
+        settings.deviceName?.let { //TODO remove
             bluetoothAdapter.setName(it)
         }
 
