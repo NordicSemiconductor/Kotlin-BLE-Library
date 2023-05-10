@@ -83,6 +83,8 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     fun setValue(value: ByteArray) {
+        // only notify once when the value changes
+        if (value.contentEquals(_value.value)) return
         _value.value = value
         characteristic.value = value
 
