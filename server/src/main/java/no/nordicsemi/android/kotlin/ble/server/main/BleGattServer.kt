@@ -124,9 +124,10 @@ class BleGattServer internal constructor(
                     event.newState
                 )
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
-                is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
+                is ServiceEvent -> connections.value[event.device]?.services?.onEvent(event)
                 is OnServerPhyRead -> onPhyRead(event)
                 is OnServerPhyUpdate -> onPhyUpdate(event)
+                else -> {}
             }
         }.launchIn(ServerScope)
     }
