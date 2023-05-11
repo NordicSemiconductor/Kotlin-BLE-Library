@@ -39,6 +39,10 @@ class MockServerAPI(
         TODO("Not yet implemented")
     }
 
+    override fun cancelConnection(device: ClientDevice) {
+        TODO("Not yet implemented")
+    }
+
     override fun connect(device: ClientDevice, autoConnect: Boolean) {
         mockEngine.connect(device, autoConnect)
     }

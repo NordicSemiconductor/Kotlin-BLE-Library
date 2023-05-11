@@ -83,6 +83,9 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     fun setValue(value: ByteArray) {
+        // only notify once when the value changes
+        //todo think about improving this
+        if (value.contentEquals(_value.value)) return
         _value.value = value
         characteristic.value = value
 
@@ -90,7 +93,7 @@ class BleServerGattCharacteristic internal constructor(
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 
         if (isNotification || isIndication) {
-            server.notifyCharacteristicChanged(device, characteristic, isIndication, _value.value)
+            server.notifyCharacteristicChanged(device, characteristic, isIndication, value)
         }
     }
 

@@ -123,9 +123,10 @@ class BleGattServer internal constructor(
                     event.newState
                 )
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
-                is ServiceEvent -> connections.value.values.forEach { it.services.onEvent(event) }
+                is ServiceEvent -> connections.value[event.device]?.services?.onEvent(event)
                 is OnServerPhyRead -> onPhyRead(event)
                 is OnServerPhyUpdate -> onPhyUpdate(event)
+                else -> {}
             }
         }.launchIn(ServerScope)
     }
@@ -133,6 +134,10 @@ class BleGattServer internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun stopServer() {
         server.close()
+    }
+
+    fun cancelConnection(device: ClientDevice) {
+        server.cancelConnection(device)
     }
 
     private fun onConnectionStateChanged(
