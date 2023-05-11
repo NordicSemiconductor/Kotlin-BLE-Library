@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.server.main
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattService
 import android.content.Context
 import androidx.annotation.RequiresPermission
@@ -137,7 +136,7 @@ class BleGattServer internal constructor(
         server.close()
     }
 
-    fun cancelConnection(device: BluetoothDevice) {
+    fun cancelConnection(device: ClientDevice) {
         server.cancelConnection(device)
     }
 

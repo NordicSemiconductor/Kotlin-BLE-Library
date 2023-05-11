@@ -71,8 +71,9 @@ class NativeServerAPI(
         server.close() //TODO
     }
 
-    override fun cancelConnection(device: BluetoothDevice) {
-        server.cancelConnection(device)
+    override fun cancelConnection(device: ClientDevice) {
+        val bleDevice = (device as? RealClientDevice)?.device!!
+        server.cancelConnection(bleDevice)
     }
 
     override fun connect(device: ClientDevice, autoConnect: Boolean) {

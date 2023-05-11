@@ -30,7 +30,7 @@ interface ServerAPI {
 
     fun close()
 
-    fun cancelConnection(device: BluetoothDevice)
+    fun cancelConnection(device: ClientDevice)
 
     fun connect(device: ClientDevice, autoConnect: Boolean)
 

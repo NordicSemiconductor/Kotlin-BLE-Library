@@ -1,6 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.server.mock
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -40,7 +39,7 @@ class MockServerAPI(
         TODO("Not yet implemented")
     }
 
-    override fun cancelConnection(device: BluetoothDevice) {
+    override fun cancelConnection(device: ClientDevice) {
         TODO("Not yet implemented")
     }
 
