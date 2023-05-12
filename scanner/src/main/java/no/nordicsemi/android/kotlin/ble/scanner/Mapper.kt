@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android .kotlin.ble.scanner
+package no.nordicsemi.android.kotlin.ble.scanner
 
 import android.bluetooth.le.ScanResult
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
