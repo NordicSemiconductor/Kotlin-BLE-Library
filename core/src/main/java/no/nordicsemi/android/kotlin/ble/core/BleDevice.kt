@@ -60,6 +60,7 @@ sealed interface BleDevice : Parcelable {
 
 sealed interface ServerDevice : BleDevice {
 
+    val scanResult: ScanResult?
     override val name: String
     override val address: String
 }
@@ -93,11 +94,13 @@ data class RealClientDevice(
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
-    override val highestRssi: Int = RSSI_UNKNOWN,
-    override val serviceUuids: List<ParcelUuid> = emptyList()
+    override val scanResult: ScanResult? = null
 ) : ServerDevice, Parcelable {
 
-    constructor(device: BluetoothDevice, scanResult: ScanResult) : this(device, scanResult.rssi, scanResult.scanRecord?.serviceUuids ?: emptyList())
+    @IgnoredOnParcel
+    override val highestRssi: Int = scanResult?.rssi ?: RSSI_UNKNOWN
+    @IgnoredOnParcel
+    override val serviceUuids: List<ParcelUuid> = scanResult?.scanRecord?.serviceUuids ?: emptyList()
 
     @IgnoredOnParcel
     override val name: String = device.name ?: ""
@@ -127,7 +130,8 @@ data class MockClientDevice(
 data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
-    override val bondState: BondState = BondState.NONE
+    override val bondState: BondState = BondState.NONE,
+    override val scanResult: ScanResult?
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel
