@@ -131,7 +131,7 @@ data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
     override val bondState: BondState = BondState.NONE,
-    override val scanResult: ScanResult?
+    override val scanResult: ScanResult? = null
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel
