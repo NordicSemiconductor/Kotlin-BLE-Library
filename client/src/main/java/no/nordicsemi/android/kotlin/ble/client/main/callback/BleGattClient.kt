@@ -44,7 +44,6 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.sync.Mutex
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
@@ -99,6 +98,7 @@ class BleGattClient(
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
     private var bondStateCallback: ((BondState) -> Unit)? = null
+    private var onServicesDiscovered: (() -> Unit)? = null
 
     init {
         gatt.event.onEach {
@@ -243,26 +243,39 @@ class BleGattClient(
     }
 
     suspend fun discoverServices(): Flow<BleGattServices> {
+        suspendForServices()
+
+        return services.filterNotNull()
+    }
+
+    private suspend fun suspendForServices() {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
+
         mutex.lock()
-        gatt.discoverServices()
-        return services.filterNotNull()
+        return suspendCoroutine { continuation ->
+            onServicesDiscovered = {
+                mutex.unlock()
+                continuation.resume(Unit)
+                onServicesDiscovered = null
+            }
+            gatt.discoverServices()
+        }
+    }
+
+    private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+        logger.log(Log.INFO, "Services discovered")
+        logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
+        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
+        _services.value = services
+        onServicesDiscovered?.invoke()
     }
 
     private fun onBondStateChanged(bondState: BondState) {
         Log.d("AAATESTAAA", "On bond state change: $bondState")
         _bondState.value = bondState
         bondStateCallback?.invoke(bondState)
-    }
-
-    private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
-        mutex.unlock()
-        logger.log(Log.INFO, "Services discovered")
-        logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
-        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
-        _services.value = services
     }
 
     private fun onEvent(event: OnMtuChanged) {
