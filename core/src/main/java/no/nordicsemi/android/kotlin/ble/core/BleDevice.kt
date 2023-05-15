@@ -33,14 +33,10 @@ package no.nordicsemi.android.kotlin.ble.core
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.le.ScanResult
-import android.os.ParcelUuid
 import android.os.Parcelable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
-
-const val RSSI_UNKNOWN = 0
 
 sealed interface BleDevice : Parcelable {
 
@@ -52,15 +48,12 @@ sealed interface BleDevice : Parcelable {
     val isBonding: Boolean
         get() = bondState == BondState.BONDING
 
-    val serviceUuids: List<ParcelUuid>
-    val highestRssi: Int
     val hasName
         get() = name.isNotEmpty()
 }
 
 sealed interface ServerDevice : BleDevice {
 
-    val scanResult: ScanResult?
     override val name: String
     override val address: String
 }
@@ -81,26 +74,13 @@ data class RealClientDevice(
 
     override val bondState: BondState
         get() = BondState.create(device.bondState)
-
-    @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = emptyList()
-
-    @IgnoredOnParcel
-    override val highestRssi: Int = RSSI_UNKNOWN
-
 }
 
 @SuppressLint("MissingPermission")
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
-    override val scanResult: ScanResult? = null
 ) : ServerDevice, Parcelable {
-
-    @IgnoredOnParcel
-    override val highestRssi: Int = scanResult?.rssi ?: RSSI_UNKNOWN
-    @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = scanResult?.scanRecord?.serviceUuids ?: emptyList()
 
     @IgnoredOnParcel
     override val name: String = device.name ?: ""
@@ -117,26 +97,11 @@ data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
     override val bondState: BondState = BondState.NONE
-) : ClientDevice, Parcelable {
-
-    @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = emptyList()
-
-    @IgnoredOnParcel
-    override val highestRssi: Int = RSSI_UNKNOWN
-}
+) : ClientDevice, Parcelable
 
 @Parcelize
 data class MockServerDevice(
     override val name: String = "SERVER",
     override val address: String = "11:22:33:44:55",
     override val bondState: BondState = BondState.NONE,
-    override val scanResult: ScanResult? = null
-) : ServerDevice, Parcelable {
-
-    @IgnoredOnParcel
-    override val serviceUuids: List<ParcelUuid> = emptyList()
-
-    @IgnoredOnParcel
-    override val highestRssi: Int = RSSI_UNKNOWN
-}
+) : ServerDevice, Parcelable

@@ -40,11 +40,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.kotlin.ble.client.details.BlinkyDestinationId
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
+import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import javax.inject.Inject
 
 @SuppressLint("MissingPermission")
@@ -61,9 +63,11 @@ class ScannerViewModel @Inject constructor(
     val devices = _devices.asStateFlow()
 
     init {
-        scanner.scan().onEach {
-            _devices.value = it
-        }.launchIn(viewModelScope)
+        val aggregator = BleScanResultAggregator()
+        scanner.scan()
+            .map { aggregator.aggregate(it) }
+            .onEach { _devices.value = it }
+            .launchIn(viewModelScope)
     }
 
     fun onDeviceSelected(device: ServerDevice) {
