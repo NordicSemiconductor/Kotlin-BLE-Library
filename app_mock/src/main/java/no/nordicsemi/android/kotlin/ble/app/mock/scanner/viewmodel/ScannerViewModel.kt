@@ -69,8 +69,7 @@ class ScannerViewModel @Inject constructor(
 
         val aggregator = BleScanResultAggregator()
         scanner.scan()
-            .map { aggregator.aggregate(it) }
-            .map { it.keys.toList() }
+            .map { aggregator.aggregateDevices(it) }
             .onEach { _devices.value = it }
             .launchIn(viewModelScope)
     }

@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
-import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanItem
+import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanItemWithRecord
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
 import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
@@ -66,13 +66,13 @@ class NordicScanner(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanItem> = callbackFlow {
+    fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanItemWithRecord> = callbackFlow {
         launch {
-            MockDevices.devices.collect { it.forEach { trySend(BleScanItem(it)) } }
+            MockDevices.devices.collect { it.forEach { trySend(BleScanItemWithRecord(it)) } }
         }
 
         val bonded = bluetoothAdapter.bondedDevices.map { RealServerDevice(it) }
-        bonded.forEach { trySend(BleScanItem(it)) }
+        bonded.forEach { trySend(BleScanItemWithRecord(it)) }
 
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
