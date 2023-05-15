@@ -40,11 +40,12 @@ import android.bluetooth.le.ScanResult
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
-import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
+import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanItem
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
 import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
@@ -65,29 +66,21 @@ class NordicScanner(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    fun scan(settings: BleScannerSettings = BleScannerSettings()) = callbackFlow {
-        val deviceAggregator = BleScanResultAggregator()
-
+    fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanItem> = callbackFlow {
         launch {
-            MockDevices.devices.collect {
-                deviceAggregator.addNewDevices(it)
-            }
+            MockDevices.devices.collect { it.forEach { trySend(BleScanItem(it)) } }
         }
 
         val bonded = bluetoothAdapter.bondedDevices.map { RealServerDevice(it) }
-        deviceAggregator.addNewDevices(bonded)
+        bonded.forEach { trySend(BleScanItem(it)) }
 
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
-                result?.toDomain()?.let {
-                    trySend(deviceAggregator.addNewDevice(it))
-                }
+                result?.toScanItem()?.let { trySend(it) }
             }
 
             override fun onBatchScanResults(results: MutableList<ScanResult>?) {
-                results?.map { it.toDomain() }?.let {
-                    trySend(deviceAggregator.addNewDevices(it))
-                }
+                results?.map { it.toScanItem() }?.forEach { trySend(it) }
             }
 
             override fun onScanFailed(errorCode: Int) {
