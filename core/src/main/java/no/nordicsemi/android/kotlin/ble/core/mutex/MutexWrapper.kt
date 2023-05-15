@@ -1,6 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.core.mutex
 
-import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 
 class MutexWrapper(private val mutex: Mutex = Mutex()) {

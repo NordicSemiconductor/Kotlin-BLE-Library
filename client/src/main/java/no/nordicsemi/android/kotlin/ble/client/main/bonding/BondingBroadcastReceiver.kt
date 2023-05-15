@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.util.Log
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice

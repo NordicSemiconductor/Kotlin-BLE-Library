@@ -42,6 +42,4 @@ data class BleScanRecord(
         result = 31 * result + manufacturerSpecificData.hashCode()
         return result
     }
-
-
 }

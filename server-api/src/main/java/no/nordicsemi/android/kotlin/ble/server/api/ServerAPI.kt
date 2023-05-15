@@ -1,6 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.server.api
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice

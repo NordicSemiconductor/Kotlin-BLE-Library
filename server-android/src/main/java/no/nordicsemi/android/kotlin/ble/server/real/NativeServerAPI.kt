@@ -1,7 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager

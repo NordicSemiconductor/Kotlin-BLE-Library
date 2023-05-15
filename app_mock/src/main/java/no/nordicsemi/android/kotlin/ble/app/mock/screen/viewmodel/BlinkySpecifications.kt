@@ -1,6 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.app.mock.screen.viewmodel
 
-import java.util.*
+import java.util.UUID
 
 object BlinkySpecifications {
     /** Nordic Blinky Service UUID. */
