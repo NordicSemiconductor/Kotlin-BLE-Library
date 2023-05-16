@@ -76,13 +76,13 @@ sealed interface CharacteristicEvent : ServiceEvent
 data class OnMtuChanged(
     override val device: ClientDevice,
     val mtu: Int
-) : CharacteristicEvent, DescriptorEvent
+) : ServiceEvent
 
 data class OnExecuteWrite(
     override val device: ClientDevice,
     val requestId: Int,
     val execute: Boolean
-) : CharacteristicEvent, DescriptorEvent
+) : ServiceEvent
 
 data class OnCharacteristicReadRequest(
     override val device: ClientDevice,
@@ -106,19 +106,21 @@ data class OnNotificationSent(
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
-sealed interface DescriptorEvent : ServiceEvent
+sealed interface DescriptorEvent : ServiceEvent {
+    val descriptor: BluetoothGattDescriptor
+}
 
 data class OnDescriptorReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
     val offset: Int,
-    val descriptor: BluetoothGattDescriptor
+    override val descriptor: BluetoothGattDescriptor
 ) : DescriptorEvent
 
 data class OnDescriptorWriteRequest(
     override val device: ClientDevice,
     val requestId: Int,
-    val descriptor: BluetoothGattDescriptor,
+    override val descriptor: BluetoothGattDescriptor,
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,

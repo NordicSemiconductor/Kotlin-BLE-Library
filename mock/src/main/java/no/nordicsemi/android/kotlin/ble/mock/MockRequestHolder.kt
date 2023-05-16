@@ -2,6 +2,7 @@ package no.nordicsemi.android.kotlin.ble.mock
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.util.Log
 
 internal class MockRequestHolder {
     private var requestId = 0
@@ -32,6 +33,7 @@ internal class MockRequestHolder {
     }
 
     fun getRequest(requestId: Int): MockRequest {
+        Log.e("AAATESTAAA", "get request", Exception())
         return requests.remove(requestId)!!
     }
 }

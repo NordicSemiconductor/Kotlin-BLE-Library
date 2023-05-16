@@ -99,14 +99,16 @@ class BleServerGattCharacteristic internal constructor(
 
     internal fun onEvent(event: ServiceEvent) {
         (event as? DescriptorEvent)?.let {
-            descriptors.forEach { it.onEvent(event) }
+            if (it.descriptor.characteristic == characteristic) {
+                descriptors.forEach { it.onEvent(event) }
+            }
         }
         (event as? CharacteristicEvent)?.let {
             when (event) {
                 is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
                 is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
-                is OnExecuteWrite -> onExecuteWrite(event)
-                is OnMtuChanged -> mtu = event.mtu
+//                is OnExecuteWrite -> onExecuteWrite(event)
+//                is OnMtuChanged -> mtu = event.mtu
                 is OnNotificationSent -> onNotificationSent(event)
             }
         }

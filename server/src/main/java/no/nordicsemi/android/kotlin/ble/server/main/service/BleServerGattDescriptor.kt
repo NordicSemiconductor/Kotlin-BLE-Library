@@ -63,8 +63,8 @@ class BleServerGattDescriptor internal constructor(
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
-            is OnExecuteWrite -> onExecuteWrite(event)
-            is OnMtuChanged -> mtu = event.mtu
+//            is OnExecuteWrite -> onExecuteWrite(event)
+//            is OnMtuChanged -> mtu = event.mtu
         }
     }
 
