@@ -28,7 +28,7 @@ private fun getSolicitationUuids(scanRecord: ScanRecord): List<ParcelUuid> {
     }
 }
 
-fun ScanResult.toDomain(): BleScanResult {
+fun ScanResult.toDomain(): BleScanResultData {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         BleExtendedScanResult(
             getAdvertisingSid(this),

@@ -32,25 +32,25 @@
 package no.nordicsemi.android.kotlin.ble.scanner.aggregator
 
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.scanner.data.AggregatedBleScanItemWithRecord
-import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanItemWithRecord
+import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanResults
 import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanResult
+import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanResultData
 
 class BleScanResultAggregator {
-    private val devices = mutableMapOf<ServerDevice, List<BleScanResult>?>()
-    val records
-        get() = devices.map { AggregatedBleScanItemWithRecord(it.key, it.value ?: emptyList()) }
+    private val devices = mutableMapOf<ServerDevice, List<BleScanResultData>?>()
+    val results
+        get() = devices.map { BleScanResults(it.key, it.value ?: emptyList()) }
 
-    fun aggregate(scanItem: BleScanItemWithRecord): List<AggregatedBleScanItemWithRecord> {
-        if (scanItem.scanRecord != null) {
-            devices[scanItem.device] = (devices[scanItem.device] ?: emptyList()) + scanItem.scanRecord
+    fun aggregate(scanItem: BleScanResult): List<BleScanResults> {
+        if (scanItem.data != null) {
+            devices[scanItem.device] = (devices[scanItem.device] ?: emptyList()) + scanItem.data
         } else {
             devices[scanItem.device] = devices[scanItem.device]
         }
-        return records
+        return results
     }
 
-    fun aggregateDevices(scanItem: BleScanItemWithRecord): List<ServerDevice> {
+    fun aggregateDevices(scanItem: BleScanResult): List<ServerDevice> {
         return aggregate(scanItem).map { it.device }
     }
 }
