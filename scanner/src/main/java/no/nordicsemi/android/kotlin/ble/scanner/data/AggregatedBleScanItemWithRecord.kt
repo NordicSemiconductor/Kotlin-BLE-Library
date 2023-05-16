@@ -6,6 +6,6 @@ data class AggregatedBleScanItemWithRecord(
     val device: ServerDevice,
     val scanResult: List<BleScanResult> = emptyList()
 ) {
-    val highestRssi = scanResult.maxOf { it.rssi }
+    val highestRssi = scanResult.maxOfOrNull { it.rssi } ?: 0
     val lastScanResult = scanResult.lastOrNull()
 }
