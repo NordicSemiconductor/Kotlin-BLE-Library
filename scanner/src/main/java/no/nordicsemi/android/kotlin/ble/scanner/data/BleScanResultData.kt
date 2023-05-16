@@ -1,16 +1,19 @@
 package no.nordicsemi.android.kotlin.ble.scanner.data
 
 import android.os.Build
+import android.os.Parcelable
 import androidx.annotation.RequiresApi
+import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 
-sealed interface BleScanResultData {
+sealed interface BleScanResultData : Parcelable {
     val scanRecord: BleScanRecord?
     val rssi: Int
     val timestampNanos: Long
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
+@Parcelize
 data class BleExtendedScanResult(
     val advertisingSid: Int?,
     val primaryPhy: BleScanPrimaryPhy,
@@ -25,6 +28,7 @@ data class BleExtendedScanResult(
     override val scanRecord: BleScanRecord?
 ) : BleScanResultData
 
+@Parcelize
 data class BleLegacyScanResult(
     override val rssi: Int,
     override val timestampNanos: Long,

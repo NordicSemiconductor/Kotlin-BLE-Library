@@ -1,8 +1,11 @@
 package no.nordicsemi.android.kotlin.ble.scanner.data
 
 import android.os.ParcelUuid
+import android.os.Parcelable
 import android.util.SparseArray
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class BleScanRecord(
     val advertiseFlags: Int,
     val serviceUuids: List<ParcelUuid>?,
@@ -12,7 +15,7 @@ data class BleScanRecord(
     val txPowerLevel: Int,
     val bytes: ByteArray,
     val manufacturerSpecificData: SparseArray<ByteArray>
-) {
+) : Parcelable {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
