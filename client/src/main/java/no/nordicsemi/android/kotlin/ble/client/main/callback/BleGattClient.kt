@@ -273,7 +273,6 @@ class BleGattClient(
     }
 
     private fun onBondStateChanged(bondState: BondState) {
-        Log.d("AAATESTAAA", "On bond state change: $bondState")
         _bondState.value = bondState
         bondStateCallback?.invoke(bondState)
     }
