@@ -33,7 +33,6 @@ internal class MockRequestHolder {
     }
 
     fun getRequest(requestId: Int): MockRequest {
-        Log.e("AAATESTAAA", "get request", Exception())
         return requests.remove(requestId)!!
     }
 }

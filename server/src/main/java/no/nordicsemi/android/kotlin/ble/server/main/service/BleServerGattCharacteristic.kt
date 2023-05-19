@@ -33,19 +33,18 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCharacteristic
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
+import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
@@ -63,8 +62,8 @@ class BleServerGattCharacteristic internal constructor(
 
     private var transactionalValue = byteArrayOf()
 
-    private val _value = MutableStateFlow(characteristic.value ?: byteArrayOf())
-    val value = _value.asStateFlow()
+    private val _value = ValueFlow.create()
+    val value = _value.asSharedFlow()
 
     val permissions: List<BleGattPermission>
         get() = BleGattPermission.createPermissions(characteristic.permissions)
@@ -86,7 +85,7 @@ class BleServerGattCharacteristic internal constructor(
         // only notify once when the value changes
         //todo think about improving this
         if (value.contentEquals(_value.value)) return
-        _value.value = value
+        _value.tryEmit(value)
         characteristic.value = value
 
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
@@ -121,7 +120,7 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     private fun onExecuteWrite(event: OnExecuteWrite) {
-        _value.value = transactionalValue
+        _value.tryEmit(transactionalValue)
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -134,7 +133,7 @@ class BleServerGattCharacteristic internal constructor(
         if (event.preparedWrite) {
             transactionalValue += event.value
         } else {
-            _value.value = event.value
+            _value.tryEmit(event.value)
         }
         if (event.responseNeeded) {
             server.sendResponse(

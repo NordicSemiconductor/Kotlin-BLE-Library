@@ -2,6 +2,8 @@ package no.nordicsemi.android.kotlin.ble.client.mock
 
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.simpleSharedFlow
@@ -20,7 +22,7 @@ class BleMockGatt(
     override val autoConnect: Boolean
 ) : BleGatt {
 
-    private val _event = simpleSharedFlow<GattEvent>()
+    private val _event = MutableSharedFlow<GattEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val event: SharedFlow<GattEvent> = _event.asSharedFlow()
 
     override val device: ServerDevice
