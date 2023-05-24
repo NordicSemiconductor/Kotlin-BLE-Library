@@ -41,13 +41,13 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
 interface BleGatt {
 
-    val event: SharedFlow<GattEvent>
+    val event: SharedFlow<GattClientEvent>
 
     val device: ServerDevice
 
     val autoConnect: Boolean
 
-    fun onEvent(event: GattEvent)
+    fun onEvent(event: GattClientEvent)
 
     fun writeCharacteristic(
         characteristic: BluetoothGattCharacteristic,

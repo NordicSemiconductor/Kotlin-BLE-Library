@@ -47,36 +47,38 @@ data class OnServiceAdded(
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
-data class OnClientConnectionStateChanged(
-    val device: ClientDevice,
-    val status: BleGattConnectionStatus,
-    val newState: GattConnectionState
-) : GattServerEvent
-
-data class OnServerPhyRead(
-    val device: ClientDevice,
-    val txPhy: BleGattPhy,
-    val rxPhy: BleGattPhy,
-    val status: BleGattOperationStatus
-) : GattServerEvent
-
-data class OnServerPhyUpdate(
-    val device: ClientDevice,
-    val txPhy: BleGattPhy,
-    val rxPhy: BleGattPhy,
-    val status: BleGattOperationStatus
-) : GattServerEvent
-
-sealed interface ServiceEvent : GattServerEvent {
+sealed interface GattConnectionEvent : GattServerEvent {
     val device: ClientDevice
 }
+
+data class OnClientConnectionStateChanged(
+    override val device: ClientDevice,
+    val status: BleGattConnectionStatus,
+    val newState: GattConnectionState
+) : GattConnectionEvent
+
+data class OnServerPhyRead(
+    override val device: ClientDevice,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
+    val status: BleGattOperationStatus
+) : GattConnectionEvent
+
+data class OnServerPhyUpdate(
+    override val device: ClientDevice,
+    val txPhy: BleGattPhy,
+    val rxPhy: BleGattPhy,
+    val status: BleGattOperationStatus
+) : GattConnectionEvent
+
+sealed interface ServiceEvent : GattConnectionEvent
 
 sealed interface CharacteristicEvent : ServiceEvent
 
 data class OnMtuChanged(
     override val device: ClientDevice,
     val mtu: Int
-) : ServiceEvent
+) : GattConnectionEvent
 
 data class OnExecuteWrite(
     override val device: ClientDevice,

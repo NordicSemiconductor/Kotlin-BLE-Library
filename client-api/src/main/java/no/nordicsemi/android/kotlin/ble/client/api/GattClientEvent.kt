@@ -40,40 +40,40 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
-sealed interface GattEvent
+sealed interface GattClientEvent
 
-data class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattEvent
+data class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattClientEvent
 
 data class OnConnectionStateChanged(
     val status: BleGattConnectionStatus,
     val newState: GattConnectionState
-) : GattEvent
+) : GattClientEvent
 
 data class OnPhyRead(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattEvent
+) : GattClientEvent
 
 data class OnPhyUpdate(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattEvent
+) : GattClientEvent
 
-data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattEvent
+data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattClientEvent
 
-data class OnBondStateChanged(val bondState: BondState) : GattEvent
+data class OnBondStateChanged(val bondState: BondState) : GattClientEvent
 
-class OnServiceChanged : GattEvent
+class OnServiceChanged : GattClientEvent
 
-sealed interface ServiceEvent : GattEvent
+sealed interface ServiceEvent : GattClientEvent
 
 sealed interface CharacteristicEvent : ServiceEvent
 
 sealed interface DescriptorEvent : ServiceEvent
 
-data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattEvent
+data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattClientEvent
 
 data class OnCharacteristicChanged(
     val characteristic: BluetoothGattCharacteristic,

@@ -38,7 +38,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import no.nordicsemi.android.kotlin.ble.client.api.GattEvent
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
@@ -59,7 +59,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 
 class BluetoothGattClientCallback: BluetoothGattCallback() {
 
-    private val _event = MutableSharedFlow<GattEvent>(
+    private val _event = MutableSharedFlow<GattClientEvent>(
         extraBufferCapacity = 10, //Warning: because of this parameter we can miss notifications
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -186,7 +186,7 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         _event.tryEmit(OnServiceChanged())
     }
 
-    fun onEvent(event: GattEvent) {
+    fun onEvent(event: GattClientEvent) {
         _event.tryEmit(event)
     }
 }

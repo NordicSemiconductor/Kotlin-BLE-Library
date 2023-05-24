@@ -39,7 +39,7 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
-import no.nordicsemi.android.kotlin.ble.client.api.GattEvent
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -55,12 +55,12 @@ class BluetoothGattWrapper(
     override val autoConnect: Boolean
 ) : BleGatt {
 
-    override val event: SharedFlow<GattEvent> = callback.event
+    override val event: SharedFlow<GattClientEvent> = callback.event
 
     override val device: ServerDevice
         get() = RealServerDevice(gatt.device)
 
-    override fun onEvent(event: GattEvent) {
+    override fun onEvent(event: GattClientEvent) {
         callback.onEvent(event)
     }
 

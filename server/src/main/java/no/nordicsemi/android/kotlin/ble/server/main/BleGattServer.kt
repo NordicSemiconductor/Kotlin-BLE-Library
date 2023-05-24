@@ -49,6 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
@@ -119,15 +120,16 @@ class BleGattServer internal constructor(
         server.event.onEach { event ->
             Log.i("AAATESTAAA", "Event: $event")
             when (event) {
+                is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
                     event.device,
                     event.status,
                     event.newState
                 )
-                is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is ServiceEvent -> connections.value[event.device]?.services?.onEvent(event)
                 is OnServerPhyRead -> onPhyRead(event)
                 is OnServerPhyUpdate -> onPhyUpdate(event)
+                is OnMtuChanged -> TODO()
             }
         }.launchIn(ServerScope)
     }

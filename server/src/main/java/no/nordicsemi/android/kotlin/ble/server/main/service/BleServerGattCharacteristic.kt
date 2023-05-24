@@ -107,7 +107,6 @@ class BleServerGattCharacteristic internal constructor(
                 is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
                 is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
 //                is OnExecuteWrite -> onExecuteWrite(event)
-//                is OnMtuChanged -> mtu = event.mtu
                 is OnNotificationSent -> onNotificationSent(event)
             }
         }
