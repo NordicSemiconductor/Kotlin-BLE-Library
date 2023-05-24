@@ -51,7 +51,7 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.NotificationDescriptorNotFoundException

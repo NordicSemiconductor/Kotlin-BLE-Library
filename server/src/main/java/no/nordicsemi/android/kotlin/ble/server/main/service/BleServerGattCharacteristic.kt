@@ -40,6 +40,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
@@ -54,7 +55,8 @@ import java.util.*
 class BleServerGattCharacteristic internal constructor(
     private val server: ServerAPI,
     private val device: ClientDevice,
-    private val characteristic: BluetoothGattCharacteristic
+    private val characteristic: BluetoothGattCharacteristic,
+    private val mtuProvider: MtuProvider
 ) {
 
     val uuid = characteristic.uuid
@@ -74,7 +76,7 @@ class BleServerGattCharacteristic internal constructor(
     private var mtu = Mtu.min
 
     private val descriptors = characteristic.descriptors.map {
-        BleServerGattDescriptor(server, instanceId, it)
+        BleServerGattDescriptor(server, instanceId, it, mtuProvider)
     }
 
     fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {

@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
@@ -47,7 +48,8 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 class BleServerGattDescriptor internal constructor(
     private val server: ServerAPI,
     private val characteristicInstanceId: Int,
-    private val descriptor: BluetoothGattDescriptor
+    private val descriptor: BluetoothGattDescriptor,
+    private val mtuProvider: MtuProvider
 ) {
 
     val uuid = descriptor.uuid
@@ -56,14 +58,10 @@ class BleServerGattDescriptor internal constructor(
     private val _value = ValueFlow.create()
     val value = _value.asSharedFlow()
 
-    private var mtu = Mtu.min
-
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
-//            is OnExecuteWrite -> onExecuteWrite(event)
-//            is OnMtuChanged -> mtu = event.mtu
         }
     }
 
@@ -104,7 +102,7 @@ class BleServerGattDescriptor internal constructor(
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val data = _value.value.getChunk(offset, mtu)
+        val data = _value.value.getChunk(offset, mtuProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

@@ -1,11 +1,11 @@
-package no.nordicsemi.android.kotlin.ble.client.main
+package no.nordicsemi.android.kotlin.ble.core.provider
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 
-internal class MtuProvider {
+class MtuProvider {
     private val _mtu = MutableStateFlow(Mtu.min)
     val mtu = _mtu.asStateFlow()
 

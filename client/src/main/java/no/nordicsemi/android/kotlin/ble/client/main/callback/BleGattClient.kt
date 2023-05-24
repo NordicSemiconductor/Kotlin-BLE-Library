@@ -55,7 +55,7 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
-import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
