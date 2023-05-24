@@ -84,7 +84,9 @@ class BleGattClient(
     val isConnected
         get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
 
-    val mtu = MtuProvider.mtu.asStateFlow()
+    private val mtuProvider = MtuProvider()
+
+    val mtu = mtuProvider.mtu
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
@@ -124,7 +126,7 @@ class BleGattClient(
 
         mutex.lock()
         return suspendCoroutine { continuation ->
-            onConnectionStateChangedCallback = { connectionState, status ->
+            onConnectionStateChangedCallback = { connectionState, _ ->
                 if (connectionState == GattConnectionState.STATE_CONNECTED) {
                     logger.log(Log.INFO, "Device connected")
                     continuation.resume(GattConnectionState.STATE_CONNECTED)
@@ -267,7 +269,7 @@ class BleGattClient(
     private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
         logger.log(Log.INFO, "Services discovered")
         logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
-        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
+        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
         _services.value = services
         onServicesDiscovered?.invoke()
     }
@@ -278,7 +280,7 @@ class BleGattClient(
     }
 
     private fun onEvent(event: OnMtuChanged) {
-        MtuProvider.mtu.value = event.mtu
+        mtuProvider.updateMtu(event.mtu)
         mtuCallback?.invoke(event)
     }
 

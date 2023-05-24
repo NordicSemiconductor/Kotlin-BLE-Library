@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import java.util.UUID
@@ -42,13 +43,14 @@ class BleGattService internal constructor(
     gatt: BleGatt,
     service: BluetoothGattService,
     logger: BlekLogger,
-    mutex: MutexWrapper
+    mutex: MutexWrapper,
+    mtu: MtuProvider
 ) {
 
     val uuid = service.uuid
 
     private val characteristics = service.characteristics.map {
-        BleGattCharacteristic(gatt, it, logger, mutex)
+        BleGattCharacteristic(gatt, it, logger, mutex, mtu)
     }
 
     fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleGattCharacteristic? {

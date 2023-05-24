@@ -72,7 +72,8 @@ class BleGattCharacteristic internal constructor(
     private val gatt: BleGatt,
     private val characteristic: BluetoothGattCharacteristic,
     private val logger: BlekLogger,
-    private val mutex: MutexWrapper
+    private val mutex: MutexWrapper,
+    private val mtuProvider: MtuProvider
 ) {
 
     val uuid = characteristic.uuid
@@ -99,7 +100,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger, mutex) }
+    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
 
     private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
@@ -158,7 +159,7 @@ class BleGattCharacteristic internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
-        value.split(MtuProvider.availableMtu(writeType)).forEachIndexed { i, it ->
+        value.split(mtuProvider.availableMtu(writeType)).forEach {
             write(it, writeType)
         }
         logger.log(Log.DEBUG, "Split write to characteristic - end, uuid: $uuid")
