@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertisePrimaryPhy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
@@ -78,14 +79,14 @@ object BlinkySpecifications {
 data class ServerState(
     val isAdvertising: Boolean = false,
     val isLedOn: Boolean = false,
-    val isButtonPressed: Boolean = false
+    val isButtonPressed: Boolean = false,
 )
 
 @SuppressLint("MissingPermission")
 @HiltViewModel
 class ServerViewModel @Inject constructor(
     @ApplicationContext
-    private val context: Context
+    private val context: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ServerState())
@@ -119,15 +120,16 @@ class ServerViewModel @Inject constructor(
             val server = BleGattServer.create(context, serviceConfig)
 
             val advertiser = BleAdvertiser.create(context)
+            val advertiserConfig = BleAdvertiseConfig(
+                settings = BleAdvertiseSettings(
+                    deviceName = "Super Server",
+                    primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
+                ),
+                advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
+            )
 
             launch {
-                advertiser.advertise(
-                    settings = BleAdvertiseSettings(
-                        deviceName = "Super Server",
-                        primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
-                    ),
-                    advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
-                )
+                advertiser.advertise(advertiserConfig)
                     .cancellable()
                     .collect {
                         if (it is OnAdvertisingSetStarted) {
@@ -158,7 +160,8 @@ class ServerViewModel @Inject constructor(
 
     private fun setUpServices(services: BleGattServerService) {
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
-        val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+        val buttonCharacteristic =
+            services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
             _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))

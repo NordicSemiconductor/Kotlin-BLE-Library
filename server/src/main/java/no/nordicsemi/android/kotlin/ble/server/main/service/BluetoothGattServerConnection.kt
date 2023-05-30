@@ -35,11 +35,11 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
 data class BluetoothGattServerConnection internal constructor(
     private val device: ClientDevice,
-    private val server: ServerAPI,
+    private val server: GattServerAPI,
     val services: BleGattServerServices,
     val mtuProvider: MtuProvider = MtuProvider(),
     val txPhy: BleGattPhy? = null,

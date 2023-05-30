@@ -15,13 +15,13 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
 @SuppressLint("MissingPermission")
 class NativeServerAPI(
     val server: BluetoothGattServer,
     val callback: BleGattServerCallback
-) : ServerAPI {
+) : GattServerAPI {
 
     override val event: SharedFlow<GattServerEvent> = callback.event
 

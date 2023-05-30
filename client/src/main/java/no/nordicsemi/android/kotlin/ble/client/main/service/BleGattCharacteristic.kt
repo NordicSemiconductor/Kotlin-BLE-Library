@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
@@ -69,7 +69,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattCharacteristic internal constructor(
-    private val gatt: BleGatt,
+    private val gatt: GattClientAPI,
     private val characteristic: BluetoothGattCharacteristic,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper,

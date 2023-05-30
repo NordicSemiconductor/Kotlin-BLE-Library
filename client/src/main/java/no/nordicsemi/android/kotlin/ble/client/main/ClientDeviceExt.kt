@@ -6,12 +6,13 @@ import android.content.Context
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
 import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattWrapper
+import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -40,9 +41,10 @@ suspend fun connectDevice(
     options: BleGattConnectOptions,
     logger: BlekLogger
 ): BleGattClient {
-    val gatt = BleMockGatt(MockEngine, device, options.autoConnect)
+    val clientDevice = MockClientDevice()
+    val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect)
     return BleGattClient(gatt, logger)
-        .also { MockEngine.connectToServer(device, gatt, options) }
+        .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
         .also { it.connect() }
 }
 
@@ -62,7 +64,7 @@ private suspend fun connectDevice(
 private fun RealServerDevice.createConnection(
     context: Context,
     options: BleGattConnectOptions,
-): BleGatt {
+): GattClientAPI {
     val gattCallback = BluetoothGattClientCallback()
 
     BondingBroadcastReceiver.register(context, this, gattCallback)

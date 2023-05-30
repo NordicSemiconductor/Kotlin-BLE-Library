@@ -6,8 +6,9 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -18,8 +19,9 @@ import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 class BleMockGatt(
     private val mockEngine: MockEngine,
     private val serverDevice: MockServerDevice,
+    private val clientDevice: ClientDevice,
     override val autoConnect: Boolean
-) : BleGatt {
+) : GattClientAPI {
 
     private val _event = MutableSharedFlow<GattClientEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val event: SharedFlow<GattClientEvent> = _event.asSharedFlow()
@@ -36,51 +38,51 @@ class BleMockGatt(
         value: ByteArray,
         writeType: BleWriteType
     ) {
-        mockEngine.writeCharacteristic(serverDevice, characteristic, value, writeType)
+        mockEngine.writeCharacteristic(serverDevice, clientDevice, characteristic, value, writeType)
     }
 
     override fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        mockEngine.readCharacteristic(serverDevice, characteristic)
+        mockEngine.readCharacteristic(serverDevice, clientDevice, characteristic)
     }
 
     override fun enableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
-        mockEngine.enableCharacteristicNotification(serverDevice, characteristic)
+        mockEngine.enableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
     override fun disableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
-        mockEngine.disableCharacteristicNotification(serverDevice, characteristic)
+        mockEngine.disableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
     override fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray) {
-        mockEngine.writeDescriptor(serverDevice, descriptor, value)
+        mockEngine.writeDescriptor(serverDevice, clientDevice, descriptor, value)
     }
 
     override fun readDescriptor(descriptor: BluetoothGattDescriptor) {
-        mockEngine.readDescriptor(serverDevice, descriptor)
+        mockEngine.readDescriptor(serverDevice, clientDevice, descriptor)
     }
 
     override fun requestMtu(mtu: Int) {
-        mockEngine.requestMtu(serverDevice, mtu)
+        mockEngine.requestMtu(clientDevice, serverDevice, mtu)
     }
 
     override fun readRemoteRssi() {
-        mockEngine.readRemoteRssi(serverDevice)
+        mockEngine.readRemoteRssi(clientDevice, serverDevice)
     }
 
     override fun readPhy() {
-        mockEngine.readPhy(serverDevice)
+        mockEngine.readPhy(clientDevice, serverDevice)
     }
 
     override fun discoverServices() {
-        mockEngine.discoverServices(serverDevice)
+        mockEngine.discoverServices(clientDevice, serverDevice)
     }
 
     override fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        mockEngine.setPreferredPhy(serverDevice, txPhy, rxPhy, phyOption)
+        mockEngine.setPreferredPhy(clientDevice, serverDevice, txPhy, rxPhy, phyOption)
     }
 
     override fun disconnect() {
-        TODO("Not yet implemented")
+        mockEngine.cancelConnection(serverDevice, clientDevice)
     }
 
     override fun clearServicesCache() {
@@ -88,7 +90,7 @@ class BleMockGatt(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        mockEngine.close(serverDevice, clientDevice)
     }
 
     override fun beginReliableWrite() {

@@ -44,17 +44,18 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServices
@@ -67,7 +68,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattServer internal constructor(
-    private val server: ServerAPI
+    private val server: GattServerAPI
 ) {
 
     companion object {
@@ -87,10 +88,10 @@ class BleGattServer internal constructor(
 
         private fun createMockServer(vararg config: BleServerGattServiceConfig): BleGattServer {
             val services = config.map { BluetoothGattServiceFactory.create(it) }
-            MockEngine.addServices(services)
 
-            val api = MockServerAPI(MockEngine)
-            return BleGattServer(api).also { MockEngine.registerServer(api) }
+            val device = MockServerDevice()
+            val api = MockServerAPI(MockEngine, device)
+            return BleGattServer(api).also { MockEngine.registerServer(api, device, services) }
         }
 
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -144,7 +145,7 @@ class BleGattServer internal constructor(
                 is ServiceEvent -> connections.value[event.device]?.services?.onEvent(event)
                 is OnServerPhyRead -> onPhyRead(event)
                 is OnServerPhyUpdate -> onPhyUpdate(event)
-                is OnMtuChanged -> onMtuChanged(event)
+                is OnServerMtuChanged -> onMtuChanged(event)
             }
         }.launchIn(ServerScope)
     }
@@ -227,7 +228,7 @@ class BleGattServer internal constructor(
         }.toMap()
     }
 
-    private fun onMtuChanged(event: OnMtuChanged) {
+    private fun onMtuChanged(event: OnServerMtuChanged) {
         _connections.value[event.device]?.mtuProvider?.updateMtu(event.mtu)
     }
 }

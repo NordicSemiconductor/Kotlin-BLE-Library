@@ -75,7 +75,7 @@ sealed interface ServiceEvent : GattConnectionEvent
 
 sealed interface CharacteristicEvent : ServiceEvent
 
-data class OnMtuChanged(
+data class OnServerMtuChanged(
     override val device: ClientDevice,
     val mtu: Int
 ) : GattConnectionEvent

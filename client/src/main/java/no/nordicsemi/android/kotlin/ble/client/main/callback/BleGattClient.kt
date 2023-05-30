@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
@@ -73,7 +73,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
-    private val gatt: BleGatt,
+    private val gatt: GattClientAPI,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper = MutexWrapper()
 ) {

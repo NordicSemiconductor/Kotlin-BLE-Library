@@ -47,8 +47,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -69,11 +68,10 @@ internal class BleAdvertiserOreo(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun advertise(
-        settings: BleAdvertiseSettings,
-        advertiseData: BleAdvertiseData?,
-        scanResponseData: BleAdvertiseData?
-    ): Flow<BleAdvertisingEvent> = callbackFlow {
+    override fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent> = callbackFlow {
+        val settings = config.settings
+        val advertiseData = config.advertiseData
+        val scanResponseData = config.scanResponseData
 
         val callback = BleAdvertisingSetCallback {
             trySend(it)

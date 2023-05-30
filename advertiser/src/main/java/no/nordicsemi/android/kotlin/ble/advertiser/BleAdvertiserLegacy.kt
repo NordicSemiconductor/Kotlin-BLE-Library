@@ -46,8 +46,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
@@ -70,11 +69,11 @@ internal class BleAdvertiserLegacy(
     }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun advertise(
-        settings: BleAdvertiseSettings,
-        advertiseData: BleAdvertiseData?,
-        scanResponseData: BleAdvertiseData?
-    ): Flow<BleAdvertisingEvent> = callbackFlow {
+    override fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent> = callbackFlow {
+        val settings = config.settings
+        val advertiseData = config.advertiseData
+        val scanResponseData = config.scanResponseData
+
         val callback = object : AdvertiseCallback() {
             override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
                 trySend(

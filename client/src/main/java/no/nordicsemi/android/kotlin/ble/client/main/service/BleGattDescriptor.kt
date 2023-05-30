@@ -35,7 +35,7 @@ import android.Manifest
 import android.bluetooth.BluetoothGattDescriptor
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
@@ -50,7 +50,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 class BleGattDescriptor internal constructor(
-    private val gatt: BleGatt,
+    private val gatt: GattClientAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: BluetoothGattDescriptor,
     private val logger: BlekLogger,

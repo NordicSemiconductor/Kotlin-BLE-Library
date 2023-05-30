@@ -37,17 +37,14 @@ import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
 import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
 
 interface BleAdvertiser {
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    fun advertise(
-        settings: BleAdvertiseSettings = BleAdvertiseSettings(),
-        advertiseData: BleAdvertiseData? = null,
-        scanResponseData: BleAdvertiseData? = null
-    ): Flow<BleAdvertisingEvent>
+    fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent>
 
     companion object {
         fun create(context: Context): BleAdvertiser {

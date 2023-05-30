@@ -47,13 +47,13 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.*
 
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic internal constructor(
-    private val server: ServerAPI,
+    private val server: GattServerAPI,
     private val device: ClientDevice,
     private val characteristic: BluetoothGattCharacteristic,
     private val mtuProvider: MtuProvider

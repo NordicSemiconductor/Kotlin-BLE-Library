@@ -6,7 +6,7 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
-interface ServerAPI {
+interface GattServerAPI {
 
     val event: SharedFlow<GattServerEvent>
 

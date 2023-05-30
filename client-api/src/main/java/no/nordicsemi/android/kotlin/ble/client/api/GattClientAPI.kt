@@ -39,7 +39,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
-interface BleGatt {
+interface GattClientAPI {
 
     val event: SharedFlow<GattClientEvent>
 

@@ -51,7 +51,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChange
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
@@ -140,7 +140,7 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
-        _event.tryEmit(OnMtuChanged(RealClientDevice(device!!), mtu))
+        _event.tryEmit(OnServerMtuChanged(RealClientDevice(device!!), mtu))
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
