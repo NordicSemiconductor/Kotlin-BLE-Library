@@ -44,11 +44,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
-import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
-import no.nordicsemi.android.kotlin.ble.scanner.settings.BleScannerSettings
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
 
 class NordicScanner(

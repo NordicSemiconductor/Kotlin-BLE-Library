@@ -29,9 +29,31 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
-data class MatchOptions(
-    val deviceTimeoutMillis: Long = 10000L,
-    val taskIntervalMillis: Long = 10000L
-)
+enum class BleScanMode(val value: Int) {
+
+    /**
+     * A special Bluetooth LE scan mode. Applications using this scan mode will passively listen for
+     * other scan results without starting BLE scans themselves.
+     */
+    SCAN_MODE_OPPORTUNISTIC(-1),
+
+    /**
+     * Perform Bluetooth LE scan in low power mode. This is the default scan mode as it consumes
+     * the least power. This mode is enforced if the scanning application is not in foreground.
+     */
+    SCAN_MODE_LOW_POWER(0),
+
+    /**
+     * Perform Bluetooth LE scan in balanced power mode. Scan results are returned at a rate that
+     * provides a good trade-off between scan frequency and power consumption.
+     */
+    SCAN_MODE_BALANCED(1),
+
+    /**
+     * Scan using highest duty cycle. It's recommended to only use this mode when the application
+     * is running.
+     */
+    SCAN_MODE_LOW_LATENCY(2)
+}

@@ -29,40 +29,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
-import android.bluetooth.le.ScanSettings
-import android.os.Build
-import androidx.annotation.RequiresApi
-
-@RequiresApi(Build.VERSION_CODES.M)
-enum class BleNumOfMatches {
-    /**
-     * Match one advertisement per filter.
-     */
-    @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_NUM_ONE_ADVERTISEMENT,
-
-    /**
-     * Match few advertisement per filter, depends on current capability and availability of
-     * the resources in hw.
-     */
-    @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_NUM_FEW_ADVERTISEMENT,
-
-    /**
-     * Match as many advertisement per filter as hw could allow, depends on current capability and
-     * availability of the resources in hw.
-     */
-    @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_NUM_MAX_ADVERTISEMENT;
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    fun toNative(): Int {
-        return when (this) {
-            MATCH_NUM_ONE_ADVERTISEMENT -> ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT
-            MATCH_NUM_FEW_ADVERTISEMENT -> ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT
-            MATCH_NUM_MAX_ADVERTISEMENT -> ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT
-        }
-    }
-}
+data class MatchOptions(
+    val deviceTimeoutMillis: Long = 10000L,
+    val taskIntervalMillis: Long = 10000L
+)

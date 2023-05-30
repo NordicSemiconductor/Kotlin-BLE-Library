@@ -29,32 +29,40 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
 import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleScannerMatchMode{
+@RequiresApi(Build.VERSION_CODES.M)
+enum class BleNumOfMatches {
     /**
-     * In Aggressive mode, hw will determine a match sooner even with feeble signal strength and
-     * few number of sightings/match in a duration.
+     * Match one advertisement per filter.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_MODE_AGGRESSIVE,
+    MATCH_NUM_ONE_ADVERTISEMENT,
 
     /**
-     * For sticky mode, higher threshold of signal strength and sightings is required before
-     * reporting by hw.
+     * Match few advertisement per filter, depends on current capability and availability of
+     * the resources in hw.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_MODE_STICKY;
+    MATCH_NUM_FEW_ADVERTISEMENT,
+
+    /**
+     * Match as many advertisement per filter as hw could allow, depends on current capability and
+     * availability of the resources in hw.
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    MATCH_NUM_MAX_ADVERTISEMENT;
 
     @RequiresApi(Build.VERSION_CODES.M)
     fun toNative(): Int {
         return when (this) {
-            MATCH_MODE_AGGRESSIVE -> ScanSettings.MATCH_MODE_AGGRESSIVE
-            MATCH_MODE_STICKY -> ScanSettings.MATCH_MODE_STICKY
+            MATCH_NUM_ONE_ADVERTISEMENT -> ScanSettings.MATCH_NUM_ONE_ADVERTISEMENT
+            MATCH_NUM_FEW_ADVERTISEMENT -> ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT
+            MATCH_NUM_MAX_ADVERTISEMENT -> ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT
         }
     }
 }

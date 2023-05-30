@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
@@ -91,7 +92,6 @@ object MockEngine {
         services.forEach {
             server.onEvent(OnServiceAdded(it, BleGattOperationStatus.GATT_SUCCESS))
         }
-        advertiseServer(device)
     }
 
     fun unregisterServer(device: MockServerDevice) {
@@ -151,7 +151,7 @@ object MockEngine {
         )
     }
 
-    private fun advertiseServer(device: MockServerDevice) {
+    private fun advertiseServer(device: MockServerDevice, config: BleAdvertiseConfig) {
         _advertisedServers.value = _advertisedServers.value + device
     }
 

@@ -29,31 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
-enum class BleScanMode(internal val value: Int) {
+import android.os.Build
+import androidx.annotation.RequiresApi
 
-    /**
-     * A special Bluetooth LE scan mode. Applications using this scan mode will passively listen for
-     * other scan results without starting BLE scans themselves.
-     */
-    SCAN_MODE_OPPORTUNISTIC(-1),
-
-    /**
-     * Perform Bluetooth LE scan in low power mode. This is the default scan mode as it consumes
-     * the least power. This mode is enforced if the scanning application is not in foreground.
-     */
-    SCAN_MODE_LOW_POWER(0),
-
-    /**
-     * Perform Bluetooth LE scan in balanced power mode. Scan results are returned at a rate that
-     * provides a good trade-off between scan frequency and power consumption.
-     */
-    SCAN_MODE_BALANCED(1),
-
-    /**
-     * Scan using highest duty cycle. It's recommended to only use this mode when the application
-     * is running.
-     */
-    SCAN_MODE_LOW_LATENCY(2)
-}
+data class BleScannerSettings(
+    val scanMode: BleScanMode = BleScanMode.SCAN_MODE_LOW_POWER,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val callbackType: BleScannerCallbackType = BleScannerCallbackType.CALLBACK_TYPE_ALL_MATCHES,
+    val reportDelay: Long = 0L,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val numOfMatches: BleNumOfMatches = BleNumOfMatches.MATCH_NUM_MAX_ADVERTISEMENT,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val matchMode: BleScannerMatchMode = BleScannerMatchMode.MATCH_MODE_AGGRESSIVE,
+    @RequiresApi(Build.VERSION_CODES.O)
+    val legacy: Boolean = false,
+    @RequiresApi(Build.VERSION_CODES.O)
+    val phy: BleScannerPhy = BleScannerPhy.PHY_LE_ALL_SUPPORTED,
+    val useHardwareFilteringIfSupported: Boolean = true,
+    val useHardwareBatchingIfSupported: Boolean = true,
+    val useHardwareCallbackTypesIfSupported: Boolean = true,
+    val matchOptions: MatchOptions = MatchOptions()
+)

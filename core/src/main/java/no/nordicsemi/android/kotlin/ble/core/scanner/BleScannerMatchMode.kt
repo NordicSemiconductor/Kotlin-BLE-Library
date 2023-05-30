@@ -29,39 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
 import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleScannerCallbackType(internal val value: Int) {
+enum class BleScannerMatchMode{
     /**
-     * Trigger a callback for every Bluetooth advertisement found that matches the filter criteria.
-     * If no filter is active, all advertisement packets are reported.
-     */
-    CALLBACK_TYPE_ALL_MATCHES(1),
-
-    /**
-     * A result callback is only triggered for the first advertisement packet received that matches
-     * the filter criteria.
+     * In Aggressive mode, hw will determine a match sooner even with feeble signal strength and
+     * few number of sightings/match in a duration.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    CALLBACK_TYPE_FIRST_MATCH(2),
+    MATCH_MODE_AGGRESSIVE,
 
     /**
-     * Receive a callback when advertisements are no longer received from a device that has been
-     * previously reported by a first match callback.
+     * For sticky mode, higher threshold of signal strength and sightings is required before
+     * reporting by hw.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    CALLBACK_TYPE_MATCH_LOST(4);
+    MATCH_MODE_STICKY;
 
     @RequiresApi(Build.VERSION_CODES.M)
     fun toNative(): Int {
         return when (this) {
-            CALLBACK_TYPE_ALL_MATCHES -> ScanSettings.CALLBACK_TYPE_ALL_MATCHES
-            CALLBACK_TYPE_FIRST_MATCH -> ScanSettings.CALLBACK_TYPE_FIRST_MATCH
-            CALLBACK_TYPE_MATCH_LOST -> ScanSettings.CALLBACK_TYPE_MATCH_LOST
+            MATCH_MODE_AGGRESSIVE -> ScanSettings.MATCH_MODE_AGGRESSIVE
+            MATCH_MODE_STICKY -> ScanSettings.MATCH_MODE_STICKY
         }
     }
 }

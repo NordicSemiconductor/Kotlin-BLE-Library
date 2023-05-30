@@ -29,30 +29,39 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.scanner.settings
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleScannerPhy {
-
-    PHY_LE_1M,
-    PHY_LE_CODED,
+enum class BleScannerCallbackType(val value: Int) {
+    /**
+     * Trigger a callback for every Bluetooth advertisement found that matches the filter criteria.
+     * If no filter is active, all advertisement packets are reported.
+     */
+    CALLBACK_TYPE_ALL_MATCHES(1),
 
     /**
-     * Use all supported PHYs for scanning. This will check the controller capabilities,
-     * and start the scan on 1Mbit and LE Coded PHYs if supported, or on the 1Mbit PHY only.
+     * A result callback is only triggered for the first advertisement packet received that matches
+     * the filter criteria.
      */
-    PHY_LE_ALL_SUPPORTED;
+    @RequiresApi(Build.VERSION_CODES.M)
+    CALLBACK_TYPE_FIRST_MATCH(2),
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    /**
+     * Receive a callback when advertisements are no longer received from a device that has been
+     * previously reported by a first match callback.
+     */
+    @RequiresApi(Build.VERSION_CODES.M)
+    CALLBACK_TYPE_MATCH_LOST(4);
+
+    @RequiresApi(Build.VERSION_CODES.M)
     fun toNative(): Int {
         return when (this) {
-            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-            PHY_LE_ALL_SUPPORTED -> ScanSettings.PHY_LE_ALL_SUPPORTED
+            CALLBACK_TYPE_ALL_MATCHES -> ScanSettings.CALLBACK_TYPE_ALL_MATCHES
+            CALLBACK_TYPE_FIRST_MATCH -> ScanSettings.CALLBACK_TYPE_FIRST_MATCH
+            CALLBACK_TYPE_MATCH_LOST -> ScanSettings.CALLBACK_TYPE_MATCH_LOST
         }
     }
 }

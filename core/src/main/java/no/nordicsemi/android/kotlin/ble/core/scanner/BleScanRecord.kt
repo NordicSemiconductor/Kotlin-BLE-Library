@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.scanner.data
+package no.nordicsemi.android.kotlin.ble.core.scanner
 
 import android.os.ParcelUuid
 import android.os.Parcelable
