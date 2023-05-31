@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class BleScanRecord(
-    val advertiseFlags: Int,
+    val advertiseFlag: Int,
     val serviceUuids: List<ParcelUuid>?,
     val serviceData: Map<ParcelUuid, ByteArray>,
     val serviceSolicitationUuids: List<ParcelUuid>,
@@ -22,7 +22,7 @@ data class BleScanRecord(
 
         other as BleScanRecord
 
-        if (advertiseFlags != other.advertiseFlags) return false
+        if (advertiseFlag != other.advertiseFlag) return false
         if (serviceUuids != other.serviceUuids) return false
         if (serviceData != other.serviceData) return false
         if (serviceSolicitationUuids != other.serviceSolicitationUuids) return false
@@ -35,7 +35,7 @@ data class BleScanRecord(
     }
 
     override fun hashCode(): Int {
-        var result = advertiseFlags
+        var result = advertiseFlag
         result = 31 * result + (serviceUuids?.hashCode() ?: 0)
         result = 31 * result + serviceData.hashCode()
         result = 31 * result + serviceSolicitationUuids.hashCode()
