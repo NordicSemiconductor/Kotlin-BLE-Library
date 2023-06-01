@@ -36,7 +36,6 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
@@ -54,6 +53,7 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -61,6 +61,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
@@ -74,7 +75,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 
 object MockEngine {
     //TODO allow for many devices
-    private val _advertisedServers = MutableStateFlow(emptyList<MockServerDevice>())
+    private val _advertisedServers = MutableStateFlow(mapOf<MockServerDevice, BleScanResultData>())
     internal val advertisedServers = _advertisedServers.asStateFlow()
 
     private val servers = mutableMapOf<MockServerDevice, OpenedServer>()
@@ -104,8 +105,6 @@ object MockEngine {
                 )
             )
         }
-
-        stopAdvertising(device)
     }
 
     fun cancelConnection(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
@@ -151,11 +150,11 @@ object MockEngine {
         )
     }
 
-    private fun advertiseServer(device: MockServerDevice, config: BleAdvertiseConfig) {
-        _advertisedServers.value = _advertisedServers.value + device
+    fun advertiseServer(device: MockServerDevice, config: BleAdvertiseConfig) {
+        _advertisedServers.value = _advertisedServers.value + (device to config.toScanResult())
     }
 
-    private fun stopAdvertising(device: MockServerDevice) {
+    fun stopAdvertising(device: MockServerDevice) {
         _advertisedServers.value = _advertisedServers.value - device
     }
 

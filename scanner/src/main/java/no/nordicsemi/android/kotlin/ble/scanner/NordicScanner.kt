@@ -68,7 +68,9 @@ class NordicScanner(
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanResult> = callbackFlow {
         launch {
-            MockDevices.devices.collect { it.forEach { trySend(BleScanResult(it)) } }
+            MockDevices.devices.collect { it.forEach {
+                trySend(BleScanResult(it.key, it.value))
+            } }
         }
 
         val bonded = bluetoothAdapter.bondedDevices.map { RealServerDevice(it) }

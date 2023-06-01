@@ -1,10 +1,14 @@
 package no.nordicsemi.android.kotlin.ble.mock
 
+import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.util.SparseArray
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
+import androidx.annotation.RequiresApi
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleExtendedScanResult
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleLegacyScanResult
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 
@@ -20,8 +24,25 @@ private fun BleAdvertiseConfig.isLegacy(): Boolean {
     return this.settings.legacyMode || Build.VERSION.SDK_INT < Build.VERSION_CODES.O
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 private fun BleAdvertiseConfig.toExtendedResult(): BleExtendedScanResult {
-
+    return BleExtendedScanResult(
+        advertisingSid = ScanResult.SID_NOT_PRESENT,
+        primaryPhy = if (isLegacy()) {
+            BleGattPrimaryPhy.PHY_LE_1M
+        } else {
+            BleGattPrimaryPhy.PHY_LE_CODED
+        },
+        secondaryPhy = settings.secondaryPhy,
+        txPower = settings.txPowerLevel?.value(),
+        rssi = 0,
+        periodicAdvertisingInterval = null,
+        timestampNanos = System.currentTimeMillis(),
+        isLegacy(),
+        isConnectable = settings.connectable,
+        dataStatus = BleScanDataStatus.DATA_COMPLETE,
+        scanRecord = toScanRecord()
+    )
 }
 
 private fun BleAdvertiseConfig.toLegacyResult(): BleLegacyScanResult {
@@ -33,12 +54,13 @@ private fun BleAdvertiseConfig.toLegacyResult(): BleLegacyScanResult {
 }
 
 private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
+    val flags: Int = 0b00000110
     val serviceUuids = listOfNotNull(
         advertiseData?.serviceUuid,
         scanResponseData?.serviceUuid
     )
-    val serviceData = (advertiseData?.serviceData?.map { it.uuid to it.data }?.toMap()
-        ?: mapOf()) + (scanResponseData?.serviceData?.map { it.uuid to it.data }?.toMap()
+    val serviceData = (advertiseData?.serviceData?.associate { it.uuid to it.data }
+        ?: mapOf()) + (scanResponseData?.serviceData?.associate { it.uuid to it.data }
         ?: mapOf())
     val serviceSolicitationUuids = listOfNotNull(
         advertiseData?.serviceSolicitationUuid,
@@ -65,13 +87,12 @@ private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
         }
     }
     return BleScanRecord(
-        advertiseFlag = 0,
+        advertiseFlag = flags,
         serviceUuids = serviceUuids,
         serviceData = serviceData,
         serviceSolicitationUuids = serviceSolicitationUuids,
         deviceName = deviceName,
         txPowerLevel = txPowerLevel,
-        bytes = ,
         manufacturerSpecificData = manufacturerSpecificData
     )
 }

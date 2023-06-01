@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 
 @RequiresApi(Build.VERSION_CODES.O)

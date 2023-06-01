@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
 import android.bluetooth.le.AdvertiseSettings
 

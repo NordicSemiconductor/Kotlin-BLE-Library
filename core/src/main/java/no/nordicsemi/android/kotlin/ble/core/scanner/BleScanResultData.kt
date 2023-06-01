@@ -16,7 +16,7 @@ sealed interface BleScanResultData : Parcelable {
 @Parcelize
 data class BleExtendedScanResult(
     val advertisingSid: Int?,
-    val primaryPhy: BleScanPrimaryPhy,
+    val primaryPhy: BleGattPrimaryPhy,
     val secondaryPhy: BleGattPhy?,
     val txPower: Int?,
     override val rssi: Int,

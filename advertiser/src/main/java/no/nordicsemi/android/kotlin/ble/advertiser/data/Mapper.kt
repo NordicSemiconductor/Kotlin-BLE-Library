@@ -36,6 +36,8 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
 import androidx.annotation.RequiresApi
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseSettings
 
 @RequiresApi(Build.VERSION_CODES.O)
 internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
@@ -43,7 +45,7 @@ internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
         anonymous?.let { setAnonymous(it) }
         txPowerLevel?.toNative()?.let { setTxPowerLevel(it) }
         interval?.toNative()?.let { setInterval(it) }
-        connectable?.let { setConnectable(it) }
+        setConnectable(connectable)
         includeTxPower?.let { setIncludeTxPower(it) }
         setLegacyMode(legacyMode)
         primaryPhy?.toNative()?.let { setPrimaryPhy(it) }

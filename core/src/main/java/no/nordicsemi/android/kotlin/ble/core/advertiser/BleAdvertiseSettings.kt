@@ -29,23 +29,22 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
-import android.bluetooth.BluetoothDevice
-import android.os.Build
-import androidx.annotation.RequiresApi
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 
-enum class BleAdvertiseSecondaryPhy {
-    PHY_LE_1M,
-    PHY_LE_2M,
-    PHY_LE_CODED;
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun toNative(): Int {
-        return when (this) {
-            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            PHY_LE_2M -> BluetoothDevice.PHY_LE_2M
-            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-        }
-    }
-}
+//todo split to clases Legacy and Modern
+data class BleAdvertiseSettings(
+    val deviceName: String? = null,
+    val connectable: Boolean = true,
+    val anonymous: Boolean? = null,
+    val includeTxPower: Boolean? = null,
+    val interval: BleAdvertiseInterval? = null,
+    val timeout: Int = 0,
+    val legacyMode: Boolean = false,
+    val primaryPhy: BleGattPrimaryPhy? = null,
+    val secondaryPhy: BleGattPhy? = null,
+    val scannable: Boolean? = false,
+    val txPowerLevel: BleTxPowerLevel? = null
+)

@@ -9,7 +9,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleExtendedScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleLegacyScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanPrimaryPhy
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 
@@ -38,7 +38,7 @@ fun ScanResult.toDomain(): BleScanResultData {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         BleExtendedScanResult(
             getAdvertisingSid(this),
-            BleScanPrimaryPhy.create(this.primaryPhy),
+            BleGattPrimaryPhy.create(this.primaryPhy),
             getSecondaryPhy(this),
             getTxPower(this),
             this.rssi,

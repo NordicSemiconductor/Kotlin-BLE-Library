@@ -61,7 +61,7 @@ data class OnAdvertisingSetStarted(
     val status: BleAdvertiseStatus
 ) : BleAdvertisingEvent
 
-data class OnAdvertisingSetStopped(val advertisingSet: AdvertisingSet) : BleAdvertisingEvent
+data class OnAdvertisingSetStopped(val advertisingSet: AdvertisingSet?) : BleAdvertisingEvent
 
 data class OnPeriodicAdvertisingDataSet(
     val advertisingSet: AdvertisingSet,

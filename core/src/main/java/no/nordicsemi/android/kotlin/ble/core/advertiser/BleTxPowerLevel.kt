@@ -29,19 +29,43 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
-//todo split to clases Legacy and Modern
-data class BleAdvertiseSettings(
-    val deviceName: String? = null,
-    val connectable: Boolean? = true,
-    val anonymous: Boolean? = null,
-    val includeTxPower: Boolean? = null,
-    val interval: BleAdvertiseInterval? = null,
-    val timeout: Int = 0,
-    val legacyMode: Boolean = false,
-    val primaryPhy: BleAdvertisePrimaryPhy? = null,
-    val secondaryPhy: BleAdvertiseSecondaryPhy? = null,
-    val scannable: Boolean? = false,
-    val txPowerLevel: BleTxPowerLevel? = null
-)
+import android.bluetooth.le.AdvertiseSettings
+import android.bluetooth.le.AdvertisingSetParameters
+import android.os.Build
+import androidx.annotation.RequiresApi
+
+enum class BleTxPowerLevel {
+    TX_POWER_ULTRA_LOW,
+    TX_POWER_LOW,
+    TX_POWER_MEDIUM,
+    TX_POWER_HIGH;
+
+    fun value(): Int {
+        return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            toLegacy()
+        } else {
+            toNative()
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            TX_POWER_ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
+            TX_POWER_LOW -> AdvertisingSetParameters.TX_POWER_LOW
+            TX_POWER_MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
+            TX_POWER_HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
+        }
+    }
+
+    fun toLegacy(): Int {
+        return when (this) {
+            TX_POWER_ULTRA_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW
+            TX_POWER_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_LOW
+            TX_POWER_MEDIUM -> AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM
+            TX_POWER_HIGH -> AdvertiseSettings.ADVERTISE_TX_POWER_HIGH
+        }
+    }
+}

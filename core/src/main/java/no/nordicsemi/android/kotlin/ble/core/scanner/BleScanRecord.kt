@@ -13,36 +13,32 @@ data class BleScanRecord(
     val serviceSolicitationUuids: List<ParcelUuid>,
     val deviceName: String?,
     val txPowerLevel: Int,
-    val bytes: ByteArray,
-    val manufacturerSpecificData: SparseArray<ByteArray>
+    val bytes: ByteArray? = null,
+    val manufacturerSpecificData: SparseArray<ByteArray>,
 ) : Parcelable {
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
 
-        other as BleScanRecord
+    constructor(
+        advertiseFlag: Int,
+        serviceUuids: List<ParcelUuid>?,
+        serviceData: Map<ParcelUuid, ByteArray>,
+        serviceSolicitationUuids: List<ParcelUuid>,
+        deviceName: String?,
+        txPowerLevel: Int,
+        manufacturerSpecificData: SparseArray<ByteArray>,
+    ) : this(
+        advertiseFlag,
+        serviceUuids,
+        serviceData,
+        serviceSolicitationUuids,
+        deviceName,
+        txPowerLevel,
+        rawData(),
+        manufacturerSpecificData
+    )
 
-        if (advertiseFlag != other.advertiseFlag) return false
-        if (serviceUuids != other.serviceUuids) return false
-        if (serviceData != other.serviceData) return false
-        if (serviceSolicitationUuids != other.serviceSolicitationUuids) return false
-        if (deviceName != other.deviceName) return false
-        if (txPowerLevel != other.txPowerLevel) return false
-        if (!bytes.contentEquals(other.bytes)) return false
-        if (manufacturerSpecificData != other.manufacturerSpecificData) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = advertiseFlag
-        result = 31 * result + (serviceUuids?.hashCode() ?: 0)
-        result = 31 * result + serviceData.hashCode()
-        result = 31 * result + serviceSolicitationUuids.hashCode()
-        result = 31 * result + (deviceName?.hashCode() ?: 0)
-        result = 31 * result + txPowerLevel
-        result = 31 * result + bytes.contentHashCode()
-        result = 31 * result + manufacturerSpecificData.hashCode()
-        return result
+    companion object {
+        fun rawData(): ByteArray {
+            return byteArrayOf() //todo
+        }
     }
 }

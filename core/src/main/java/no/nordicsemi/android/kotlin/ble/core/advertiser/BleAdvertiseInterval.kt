@@ -29,35 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
 import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleTxPowerLevel {
-    TX_POWER_ULTRA_LOW,
-    TX_POWER_LOW,
-    TX_POWER_MEDIUM,
-    TX_POWER_HIGH;
+enum class BleAdvertiseInterval {
+    INTERVAL_LOW,
+    INTERVAL_MEDIUM,
+    INTERVAL_HIGH;
 
     @RequiresApi(Build.VERSION_CODES.O)
     fun toNative(): Int {
         return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertisingSetParameters.TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertisingSetParameters.TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertisingSetParameters.TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertisingSetParameters.TX_POWER_HIGH
+            INTERVAL_LOW -> AdvertisingSetParameters.INTERVAL_LOW
+            INTERVAL_MEDIUM -> AdvertisingSetParameters.INTERVAL_MEDIUM
+            INTERVAL_HIGH -> AdvertisingSetParameters.INTERVAL_HIGH
         }
     }
 
     fun toLegacy(): Int {
         return when (this) {
-            TX_POWER_ULTRA_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_ULTRA_LOW
-            TX_POWER_LOW -> AdvertiseSettings.ADVERTISE_TX_POWER_LOW
-            TX_POWER_MEDIUM -> AdvertiseSettings.ADVERTISE_TX_POWER_MEDIUM
-            TX_POWER_HIGH -> AdvertiseSettings.ADVERTISE_TX_POWER_HIGH
+            INTERVAL_LOW -> AdvertiseSettings.ADVERTISE_MODE_LOW_POWER
+            INTERVAL_MEDIUM -> AdvertiseSettings.ADVERTISE_MODE_BALANCED
+            INTERVAL_HIGH -> AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY
         }
     }
 }

@@ -46,7 +46,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
@@ -84,10 +84,6 @@ internal class BleAdvertiserLegacy(
             override fun onStartFailure(errorCode: Int) {
                 close(AdvertisementNotStartedException(BleAdvertiseError.create(errorCode)))
             }
-        }
-
-        settings.deviceName?.let { //TODO remove
-            bluetoothAdapter.setName(it)
         }
 
         bluetoothLeAdvertiser.startAdvertising(

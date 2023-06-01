@@ -28,7 +28,6 @@ android {
 
 dependencies {
     implementation(project(":core"))
-    implementation(project(":advertiser"))
     implementation(project(":client-api"))
     implementation(project(":server-api"))
 

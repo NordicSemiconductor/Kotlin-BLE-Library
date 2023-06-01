@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
 data class BleAdvertiseConfig (
     val settings: BleAdvertiseSettings = BleAdvertiseSettings(),

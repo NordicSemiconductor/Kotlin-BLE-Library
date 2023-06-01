@@ -75,7 +75,7 @@ private fun RealServerDevice.createConnection(
             options.autoConnect,
             gattCallback,
             BluetoothDevice.TRANSPORT_LE,
-            options.phy?.value ?: 0
+            options.phy?.toNative() ?: 0
         )
     } else {
         device.connectGatt(context, options.autoConnect, gattCallback)

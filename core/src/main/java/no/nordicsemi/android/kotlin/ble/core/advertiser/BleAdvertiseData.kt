@@ -29,21 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.advertiser.data
+package no.nordicsemi.android.kotlin.ble.core.advertiser
 
-import android.bluetooth.BluetoothDevice
 import android.os.Build
+import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
 
-enum class BleAdvertisePrimaryPhy {
-    PHY_LE_1M,
-    PHY_LE_CODED;
+data class BleAdvertiseData(
+    val serviceUuid: ParcelUuid,
+    @RequiresApi(Build.VERSION_CODES.M)
+    val serviceSolicitationUuid: ParcelUuid? = null,
+    val includeDeviceName: Boolean = true,
+    val includeTxPowerLever: Boolean = false,
+    val manufacturerData: List<ManufacturerData> = emptyList(),
+    val serviceData: List<ServiceData> = emptyList()
+)
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun toNative(): Int {
-        return when (this) {
-            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-        }
-    }
-}
+data class ManufacturerData(
+    val id: Int,
+    val data: ByteArray
+)
+
+data class ServiceData(
+    val uuid: ParcelUuid,
+    val data: ByteArray
+)

@@ -91,7 +91,7 @@ class NativeServerAPI(
 
     override fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            server.setPreferredPhy((device as RealClientDevice).device, txPhy.value, rxPhy.value, phyOption.value)
+            server.setPreferredPhy((device as RealClientDevice).device, txPhy.toNative(), rxPhy.toNative(), phyOption.value)
         } else {
             callback.onEvent(OnServerPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
         }

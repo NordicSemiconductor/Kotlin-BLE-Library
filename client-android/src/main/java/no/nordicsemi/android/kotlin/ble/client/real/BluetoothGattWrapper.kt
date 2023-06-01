@@ -140,7 +140,7 @@ class BluetoothGattWrapper(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            gatt.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
+            gatt.setPreferredPhy(txPhy.toNative(), rxPhy.toNative(), phyOption.value)
         } else {
             callback.onEvent(
                 OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)

@@ -50,12 +50,12 @@ import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseConfig
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertisePrimaryPhy
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 import no.nordicsemi.android.kotlin.ble.server.main.BleGattServer
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServiceType
@@ -123,7 +123,7 @@ class ServerViewModel @Inject constructor(
             val advertiserConfig = BleAdvertiseConfig(
                 settings = BleAdvertiseSettings(
                     deviceName = "Super Server",
-                    primaryPhy = BleAdvertisePrimaryPhy.PHY_LE_1M,
+                    primaryPhy = BleGattPrimaryPhy.PHY_LE_1M,
                 ),
                 advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
             )
