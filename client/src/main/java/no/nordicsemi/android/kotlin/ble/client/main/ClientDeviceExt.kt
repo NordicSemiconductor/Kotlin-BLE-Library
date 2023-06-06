@@ -69,17 +69,18 @@ private fun RealServerDevice.createConnection(
 
     BondingBroadcastReceiver.register(context, this, gattCallback)
 
-    val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        device.connectGatt(
-            context,
-            options.autoConnect,
-            gattCallback,
-            BluetoothDevice.TRANSPORT_LE,
-            options.phy?.toNative() ?: 0
-        )
-    } else {
-        device.connectGatt(context, options.autoConnect, gattCallback)
-    }
+//    val gatt = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//        device.connectGatt(
+//            context,
+//            options.autoConnect,
+//            gattCallback,
+//            BluetoothDevice.TRANSPORT_LE,
+//            options.phy?.toNative() ?: 0
+//        )
+//    } else {
+//        device.connectGatt(context, options.autoConnect, gattCallback)
+//    }
 
-    return BluetoothGattWrapper(gatt, gattCallback, options.autoConnect)
+//    return BluetoothGattWrapper(gatt, gattCallback, options.autoConnect)
+    TODO()
 }

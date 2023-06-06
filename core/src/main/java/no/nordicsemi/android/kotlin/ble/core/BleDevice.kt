@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.core
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.os.Parcelable
+import androidx.compose.runtime.Stable
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
@@ -52,6 +53,7 @@ sealed interface BleDevice : Parcelable {
         get() = name.isNotEmpty()
 }
 
+@Stable
 sealed interface ServerDevice : BleDevice {
 
     override val name: String
@@ -78,20 +80,17 @@ data class RealClientDevice(
 
 @SuppressLint("MissingPermission")
 @Parcelize
+@Stable
 data class RealServerDevice(
-    val device: BluetoothDevice,
+    override val address: String,
+    override val name: String,
+    override val bondState: BondState,
 ) : ServerDevice, Parcelable {
 
-    @IgnoredOnParcel
-    override val name: String = device.name ?: ""
-
-    @IgnoredOnParcel
-    override val address: String = device.address
-
-    override val bondState: BondState
-        get() = BondState.create(device.bondState)
+    constructor(device: BluetoothDevice) : this(device.address, device.name ?: "", BondState.create(device.bondState))
 }
 
+@Stable
 @Parcelize
 data class MockClientDevice(
     override val name: String = "CLIENT",
@@ -99,6 +98,7 @@ data class MockClientDevice(
     override val bondState: BondState = BondState.NONE
 ) : ClientDevice, Parcelable
 
+@Stable
 @Parcelize
 data class MockServerDevice(
     override val name: String = "SERVER",

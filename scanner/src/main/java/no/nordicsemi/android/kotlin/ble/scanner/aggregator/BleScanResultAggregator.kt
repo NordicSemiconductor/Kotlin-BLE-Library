@@ -31,27 +31,26 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.aggregator
 
+import android.util.Log
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 
 class BleScanResultAggregator {
-    private val devices = mutableMapOf<ServerDevice, List<BleScanResultData>?>()
-    val results
-        get() = devices.map { BleScanResults(it.key, it.value ?: emptyList()) }
+    private val devices = mutableListOf<ServerDevice>()
 
-    fun aggregate(scanItem: BleScanResult): List<BleScanResults> {
-        val data = scanItem.data
-        if (data != null) {
-            devices[scanItem.device] = (devices[scanItem.device] ?: emptyList()) + data
-        } else {
-            devices[scanItem.device] = devices[scanItem.device]
-        }
-        return results
+    fun aggregate(scanItem: BleScanResult): List<ServerDevice> {
+        val device = scanItem.device
+//        if (devices.contains(device)) return devices
+        devices.add(device)
+        return devices
     }
 
     fun aggregateDevices(scanItem: BleScanResult): List<ServerDevice> {
-        return aggregate(scanItem).map { it.device }
+        val device = scanItem.device
+//        if (devices.contains(device)) return devices
+        devices.add(device)
+        return devices
     }
 }
