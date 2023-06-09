@@ -1,10 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.server.api
 
-import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 
 interface GattServerAPI {
 
@@ -22,7 +22,7 @@ interface GattServerAPI {
 
     fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
     )

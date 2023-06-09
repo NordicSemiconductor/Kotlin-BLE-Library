@@ -31,13 +31,13 @@
 
 package no.nordicsemi.android.kotlin.ble.client.api
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
 interface GattClientAPI {
 
@@ -50,22 +50,22 @@ interface GattClientAPI {
     fun onEvent(event: GattClientEvent)
 
     fun writeCharacteristic(
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         value: ByteArray,
         writeType: BleWriteType
     )
 
     fun readCharacteristic(
-        characteristic: BluetoothGattCharacteristic
+        characteristic: IBluetoothGattCharacteristic
     )
 
-    fun enableCharacteristicNotification(characteristic: BluetoothGattCharacteristic)
+    fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
 
-    fun disableCharacteristicNotification(characteristic: BluetoothGattCharacteristic)
+    fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
 
-    fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray)
+    fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: ByteArray)
 
-    fun readDescriptor(descriptor: BluetoothGattDescriptor)
+    fun readDescriptor(descriptor: IBluetoothGattDescriptor)
 
     fun requestMtu(mtu: Int)
 

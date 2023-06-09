@@ -63,6 +63,7 @@ import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -70,7 +71,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class BleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
-    private val characteristic: BluetoothGattCharacteristic,
+    private val characteristic: IBluetoothGattCharacteristic,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper,
     private val mtuProvider: MtuProvider
@@ -129,7 +130,7 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
+    private fun onLocalEvent(eventCharacteristic: IBluetoothGattCharacteristic, block: () -> Unit) {
         if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
             block()
         }

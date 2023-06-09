@@ -57,7 +57,6 @@ interface BleAdvertiser {
             MockEngine.advertiseServer(mock, config)
 
             trySend(
-
                 OnAdvertisingSetStarted(null, 0, BleAdvertiseStatus.ADVERTISE_SUCCESS)
             )
 

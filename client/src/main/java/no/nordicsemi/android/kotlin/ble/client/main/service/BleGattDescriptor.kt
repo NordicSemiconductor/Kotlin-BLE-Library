@@ -45,6 +45,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -52,7 +53,7 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,
     private val characteristicInstanceId: Int,
-    private val descriptor: BluetoothGattDescriptor,
+    private val descriptor: IBluetoothGattDescriptor,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper,
     private val mtuProvider: MtuProvider
@@ -72,7 +73,7 @@ class BleGattDescriptor internal constructor(
         }
     }
 
-    private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
+    private fun onLocalEvent(eventDescriptor: IBluetoothGattDescriptor, block: () -> Unit) {
         if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
             block()
         }

@@ -31,18 +31,18 @@
 
 package no.nordicsemi.android.kotlin.ble.client.api
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 
 sealed interface GattClientEvent
 
-data class OnServicesDiscovered(val services: List<BluetoothGattService>, val status: BleGattOperationStatus) : GattClientEvent
+data class OnServicesDiscovered(val services: List<IBluetoothGattService>, val status: BleGattOperationStatus) : GattClientEvent
 
 data class OnConnectionStateChanged(
     val status: BleGattConnectionStatus,
@@ -76,29 +76,29 @@ sealed interface DescriptorEvent : ServiceEvent
 data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattClientEvent
 
 data class OnCharacteristicChanged(
-    val characteristic: BluetoothGattCharacteristic,
+    val characteristic: IBluetoothGattCharacteristic,
     val value: ByteArray
 ) : CharacteristicEvent
 
 data class OnCharacteristicRead(
-    val characteristic: BluetoothGattCharacteristic,
+    val characteristic: IBluetoothGattCharacteristic,
     val value: ByteArray,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
 data class OnCharacteristicWrite(
-    val characteristic: BluetoothGattCharacteristic,
+    val characteristic: IBluetoothGattCharacteristic,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
 data class OnDescriptorRead(
-    val descriptor: BluetoothGattDescriptor,
+    val descriptor: IBluetoothGattDescriptor,
     val value: ByteArray,
     val status: BleGattOperationStatus
 ) : DescriptorEvent
 
 data class OnDescriptorWrite(
-    val descriptor: BluetoothGattDescriptor,
+    val descriptor: IBluetoothGattDescriptor,
     val status: BleGattOperationStatus
 ) : DescriptorEvent
 

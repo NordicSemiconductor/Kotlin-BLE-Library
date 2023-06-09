@@ -32,7 +32,6 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -41,13 +40,14 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.*
 
@@ -55,7 +55,7 @@ import java.util.*
 class BleServerGattCharacteristic internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
-    private val characteristic: BluetoothGattCharacteristic,
+    private val characteristic: IBluetoothGattCharacteristic,
     private val mtuProvider: MtuProvider
 ) {
 
@@ -114,7 +114,7 @@ class BleServerGattCharacteristic internal constructor(
         }
     }
 
-    private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
+    private fun onLocalEvent(eventCharacteristic: IBluetoothGattCharacteristic, block: () -> Unit) {
         if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
             block()
         }

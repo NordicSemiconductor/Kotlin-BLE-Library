@@ -31,17 +31,17 @@
 
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
-import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
 class BleGattService internal constructor(
     gatt: GattClientAPI,
-    service: BluetoothGattService,
+    service: IBluetoothGattService,
     logger: BlekLogger,
     mutex: MutexWrapper,
     mtu: MtuProvider

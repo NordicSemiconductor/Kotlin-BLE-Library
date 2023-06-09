@@ -31,19 +31,19 @@
 
 package no.nordicsemi.android.kotlin.ble.server.api
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 
 sealed interface GattServerEvent
 
 data class OnServiceAdded(
-    val service: BluetoothGattService,
+    val service: IBluetoothGattService,
     val status: BleGattOperationStatus
 ) : GattServerEvent
 
@@ -90,13 +90,13 @@ data class OnCharacteristicReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
     val offset: Int,
-    val characteristic: BluetoothGattCharacteristic
+    val characteristic: IBluetoothGattCharacteristic
 ) : CharacteristicEvent
 
 data class OnCharacteristicWriteRequest(
     override val device: ClientDevice,
     val requestId: Int,
-    val characteristic: BluetoothGattCharacteristic,
+    val characteristic: IBluetoothGattCharacteristic,
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,
@@ -109,20 +109,20 @@ data class OnNotificationSent(
 ) : CharacteristicEvent
 
 sealed interface DescriptorEvent : ServiceEvent {
-    val descriptor: BluetoothGattDescriptor
+    val descriptor: IBluetoothGattDescriptor
 }
 
 data class OnDescriptorReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
     val offset: Int,
-    override val descriptor: BluetoothGattDescriptor
+    override val descriptor: IBluetoothGattDescriptor
 ) : DescriptorEvent
 
 data class OnDescriptorWriteRequest(
     override val device: ClientDevice,
     val requestId: Int,
-    override val descriptor: BluetoothGattDescriptor,
+    override val descriptor: IBluetoothGattDescriptor,
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,

@@ -9,6 +9,7 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
@@ -31,7 +32,7 @@ class MockServerAPI(
 
     override fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
     ) {

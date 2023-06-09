@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
@@ -47,7 +48,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 class BleServerGattDescriptor internal constructor(
     private val server: GattServerAPI,
     private val characteristicInstanceId: Int,
-    private val descriptor: BluetoothGattDescriptor,
+    private val descriptor: IBluetoothGattDescriptor,
     private val mtuProvider: MtuProvider
 ) {
 
@@ -68,7 +69,7 @@ class BleServerGattDescriptor internal constructor(
         _value.tryEmit(value)
     }
 
-    private fun onLocalEvent(eventDescriptor: BluetoothGattDescriptor, block: () -> Unit) {
+    private fun onLocalEvent(eventDescriptor: IBluetoothGattDescriptor, block: () -> Unit) {
         if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
             block()
         }

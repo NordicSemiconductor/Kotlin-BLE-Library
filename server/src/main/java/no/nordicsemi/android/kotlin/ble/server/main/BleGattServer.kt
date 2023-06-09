@@ -49,6 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
@@ -88,9 +89,9 @@ class BleGattServer internal constructor(
             device: MockServerDevice,
             vararg config: BleServerGattServiceConfig,
         ): BleGattServer {
-            val services = config.map { BluetoothGattServiceFactory.create(it) }
-
             val api = MockServerAPI(MockEngine, device)
+            val services = config.map { BluetoothGattServiceFactory.createMock(it) }
+
             return BleGattServer(api).also { MockEngine.registerServer(api, device, services) }
         }
 
@@ -106,8 +107,8 @@ class BleGattServer internal constructor(
 
                 nativeServer.callback.onServiceAdded = {
                     if (index <= config.lastIndex) {
-                        val service = BluetoothGattServiceFactory.create(config[index++])
-                        nativeServer.server.addService(service)
+                        val service = BluetoothGattServiceFactory.createNative(config[index++])
+                        nativeServer.server.addService(service.service)
                     } else {
                         nativeServer.callback.onServiceAdded = null
                         it.resume(server)
@@ -115,8 +116,8 @@ class BleGattServer internal constructor(
                 }
 
                 if (config.isNotEmpty()) {
-                    val service = BluetoothGattServiceFactory.create(config[index++])
-                    nativeServer.server.addService(service)
+                    val service = BluetoothGattServiceFactory.createNative(config[index++])
+                    nativeServer.server.addService(service.service)
                 } else {
                     it.resume(server)
                 }
@@ -132,7 +133,7 @@ class BleGattServer internal constructor(
         MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
 
-    private var services: List<BluetoothGattService> = emptyList()
+    private var services: List<IBluetoothGattService> = emptyList()
 
     init {
         server.event.onEach { event ->
@@ -199,7 +200,7 @@ class BleGattServer internal constructor(
         server.connect(device, true)
     }
 
-    private fun onServiceAdded(service: BluetoothGattService, status: BleGattOperationStatus) {
+    private fun onServiceAdded(service: IBluetoothGattService, status: BleGattOperationStatus) {
         if (status == BleGattOperationStatus.GATT_SUCCESS) {
             services = services + service
         }

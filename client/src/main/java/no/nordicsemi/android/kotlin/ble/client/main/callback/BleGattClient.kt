@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.callback
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattService
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.delay
@@ -55,7 +54,6 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -68,6 +66,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -266,10 +266,10 @@ class BleGattClient(
         }
     }
 
-    private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+    private fun onServicesDiscovered(gattServices: List<IBluetoothGattService>, status: BleGattOperationStatus) {
         logger.log(Log.INFO, "Services discovered")
-        logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
-        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
+        logger.log(Log.DEBUG, "Discovered services: ${gattServices.map { it.uuid }}, status: $status")
+        val services = gattServices.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
         _services.value = services
         onServicesDiscovered?.invoke()
     }

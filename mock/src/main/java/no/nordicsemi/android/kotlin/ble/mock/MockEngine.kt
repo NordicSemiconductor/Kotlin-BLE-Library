@@ -62,6 +62,9 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
@@ -87,7 +90,7 @@ object MockEngine {
     fun registerServer(
         server: GattServerAPI,
         device: MockServerDevice,
-        services: List<BluetoothGattService>,
+        services: List<IBluetoothGattService>,
     ) {
         servers[device] = OpenedServer(server, services)
         services.forEach {
@@ -192,7 +195,7 @@ object MockEngine {
 
     fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray,
     ) {
@@ -250,7 +253,7 @@ object MockEngine {
     fun writeCharacteristic(
         serverDevice: ServerDevice,
         clientDevice: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         value: ByteArray,
         writeType: BleWriteType,
     ) {
@@ -273,7 +276,7 @@ object MockEngine {
         )
     }
 
-    fun readCharacteristic(device: MockServerDevice, clientDevice: ClientDevice, characteristic: BluetoothGattCharacteristic) {
+    fun readCharacteristic(device: MockServerDevice, clientDevice: ClientDevice, characteristic: IBluetoothGattCharacteristic) {
         val request = requests.newReadRequest(characteristic)
         servers[device]?.serverApi?.onEvent(
             OnCharacteristicReadRequest(clientDevice, request.requestId, 0, characteristic)
@@ -283,7 +286,7 @@ object MockEngine {
     fun enableCharacteristicNotification(
         clientDevice: ClientDevice,
         device: MockServerDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
     ) {
         val connection = clientConnections[clientDevice]!!
         val newNotifications = connection.enabledNotification.toMutableMap()
@@ -295,7 +298,7 @@ object MockEngine {
     fun disableCharacteristicNotification(
         clientDevice: ClientDevice,
         device: MockServerDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
     ) {
         val connection = clientConnections[clientDevice] ?: return
         val newNotifications = connection.enabledNotification.toMutableMap()
@@ -307,7 +310,7 @@ object MockEngine {
     fun writeDescriptor(
         device: MockServerDevice,
         clientDevice: ClientDevice,
-        descriptor: BluetoothGattDescriptor,
+        descriptor: IBluetoothGattDescriptor,
         value: ByteArray,
     ) {
         val request = requests.newWriteRequest(descriptor)
@@ -324,7 +327,7 @@ object MockEngine {
         )
     }
 
-    fun readDescriptor(device: MockServerDevice, clientDevice: ClientDevice, descriptor: BluetoothGattDescriptor) {
+    fun readDescriptor(device: MockServerDevice, clientDevice: ClientDevice, descriptor: IBluetoothGattDescriptor) {
         val request = requests.newReadRequest(descriptor)
         servers[device]?.serverApi?.onEvent(
             OnDescriptorReadRequest(clientDevice, request.requestId, 0, descriptor)

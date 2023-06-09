@@ -1,32 +1,31 @@
 package no.nordicsemi.android.kotlin.ble.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.util.Log
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
 internal class MockRequestHolder {
     private var requestId = 0
     private val requests = mutableMapOf<Int, MockRequest>()
 
-    fun newWriteRequest(characteristic: BluetoothGattCharacteristic): MockRequest {
+    fun newWriteRequest(characteristic: IBluetoothGattCharacteristic): MockRequest {
         return MockCharacteristicWrite(requestId++, characteristic).also {
             requests[it.requestId] = it
         }
     }
 
-    fun newReadRequest(characteristic: BluetoothGattCharacteristic): MockRequest {
+    fun newReadRequest(characteristic: IBluetoothGattCharacteristic): MockRequest {
         return MockCharacteristicRead(requestId++, characteristic).also {
             requests[it.requestId] = it
         }
     }
 
-    fun newWriteRequest(descriptor: BluetoothGattDescriptor): MockRequest {
+    fun newWriteRequest(descriptor: IBluetoothGattDescriptor): MockRequest {
         return MockDescriptorWrite(requestId++, descriptor).also {
             requests[it.requestId] = it
         }
     }
 
-    fun newReadRequest(descriptor: BluetoothGattDescriptor): MockRequest {
+    fun newReadRequest(descriptor: IBluetoothGattDescriptor): MockRequest {
         return MockDescriptorRead(requestId++, descriptor).also {
             requests[it.requestId] = it
         }

@@ -59,7 +59,7 @@ internal fun BleAdvertiseSettings.toLegacy(): AdvertiseSettings {
         txPowerLevel?.toLegacy()?.let { setTxPowerLevel(it) }
         interval?.toLegacy()?.let { setAdvertiseMode(it) }
         setTimeout(timeout)
-        connectable?.let { setConnectable(it) }
+        setConnectable(connectable)
     }.build()
 }
 

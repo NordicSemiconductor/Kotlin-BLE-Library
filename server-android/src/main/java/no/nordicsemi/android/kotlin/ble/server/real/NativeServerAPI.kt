@@ -1,7 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -12,10 +11,12 @@ import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
 @SuppressLint("MissingPermission")
 class NativeServerAPI(
@@ -52,10 +53,11 @@ class NativeServerAPI(
 
     override fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
     ) {
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         val bleDevice = (device as? RealClientDevice)?.device!!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             server.notifyCharacteristicChanged(bleDevice, characteristic, confirm, value)

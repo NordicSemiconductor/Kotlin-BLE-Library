@@ -52,20 +52,13 @@ import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 
 @RequiresApi(Build.VERSION_CODES.O)
 internal class BleAdvertiserOreo(
-    context: Context
+    context: Context,
 ) : BleAdvertiser {
 
-    private val bluetoothManager: BluetoothManager
-    private val bluetoothAdapter: BluetoothAdapter
-    private val bluetoothLeScanner: BluetoothLeScanner
-    private val bluetoothLeAdvertiser: BluetoothLeAdvertiser
-
-    init {
-        bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
-        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-        bluetoothLeAdvertiser = bluetoothAdapter.bluetoothLeAdvertiser
-    }
+    private val bluetoothManager: BluetoothManager by lazy { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
+    private val bluetoothAdapter: BluetoothAdapter by lazy { bluetoothManager.adapter }
+    private val bluetoothLeScanner: BluetoothLeScanner by lazy { bluetoothAdapter.bluetoothLeScanner }
+    private val bluetoothLeAdvertiser: BluetoothLeAdvertiser by lazy { bluetoothAdapter.bluetoothLeAdvertiser }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
     override fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent> = callbackFlow {

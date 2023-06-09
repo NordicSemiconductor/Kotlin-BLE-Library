@@ -1,7 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.client.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -14,6 +12,8 @@ import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 class BleMockGatt(
@@ -34,30 +34,30 @@ class BleMockGatt(
     }
 
     override fun writeCharacteristic(
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         value: ByteArray,
         writeType: BleWriteType
     ) {
         mockEngine.writeCharacteristic(serverDevice, clientDevice, characteristic, value, writeType)
     }
 
-    override fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+    override fun readCharacteristic(characteristic: IBluetoothGattCharacteristic) {
         mockEngine.readCharacteristic(serverDevice, clientDevice, characteristic)
     }
 
-    override fun enableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
+    override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
         mockEngine.enableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
-    override fun disableCharacteristicNotification(characteristic: BluetoothGattCharacteristic) {
+    override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
         mockEngine.disableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
-    override fun writeDescriptor(descriptor: BluetoothGattDescriptor, value: ByteArray) {
+    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: ByteArray) {
         mockEngine.writeDescriptor(serverDevice, clientDevice, descriptor, value)
     }
 
-    override fun readDescriptor(descriptor: BluetoothGattDescriptor) {
+    override fun readDescriptor(descriptor: IBluetoothGattDescriptor) {
         mockEngine.readDescriptor(serverDevice, clientDevice, descriptor)
     }
 

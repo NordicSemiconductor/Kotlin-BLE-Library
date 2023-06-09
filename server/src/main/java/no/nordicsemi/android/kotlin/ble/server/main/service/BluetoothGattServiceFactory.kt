@@ -39,17 +39,29 @@ import android.os.Build
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.wrapper.MockBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.MockBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.MockBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 import java.lang.reflect.Method
 import java.util.*
 
 internal object BluetoothGattServiceFactory {
 
-    fun copy(service: BluetoothGattService): BluetoothGattService {
-        return BluetoothGattService(service.uuid, service.type).apply {
-            service.characteristics.forEach {
-                val characteristic = cloneCharacteristic(it)
-                addCharacteristic(characteristic)
-            }
+    fun copy(service: IBluetoothGattService): IBluetoothGattService {
+        return when (service) {
+            is MockBluetoothGattService -> TODO()
+            is NativeBluetoothGattService -> NativeBluetoothGattService(
+                BluetoothGattService(service.uuid, service.type).apply {
+                    service.characteristics.forEach {
+                        val native = it as NativeBluetoothGattCharacteristic
+                        val characteristic = cloneCharacteristic(native.characteristic)
+                        addCharacteristic(characteristic)
+                    }
+                }
+            )
         }
     }
 
@@ -94,7 +106,42 @@ internal object BluetoothGattServiceFactory {
         return clone
     }
 
-    fun create(config: BleServerGattServiceConfig): BluetoothGattService {
+    fun createMock(config: BleServerGattServiceConfig): MockBluetoothGattService {
+        val service = MockBluetoothGattService(config.uuid, config.type.toNative())
+
+        config.characteristicConfigs.forEach {
+            val characteristic = MockBluetoothGattCharacteristic(
+                it.uuid,
+                BleGattProperty.toInt(it.properties),
+                BleGattPermission.toInt(it.permissions)
+            )
+
+            it.descriptorConfigs.forEach {
+                val descriptor = MockBluetoothGattDescriptor(
+                    it.uuid,
+                    BleGattPermission.toInt(it.permissions),
+                    characteristic
+                )
+                characteristic.addDescriptor(descriptor)
+            }
+
+            if (it.hasNotifications) {
+                val cccd = MockBluetoothGattDescriptor(
+                    BleGattConsts.NOTIFICATION_DESCRIPTOR,
+                    BleGattPermission.toInt(listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)),
+                    characteristic
+                )
+
+                characteristic.addDescriptor(cccd)
+            }
+
+            service.addCharacteristic(characteristic)
+        }
+
+        return service
+    }
+
+    fun createNative(config: BleServerGattServiceConfig): NativeBluetoothGattService {
         val service = BluetoothGattService(config.uuid, config.type.toNative())
 
         config.characteristicConfigs.forEach {
@@ -128,6 +175,6 @@ internal object BluetoothGattServiceFactory {
             service.addCharacteristic(characteristic)
         }
 
-        return service
+        return NativeBluetoothGattService(service)
     }
 }
