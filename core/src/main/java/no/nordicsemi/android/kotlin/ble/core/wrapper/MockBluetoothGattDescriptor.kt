@@ -30,4 +30,9 @@ data class MockBluetoothGattDescriptor(
         result = 31 * result + value.contentHashCode()
         return result
     }
+
+    override fun toString(): String {
+        //todo improve
+        return uuid.toString() + value + permissions + characteristic.uuid
+    }
 }

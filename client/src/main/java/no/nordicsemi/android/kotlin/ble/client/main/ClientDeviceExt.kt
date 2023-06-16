@@ -17,15 +17,15 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
-import no.nordicsemi.android.kotlin.ble.core.logger.DefaultBlekLogger
+import no.nordicsemi.android.common.logger.BlekLogger
+import no.nordicsemi.android.common.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 suspend fun ServerDevice.connect(
     context: Context,
     options: BleGattConnectOptions = BleGattConnectOptions(),
-    logger: BlekLogger = DefaultBlekLogger()
+    logger: BlekLogger = DefaultBlekLogger(context)
 ): BleGattClient {
     logger.log(Log.INFO, "Connecting to ${this.address}")
     return when (this) {

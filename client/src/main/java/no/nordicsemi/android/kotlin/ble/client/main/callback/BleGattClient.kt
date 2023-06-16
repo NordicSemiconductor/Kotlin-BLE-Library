@@ -64,7 +64,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.common.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
@@ -74,7 +74,7 @@ import kotlin.coroutines.suspendCoroutine
 
 class BleGattClient(
     private val gatt: GattClientAPI,
-    private val logger: BlekLogger,
+    private val logger: no.nordicsemi.android.common.logger.BlekLogger,
     private val mutex: MutexWrapper = MutexWrapper()
 ) {
 

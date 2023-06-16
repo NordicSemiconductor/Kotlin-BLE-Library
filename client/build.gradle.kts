@@ -35,4 +35,5 @@ dependencies {
     implementation(project(":client-mock"))
 
     implementation(libs.nordic.core)
+    api(libs.nordic.uilogger)
 }

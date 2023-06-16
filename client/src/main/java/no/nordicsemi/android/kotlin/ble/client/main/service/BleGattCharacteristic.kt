@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -60,7 +59,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
-import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.common.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
@@ -72,7 +71,7 @@ import kotlin.coroutines.suspendCoroutine
 class BleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
     private val characteristic: IBluetoothGattCharacteristic,
-    private val logger: BlekLogger,
+    private val logger: no.nordicsemi.android.common.logger.BlekLogger,
     private val mutex: MutexWrapper,
     private val mtuProvider: MtuProvider
 ) {

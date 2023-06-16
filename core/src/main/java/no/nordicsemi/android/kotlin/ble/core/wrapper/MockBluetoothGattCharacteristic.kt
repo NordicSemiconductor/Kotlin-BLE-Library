@@ -7,7 +7,7 @@ data class MockBluetoothGattCharacteristic private constructor(
     override val uuid: UUID,
     override val permissions: Int,
     override val properties: Int,
-    override val instanceId: Int,
+    override val instanceId: Int, //TODO check if instance id should change during copy()
     override var value: ByteArray,
     private var _descriptors: List<IBluetoothGattDescriptor>,
     override var writeType: Int

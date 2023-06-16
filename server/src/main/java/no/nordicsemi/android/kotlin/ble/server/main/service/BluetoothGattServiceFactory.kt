@@ -52,7 +52,7 @@ internal object BluetoothGattServiceFactory {
 
     fun copy(service: IBluetoothGattService): IBluetoothGattService {
         return when (service) {
-            is MockBluetoothGattService -> TODO()
+            is MockBluetoothGattService -> service.copy()
             is NativeBluetoothGattService -> NativeBluetoothGattService(
                 BluetoothGattService(service.uuid, service.type).apply {
                     service.characteristics.forEach {
