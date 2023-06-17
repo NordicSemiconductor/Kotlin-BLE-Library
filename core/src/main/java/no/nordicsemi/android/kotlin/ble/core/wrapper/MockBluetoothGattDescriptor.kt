@@ -26,7 +26,6 @@ data class MockBluetoothGattDescriptor(
     override fun hashCode(): Int {
         var result = uuid.hashCode()
         result = 31 * result + permissions
-        result = 31 * result + characteristic.hashCode()
         result = 31 * result + value.contentHashCode()
         return result
     }

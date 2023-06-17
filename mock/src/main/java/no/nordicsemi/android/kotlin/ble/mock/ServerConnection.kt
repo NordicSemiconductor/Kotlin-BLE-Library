@@ -6,6 +6,7 @@ import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
+import java.util.UUID
 
 internal data class ServerConnection(
     val server: ServerDevice,
@@ -14,5 +15,5 @@ internal data class ServerConnection(
     val clientApi: GattClientAPI,
     val services: List<IBluetoothGattService>,
     val params: ConnectionParams,
-    val enabledNotification: Map<IBluetoothGattCharacteristic, Boolean> = mutableMapOf()
+    val enabledNotification: Map<UUID, Boolean> = mutableMapOf()
 )

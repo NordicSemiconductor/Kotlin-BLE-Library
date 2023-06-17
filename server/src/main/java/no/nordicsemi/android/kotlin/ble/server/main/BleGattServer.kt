@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.server.main
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattService
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -51,12 +50,12 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServices
@@ -137,7 +136,6 @@ class BleGattServer internal constructor(
 
     init {
         server.event.onEach { event ->
-            Log.i("AAATESTAAA", "Event: $event")
             when (event) {
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
@@ -150,6 +148,7 @@ class BleGattServer internal constructor(
                 is OnServerMtuChanged -> onMtuChanged(event)
             }
         }.launchIn(ServerScope)
+        println("Server scope: $ServerScope")
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

@@ -31,9 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
+import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
@@ -65,16 +63,16 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 
 object MockEngine {
     //TODO allow for many devices
@@ -200,7 +198,9 @@ object MockEngine {
         value: ByteArray,
     ) {
         val connection = clientConnections[device] ?: return
-        if (connection.enabledNotification[characteristic] == true) {
+        Log.d("AAATESTAAA", "Send notificaiton 1")
+        if (connection.enabledNotification[characteristic.uuid] == true) {
+            Log.d("AAATESTAAA", "Send notificaiton 2")
             connection.clientApi.onEvent(OnCharacteristicChanged(characteristic, value))
         }
     }
@@ -290,7 +290,7 @@ object MockEngine {
     ) {
         val connection = clientConnections[clientDevice]!!
         val newNotifications = connection.enabledNotification.toMutableMap()
-        newNotifications[characteristic] = true
+        newNotifications[characteristic.uuid] = true
         val newConnection = connection.copy(enabledNotification = newNotifications)
         clientConnections[clientDevice] = newConnection
     }
@@ -302,7 +302,7 @@ object MockEngine {
     ) {
         val connection = clientConnections[clientDevice] ?: return
         val newNotifications = connection.enabledNotification.toMutableMap()
-        newNotifications[characteristic] = false
+        newNotifications[characteristic.uuid] = false
         val newConnection = connection.copy(enabledNotification = newNotifications)
         clientConnections[clientDevice] = newConnection
     }

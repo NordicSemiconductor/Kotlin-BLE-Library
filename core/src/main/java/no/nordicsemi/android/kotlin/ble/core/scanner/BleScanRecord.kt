@@ -32,13 +32,13 @@ data class BleScanRecord(
         serviceSolicitationUuids,
         deviceName,
         txPowerLevel,
-        rawData(),
+        byteArrayOf(),
         manufacturerSpecificData
     )
 
     companion object {
         fun rawData(): ByteArray {
-            return byteArrayOf() //todo
+            return byteArrayOf()
         }
     }
 }

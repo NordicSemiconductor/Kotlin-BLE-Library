@@ -10,14 +10,21 @@ data class MockBluetoothGattCharacteristic private constructor(
     override val instanceId: Int, //TODO check if instance id should change during copy()
     override var value: ByteArray,
     private var _descriptors: List<IBluetoothGattDescriptor>,
-    override var writeType: Int
+    override var writeType: Int,
 ) : IBluetoothGattCharacteristic {
 
     constructor(uuid: UUID, permissions: Int, properties: Int) : this(
-        uuid, permissions, properties, InstanceIdGenerator.nextValue(), byteArrayOf(), emptyList(), BleWriteType.DEFAULT.value
+        uuid,
+        permissions,
+        properties,
+        InstanceIdGenerator.nextValue(),
+        byteArrayOf(),
+        emptyList(),
+        BleWriteType.DEFAULT.value
     )
 
-    override val descriptors: List<IBluetoothGattDescriptor> = _descriptors
+    override val descriptors: List<IBluetoothGattDescriptor>
+        get() = _descriptors
 
     fun addDescriptor(descriptor: IBluetoothGattDescriptor) {
         _descriptors = _descriptors + descriptor

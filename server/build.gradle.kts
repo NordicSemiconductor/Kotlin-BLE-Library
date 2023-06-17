@@ -35,4 +35,7 @@ dependencies {
     implementation(project(":server-android"))
 
     implementation(libs.nordic.core)
+    testImplementation(libs.junit4)
+    testImplementation(libs.androidx.test.ext)
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.8.21")
 }

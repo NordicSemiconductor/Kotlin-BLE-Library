@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.os.Build
+import android.util.Log
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
@@ -112,8 +113,8 @@ internal object BluetoothGattServiceFactory {
         config.characteristicConfigs.forEach {
             val characteristic = MockBluetoothGattCharacteristic(
                 it.uuid,
-                BleGattProperty.toInt(it.properties),
-                BleGattPermission.toInt(it.permissions)
+                BleGattPermission.toInt(it.permissions),
+                BleGattProperty.toInt(it.properties)
             )
 
             it.descriptorConfigs.forEach {
