@@ -103,9 +103,7 @@ class BleGattClient(
     private var onServicesDiscovered: (() -> Unit)? = null
 
     init {
-        println("Client scope: $ClientScope")
         gatt.event.onEach {
-            println("AAA: event $it")
             logger.log(Log.DEBUG, "On gatt event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it .newState)

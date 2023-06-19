@@ -148,7 +148,6 @@ class BleGattServer internal constructor(
                 is OnServerMtuChanged -> onMtuChanged(event)
             }
         }.launchIn(ServerScope)
-        println("Server scope: $ServerScope")
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

@@ -94,7 +94,6 @@ class BleServerGattCharacteristic internal constructor(
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 
         if (isNotification || isIndication) {
-            println("AAA: Notification sent")
             server.notifyCharacteristicChanged(device, characteristic, isIndication, value)
         }
     }

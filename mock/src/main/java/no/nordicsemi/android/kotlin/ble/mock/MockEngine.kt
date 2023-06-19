@@ -198,9 +198,7 @@ object MockEngine {
         value: ByteArray,
     ) {
         val connection = clientConnections[device] ?: return
-        Log.d("AAATESTAAA", "Send notificaiton 1")
         if (connection.enabledNotification[characteristic.uuid] == true) {
-            Log.d("AAATESTAAA", "Send notificaiton 2")
             connection.clientApi.onEvent(OnCharacteristicChanged(characteristic, value))
         }
     }
