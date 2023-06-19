@@ -37,5 +37,5 @@ dependencies {
     implementation(libs.nordic.core)
     testImplementation(libs.junit4)
     testImplementation(libs.androidx.test.ext)
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.8.21")
+    testImplementation(libs.kotlin.junit)
 }
