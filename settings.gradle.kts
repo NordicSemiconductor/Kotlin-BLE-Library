@@ -48,7 +48,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.5.8")
+            from("no.nordicsemi.android.gradle:version-catalog:1.5.10")
         }
     }
 }
@@ -70,3 +70,9 @@ include(":client-mock")
 include(":client-android")
 include(":client")
 include(":mock")
+include(":test")
+
+if (file("../Android-Common-Libraries").exists()) {
+    includeBuild("../Android-Common-Libraries")
+}
+ 

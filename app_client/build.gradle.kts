@@ -48,7 +48,7 @@ dependencies {
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
-    implementation(libs.nordic.permission)
+    implementation(libs.nordic.permissions.ble)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.material3)
