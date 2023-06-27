@@ -24,8 +24,10 @@ dependencies {
     implementation(project(":server-android"))
     implementation(project(":server-mock"))
     implementation(project(":server-api"))
+    implementation(project(":logger"))
 
     testImplementation(libs.hilt.android.testing)
+    kaptTest(libs.hilt.compiler)
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.junit4)
     testImplementation(libs.test.mockk)
