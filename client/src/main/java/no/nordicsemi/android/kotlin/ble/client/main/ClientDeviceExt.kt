@@ -45,7 +45,7 @@ suspend fun connectDevice(
     val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect)
     return BleGattClient(gatt, logger)
         .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
-        .also { it.connect() }
+        .also { it.waitForConnection() }
 }
 
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -56,7 +56,7 @@ private suspend fun connectDevice(
     logger: BlekLogger
 ): BleGattClient {
     return BleGattClient(device.createConnection(context, options), logger).also {
-        it.connect()
+        it.waitForConnection()
     }
 }
 

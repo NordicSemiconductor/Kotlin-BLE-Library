@@ -91,9 +91,9 @@ class ReliableWriteTest {
             every { ClientScope } returns CoroutineScope(UnconfinedTestDispatcher())
             mockkStatic("no.nordicsemi.android.kotlin.ble.server.main.ServerScopeKt")
             every { ServerScope } returns CoroutineScope(UnconfinedTestDispatcher())
-        }
 
-        server.start(context, serverDevice)
+            server.start(context, serverDevice)
+        }
     }
 
     @Before

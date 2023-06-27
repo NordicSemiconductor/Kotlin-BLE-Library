@@ -120,7 +120,10 @@ class BleGattClient(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    internal suspend fun connect(): GattConnectionState {
+    internal suspend fun waitForConnection(): GattConnectionState {
+        if (_connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED) {
+            return GattConnectionState.STATE_CONNECTED
+        }
         //emulate connecting state as it is not emitted by Android
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(GattConnectionState.STATE_CONNECTING, BleGattConnectionStatus.SUCCESS)
 
