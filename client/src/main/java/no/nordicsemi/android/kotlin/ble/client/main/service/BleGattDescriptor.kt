@@ -42,7 +42,7 @@ import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
-import no.nordicsemi.android.common.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import kotlin.coroutines.resume
@@ -53,7 +53,7 @@ class BleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: IBluetoothGattDescriptor,
-    private val logger: no.nordicsemi.android.common.logger.BlekLogger,
+    private val logger: BlekLogger,
     private val mutex: MutexWrapper,
     private val mtuProvider: MtuProvider
 ) {

@@ -15,6 +15,7 @@ dependencies {
     implementation(project(":scanner"))
     implementation(project(":server"))
     implementation(project(":client"))
+    implementation(project(":logger"))
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)

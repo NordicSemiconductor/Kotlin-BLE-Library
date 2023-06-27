@@ -43,7 +43,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged

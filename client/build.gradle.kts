@@ -33,6 +33,7 @@ dependencies {
     implementation(project(":mock"))
     implementation(project(":client-android"))
     implementation(project(":client-mock"))
+    implementation(project(":logger"))
 
     implementation(libs.nordic.core)
     api(libs.nordic.uilogger)

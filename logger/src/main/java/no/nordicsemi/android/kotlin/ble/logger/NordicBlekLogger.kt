@@ -29,19 +29,34 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble
+package no.nordicsemi.android.kotlin.ble.logger
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import android.content.Context
+import android.util.Log
+import no.nordicsemi.android.log.LogContract
+import no.nordicsemi.android.log.Logger
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
-class ExampleUnitTest {
-    @Test
-    fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+class NordicBlekLogger private constructor(
+    private val context: Context,
+    profile: String?,
+    private val key: String,
+    name: String?
+) : BlekLoggerAndLauncher {
+    private val logSession = Logger.newSession(context, profile, key, name)
+
+    override fun log(priority: Int, log: String) {
+        Log.println(priority, key, log)
+        Logger.log(logSession, LogContract.Log.Level.fromPriority(priority), log)
+    }
+
+    override fun launch() {
+        LoggerLauncher.launch(context, logSession?.sessionUri)
+    }
+
+    companion object {
+
+        fun create(context: Context, profile: String?, key: String, name: String?): BlekLoggerAndLauncher {
+            return NordicBlekLogger(context, profile, key, name)
+        }
     }
 }

@@ -29,18 +29,42 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.mock
+package no.nordicsemi.android.kotlin.ble.logger
 
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
+import android.content.Context
+import no.nordicsemi.android.kotlin.ble.logger.BlekLoggerAndLauncher
+import no.nordicsemi.android.kotlin.ble.logger.LoggerLauncher
+import no.nordicsemi.android.log.Logger
+import no.nordicsemi.android.log.annotation.LogLevel
 
-data class BleGattConnectOptions(
+/**
+ * Creates a new instance of the logger
+ *
+ * @param context the application context.
+ * @param profile The profile name. This name will be shown in nRF Logger next to the app's name,
+ *                e.g. nRF Toolbox "Proximity" in the navigation menu.
+ * @param key The key are use to group the logs. Usually, the key is the device MAC address.
+ * @param name An optional identifier for the log session, usually a device name.
+ */
+class NordicLogger constructor(
+    private val context: Context,
+    profile: String?,
+    key: String,
+    name: String?,
+) : BlekLoggerAndLauncher {
+    private val logSession = Logger.newSession(context, profile, key, name)
+
     /**
-     * boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+     * Logs the given message with the given log level.
+     *
+     * If nRF Logger is not installed, this method does nothing.
      */
-    val autoConnect: Boolean = false,
+    override fun log(@LogLevel priority: Int, log: String) {
+        Logger.log(logSession, priority, log)
+    }
 
-    /**
-     * Only takes effect if [autoConnect] is set to false.
-     */
-    val phy: BleGattPhy? = null
-)
+    override fun launch() {
+        LoggerLauncher.launch(context, logSession?.sessionsUri)
+    }
+}
+

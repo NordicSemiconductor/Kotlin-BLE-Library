@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattDescriptor
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
@@ -62,6 +61,7 @@ import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -74,7 +74,7 @@ private val DISABLE_NOTIFICATION_VALUE = byteArrayOf(0x00, 0x00)
 class BleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
     private val characteristic: IBluetoothGattCharacteristic,
-    private val logger: no.nordicsemi.android.common.logger.BlekLogger,
+    private val logger: BlekLogger,
     private val mutex: MutexWrapper,
     private val mtuProvider: MtuProvider,
 ) {
