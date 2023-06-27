@@ -86,7 +86,7 @@ class BleMockGatt(
     }
 
     override fun clearServicesCache() {
-        TODO("Not yet implemented")
+        mockEngine.clearServiceCache()
     }
 
     override fun close() {
@@ -94,14 +94,14 @@ class BleMockGatt(
     }
 
     override fun beginReliableWrite() {
-        TODO("Not yet implemented")
+        mockEngine.beginReliableWrite(serverDevice, clientDevice)
     }
 
     override fun abortReliableWrite() {
-        TODO("Not yet implemented")
+        mockEngine.abortReliableWrite(serverDevice, clientDevice)
     }
 
     override fun executeReliableWrite() {
-        TODO("Not yet implemented")
+        mockEngine.executeReliableWrite(serverDevice, clientDevice)
     }
 }

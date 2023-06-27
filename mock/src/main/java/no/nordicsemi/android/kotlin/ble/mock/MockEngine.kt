@@ -31,7 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.mock
 
-import android.util.Log
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
@@ -400,5 +399,25 @@ object MockEngine {
             }
         }
         clientConnections.remove(clientDevice)
+    }
+
+    fun clearServiceCache() {
+        TODO("Not yet implemented")
+    }
+
+    fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+
+
+    }
+
+    fun abortReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+
+    }
+
+    fun executeReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+
     }
 }
