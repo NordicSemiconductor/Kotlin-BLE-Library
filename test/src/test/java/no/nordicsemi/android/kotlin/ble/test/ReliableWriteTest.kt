@@ -15,11 +15,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
+import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.main.connect
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -47,7 +47,6 @@ import javax.inject.Inject
 @Config(application = HiltTestApplication::class)
 @RunWith(RobolectricTestRunner::class)
 class ReliableWriteTest {
-
 
     @get:Rule
     val mockkRule = MockKRule(this)
@@ -110,10 +109,109 @@ class ReliableWriteTest {
         )
         val client = serverDevice.connect(context)
 
-//        server.stopServer()
+        assertEquals(connectedState, client.connectionStateWithStatus.value)
+    }
 
-        advanceUntilIdle()
+    @Test
+    fun `when connected should return state disconnected`() = runTest {
+        val connectedState = GattConnectionStateWithStatus(
+            GattConnectionState.STATE_DISCONNECTED,
+            BleGattConnectionStatus.SUCCESS
+        )
+        val client = serverDevice.connect(context)
+
+        server.stopServer()
 
         assertEquals(connectedState, client.connectionStateWithStatus.value)
+    }
+
+    @Test
+    fun `when reliable aborted should return previous value`() = runTest {
+        val client: BleGattClient = serverDevice.connect(context)
+        val services = client.discoverServices()
+        val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
+        val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
+
+        val initValue = byteArrayOf(0x01)
+
+        firstCharacteristic.write(initValue)
+
+        client.beginReliableWrite()
+
+        firstCharacteristic.write(byteArrayOf(0x02))
+
+        client.abortReliableWrite()
+
+        assertEquals(initValue, firstCharacteristic.read())
+    }
+
+    @Test
+    fun `when reliable aborted should return previous value on each characteristic`() = runTest {
+        val client: BleGattClient = serverDevice.connect(context)
+        val services = client.discoverServices()
+        val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
+        val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
+        val secondCharacteristic = theService.findCharacteristic(SECOND_CHARACTERISTIC)!!
+
+        val initValue = byteArrayOf(0x01)
+
+        firstCharacteristic.write(initValue)
+        secondCharacteristic.write(initValue)
+
+        client.beginReliableWrite()
+
+        firstCharacteristic.write(byteArrayOf(0x02))
+        secondCharacteristic.write(byteArrayOf(0x02))
+
+        client.abortReliableWrite()
+
+        assertEquals(initValue, firstCharacteristic.read())
+        assertEquals(initValue, secondCharacteristic.read())
+    }
+
+    @Test
+    fun `when reliable executed should return new value`() = runTest {
+        val client: BleGattClient = serverDevice.connect(context)
+        val services = client.discoverServices()
+        val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
+        val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
+
+        val initValue = byteArrayOf(0x01)
+        val newValue = byteArrayOf(0x02)
+
+        firstCharacteristic.write(initValue)
+
+        client.beginReliableWrite()
+
+        firstCharacteristic.write(newValue)
+
+        client.executeReliableWrite()
+
+        assertEquals(newValue, firstCharacteristic.read())
+    }
+
+    @Test
+    fun `when reliable executed should return new value on each characteristic`() = runTest {
+        val client: BleGattClient = serverDevice.connect(context)
+        val services = client.discoverServices()
+        val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
+        val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
+        val secondCharacteristic = theService.findCharacteristic(SECOND_CHARACTERISTIC)!!
+
+        val initValue = byteArrayOf(0x01)
+        val newValue = byteArrayOf(0x02)
+
+        firstCharacteristic.write(initValue)
+        secondCharacteristic.write(initValue)
+
+        client.beginReliableWrite()
+
+        firstCharacteristic.write(newValue)
+        secondCharacteristic.write(newValue)
+
+        client.executeReliableWrite()
+
+        assertEquals(newValue, firstCharacteristic.read())
+        assertEquals(newValue, secondCharacteristic.read())
     }
 }

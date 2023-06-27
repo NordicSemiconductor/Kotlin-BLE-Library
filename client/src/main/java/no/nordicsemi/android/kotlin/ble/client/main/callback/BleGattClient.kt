@@ -36,14 +36,11 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
@@ -68,6 +65,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -100,7 +98,7 @@ class BleGattClient(
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
     private var bondStateCallback: ((BondState) -> Unit)? = null
-    private var onServicesDiscovered: (() -> Unit)? = null
+    private var onServicesDiscovered: ((BleGattServices) -> Unit)? = null
 
     init {
         gatt.event.onEach {
@@ -247,13 +245,19 @@ class BleGattClient(
         }
     }
 
-    suspend fun discoverServices(): Flow<BleGattServices> {
-        suspendForServices()
-
-        return services.filterNotNull()
+    fun beginReliableWrite() {
+        gatt.beginReliableWrite()
     }
 
-    private suspend fun suspendForServices() {
+    fun abortReliableWrite() {
+        gatt.abortReliableWrite()
+    }
+
+    fun executeReliableWrite() {
+        gatt.executeReliableWrite()
+    }
+
+    suspend fun discoverServices(): BleGattServices {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
@@ -262,7 +266,7 @@ class BleGattClient(
         return suspendCoroutine { continuation ->
             onServicesDiscovered = {
                 mutex.unlock()
-                continuation.resume(Unit)
+                continuation.resume(it)
                 onServicesDiscovered = null
             }
             gatt.discoverServices()
@@ -274,7 +278,7 @@ class BleGattClient(
         logger.log(Log.DEBUG, "Discovered services: ${gattServices.map { it.uuid }}, status: $status")
         val services = gattServices.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
         _services.value = services
-        onServicesDiscovered?.invoke()
+        onServicesDiscovered?.invoke(services)
     }
 
     private fun onBondStateChanged(bondState: BondState) {
