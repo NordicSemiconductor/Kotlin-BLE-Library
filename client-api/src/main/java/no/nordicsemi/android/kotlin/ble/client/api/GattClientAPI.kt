@@ -55,9 +55,7 @@ interface GattClientAPI {
         writeType: BleWriteType
     )
 
-    fun readCharacteristic(
-        characteristic: IBluetoothGattCharacteristic
-    )
+    fun readCharacteristic(characteristic: IBluetoothGattCharacteristic)
 
     fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
 

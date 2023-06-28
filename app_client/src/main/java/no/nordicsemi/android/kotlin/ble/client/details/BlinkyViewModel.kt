@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.client.details
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -105,7 +104,6 @@ class BlinkyViewModel @Inject constructor(
     }
 
     private suspend fun configureGatt(services: BleGattServices) {
-        Log.d("AAATESTAAA", "Services: $services")
         //Remember needed service and characteristics which are used to communicate with the DK.
         val service = services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
         ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
@@ -131,39 +129,6 @@ class BlinkyViewModel @Inject constructor(
                 _state.value = _state.value.copy(isLedOn = true)
                 ledCharacteristic.write(byteArrayOf(0x01))
             }
-        }
-    }
-
-    fun abort() {
-        viewModelScope.launch {
-            Log.d("AAATESTAAA", "111")
-            ledCharacteristic.write(byteArrayOf(0x00))
-            Log.d("AAATESTAAA", "222")
-            client.beginReliableWrite()
-            Log.d("AAATESTAAA", "333")
-            ledCharacteristic.write(byteArrayOf(0x01))
-            Log.d("AAATESTAAA", "444")
-            client.abortReliableWrite()
-            Log.d("AAATESTAAA", "555")
-            val value = ledCharacteristic.read()
-            Log.d("AAATESTAAA", "Value: $value")
-        }
-    }
-
-    fun execute() {
-        viewModelScope.launch {
-            Log.d("AAATESTAAA", "111")
-            ledCharacteristic.write(byteArrayOf(0x00))
-            Log.d("AAATESTAAA", "222")
-            client.beginReliableWrite()
-            Log.d("AAATESTAAA", "333")
-            ledCharacteristic.write(byteArrayOf(0x01))
-            Log.d("AAATESTAAA", "444")
-            client.executeReliableWrite()
-            Log.d("AAATESTAAA", "555")
-            ledCharacteristic.read()
-            val value = ledCharacteristic.read()
-            Log.d("AAATESTAAA", "Value: $value")
         }
     }
 }

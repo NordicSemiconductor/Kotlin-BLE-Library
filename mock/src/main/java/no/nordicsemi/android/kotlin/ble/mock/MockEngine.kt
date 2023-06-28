@@ -68,6 +68,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
@@ -254,6 +255,7 @@ object MockEngine {
         value: ByteArray,
         writeType: BleWriteType,
     ) {
+        val connection = clientConnections[clientDevice]!!
         val isResponseNeeded = when (writeType) {
             BleWriteType.NO_RESPONSE -> false
             BleWriteType.DEFAULT,
@@ -265,7 +267,7 @@ object MockEngine {
                 clientDevice,
                 request.requestId,
                 characteristic,
-                false,
+                connection.isReliableWriteOn,
                 isResponseNeeded,
                 0,
                 value
@@ -310,13 +312,14 @@ object MockEngine {
         descriptor: IBluetoothGattDescriptor,
         value: ByteArray,
     ) {
+        val connection = clientConnections[clientDevice]!!
         val request = requests.newWriteRequest(descriptor)
         servers[device]?.serverApi?.onEvent(
             OnDescriptorWriteRequest(
                 device = clientDevice,
                 requestId = request.requestId,
                 descriptor = descriptor,
-                preparedWrite = false,
+                preparedWrite = connection.isReliableWriteOn,
                 responseNeeded = true,
                 offset = 0,
                 value = value
@@ -407,17 +410,33 @@ object MockEngine {
 
     fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
         val connection = clientConnections[clientDevice]!!
-
-
+        val newConnection = connection.copy(
+            isReliableWriteOn = true
+        )
+        clientConnections[clientDevice] = newConnection
     }
 
     fun abortReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
         val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            isReliableWriteOn = false
+        )
+        clientConnections[clientDevice] = newConnection
 
+        connection.serverApi.onEvent(
+            OnExecuteWrite(connection.client, -1, false) //todo check request id
+        )
     }
 
     fun executeReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
         val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            isReliableWriteOn = false
+        )
+        clientConnections[clientDevice] = newConnection
 
+        connection.serverApi.onEvent(
+            OnExecuteWrite(connection.client, -1, true) //todo check request id
+        )
     }
 }

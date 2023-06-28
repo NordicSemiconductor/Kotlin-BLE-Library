@@ -116,7 +116,7 @@ class BleGattCharacteristic internal constructor(
         when (event) {
             is CharacteristicEvent -> onEvent(event)
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
-            is OnReliableWriteCompleted -> TODO()
+            is OnReliableWriteCompleted -> { }
         }
     }
 
