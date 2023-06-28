@@ -75,7 +75,7 @@ class BleServerGattDescriptor internal constructor(
         }
     }
 
-    private fun onExecuteWrite(event: OnExecuteWrite) {
+    internal fun onExecuteWrite(event: OnExecuteWrite) {
         _value.tryEmit(transactionalValue)
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)

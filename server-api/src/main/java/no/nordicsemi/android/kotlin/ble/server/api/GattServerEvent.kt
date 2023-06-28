@@ -80,12 +80,6 @@ data class OnServerMtuChanged(
     val mtu: Int
 ) : GattConnectionEvent
 
-data class OnExecuteWrite(
-    override val device: ClientDevice,
-    val requestId: Int,
-    val execute: Boolean
-) : ServiceEvent
-
 data class OnCharacteristicReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
@@ -128,3 +122,9 @@ data class OnDescriptorWriteRequest(
     val offset: Int,
     val value: ByteArray
 ) : DescriptorEvent
+
+data class OnExecuteWrite(
+    override val device: ClientDevice,
+    val requestId: Int,
+    val execute: Boolean
+) : ServiceEvent

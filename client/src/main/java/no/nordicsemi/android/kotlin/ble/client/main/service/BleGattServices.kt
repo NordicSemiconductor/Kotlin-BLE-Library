@@ -39,12 +39,12 @@ import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
-class BleGattServices internal constructor(
-    gatt: GattClientAPI,
-    androidGattServices: List<IBluetoothGattService>,
-    logger: BlekLogger,
-    mutex: MutexWrapper,
-    mtuProvider: MtuProvider
+data class BleGattServices internal constructor(
+    private val gatt: GattClientAPI,
+    private val androidGattServices: List<IBluetoothGattService>,
+    private val logger: BlekLogger,
+    private val mutex: MutexWrapper,
+    private val mtuProvider: MtuProvider
 ) {
 
     private val services = androidGattServices.map { BleGattService(gatt, it, logger, mutex, mtuProvider) }

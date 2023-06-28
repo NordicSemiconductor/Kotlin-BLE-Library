@@ -38,11 +38,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -52,7 +54,9 @@ import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStar
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseInterval
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleTxPowerLevel
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
@@ -122,8 +126,7 @@ class ServerViewModel @Inject constructor(
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertiseConfig(
                 settings = BleAdvertiseSettings(
-                    deviceName = "Super Server",
-                    primaryPhy = BleGattPrimaryPhy.PHY_LE_1M,
+                    deviceName = "Super Server"
                 ),
                 advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
             )
@@ -131,6 +134,7 @@ class ServerViewModel @Inject constructor(
             launch {
                 advertiser.advertise(advertiserConfig)
                     .cancellable()
+                    .catch { it.printStackTrace() }
                     .collect {
                         if (it is OnAdvertisingSetStarted) {
                             _state.value = _state.value.copy(isAdvertising = true)

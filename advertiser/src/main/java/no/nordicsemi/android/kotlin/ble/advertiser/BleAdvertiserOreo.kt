@@ -70,6 +70,8 @@ internal class BleAdvertiserOreo(
             trySend(it)
         }
 
+        bluetoothAdapter.setName(config.settings.deviceName)
+
         bluetoothLeAdvertiser.startAdvertisingSet(
             settings.toNative(),
             advertiseData?.toNative(),

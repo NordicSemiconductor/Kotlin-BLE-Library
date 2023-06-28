@@ -13,6 +13,10 @@ data class MockBluetoothGattCharacteristic private constructor(
     override var writeType: Int,
 ) : IBluetoothGattCharacteristic {
 
+    override fun toString(): String {
+        return super.toString()
+    }
+
     constructor(uuid: UUID, permissions: Int, properties: Int) : this(
         uuid,
         permissions,

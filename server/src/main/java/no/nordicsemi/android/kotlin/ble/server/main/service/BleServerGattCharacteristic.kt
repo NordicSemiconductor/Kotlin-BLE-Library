@@ -99,18 +99,24 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     internal fun onEvent(event: ServiceEvent) {
-        (event as? DescriptorEvent)?.let {
-            if (it.descriptor.characteristic == characteristic) {
-                descriptors.forEach { it.onEvent(event) }
-            }
+        when (event) {
+            is CharacteristicEvent -> onCharacteristicEvent(event)
+            is DescriptorEvent -> onDescriptorEvent(event)
+            is OnExecuteWrite -> onExecuteWrite(event)
         }
-        (event as? CharacteristicEvent)?.let {
-            when (event) {
-                is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
-                is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
-//                is OnExecuteWrite -> onExecuteWrite(event)
-                is OnNotificationSent -> onNotificationSent(event)
-            }
+    }
+
+    private fun onDescriptorEvent(event: DescriptorEvent) {
+        if (event.descriptor.characteristic == characteristic) {
+            descriptors.forEach { it.onEvent(event) }
+        }
+    }
+
+    private fun onCharacteristicEvent(event: CharacteristicEvent) {
+        when (event) {
+            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
+            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
+            is OnNotificationSent -> onNotificationSent(event)
         }
     }
 
@@ -121,6 +127,10 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     private fun onExecuteWrite(event: OnExecuteWrite) {
+        descriptors.onEach { it.onExecuteWrite(event) }
+        if (!event.execute) {
+            transactionalValue
+        }
         _value.tryEmit(transactionalValue)
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)

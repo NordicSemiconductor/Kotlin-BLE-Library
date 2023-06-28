@@ -1,9 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import java.util.UUID
 
-class NativeBluetoothGattDescriptor(
+data class NativeBluetoothGattDescriptor(
     val descriptor: BluetoothGattDescriptor,
 ) : IBluetoothGattDescriptor {
 
@@ -21,4 +22,14 @@ class NativeBluetoothGattDescriptor(
 
     override val characteristic: IBluetoothGattCharacteristic =
         NativeBluetoothGattCharacteristic(descriptor.characteristic)
+
+    override fun toString(): String {
+        return StringBuilder()
+            .append("{")
+            .append("uuid: $uuid")
+            .append("permissions: $permissions")
+            .append("value: ${value.toDisplayString()}")
+            .append("}")
+            .toString()
+    }
 }

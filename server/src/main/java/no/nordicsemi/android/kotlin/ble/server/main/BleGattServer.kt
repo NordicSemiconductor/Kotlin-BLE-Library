@@ -136,6 +136,7 @@ class BleGattServer internal constructor(
 
     init {
         server.event.onEach { event ->
+            Log.d("AAATESTAAA", "On SERVER gatt event: $event")
             when (event) {
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
