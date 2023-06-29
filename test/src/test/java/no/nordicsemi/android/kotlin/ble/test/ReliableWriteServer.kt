@@ -46,14 +46,14 @@ class ReliableWriteServer @Inject constructor(
     ) = scope.launch {
         val firstCharacteristic = BleServerGattCharacteristicConfig(
             FIRST_CHARACTERISTIC,
-            listOf(BleGattProperty.PROPERTY_NOTIFY),
-            listOf()
+            listOf(BleGattProperty.PROPERTY_WRITE, BleGattProperty.PROPERTY_READ),
+            listOf(BleGattPermission.PERMISSION_WRITE, BleGattPermission.PERMISSION_READ)
         )
 
         val secondCharacteristic = BleServerGattCharacteristicConfig(
             SECOND_CHARACTERISTIC,
-            listOf(BleGattProperty.PROPERTY_INDICATE, BleGattProperty.PROPERTY_WRITE),
-            listOf(BleGattPermission.PERMISSION_WRITE)
+            listOf(BleGattProperty.PROPERTY_WRITE, BleGattProperty.PROPERTY_READ),
+            listOf(BleGattPermission.PERMISSION_WRITE, BleGattPermission.PERMISSION_READ)
         )
 
         val serviceConfig = BleServerGattServiceConfig(

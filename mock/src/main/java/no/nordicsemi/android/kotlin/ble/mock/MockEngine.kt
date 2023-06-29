@@ -137,7 +137,7 @@ object MockEngine {
             server.serverApi,
             client,
             server.services,
-            ConnectionParams(txPhy = phy, rxPhy = phy)
+            ConnectionParams(txPhy = phy, rxPhy = phy),
         )
         serverConnections[serverDevice] = (serverConnections[serverDevice] ?: emptyList()) + clientDevice
         clientConnections[clientDevice] = connection
@@ -204,6 +204,7 @@ object MockEngine {
     }
 
     fun connect(device: ClientDevice, autoConnect: Boolean) {
+        println("Connect device")
         clientConnections[device]?.clientApi?.onEvent(
             OnConnectionStateChanged(
                 BleGattConnectionStatus.SUCCESS,

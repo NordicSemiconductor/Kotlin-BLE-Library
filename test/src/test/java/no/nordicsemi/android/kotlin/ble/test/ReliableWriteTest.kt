@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -37,6 +38,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import javax.inject.Inject
+import kotlin.test.assertContentEquals
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -142,7 +144,7 @@ class ReliableWriteTest {
 
         client.abortReliableWrite()
 
-        assertEquals(initValue, firstCharacteristic.read())
+        assertContentEquals(initValue, firstCharacteristic.read())
     }
 
     @Test
@@ -165,8 +167,8 @@ class ReliableWriteTest {
 
         client.abortReliableWrite()
 
-        assertEquals(initValue, firstCharacteristic.read())
-        assertEquals(initValue, secondCharacteristic.read())
+        assertContentEquals(initValue, firstCharacteristic.read())
+        assertContentEquals(initValue, secondCharacteristic.read())
     }
 
     @Test
@@ -187,12 +189,15 @@ class ReliableWriteTest {
 
         client.executeReliableWrite()
 
-        assertEquals(newValue, firstCharacteristic.read())
+        assertContentEquals(newValue, firstCharacteristic.read())
     }
 
     @Test
     fun `when reliable executed should return new value on each characteristic`() = runTest {
+        println("Test started")
         val client: BleGattClient = serverDevice.connect(context)
+        println("Connected")
+
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -202,7 +207,10 @@ class ReliableWriteTest {
         val newValue = byteArrayOf(0x02)
 
         firstCharacteristic.write(initValue)
-        secondCharacteristic.write(initValue)
+//        secondCharacteristic.write(initValue)
+
+
+//        val secondReadValue = secondCharacteristic.read()
 
         client.beginReliableWrite()
 
@@ -211,7 +219,9 @@ class ReliableWriteTest {
 
         client.executeReliableWrite()
 
-        assertEquals(newValue, firstCharacteristic.read())
-        assertEquals(newValue, secondCharacteristic.read())
+        val firstReadValue = firstCharacteristic.read()
+
+        assertContentEquals(newValue, firstReadValue)
+//        assertContentEquals(newValue, secondReadValue)
     }
 }

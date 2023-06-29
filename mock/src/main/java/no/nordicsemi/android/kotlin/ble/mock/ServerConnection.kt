@@ -15,5 +15,5 @@ internal data class ServerConnection(
     val services: List<IBluetoothGattService>,
     val params: ConnectionParams,
     val enabledNotification: Map<UUID, Boolean> = mutableMapOf(),
-    val isReliableWriteOn: Boolean
+    val isReliableWriteOn: Boolean = false
 )

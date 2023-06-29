@@ -102,7 +102,7 @@ class BleGattClient(
 
     init {
         gatt.event.onEach {
-            logger.log(Log.DEBUG, "On gatt event: $it")
+            println("On gatt event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it .newState)
                 is OnPhyRead -> onEvent(it)

@@ -1,6 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 fun ByteArray.getChunk(offset: Int, mtu: Int): ByteArray {
+    println("Size: ${this.size}")
     val maxSize = mtu - 3
     val sizeLeft = this.size - offset
     return if (sizeLeft > 0) {

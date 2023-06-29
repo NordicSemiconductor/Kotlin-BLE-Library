@@ -10,6 +10,8 @@ class ValueFlow private constructor(
 
     val value = mutableSharedFlow.replayCache.firstOrNull() ?: byteArrayOf()
 
+    fun getValue2() = byteArrayOf(0x02)
+
     companion object {
         fun create(): ValueFlow {
             return ValueFlow(

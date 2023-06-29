@@ -32,7 +32,6 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattDescriptor
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow

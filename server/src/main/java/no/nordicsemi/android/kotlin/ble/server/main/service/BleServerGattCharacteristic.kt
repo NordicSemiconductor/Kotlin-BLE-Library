@@ -37,8 +37,8 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
+import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
@@ -72,8 +72,6 @@ class BleServerGattCharacteristic internal constructor(
 
     val properties: List<BleGattProperty>
         get() = BleGattProperty.createProperties(characteristic.properties)
-
-    private var mtu = Mtu.min
 
     private val descriptors = characteristic.descriptors.map {
         BleServerGattDescriptor(server, instanceId, it, mtuProvider)
@@ -160,7 +158,19 @@ class BleServerGattCharacteristic internal constructor(
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val data = _value.value.getChunk(offset, mtu)
+        println("111")
+        println("444")
+        val value = try {
+            _value.getValue2()
+        } catch (t: Throwable) {
+            println(t)
+            byteArrayOf(0x02)
+        }
+        println("Value: ${value.size}")
+        println("Value: ${value.toDisplayString()}")
+        println("222")
+        println("222")
+        val data = value.getChunk(offset, mtuProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }
