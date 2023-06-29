@@ -28,6 +28,4 @@ android {
 
 dependencies {
     implementation(project(":core"))
-
-    implementation(libs.nordic.core)
 }

@@ -42,13 +42,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.utils.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
@@ -125,12 +125,10 @@ class BleGattServer internal constructor(
         }
     }
 
-    private val _onNewConnection =
-        simpleSharedFlow<Pair<ClientDevice, BluetoothGattServerConnection>>()
+    private val _onNewConnection = simpleSharedFlow<Pair<ClientDevice, BluetoothGattServerConnection>>()
     val onNewConnection = _onNewConnection.asSharedFlow()
 
-    private val _connections =
-        MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
+    private val _connections = MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
 
     private var services: List<IBluetoothGattService> = emptyList()

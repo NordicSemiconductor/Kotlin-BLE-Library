@@ -29,35 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.nordic.nexus)
-    alias(libs.plugins.kotlin.parcelize)
-}
+package no.nordicsemi.android.kotlin.ble.core.utils
 
-group = "no.nordicsemi.android.kotlin.ble"
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "scanner"
-    POM_NAME = "Nordic Kotlin library for BLE scanning"
-
-    POM_DESCRIPTION = "Nordic Android Kotlin BLE library"
-    POM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-
-    POM_DEVELOPER_ID = "syzi"
-    POM_DEVELOPER_NAME = "Sylwester Zieliński"
-    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
-}
-
-android {
-    namespace = "no.nordicsemi.android.kotlin.ble.scanner"
-}
-
-dependencies {
-    implementation(project(":core"))
-    implementation(project(":mock"))
-}
+fun <T> simpleSharedFlow() = MutableSharedFlow<T>(
+    extraBufferCapacity = 1,
+    onBufferOverflow = BufferOverflow.DROP_OLDEST
+)

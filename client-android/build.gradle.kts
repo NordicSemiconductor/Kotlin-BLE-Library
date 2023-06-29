@@ -29,6 +29,4 @@ android {
 dependencies {
     implementation(project(":core"))
     implementation(project(":client-api"))
-
-    implementation(libs.nordic.core)
 }

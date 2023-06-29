@@ -36,6 +36,4 @@ dependencies {
     testImplementation(libs.test.slf4j.simple)
     testImplementation(libs.test.robolectric)
     testImplementation(libs.kotlin.junit)
-
-    implementation(libs.nordic.core)
 }

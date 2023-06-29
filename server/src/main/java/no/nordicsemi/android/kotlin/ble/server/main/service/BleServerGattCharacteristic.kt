@@ -160,12 +160,7 @@ class BleServerGattCharacteristic internal constructor(
         val offset = event.offset
         println("111")
         println("444")
-        val value = try {
-            _value.getValue2()
-        } catch (t: Throwable) {
-            println(t)
-            byteArrayOf(0x02)
-        }
+        val value = _value.getValue2()
         println("Value: ${value.size}")
         println("Value: ${value.toDisplayString()}")
         println("222")

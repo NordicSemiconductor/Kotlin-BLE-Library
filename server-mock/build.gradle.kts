@@ -30,6 +30,4 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":mock"))
     implementation(project(":server-api"))
-
-    implementation(libs.nordic.core)
 }

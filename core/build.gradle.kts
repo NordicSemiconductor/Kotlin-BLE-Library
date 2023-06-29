@@ -58,5 +58,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.nordic.core)
+
 }

@@ -57,7 +57,7 @@ android {
 }
 
 dependencies {
-    api(project(":core"))
+    implementation(project(":core"))
     implementation(project(":mock"))
 
     implementation(libs.androidx.core.ktx)

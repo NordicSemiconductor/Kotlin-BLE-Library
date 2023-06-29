@@ -30,6 +30,4 @@ dependencies {
     implementation(project(":core"))
     implementation(project(":client-api"))
     implementation(project(":server-api"))
-
-    implementation(libs.nordic.core)
 }
