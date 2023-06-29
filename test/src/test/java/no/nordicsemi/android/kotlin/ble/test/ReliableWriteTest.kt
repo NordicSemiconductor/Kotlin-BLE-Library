@@ -15,7 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -194,9 +193,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable executed should return new value on each characteristic`() = runTest {
-        println("Test started")
         val client: BleGattClient = serverDevice.connect(context)
-        println("Connected")
 
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
@@ -207,10 +204,7 @@ class ReliableWriteTest {
         val newValue = byteArrayOf(0x02)
 
         firstCharacteristic.write(initValue)
-//        secondCharacteristic.write(initValue)
-
-
-//        val secondReadValue = secondCharacteristic.read()
+        secondCharacteristic.write(initValue)
 
         client.beginReliableWrite()
 
@@ -220,8 +214,9 @@ class ReliableWriteTest {
         client.executeReliableWrite()
 
         val firstReadValue = firstCharacteristic.read()
+        val secondReadValue = secondCharacteristic.read()
 
         assertContentEquals(newValue, firstReadValue)
-//        assertContentEquals(newValue, secondReadValue)
+        assertContentEquals(newValue, secondReadValue)
     }
 }

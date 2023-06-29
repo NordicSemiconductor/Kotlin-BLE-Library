@@ -128,6 +128,7 @@ class BleServerGattCharacteristic internal constructor(
         descriptors.onEach { it.onExecuteWrite(event) }
         if (!event.execute) {
             transactionalValue
+            return
         }
         _value.tryEmit(transactionalValue)
         transactionalValue = byteArrayOf()
@@ -160,7 +161,7 @@ class BleServerGattCharacteristic internal constructor(
         val offset = event.offset
         println("111")
         println("444")
-        val value = _value.getValue2()
+        val value = _value.value
         println("Value: ${value.size}")
         println("Value: ${value.toDisplayString()}")
         println("222")

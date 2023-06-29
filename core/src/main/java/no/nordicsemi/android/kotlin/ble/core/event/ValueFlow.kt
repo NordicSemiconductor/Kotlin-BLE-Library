@@ -5,12 +5,11 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 
 @ExperimentalApi
 class ValueFlow private constructor(
-    private val mutableSharedFlow: MutableSharedFlow<ByteArray>
+    private val mutableSharedFlow: MutableSharedFlow<ByteArray>,
 ) : MutableSharedFlow<ByteArray> by mutableSharedFlow {
 
-    val value = mutableSharedFlow.replayCache.firstOrNull() ?: byteArrayOf()
-
-    fun getValue2() = byteArrayOf(0x02)
+    val value
+        get() = mutableSharedFlow.replayCache.firstOrNull() ?: byteArrayOf()
 
     companion object {
         fun create(): ValueFlow {
