@@ -27,7 +27,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core"))
+    api(project(":core"))
 
     implementation(project(":server-api"))
     implementation(project(":mock"))
@@ -37,4 +37,5 @@ dependencies {
     testImplementation(libs.junit4)
     testImplementation(libs.androidx.test.ext)
     testImplementation(libs.kotlin.junit)
+    implementation(libs.nordic.core)
 }
