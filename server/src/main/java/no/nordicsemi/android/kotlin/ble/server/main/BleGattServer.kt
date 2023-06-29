@@ -135,7 +135,6 @@ class BleGattServer internal constructor(
 
     init {
         server.event.onEach { event ->
-            println("On SERVER gatt event: $event")
             when (event) {
                 is OnServiceAdded -> onServiceAdded(event.service, event.status)
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
@@ -147,8 +146,7 @@ class BleGattServer internal constructor(
                 is OnServerPhyUpdate -> onPhyUpdate(event)
                 is OnServerMtuChanged -> onMtuChanged(event)
             }
-        }.catch { println(it) }
-            .launchIn(ServerScope)
+        }.launchIn(ServerScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -182,16 +180,12 @@ class BleGattServer internal constructor(
 
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: ClientDevice) {
-        println("Connect device 1")
         val mtuProvider = MtuProvider()
-        println("Connect device 2")
-        println("Connect services: $services")
         val copiedServices = services.map {
             BleGattServerService(
                 server, device, BluetoothGattServiceFactory.copy(it), mtuProvider
             )
         }
-        println("Connect device 3")
         val mutableMap = connections.value.toMutableMap()
         val connection = BluetoothGattServerConnection(
             device, server, BleGattServerServices(server, device, copiedServices)
@@ -200,7 +194,6 @@ class BleGattServer internal constructor(
         _onNewConnection.tryEmit(device to connection)
         _connections.value = mutableMap.toMap()
 
-        println("Connect device 1")
         server.connect(device, true)
     }
 

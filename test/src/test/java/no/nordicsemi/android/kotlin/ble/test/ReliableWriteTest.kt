@@ -39,11 +39,6 @@ import org.robolectric.annotation.Config
 import javax.inject.Inject
 import kotlin.test.assertContentEquals
 
-/**
- * Example local unit test, which will execute on the development machine (host).
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @HiltAndroidTest
 @Config(application = HiltTestApplication::class)
 @RunWith(RobolectricTestRunner::class)

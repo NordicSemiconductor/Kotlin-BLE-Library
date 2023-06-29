@@ -159,13 +159,7 @@ class BleServerGattCharacteristic internal constructor(
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        println("111")
-        println("444")
         val value = _value.value
-        println("Value: ${value.size}")
-        println("Value: ${value.toDisplayString()}")
-        println("222")
-        println("222")
         val data = value.getChunk(offset, mtuProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
