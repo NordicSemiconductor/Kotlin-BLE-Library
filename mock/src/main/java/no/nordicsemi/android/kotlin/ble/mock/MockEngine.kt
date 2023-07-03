@@ -45,6 +45,7 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
@@ -75,7 +76,6 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
 
 object MockEngine {
-    //TODO allow for many devices
     private val _advertisedServers = MutableStateFlow(mapOf<MockServerDevice, BleScanResultData>())
     internal val advertisedServers = _advertisedServers.asStateFlow()
 
@@ -404,8 +404,9 @@ object MockEngine {
         clientConnections.remove(clientDevice)
     }
 
-    fun clearServiceCache() {
-        TODO("Not yet implemented")
+    fun clearServiceCache(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+        connection.clientApi.onEvent(OnServiceChanged())
     }
 
     fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {

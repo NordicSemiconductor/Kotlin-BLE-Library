@@ -86,7 +86,7 @@ class BleMockGatt(
     }
 
     override fun clearServicesCache() {
-        mockEngine.clearServiceCache()
+        mockEngine.clearServiceCache(serverDevice, clientDevice)
     }
 
     override fun close() {
