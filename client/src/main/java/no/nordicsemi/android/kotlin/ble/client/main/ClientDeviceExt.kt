@@ -29,7 +29,7 @@ suspend fun ServerDevice.connect(
 ): BleGattClient {
     logger.log(Log.INFO, "Connecting to ${this.address}")
     return when (this) {
-        is MockServerDevice -> connectDevice(this, context, options, logger)
+        is MockServerDevice -> connectDevice(this, options, logger)
         is RealServerDevice -> connectDevice(this, context, options, logger)
     }
 }
@@ -37,7 +37,6 @@ suspend fun ServerDevice.connect(
 @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
 suspend fun connectDevice(
     device: MockServerDevice,
-    context: Context,
     options: BleGattConnectOptions,
     logger: BlekLogger
 ): BleGattClient {

@@ -42,10 +42,8 @@ android {
 
 dependencies {
     implementation(project(":advertiser"))
-    implementation(project(":core"))
     implementation(project(":scanner"))
     implementation(project(":client"))
-    implementation(project(":logger"))
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)

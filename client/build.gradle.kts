@@ -28,10 +28,10 @@ android {
 
 dependencies {
     api(project(":core"))
+    api(project(":logger"))
 
     implementation(project(":client-api"))
     implementation(project(":mock"))
     implementation(project(":client-android"))
     implementation(project(":client-mock"))
-    implementation(project(":logger"))
 }
