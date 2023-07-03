@@ -82,8 +82,7 @@ class BleGattServer internal constructor(
         }
     }
 
-    private val _onNewConnection =
-        simpleSharedFlow<Pair<ClientDevice, BluetoothGattServerConnection>>()
+    private val _onNewConnection = simpleSharedFlow<BluetoothGattServerConnection>()
     val onNewConnection = _onNewConnection.asSharedFlow()
 
     private val _connections =
@@ -156,7 +155,7 @@ class BleGattServer internal constructor(
             device, server, BleGattServerServices(server, device, copiedServices)
         )
         mutableMap[device] = connection
-        _onNewConnection.tryEmit(device to connection)
+        _onNewConnection.tryEmit(connection)
         _connections.value = mutableMap.toMap()
 
         server.connect(device, true)

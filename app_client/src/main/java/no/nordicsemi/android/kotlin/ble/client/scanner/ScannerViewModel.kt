@@ -63,11 +63,12 @@ class ScannerViewModel @Inject constructor(
     val devices = _devices.asStateFlow()
 
     init {
+        //Create aggregator which will concat scan records with a device
         val aggregator = BleScanResultAggregator()
         scanner.scan()
-            .map { aggregator.aggregateDevices(it) }
-            .onEach { _devices.value = it }
-            .launchIn(viewModelScope)
+            .map { aggregator.aggregateDevices(it) } //Add new device and return an aggregated list
+            .onEach { _devices.value = it } //Propagated state to UI
+            .launchIn(viewModelScope) //Scanning will stop after we leave the screen
     }
 
     fun onDeviceSelected(device: ServerDevice) {

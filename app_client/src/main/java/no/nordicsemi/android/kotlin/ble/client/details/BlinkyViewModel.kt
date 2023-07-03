@@ -123,11 +123,15 @@ class BlinkyViewModel @Inject constructor(
     fun turnLed() {
         viewModelScope.launch {
             if (state.value.isLedOn) {
-                _state.value = _state.value.copy(isLedOn = false)
+                //Write is a suspend function which waits for the operation to finish.
                 ledCharacteristic.write(byteArrayOf(0x00))
+                //No exception means that write was a success. We can update UI.
+                _state.value = _state.value.copy(isLedOn = false)
             } else {
-                _state.value = _state.value.copy(isLedOn = true)
+                //Write is a suspend function which waits for the operation to finish.
                 ledCharacteristic.write(byteArrayOf(0x01))
+                //No exception means that write was a success. We can update UI.
+                _state.value = _state.value.copy(isLedOn = true)
             }
         }
     }

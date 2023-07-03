@@ -45,6 +45,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectIndexed
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
@@ -103,18 +104,21 @@ class ServerViewModel @Inject constructor(
 
     fun advertise() {
         advertisementJob = viewModelScope.launch {
+            //Define led characteristic
             val ledCharacteristic = BleServerGattCharacteristicConfig(
                 BlinkySpecifications.UUID_LED_CHAR,
                 listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
                 listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
             )
 
+            //Define button characteristic
             val buttonCharacteristic = BleServerGattCharacteristicConfig(
                 BlinkySpecifications.UUID_BUTTON_CHAR,
                 listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
                 listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
             )
 
+            //Put led and button characteristics inside a service
             val serviceConfig = BleServerGattServiceConfig(
                 BlinkySpecifications.UUID_SERVICE_DEVICE,
                 BleGattServerServiceType.SERVICE_TYPE_PRIMARY,
@@ -123,23 +127,26 @@ class ServerViewModel @Inject constructor(
 
             val server = BleGattServer.create(context, serviceConfig)
 
+
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertiseConfig(
                 settings = BleAdvertiseSettings(
-                    deviceName = "Super Server"
+                    deviceName = "My Server" // Advertise a device name
                 ),
-                advertiseData = BleAdvertiseData(ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE))
+                advertiseData = BleAdvertiseData(
+                    ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE) //Advertise main service uuid.
+                )
             )
 
-            launch {
-                advertiser.advertise(advertiserConfig)
+            viewModelScope.launch {
+                advertiser.advertise(advertiserConfig) //Start advertising
                     .cancellable()
                     .catch { it.printStackTrace() }
-                    .collect {
-                        if (it is OnAdvertisingSetStarted) {
+                    .collect { //Observe advertiser lifecycle events
+                        if (it is OnAdvertisingSetStarted) { //Handle advertising start event
                             _state.value = _state.value.copy(isAdvertising = true)
                         }
-                        if (it is OnAdvertisingSetStopped) {
+                        if (it is OnAdvertisingSetStopped) { //Handle advertising top event
                             _state.value = _state.value.copy(isAdvertising = false)
                         }
                     }
@@ -164,8 +171,7 @@ class ServerViewModel @Inject constructor(
 
     private fun setUpServices(services: BleGattServerService) {
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
-        val buttonCharacteristic =
-            services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+        val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
             _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))
