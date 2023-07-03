@@ -139,11 +139,12 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
+        val value = event.value.copyOf()
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
-            transactionalValue += event.value
+            transactionalValue = value //todo maybe +=
         } else {
-            _value.tryEmit(event.value)
+            _value.tryEmit(value)
         }
         if (event.responseNeeded) {
             server.sendResponse(

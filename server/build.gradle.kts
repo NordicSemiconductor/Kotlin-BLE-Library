@@ -28,6 +28,7 @@ android {
 
 dependencies {
     api(project(":core"))
+    api(project(":logger"))
 
     implementation(project(":server-api"))
     implementation(project(":mock"))

@@ -86,10 +86,11 @@ class BleServerGattDescriptor internal constructor(
 
     private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
+        val value = event.value.copyOf()
         if (event.preparedWrite) {
-            transactionalValue += event.value
+            transactionalValue = value
         } else {
-            _value.tryEmit(event.value)
+            _value.tryEmit(value)
         }
         if (event.responseNeeded) {
             server.sendResponse(
