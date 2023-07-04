@@ -31,7 +31,6 @@
 
 plugins {
     alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.nordic.hilt)
 }
 
