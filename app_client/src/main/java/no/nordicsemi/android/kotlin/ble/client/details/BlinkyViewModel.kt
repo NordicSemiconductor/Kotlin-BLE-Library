@@ -99,8 +99,6 @@ class BlinkyViewModel @Inject constructor(
         //Discover services on the Bluetooth LE Device.
         val services = client.discoverServices()
         configureGatt(services)
-
-        client.abortReliableWrite()
     }
 
     private suspend fun configureGatt(services: BleGattServices) {
