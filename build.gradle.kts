@@ -54,3 +54,7 @@ plugins {
 subprojects {
     apply(plugin = "org.jetbrains.dokka")
 }
+
+tasks.dokkaHtmlMultiModule.configure {
+    outputDirectory.set(rootDir.resolve("docs"))
+}

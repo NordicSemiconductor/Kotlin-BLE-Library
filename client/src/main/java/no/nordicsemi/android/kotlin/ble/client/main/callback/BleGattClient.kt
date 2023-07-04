@@ -70,6 +70,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * Dokka test
+ */
 class BleGattClient(
     private val gatt: GattClientAPI,
     private val logger: BlekLogger,
