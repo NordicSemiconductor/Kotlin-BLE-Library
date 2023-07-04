@@ -40,5 +40,4 @@ dependencies {
     testImplementation(libs.junit4)
     testImplementation(libs.androidx.test.ext)
     testImplementation(libs.kotlin.junit)
-    implementation(libs.nordic.core)
 }
