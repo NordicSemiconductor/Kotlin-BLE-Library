@@ -46,4 +46,9 @@ plugins {
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.dokka)
+}
+
+subprojects {
+    apply(plugin = "org.jetbrains.dokka")
 }
