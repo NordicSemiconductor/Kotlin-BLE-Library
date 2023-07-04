@@ -8,8 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -59,11 +57,8 @@ class BlinkyViewModel @Inject constructor(
         }
 
         //Discover services on the Bluetooth LE Device.
-        client.discoverServices()
-            .filterNotNull()
-            .onEach { configureGatt(it) }
-            .catch { it.printStackTrace() }
-            .launchIn(viewModelScope)
+        val services = client.discoverServices()
+        configureGatt(services)
     }
 
     private suspend fun configureGatt(services: BleGattServices) {

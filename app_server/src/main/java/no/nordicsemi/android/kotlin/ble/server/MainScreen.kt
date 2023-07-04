@@ -45,8 +45,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import no.nordicsemi.android.common.permission.RequireBluetooth
-import no.nordicsemi.android.common.permission.RequireLocation
+import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
+import no.nordicsemi.android.common.permissions.ble.RequireLocation
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.kotlin.ble.app.server.R
 

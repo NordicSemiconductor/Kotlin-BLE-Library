@@ -1,7 +1,6 @@
 plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.nordic.library)
+    alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.nordic.nexus)
 }
 
@@ -28,11 +27,18 @@ android {
 
 dependencies {
     api(project(":core"))
+    api(project(":logger"))
 
     implementation(project(":server-api"))
     implementation(project(":mock"))
     implementation(project(":server-mock"))
     implementation(project(":server-android"))
 
+    implementation(libs.androidx.annotation)
+    implementation(libs.kotlinx.coroutines.android)
+
+    testImplementation(libs.junit4)
+    testImplementation(libs.androidx.test.ext)
+    testImplementation(libs.kotlin.junit)
     implementation(libs.nordic.core)
 }

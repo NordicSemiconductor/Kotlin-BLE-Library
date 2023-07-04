@@ -33,18 +33,15 @@ package no.nordicsemi.android.kotlin.ble.client.main.callback
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattService
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
@@ -55,7 +52,6 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
-import no.nordicsemi.android.kotlin.ble.client.main.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -66,14 +62,19 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
+/**
+ * Dokka test
+ */
 class BleGattClient(
-    private val gatt: BleGatt,
+    private val gatt: GattClientAPI,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper = MutexWrapper()
 ) {
@@ -84,7 +85,9 @@ class BleGattClient(
     val isConnected
         get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
 
-    val mtu = MtuProvider.mtu.asStateFlow()
+    private val mtuProvider = MtuProvider()
+
+    val mtu = mtuProvider.mtu
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
@@ -98,11 +101,11 @@ class BleGattClient(
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
     private var bondStateCallback: ((BondState) -> Unit)? = null
-    private var onServicesDiscovered: (() -> Unit)? = null
+    private var onServicesDiscovered: ((BleGattServices) -> Unit)? = null
 
     init {
         gatt.event.onEach {
-            logger.log(Log.DEBUG, "On gatt event: $it")
+            logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
                 is OnConnectionStateChanged -> onConnectionStateChange(it.status, it .newState)
                 is OnPhyRead -> onEvent(it)
@@ -118,13 +121,16 @@ class BleGattClient(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    internal suspend fun connect(): GattConnectionState {
+    internal suspend fun waitForConnection(): GattConnectionState {
+        if (_connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED) {
+            return GattConnectionState.STATE_CONNECTED
+        }
         //emulate connecting state as it is not emitted by Android
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(GattConnectionState.STATE_CONNECTING, BleGattConnectionStatus.SUCCESS)
 
         mutex.lock()
         return suspendCoroutine { continuation ->
-            onConnectionStateChangedCallback = { connectionState, status ->
+            onConnectionStateChangedCallback = { connectionState, _ ->
                 if (connectionState == GattConnectionState.STATE_CONNECTED) {
                     logger.log(Log.INFO, "Device connected")
                     continuation.resume(GattConnectionState.STATE_CONNECTED)
@@ -242,13 +248,19 @@ class BleGattClient(
         }
     }
 
-    suspend fun discoverServices(): Flow<BleGattServices> {
-        suspendForServices()
-
-        return services.filterNotNull()
+    fun beginReliableWrite() {
+        gatt.beginReliableWrite()
     }
 
-    private suspend fun suspendForServices() {
+    fun abortReliableWrite() {
+        gatt.abortReliableWrite()
+    }
+
+    fun executeReliableWrite() {
+        gatt.executeReliableWrite()
+    }
+
+    suspend fun discoverServices(): BleGattServices {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
@@ -257,19 +269,19 @@ class BleGattClient(
         return suspendCoroutine { continuation ->
             onServicesDiscovered = {
                 mutex.unlock()
-                continuation.resume(Unit)
+                continuation.resume(it)
                 onServicesDiscovered = null
             }
             gatt.discoverServices()
         }
     }
 
-    private fun onServicesDiscovered(gattServices: List<BluetoothGattService>?, status: BleGattOperationStatus) {
+    private fun onServicesDiscovered(gattServices: List<IBluetoothGattService>, status: BleGattOperationStatus) {
         logger.log(Log.INFO, "Services discovered")
-        logger.log(Log.DEBUG, "Discovered services: ${gattServices?.map { it.uuid }}, status: $status")
-        val services = gattServices?.let { BleGattServices(gatt, it, logger, mutex) }
+        logger.log(Log.DEBUG, "Discovered services: ${gattServices.map { it.uuid }}, status: $status")
+        val services = gattServices.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
         _services.value = services
-        onServicesDiscovered?.invoke()
+        onServicesDiscovered?.invoke(services)
     }
 
     private fun onBondStateChanged(bondState: BondState) {
@@ -278,7 +290,7 @@ class BleGattClient(
     }
 
     private fun onEvent(event: OnMtuChanged) {
-        MtuProvider.mtu.value = event.mtu
+        mtuProvider.updateMtu(event.mtu)
         mtuCallback?.invoke(event)
     }
 

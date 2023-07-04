@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.viewmodel.BlinkySpecifications
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.BleGattServer
@@ -42,7 +43,7 @@ class BlinkyServer @Inject constructor(
         val server = BleGattServer.create(
             context = context,
             config = arrayOf(serviceConfig),
-            mock = true
+            mock = MockServerDevice()
         )
 
         launch {

@@ -35,19 +35,37 @@ import android.Manifest
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseData
-import no.nordicsemi.android.kotlin.ble.advertiser.data.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 interface BleAdvertiser {
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    fun advertise(
-        settings: BleAdvertiseSettings = BleAdvertiseSettings(),
-        advertiseData: BleAdvertiseData? = null,
-        scanResponseData: BleAdvertiseData? = null
-    ): Flow<BleAdvertisingEvent>
+    fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent>
+
+    fun advertise(config: BleAdvertiseConfig, mock: MockServerDevice): Flow<BleAdvertisingEvent> {
+        return callbackFlow {
+
+            MockEngine.advertiseServer(mock, config)
+
+            trySend(
+                OnAdvertisingSetStarted(null, 0, BleAdvertiseStatus.ADVERTISE_SUCCESS)
+            )
+
+            awaitClose {
+                MockEngine.stopAdvertising(mock)
+                trySend(OnAdvertisingSetStopped(null))
+            }
+        }
+    }
 
     companion object {
         fun create(context: Context): BleAdvertiser {

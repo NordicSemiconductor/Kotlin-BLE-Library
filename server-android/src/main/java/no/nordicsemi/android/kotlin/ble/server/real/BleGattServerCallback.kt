@@ -44,6 +44,9 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
@@ -51,7 +54,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChange
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
@@ -71,25 +74,27 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
         device: BluetoothDevice?,
         requestId: Int,
         offset: Int,
-        characteristic: BluetoothGattCharacteristic?
+        characteristic: BluetoothGattCharacteristic
     ) {
-        _event.tryEmit(OnCharacteristicReadRequest(RealClientDevice(device!!), requestId, offset, characteristic!!))
+        val native = NativeBluetoothGattCharacteristic(characteristic)
+        _event.tryEmit(OnCharacteristicReadRequest(RealClientDevice(device!!), requestId, offset, native))
     }
 
     override fun onCharacteristicWriteRequest(
         device: BluetoothDevice?,
         requestId: Int,
-        characteristic: BluetoothGattCharacteristic?,
+        characteristic: BluetoothGattCharacteristic,
         preparedWrite: Boolean,
         responseNeeded: Boolean,
         offset: Int,
         value: ByteArray?
     ) {
+        val native = NativeBluetoothGattCharacteristic(characteristic)
         _event.tryEmit(
             OnCharacteristicWriteRequest(
                 RealClientDevice(device!!),
                 requestId,
-                characteristic!!,
+                native,
                 preparedWrite,
                 responseNeeded,
                 offset,
@@ -108,25 +113,27 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
         device: BluetoothDevice?,
         requestId: Int,
         offset: Int,
-        descriptor: BluetoothGattDescriptor?
+        descriptor: BluetoothGattDescriptor
     ) {
-        _event.tryEmit(OnDescriptorReadRequest(RealClientDevice(device!!), requestId, offset, descriptor!!))
+        val native = NativeBluetoothGattDescriptor(descriptor)
+        _event.tryEmit(OnDescriptorReadRequest(RealClientDevice(device!!), requestId, offset, native))
     }
 
     override fun onDescriptorWriteRequest(
         device: BluetoothDevice?,
         requestId: Int,
-        descriptor: BluetoothGattDescriptor?,
+        descriptor: BluetoothGattDescriptor,
         preparedWrite: Boolean,
         responseNeeded: Boolean,
         offset: Int,
         value: ByteArray?
     ) {
+        val native = NativeBluetoothGattDescriptor(descriptor)
         _event.tryEmit(
             OnDescriptorWriteRequest(
                 RealClientDevice(device!!),
                 requestId,
-                descriptor!!,
+                native,
                 preparedWrite,
                 responseNeeded,
                 offset,
@@ -140,7 +147,7 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
-        _event.tryEmit(OnMtuChanged(RealClientDevice(device!!), mtu))
+        _event.tryEmit(OnServerMtuChanged(RealClientDevice(device!!), mtu))
     }
 
     override fun onNotificationSent(device: BluetoothDevice?, status: Int) {
@@ -169,8 +176,9 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
         )
     }
 
-    override fun onServiceAdded(status: Int, service: BluetoothGattService?) {
-        _event.tryEmit(OnServiceAdded(service!!, BleGattOperationStatus.create(status)))
+    override fun onServiceAdded(status: Int, service: BluetoothGattService) {
+        val native = NativeBluetoothGattService(service)
+        _event.tryEmit(OnServiceAdded(native, BleGattOperationStatus.create(status)))
         onServiceAdded?.invoke()
     }
 

@@ -33,8 +33,8 @@ package no.nordicsemi.android.kotlin.ble.server.main
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattService
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,28 +43,30 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.mock.MockEngine
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerService
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServices
 import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServerConnection
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
-import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
-import no.nordicsemi.android.kotlin.ble.server.real.NativeServerAPI
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class BleGattServer internal constructor(
-    private val server: ServerAPI
+    private val server: GattServerAPI,
+    private val logger: BlekLogger,
 ) {
 
     companion object {
@@ -73,78 +75,59 @@ class BleGattServer internal constructor(
         suspend fun create(
             context: Context,
             vararg config: BleServerGattServiceConfig,
-            mock: Boolean = false
+            logger: BlekLogger = DefaultBlekLogger(context),
+            mock: MockServerDevice? = null,
         ): BleGattServer {
-            return if (mock) {
-                val services = config.map { BluetoothGattServiceFactory.create(it) }
-                MockEngine.addServices(services)
-
-                val api = MockServerAPI(MockEngine)
-                BleGattServer(api).also { MockEngine.registerServer(api) }
-            } else suspendCoroutine {
-                val nativeServer = NativeServerAPI.create(context)
-                val server = BleGattServer(nativeServer)
-                var index = 0
-
-                nativeServer.callback.onServiceAdded = {
-                    if (index <= config.lastIndex) {
-                        val service = BluetoothGattServiceFactory.create(config[index++])
-                        nativeServer.server.addService(service)
-                    } else {
-                        nativeServer.callback.onServiceAdded = null
-                        it.resume(server)
-                    }
-                }
-
-                if (config.isNotEmpty()) {
-                    val service = BluetoothGattServiceFactory.create(config[index++])
-                    nativeServer.server.addService(service)
-                } else {
-                    it.resume(server)
-                }
-            }
+            return BleGattServerFactory.create(context, logger, *config, mock = mock)
         }
     }
 
-    private val _onNewConnection = simpleSharedFlow<Pair<ClientDevice, BluetoothGattServerConnection>>()
+    private val _onNewConnection = simpleSharedFlow<BluetoothGattServerConnection>()
     val onNewConnection = _onNewConnection.asSharedFlow()
 
-    private val _connections = MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
+    private val _connections =
+        MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
     val connections = _connections.asStateFlow()
 
-    private var services: List<BluetoothGattService> = emptyList()
+    private var services: List<IBluetoothGattService> = emptyList()
 
     init {
-        server.event.onEach { event ->
-            when (event) {
+        server.event.onEach {
+            logger.log(Log.VERBOSE, "On gatt event: $it")
+            when (it) {
+                is OnServiceAdded -> onServiceAdded(it.service, it.status)
                 is OnClientConnectionStateChanged -> onConnectionStateChanged(
-                    event.device,
-                    event.status,
-                    event.newState
+                    it.device, it.status, it.newState
                 )
-                is OnServiceAdded -> onServiceAdded(event.service, event.status)
-                is ServiceEvent -> connections.value[event.device]?.services?.onEvent(event)
-                is OnServerPhyRead -> onPhyRead(event)
-                is OnServerPhyUpdate -> onPhyUpdate(event)
-                else -> {}
+
+                is ServiceEvent -> connections.value[it.device]?.services?.onEvent(it)
+                is OnServerPhyRead -> onPhyRead(it)
+                is OnServerPhyUpdate -> onPhyUpdate(it)
+                is OnServerMtuChanged -> onMtuChanged(it)
             }
         }.launchIn(ServerScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun stopServer() {
+        logger.log(Log.INFO, "Stopping server")
         server.close()
     }
 
     fun cancelConnection(device: ClientDevice) {
+        logger.log(Log.INFO, "Cancelling connection with client: ${device.address}")
         server.cancelConnection(device)
     }
 
     private fun onConnectionStateChanged(
         device: ClientDevice,
         status: BleGattConnectionStatus,
-        newState: GattConnectionState
+        newState: GattConnectionState,
     ) {
+        logger.log(
+            Log.INFO,
+            "Connection changed, device: ${device.address}, state: $newState, status: $status"
+        )
         when (newState) {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
@@ -161,49 +144,52 @@ class BleGattServer internal constructor(
 
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: ClientDevice) {
+        val mtuProvider = MtuProvider()
         val copiedServices = services.map {
             BleGattServerService(
-                server,
-                device,
-                BluetoothGattServiceFactory.copy(it)
+                server, device, BluetoothGattServiceFactory.copy(it), mtuProvider
             )
         }
         val mutableMap = connections.value.toMutableMap()
         val connection = BluetoothGattServerConnection(
-            device,
-            server,
-            BleGattServerServices(server, device, copiedServices)
+            device, server, BleGattServerServices(server, device, copiedServices)
         )
         mutableMap[device] = connection
-        _onNewConnection.tryEmit(device to connection)
+        _onNewConnection.tryEmit(connection)
         _connections.value = mutableMap.toMap()
 
         server.connect(device, true)
     }
 
-    private fun onServiceAdded(service: BluetoothGattService, status: BleGattOperationStatus) {
+    private fun onServiceAdded(service: IBluetoothGattService, status: BleGattOperationStatus) {
+        logger.log(Log.DEBUG, "Service added: ${service.uuid}, status: $status")
         if (status == BleGattOperationStatus.GATT_SUCCESS) {
             services = services + service
         }
     }
 
     private fun onPhyRead(event: OnServerPhyRead) {
+        logger.log(Log.DEBUG, "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy,
-                rxPhy = event.rxPhy
+                txPhy = event.txPhy, rxPhy = event.rxPhy
             )
             it[event.device] = connection
         }.toMap()
     }
 
     private fun onPhyUpdate(event: OnServerPhyUpdate) {
+        logger.log(Log.DEBUG, "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy,
-                rxPhy = event.rxPhy
+                txPhy = event.txPhy, rxPhy = event.rxPhy
             )
             it[event.device] = connection
         }.toMap()
+    }
+
+    private fun onMtuChanged(event: OnServerMtuChanged) {
+        logger.log(Log.DEBUG, "New mtu - device: ${event.device.address}, mtu: ${event.mtu}")
+        _connections.value[event.device]?.mtuProvider?.updateMtu(event.mtu)
     }
 }

@@ -39,13 +39,12 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
+import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
 import no.nordicsemi.android.kotlin.ble.client.main.connect
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
@@ -81,6 +80,7 @@ class BlinkyViewModel @Inject constructor(
 
     private lateinit var ledCharacteristic: BleGattCharacteristic
     private lateinit var buttonCharacteristic: BleGattCharacteristic
+    private lateinit var client: BleGattClient
 
     init {
         val blinkyDevice = parameterOf(BlinkyDestinationId)
@@ -90,18 +90,17 @@ class BlinkyViewModel @Inject constructor(
 
     private fun startGattClient(blinkyDevice: ServerDevice) = viewModelScope.launch {
         //Connect a Bluetooth LE device.
-        val client = blinkyDevice.connect(context)
+        client = blinkyDevice.connect(context)
 
         if (!client.isConnected) {
             return@launch
         }
 
         //Discover services on the Bluetooth LE Device.
-        client.discoverServices()
-            .filterNotNull()
-            .onEach { configureGatt(it) }
-            .catch { it.printStackTrace() }
-            .launchIn(viewModelScope)
+        val services = client.discoverServices()
+        configureGatt(services)
+
+        client.abortReliableWrite()
     }
 
     private suspend fun configureGatt(services: BleGattServices) {
@@ -124,11 +123,15 @@ class BlinkyViewModel @Inject constructor(
     fun turnLed() {
         viewModelScope.launch {
             if (state.value.isLedOn) {
-                _state.value = _state.value.copy(isLedOn = false)
+                //Write is a suspend function which waits for the operation to finish.
                 ledCharacteristic.write(byteArrayOf(0x00))
+                //No exception means that write was a success. We can update UI.
+                _state.value = _state.value.copy(isLedOn = false)
             } else {
-                _state.value = _state.value.copy(isLedOn = true)
+                //Write is a suspend function which waits for the operation to finish.
                 ledCharacteristic.write(byteArrayOf(0x01))
+                //No exception means that write was a success. We can update UI.
+                _state.value = _state.value.copy(isLedOn = true)
             }
         }
     }

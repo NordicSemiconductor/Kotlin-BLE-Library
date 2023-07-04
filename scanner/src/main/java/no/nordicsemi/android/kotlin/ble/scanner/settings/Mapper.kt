@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.scanner.settings
 
 import android.bluetooth.le.ScanSettings
 import android.os.Build
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 
 internal fun BleScannerSettings.toNative(): ScanSettings {
     return ScanSettings.Builder().apply {

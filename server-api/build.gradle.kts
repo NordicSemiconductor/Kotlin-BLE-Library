@@ -1,7 +1,6 @@
 plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
-    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.nordic.library)
+    alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.nordic.nexus)
 }
 
@@ -29,5 +28,5 @@ android {
 dependencies {
     implementation(project(":core"))
 
-    implementation(libs.nordic.core)
+    implementation(libs.kotlinx.coroutines.android)
 }

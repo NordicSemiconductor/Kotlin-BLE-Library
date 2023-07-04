@@ -32,30 +32,31 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGattCharacteristic
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.core.data.Mtu
+import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
+import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.api.OnMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.*
 
 @SuppressLint("MissingPermission")
 class BleServerGattCharacteristic internal constructor(
-    private val server: ServerAPI,
+    private val server: GattServerAPI,
     private val device: ClientDevice,
-    private val characteristic: BluetoothGattCharacteristic
+    private val characteristic: IBluetoothGattCharacteristic,
+    private val mtuProvider: MtuProvider
 ) {
 
     val uuid = characteristic.uuid
@@ -63,8 +64,8 @@ class BleServerGattCharacteristic internal constructor(
 
     private var transactionalValue = byteArrayOf()
 
-    private val _value = MutableStateFlow(characteristic.value ?: byteArrayOf())
-    val value = _value.asStateFlow()
+    private val _value = ValueFlow.create()
+    val value = _value.asSharedFlow()
 
     val permissions: List<BleGattPermission>
         get() = BleGattPermission.createPermissions(characteristic.permissions)
@@ -72,10 +73,8 @@ class BleServerGattCharacteristic internal constructor(
     val properties: List<BleGattProperty>
         get() = BleGattProperty.createProperties(characteristic.properties)
 
-    private var mtu = Mtu.min
-
     private val descriptors = characteristic.descriptors.map {
-        BleServerGattDescriptor(server, instanceId, it)
+        BleServerGattDescriptor(server, instanceId, it, mtuProvider)
     }
 
     fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {
@@ -85,8 +84,8 @@ class BleServerGattCharacteristic internal constructor(
     fun setValue(value: ByteArray) {
         // only notify once when the value changes
         //todo think about improving this
-        if (value.contentEquals(_value.value)) return
-        _value.value = value
+//        if (value.contentEquals(_value.value)) return
+        _value.tryEmit(value)
         characteristic.value = value
 
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
@@ -98,28 +97,40 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     internal fun onEvent(event: ServiceEvent) {
-        (event as? DescriptorEvent)?.let {
-            descriptors.forEach { it.onEvent(event) }
-        }
-        (event as? CharacteristicEvent)?.let {
-            when (event) {
-                is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
-                is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
-                is OnExecuteWrite -> onExecuteWrite(event)
-                is OnMtuChanged -> mtu = event.mtu
-                is OnNotificationSent -> onNotificationSent(event)
-            }
+        when (event) {
+            is CharacteristicEvent -> onCharacteristicEvent(event)
+            is DescriptorEvent -> onDescriptorEvent(event)
+            is OnExecuteWrite -> onExecuteWrite(event)
         }
     }
 
-    private fun onLocalEvent(eventCharacteristic: BluetoothGattCharacteristic, block: () -> Unit) {
+    private fun onDescriptorEvent(event: DescriptorEvent) {
+        if (event.descriptor.characteristic == characteristic) {
+            descriptors.forEach { it.onEvent(event) }
+        }
+    }
+
+    private fun onCharacteristicEvent(event: CharacteristicEvent) {
+        when (event) {
+            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
+            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
+            is OnNotificationSent -> onNotificationSent(event)
+        }
+    }
+
+    private fun onLocalEvent(eventCharacteristic: IBluetoothGattCharacteristic, block: () -> Unit) {
         if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
             block()
         }
     }
 
     private fun onExecuteWrite(event: OnExecuteWrite) {
-        _value.value = transactionalValue
+        descriptors.onEach { it.onExecuteWrite(event) }
+        if (!event.execute) {
+            transactionalValue
+            return
+        }
+        _value.tryEmit(transactionalValue)
         transactionalValue = byteArrayOf()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -128,11 +139,12 @@ class BleServerGattCharacteristic internal constructor(
     }
 
     private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
+        val value = event.value.copyOf()
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
-            transactionalValue += event.value
+            transactionalValue = value //todo maybe +=
         } else {
-            _value.value = event.value
+            _value.tryEmit(value)
         }
         if (event.responseNeeded) {
             server.sendResponse(
@@ -148,7 +160,8 @@ class BleServerGattCharacteristic internal constructor(
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val data = _value.value.getChunk(offset, mtu)
+        val value = _value.value
+        val data = value.getChunk(offset, mtuProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

@@ -1,7 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
 internal sealed interface MockRequest {
     val requestId: Int
@@ -9,14 +9,14 @@ internal sealed interface MockRequest {
 
 data class MockCharacteristicRead(
     override val requestId: Int,
-    val characteristic: BluetoothGattCharacteristic
+    val characteristic: IBluetoothGattCharacteristic
 ) : MockRequest
 
-data class MockCharacteristicWrite(override val requestId: Int, val characteristic: BluetoothGattCharacteristic) : MockRequest
+data class MockCharacteristicWrite(override val requestId: Int, val characteristic: IBluetoothGattCharacteristic) : MockRequest
 
 data class MockDescriptorRead(
     override val requestId: Int,
-    val descriptor: BluetoothGattDescriptor
+    val descriptor: IBluetoothGattDescriptor
 ) : MockRequest
 
-data class MockDescriptorWrite(override val requestId: Int, val descriptor: BluetoothGattDescriptor) : MockRequest
+data class MockDescriptorWrite(override val requestId: Int, val descriptor: IBluetoothGattDescriptor) : MockRequest

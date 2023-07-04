@@ -31,12 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
@@ -48,11 +45,13 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -60,65 +59,118 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 
 object MockEngine {
-    //TODO allow for many devices
-    private val _advertisedServers = MutableStateFlow(emptyList<MockServerDevice>())
+    private val _advertisedServers = MutableStateFlow(mapOf<MockServerDevice, BleScanResultData>())
     internal val advertisedServers = _advertisedServers.asStateFlow()
 
-    private val registeredServers = mutableMapOf<MockServerDevice, ServerAPI>()
-    private val registeredClients = mutableMapOf<MockClientDevice, BleGatt>()
-    private val connections = mutableMapOf<MockServerDevice, MockClientDevice>()
-    val reversedConnections
-        get() = connections.entries.associate{(k,v)-> v to k}
-
-    private var registeredServices = emptyList<BluetoothGattService>()
-    private val enabledNotifications = mutableMapOf<BluetoothGattCharacteristic, Boolean>()
-
-    private val connectionParams = mutableMapOf<Pair<ServerDevice, ClientDevice>, ConnectionParams>()
+    private val servers = mutableMapOf<MockServerDevice, OpenedServer>()
+    private val serverConnections = mutableMapOf<MockServerDevice, List<ClientDevice>>()
+    private val clientConnections = mutableMapOf<ClientDevice, ServerConnection>()
 
     private var requests = MockRequestHolder()
 
-    fun addServices(services: List<BluetoothGattService>) {
-        registeredServices = services
-    }
-
-    fun registerServer(server: ServerAPI) {
-        val device = MockServerDevice()
-        registeredServers[device] = server
-        registeredServices.forEach {
+    fun registerServer(
+        server: GattServerAPI,
+        device: MockServerDevice,
+        services: List<IBluetoothGattService>,
+    ) {
+        servers[device] = OpenedServer(server, services)
+        services.forEach {
             server.onEvent(OnServiceAdded(it, BleGattOperationStatus.GATT_SUCCESS))
         }
-        advertiseServer(device)
     }
 
-    fun connectToServer(device: MockServerDevice, client: BleGatt, options: BleGattConnectOptions) {
-        val server = registeredServers[device]!!
-        val clientDevice = MockClientDevice()
-        connections[device] = clientDevice
-        connectionParams[device to clientDevice] = ConnectionParams(txPhy = options.phy, rxPhy = options.phy)
-        registeredClients[clientDevice] = client
-        server.onEvent(OnClientConnectionStateChanged(clientDevice, BleGattConnectionStatus.SUCCESS, GattConnectionState.STATE_CONNECTED))
+    fun unregisterServer(device: MockServerDevice) {
+        servers.remove(device)
+        serverConnections.remove(device)?.forEach {
+            clientConnections.remove(it)?.clientApi?.onEvent(
+                OnConnectionStateChanged(
+                    BleGattConnectionStatus.SUCCESS,
+                    GattConnectionState.STATE_DISCONNECTED
+                )
+            )
+        }
     }
 
-    private fun advertiseServer(device: MockServerDevice) {
-        _advertisedServers.value = _advertisedServers.value + device
+    fun cancelConnection(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+
+        connection.serverApi.onEvent(OnClientConnectionStateChanged(
+            clientDevice,
+            BleGattConnectionStatus.SUCCESS,
+            GattConnectionState.STATE_DISCONNECTED
+        ))
+
+        connection.clientApi.onEvent(OnConnectionStateChanged(
+            BleGattConnectionStatus.SUCCESS,
+            GattConnectionState.STATE_DISCONNECTED
+        ))
+    }
+
+    fun connectToServer(
+        serverDevice: MockServerDevice,
+        clientDevice: MockClientDevice,
+        client: GattClientAPI,
+        options: BleGattConnectOptions,
+    ) {
+        val server = servers[serverDevice]!!
+        val phy = options.phy ?: BleGattPhy.PHY_LE_1M
+        val connection = ServerConnection(
+            serverDevice,
+            clientDevice,
+            server.serverApi,
+            client,
+            server.services,
+            ConnectionParams(txPhy = phy, rxPhy = phy),
+        )
+        serverConnections[serverDevice] = (serverConnections[serverDevice] ?: emptyList()) + clientDevice
+        clientConnections[clientDevice] = connection
+
+        server.serverApi.onEvent(
+            OnClientConnectionStateChanged(
+                clientDevice,
+                BleGattConnectionStatus.SUCCESS,
+                GattConnectionState.STATE_CONNECTED
+            )
+        )
+    }
+
+    fun advertiseServer(device: MockServerDevice, config: BleAdvertiseConfig) {
+        _advertisedServers.value = _advertisedServers.value + (device to config.toScanResult())
+    }
+
+    fun stopAdvertising(device: MockServerDevice) {
+        _advertisedServers.value = _advertisedServers.value - device
     }
 
     //Server side
 
-    fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+    fun sendResponse(
+        device: ClientDevice,
+        requestId: Int,
+        status: Int,
+        offset: Int,
+        value: ByteArray?,
+    ) {
         val gattStatus = BleGattOperationStatus.create(status)
-        val client = registeredClients[device]
+        val connection = clientConnections[device]
+        val client = connection?.clientApi
 
         if (value == null) {
             client?.onEvent(OnReliableWriteCompleted(BleGattOperationStatus.GATT_SUCCESS))
@@ -126,7 +178,12 @@ object MockEngine {
         }
 
         val event = when (val request = requests.getRequest(requestId)) {
-            is MockCharacteristicRead -> OnCharacteristicRead(request.characteristic, value, gattStatus)
+            is MockCharacteristicRead -> OnCharacteristicRead(
+                request.characteristic,
+                value,
+                gattStatus
+            )
+
             is MockCharacteristicWrite -> OnCharacteristicWrite(request.characteristic, gattStatus)
             is MockDescriptorRead -> OnDescriptorRead(request.descriptor, value, gattStatus)
             is MockDescriptorWrite -> OnDescriptorWrite(request.descriptor, gattStatus)
@@ -136,107 +193,251 @@ object MockEngine {
 
     fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
-        value: ByteArray
+        value: ByteArray,
     ) {
-        if (enabledNotifications[characteristic] == true) {
-            registeredClients[device]?.onEvent(OnCharacteristicChanged(characteristic, value))
+        val connection = clientConnections[device] ?: return
+        if (connection.enabledNotification[characteristic.uuid] == true) {
+            connection.clientApi.onEvent(OnCharacteristicChanged(characteristic, value))
         }
     }
 
     fun connect(device: ClientDevice, autoConnect: Boolean) {
-        registeredClients[device]?.onEvent(OnConnectionStateChanged(BleGattConnectionStatus.SUCCESS, GattConnectionState.STATE_CONNECTED))
+        clientConnections[device]?.clientApi?.onEvent(
+            OnConnectionStateChanged(
+                BleGattConnectionStatus.SUCCESS,
+                GattConnectionState.STATE_CONNECTED
+            )
+        )
     }
 
     fun readPhy(device: ClientDevice) {
-        val server = reversedConnections[device]!!
-        val params = connectionParams[server to device]!!
-        registeredServers[server]?.onEvent(OnServerPhyRead(device, params.txPhy!!, params.rxPhy!!, BleGattOperationStatus.GATT_SUCCESS))
+        val connection = clientConnections[device]!!
+        val params = connection.params
+        connection.serverApi.onEvent(
+            OnServerPhyRead(
+                device,
+                params.txPhy,
+                params.rxPhy,
+                BleGattOperationStatus.GATT_SUCCESS
+            )
+        )
     }
 
-    fun requestPhy(device: ClientDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        val server = reversedConnections[device]!!
-        val params = connectionParams[server to device]!!
-        connectionParams[server to device] = params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
-
-        registeredServers[server]?.onEvent(OnServerPhyUpdate(device, txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS))
+    fun requestPhy(
+        device: ClientDevice,
+        txPhy: BleGattPhy,
+        rxPhy: BleGattPhy,
+        phyOption: PhyOption,
+    ) {
+        val connection = clientConnections[device]!!
+        val params = connection.params
+        clientConnections[device]?.copy(
+            params = params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
+        )?.let {
+            clientConnections[device] = it
+        }
+        clientConnections[device]?.let {
+            it.serverApi.onEvent(
+                OnServerPhyUpdate(device, txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
+            )
+            it.clientApi.onEvent(OnPhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS))
+        }
     }
 
     //Client side
 
     fun writeCharacteristic(
-        device: MockServerDevice,
-        characteristic: BluetoothGattCharacteristic,
+        serverDevice: ServerDevice,
+        clientDevice: ClientDevice,
+        characteristic: IBluetoothGattCharacteristic,
         value: ByteArray,
-        writeType: BleWriteType
+        writeType: BleWriteType,
     ) {
-        val clientDevice = connections[device]!!
+        val connection = clientConnections[clientDevice]!!
         val isResponseNeeded = when (writeType) {
             BleWriteType.NO_RESPONSE -> false
             BleWriteType.DEFAULT,
             BleWriteType.SIGNED -> true
         }
         val request = requests.newWriteRequest(characteristic)
-        registeredServers[device]?.onEvent(OnCharacteristicWriteRequest(clientDevice, request.requestId, characteristic, false, isResponseNeeded, 0, value))
+        servers[serverDevice]?.serverApi?.onEvent(
+            OnCharacteristicWriteRequest(
+                clientDevice,
+                request.requestId,
+                characteristic,
+                connection.isReliableWriteOn,
+                isResponseNeeded,
+                0,
+                value
+            )
+        )
     }
 
-    fun readCharacteristic(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        val clientDevice = connections[device]!!
+    fun readCharacteristic(device: MockServerDevice, clientDevice: ClientDevice, characteristic: IBluetoothGattCharacteristic) {
         val request = requests.newReadRequest(characteristic)
-        registeredServers[device]?.onEvent(OnCharacteristicReadRequest(clientDevice, request.requestId, 0, characteristic))
+        servers[device]?.serverApi?.onEvent(
+            OnCharacteristicReadRequest(clientDevice, request.requestId, 0, characteristic)
+        )
     }
 
-    fun enableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        enabledNotifications[characteristic] = true
+    fun enableCharacteristicNotification(
+        clientDevice: ClientDevice,
+        device: MockServerDevice,
+        characteristic: IBluetoothGattCharacteristic,
+    ) {
+        val connection = clientConnections[clientDevice]!!
+        val newNotifications = connection.enabledNotification.toMutableMap()
+        newNotifications[characteristic.uuid] = true
+        val newConnection = connection.copy(enabledNotification = newNotifications)
+        clientConnections[clientDevice] = newConnection
     }
 
-    fun disableCharacteristicNotification(device: MockServerDevice, characteristic: BluetoothGattCharacteristic) {
-        enabledNotifications[characteristic] = false
+    fun disableCharacteristicNotification(
+        clientDevice: ClientDevice,
+        device: MockServerDevice,
+        characteristic: IBluetoothGattCharacteristic,
+    ) {
+        val connection = clientConnections[clientDevice] ?: return
+        val newNotifications = connection.enabledNotification.toMutableMap()
+        newNotifications[characteristic.uuid] = false
+        val newConnection = connection.copy(enabledNotification = newNotifications)
+        clientConnections[clientDevice] = newConnection
     }
 
-    fun writeDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor, value: ByteArray) {
-        val clientDevice = connections[device]!!
+    fun writeDescriptor(
+        device: MockServerDevice,
+        clientDevice: ClientDevice,
+        descriptor: IBluetoothGattDescriptor,
+        value: ByteArray,
+    ) {
+        val connection = clientConnections[clientDevice]!!
         val request = requests.newWriteRequest(descriptor)
-        registeredServers[device]?.onEvent(OnDescriptorWriteRequest(clientDevice, request.requestId, descriptor, false, true, 0, value))
+        servers[device]?.serverApi?.onEvent(
+            OnDescriptorWriteRequest(
+                device = clientDevice,
+                requestId = request.requestId,
+                descriptor = descriptor,
+                preparedWrite = connection.isReliableWriteOn,
+                responseNeeded = true,
+                offset = 0,
+                value = value
+            )
+        )
     }
 
-    fun readDescriptor(device: MockServerDevice, descriptor: BluetoothGattDescriptor) {
-        val clientDevice = connections[device]!!
+    fun readDescriptor(device: MockServerDevice, clientDevice: ClientDevice, descriptor: IBluetoothGattDescriptor) {
         val request = requests.newReadRequest(descriptor)
-        registeredServers[device]?.onEvent(OnDescriptorReadRequest(clientDevice, request.requestId, 0, descriptor))
+        servers[device]?.serverApi?.onEvent(
+            OnDescriptorReadRequest(clientDevice, request.requestId, 0, descriptor)
+        )
     }
 
-    fun readRemoteRssi(device: MockServerDevice) {
-        val clientDevice = connections[device]!!
-        val params = connectionParams[device to clientDevice]!!
-        registeredClients[clientDevice]?.onEvent(OnReadRemoteRssi(params.rssi ?: 50, BleGattOperationStatus.GATT_SUCCESS))
+    fun readRemoteRssi(clientDevice: ClientDevice, device: MockServerDevice) {
+        val connection = clientConnections[clientDevice]!!
+        connection.clientApi.onEvent(
+            OnReadRemoteRssi(connection.params.rssi, BleGattOperationStatus.GATT_SUCCESS)
+        )
     }
 
-    fun readPhy(device: MockServerDevice) {
-        val client = connections[device]!!
-        val params = connectionParams[device to client]!!
-        registeredClients[client]?.onEvent(OnPhyRead(params.txPhy!!, params.rxPhy!!, BleGattOperationStatus.GATT_SUCCESS))
+    fun readPhy(clientDevice: ClientDevice, device: MockServerDevice) {
+        val connection = clientConnections[clientDevice]!!
+        connection.clientApi.onEvent(
+            OnPhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_ERROR)
+        )
     }
 
-    fun discoverServices(device: MockServerDevice) {
-        val clientDevice = connections[device]!!
-        registeredClients[clientDevice]?.onEvent(OnServicesDiscovered(registeredServices, BleGattOperationStatus.GATT_SUCCESS))
+    fun discoverServices(clientDevice: ClientDevice, device: MockServerDevice) {
+        val connection = clientConnections[clientDevice]!!
+        val services = connection.services
+
+        val event = OnServicesDiscovered(services, BleGattOperationStatus.GATT_SUCCESS)
+
+        connection.clientApi.onEvent(event)
     }
 
-    fun setPreferredPhy(device: MockServerDevice, txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        val clientDevice = connections[device]!!
-        val params = connectionParams[device to clientDevice]!!
-        connectionParams[device to clientDevice] = params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
+    fun setPreferredPhy(
+        clientDevice: ClientDevice,
+        serverDevice: MockServerDevice,
+        txPhy: BleGattPhy,
+        rxPhy: BleGattPhy,
+        phyOption: PhyOption,
+    ) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            params = connection.params.copy(txPhy = txPhy, rxPhy = rxPhy, phyOption = phyOption)
+        )
+        clientConnections[clientDevice] = newConnection
 
-        registeredClients[clientDevice]?.onEvent(OnPhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS))
+        connection.clientApi.onEvent(
+            OnPhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
+        )
+
+        connection.serverApi.onEvent(
+            OnServerPhyUpdate(connection.client, txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
+        )
     }
 
-    fun requestMtu(device: MockServerDevice, mtu: Int) {
-        val clientDevice = connections[device]!!
-        val params = connectionParams[device to clientDevice]!!
-        connectionParams[device to clientDevice] = params.copy(mtu = mtu)
+    fun requestMtu(clientDevice: ClientDevice, serverDevice: MockServerDevice, mtu: Int) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            params = connection.params.copy(mtu = mtu)
+        )
+        clientConnections[clientDevice] = newConnection
 
-        registeredClients[clientDevice]?.onEvent(OnMtuChanged(mtu, BleGattOperationStatus.GATT_SUCCESS))
+        connection.clientApi.onEvent(
+            OnMtuChanged(mtu, BleGattOperationStatus.GATT_SUCCESS)
+        )
+
+        connection.serverApi.onEvent(
+            OnServerMtuChanged(connection.client, mtu)
+        )
+    }
+
+    fun close(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        serverConnections[serverDevice]?.let {
+            if (it.contains(clientDevice)) {
+                serverConnections[serverDevice] = it - clientDevice
+            }
+        }
+        clientConnections.remove(clientDevice)
+    }
+
+    fun clearServiceCache(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+        connection.clientApi.onEvent(OnServiceChanged())
+    }
+
+    fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            isReliableWriteOn = true
+        )
+        clientConnections[clientDevice] = newConnection
+    }
+
+    fun abortReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            isReliableWriteOn = false
+        )
+        clientConnections[clientDevice] = newConnection
+
+        connection.serverApi.onEvent(
+            OnExecuteWrite(connection.client, -1, false) //todo check request id
+        )
+    }
+
+    fun executeReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            isReliableWriteOn = false
+        )
+        clientConnections[clientDevice] = newConnection
+
+        connection.serverApi.onEvent(
+            OnExecuteWrite(connection.client, -1, true) //todo check request id
+        )
     }
 }

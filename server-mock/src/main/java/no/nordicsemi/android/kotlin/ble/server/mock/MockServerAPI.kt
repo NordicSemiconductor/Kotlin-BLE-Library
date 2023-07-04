@@ -1,22 +1,25 @@
 package no.nordicsemi.android.kotlin.ble.server.mock
 
-import android.bluetooth.BluetoothGattCharacteristic
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
-import no.nordicsemi.android.kotlin.ble.server.api.ServerAPI
 
 class MockServerAPI(
-    private val mockEngine: MockEngine
-) : ServerAPI {
+    private val mockEngine: MockEngine,
+    private val serverDevice: MockServerDevice
+) : GattServerAPI {
 
-    private val _event = MutableSharedFlow<GattServerEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    //todo verify reply side-effects
+    private val _event = MutableSharedFlow<GattServerEvent>(replay = 10, extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val event: SharedFlow<GattServerEvent> = _event.asSharedFlow()
 
     override fun onEvent(event: GattServerEvent) {
@@ -29,7 +32,7 @@ class MockServerAPI(
 
     override fun notifyCharacteristicChanged(
         device: ClientDevice,
-        characteristic: BluetoothGattCharacteristic,
+        characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
         value: ByteArray
     ) {
@@ -37,11 +40,11 @@ class MockServerAPI(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        mockEngine.unregisterServer(serverDevice)
     }
 
     override fun cancelConnection(device: ClientDevice) {
-        TODO("Not yet implemented")
+        mockEngine.cancelConnection(serverDevice, device)
     }
 
     override fun connect(device: ClientDevice, autoConnect: Boolean) {

@@ -31,21 +31,23 @@
 
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
-import android.bluetooth.BluetoothGattService
-import no.nordicsemi.android.kotlin.ble.client.api.BleGatt
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.core.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
-class BleGattServices internal constructor(
-    gatt: BleGatt,
-    androidGattServices: List<BluetoothGattService>,
-    logger: BlekLogger,
-    mutex: MutexWrapper
+data class BleGattServices internal constructor(
+    private val gatt: GattClientAPI,
+    private val androidGattServices: List<IBluetoothGattService>,
+    private val logger: BlekLogger,
+    private val mutex: MutexWrapper,
+    private val mtuProvider: MtuProvider
 ) {
 
-    private val services = androidGattServices.map { BleGattService(gatt, it, logger, mutex) }
+    private val services = androidGattServices.map { BleGattService(gatt, it, logger, mutex, mtuProvider) }
 
     fun findService(uuid: UUID): BleGattService? {
         return services.firstOrNull { it.uuid == uuid }

@@ -31,6 +31,7 @@
 
 plugins {
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
     alias(libs.plugins.kotlin.jvm) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.hilt) apply false
@@ -46,4 +47,13 @@ plugins {
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.dokka)
+}
+
+subprojects {
+    apply(plugin = "org.jetbrains.dokka")
+}
+
+tasks.dokkaHtmlMultiModule.configure {
+    outputDirectory.set(rootDir.resolve("docs"))
 }

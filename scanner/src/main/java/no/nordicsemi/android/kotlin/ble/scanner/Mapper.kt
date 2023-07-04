@@ -33,7 +33,7 @@ package no.nordicsemi.android.kotlin.ble.scanner
 
 import android.bluetooth.le.ScanResult
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
-import no.nordicsemi.android.kotlin.ble.scanner.data.BleScanResult
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.data.toDomain
 
 fun ScanResult.toScanItem(): BleScanResult {
