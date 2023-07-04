@@ -108,7 +108,7 @@ class BleGattDescriptor internal constructor(
                 pendingReadEvent = null
                 if (it.status.isSuccess) {
                     logger.log(Log.DEBUG, "Read from descriptor - end, uuid: $uuid, value: ${it.value}")
-                    continuation.resume(it.value)
+                    continuation.resume(it.value.copyOf())
                 } else {
                     logger.log(Log.ERROR, "Read from descriptor - error, uuid: $uuid, result: ${it.status}")
                     continuation.resumeWithException(GattOperationException(it.status))

@@ -202,7 +202,7 @@ class BleGattCharacteristic internal constructor(
                 pendingReadEvent = null
                 if (it.status.isSuccess) {
                     logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
-                    continuation.resume(it.value)
+                    continuation.resume(it.value.copyOf())
                 } else {
                     logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
                     continuation.resumeWithException(GattOperationException(it.status))
