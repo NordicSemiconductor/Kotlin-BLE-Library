@@ -1,0 +1,413 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>BluetoothGattWrapper</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+<a href="../../../index.html">
+<span>Kotlin-BLE-Library</span>            </a>    </div>
+    <div>
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":client-android:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="client-android::no.nordicsemi.android.kotlin.ble.client.real/BluetoothGattWrapper///PointingToDeclaration//-1536767994">
+  <div class="breadcrumbs"><a href="../../index.html">client-android</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.android.kotlin.ble.client.real</a><span class="delimiter">/</span><span class="current">BluetoothGattWrapper</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Bluetooth</span><wbr><span>Gatt</span><wbr><span><span>Wrapper</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">BluetoothGattWrapper</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">gatt<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGatt.html">BluetoothGatt</a><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><a href="../-bluetooth-gatt-client-callback/index.html">BluetoothGattClientCallback</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>autoConnect<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span> : <a href="../../../client-api/no.nordicsemi.android.kotlin.ble.client.api/-gatt-client-a-p-i/index.html">GattClientAPI</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-652823785%2FConstructors%2F-1536767994" anchor-label="BluetoothGattWrapper" id="-652823785%2FConstructors%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-bluetooth-gatt-wrapper.html"><span>Bluetooth</span><wbr><span>Gatt</span><wbr><span><span>Wrapper</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-652823785%2FConstructors%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">gatt<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGatt.html">BluetoothGatt</a><span class="token punctuation">, </span></span><span class="parameter ">callback<span class="token operator">: </span><a href="../-bluetooth-gatt-client-callback/index.html">BluetoothGattClientCallback</a><span class="token punctuation">, </span></span><span class="parameter ">autoConnect<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-895016867%2FProperties%2F-1536767994" anchor-label="autoConnect" id="-895016867%2FProperties%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="auto-connect.html"><span>auto</span><wbr><span><span>Connect</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-895016867%2FProperties%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="auto-connect.html">autoConnect</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-125928244%2FProperties%2F-1536767994" anchor-label="device" id="-125928244%2FProperties%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device.html"><span><span>device</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-125928244%2FProperties%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="device.html">device</a><span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1468579614%2FProperties%2F-1536767994" anchor-label="event" id="1468579614%2FProperties%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="event.html"><span><span>event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1468579614%2FProperties%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="event.html">event</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../../client-api/no.nordicsemi.android.kotlin.ble.client.api/-gatt-client-event/index.html">GattClientEvent</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-379117027%2FFunctions%2F-1536767994" anchor-label="abortReliableWrite" id="-379117027%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="abort-reliable-write.html"><span>abort</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-379117027%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1178364714%2FFunctions%2F-1536767994" anchor-label="beginReliableWrite" id="-1178364714%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="begin-reliable-write.html"><span>begin</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1178364714%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="707635787%2FFunctions%2F-1536767994" anchor-label="clearServicesCache" id="707635787%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clear-services-cache.html"><span>clear</span><wbr><span>Services</span><wbr><span><span>Cache</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="707635787%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="clear-services-cache.html"><span class="token function">clearServicesCache</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="605305216%2FFunctions%2F-1536767994" anchor-label="close" id="605305216%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="605305216%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1497082465%2FFunctions%2F-1536767994" anchor-label="disableCharacteristicNotification" id="1497082465%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="disable-characteristic-notification.html"><span>disable</span><wbr><span>Characteristic</span><wbr><span><span>Notification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1497082465%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="disable-characteristic-notification.html"><span class="token function">disableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="917398214%2FFunctions%2F-1536767994" anchor-label="disconnect" id="917398214%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="disconnect.html"><span><span>disconnect</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="917398214%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="disconnect.html"><span class="token function">disconnect</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-895843685%2FFunctions%2F-1536767994" anchor-label="discoverServices" id="-895843685%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="discover-services.html"><span>discover</span><wbr><span><span>Services</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-895843685%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="discover-services.html"><span class="token function">discoverServices</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="693123408%2FFunctions%2F-1536767994" anchor-label="enableCharacteristicNotification" id="693123408%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enable-characteristic-notification.html"><span>enable</span><wbr><span>Characteristic</span><wbr><span><span>Notification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="693123408%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="enable-characteristic-notification.html"><span class="token function">enableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-515087006%2FFunctions%2F-1536767994" anchor-label="executeReliableWrite" id="-515087006%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="execute-reliable-write.html"><span>execute</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-515087006%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="367702540%2FFunctions%2F-1536767994" anchor-label="onEvent" id="367702540%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-event.html"><span>on</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="367702540%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="on-event.html"><span class="token function">onEvent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../../../client-api/no.nordicsemi.android.kotlin.ble.client.api/-gatt-client-event/index.html">GattClientEvent</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="619147848%2FFunctions%2F-1536767994" anchor-label="readCharacteristic" id="619147848%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-characteristic.html"><span>read</span><wbr><span><span>Characteristic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="619147848%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="read-characteristic.html"><span class="token function">readCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2124784096%2FFunctions%2F-1536767994" anchor-label="readDescriptor" id="-2124784096%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-descriptor.html"><span>read</span><wbr><span><span>Descriptor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2124784096%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="read-descriptor.html"><span class="token function">readDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-501362675%2FFunctions%2F-1536767994" anchor-label="readPhy" id="-501362675%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-phy.html"><span>read</span><wbr><span><span>Phy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-501362675%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="917284047%2FFunctions%2F-1536767994" anchor-label="readRemoteRssi" id="917284047%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-remote-rssi.html"><span>read</span><wbr><span>Remote</span><wbr><span><span>Rssi</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="917284047%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="read-remote-rssi.html"><span class="token function">readRemoteRssi</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1532452865%2FFunctions%2F-1536767994" anchor-label="requestMtu" id="1532452865%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="request-mtu.html"><span>request</span><wbr><span><span>Mtu</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1532452865%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="request-mtu.html"><span class="token function">requestMtu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1419119998%2FFunctions%2F-1536767994" anchor-label="setPreferredPhy" id="-1419119998%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-preferred-phy.html"><span>set</span><wbr><span>Preferred</span><wbr><span><span>Phy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1419119998%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-preferred-phy.html"><span class="token function">setPreferredPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2131971931%2FFunctions%2F-1536767994" anchor-label="writeCharacteristic" id="2131971931%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-characteristic.html"><span>write</span><wbr><span><span>Characteristic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2131971931%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="write-characteristic.html"><span class="token function">writeCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">writeType<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-write-type/index.html">BleWriteType</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1389611374%2FFunctions%2F-1536767994" anchor-label="writeDescriptor" id="1389611374%2FFunctions%2F-1536767994" data-filterable-set=":client-android:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":client-android:dokkaHtmlPartial/release" data-filterable-set=":client-android:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="write-descriptor.html"><span>write</span><wbr><span><span>Descriptor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1389611374%2FFunctions%2F-1536767994"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-android:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresPermission.html"><span class="token annotation builtin">RequiresPermission</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token string">"android.permission.BLUETOOTH_CONNECT"</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="write-descriptor.html"><span class="token function">writeDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
+
