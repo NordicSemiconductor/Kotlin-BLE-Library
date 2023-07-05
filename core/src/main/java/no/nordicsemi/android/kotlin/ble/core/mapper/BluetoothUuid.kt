@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.mock.parsers
+package no.nordicsemi.android.kotlin.ble.core.mapper
 
 import android.annotation.SuppressLint
 import android.os.ParcelUuid

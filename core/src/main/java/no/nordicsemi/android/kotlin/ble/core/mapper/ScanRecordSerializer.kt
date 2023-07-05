@@ -1,18 +1,19 @@
-package no.nordicsemi.android.kotlin.ble.mock.parsers
+package no.nordicsemi.android.kotlin.ble.core.mapper
 
 import android.annotation.SuppressLint
 import android.bluetooth.le.TransportDiscoveryData
 import android.os.ParcelUuid
-import android.util.ArrayMap
 import android.util.SparseArray
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
+import java.nio.ByteBuffer
+import java.util.UUID
 
 /**
  * Represents a scan record from Bluetooth LE scan.
  */
 @Suppress("unused")
 @SuppressLint("AndroidFrameworkBluetoothPermission")
-internal object ScanRecord {
+object ScanRecordSerializer {
     /**
      * Data type is not set for the filter. Will not filter advertising data type.
      */
@@ -290,18 +291,89 @@ internal object ScanRecord {
      * @param scanRecord The scan record of Bluetooth LE advertisement and/or scan response.
      * @hide
      */
-    fun parseFromBytes(scanRecord: ByteArray?): BleScanRecord? {
-        if (scanRecord == null) {
-            return null
+    fun parseToBytes(record: BleScanRecord): ByteArray {
+        return parseToBytes(
+            record.advertiseFlag,
+            record.serviceUuids,
+            record.serviceData,
+            record.serviceSolicitationUuids,
+            record.deviceName,
+            record.txPowerLevel,
+            record.manufacturerSpecificData
+        )
+    }
+
+    fun parseToBytes(
+        advertiseFlag: Int,
+        serviceUuids: List<ParcelUuid>?,
+        serviceData: Map<ParcelUuid, ByteArray>,
+        serviceSolicitationUuids: List<ParcelUuid>,
+        deviceName: String?,
+        txPowerLevel: Int?,
+        manufacturerSpecificData: SparseArray<ByteArray>,
+    ): ByteArray {
+        var result = byteArrayOf()
+
+        result += byteArrayOf(0x02, DATA_TYPE_FLAGS.toByte(), advertiseFlag.toByte())
+
+        serviceUuids?.forEach {
+            val data = it.toByteArray()
+            result += (data.size+1).toByte()
+            result += DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE.toByte()
+            result += data
         }
+
+        for (key in serviceData.keys) {
+            val data = serviceData[key]!!
+            val serializedUuid = key.toByteArray()
+            result += (data.size+serializedUuid.size+1).toByte()
+            result += DATA_TYPE_SERVICE_DATA_128_BIT.toByte()
+            result += serializedUuid
+            result += data
+        }
+
+        txPowerLevel?.let {
+            result += 2.toByte()
+            result += DATA_TYPE_TX_POWER_LEVEL.toByte()
+            result += it.toByte()
+        }
+
+        if (!deviceName.isNullOrBlank()) {
+            val data = deviceName!!.toByteArray()
+            result += (data.size+1).toByte()
+            result += DATA_TYPE_LOCAL_NAME_SHORT.toByte()
+            result += data
+        }
+
+        serviceSolicitationUuids.forEach {
+            val data = it.toByteArray()
+            result += (data.size+1).toByte()
+            result += DATA_TYPE_SERVICE_SOLICITATION_UUIDS_128_BIT.toByte()
+            result += data
+        }
+
+        for (i in 0 until manufacturerSpecificData.size()) {
+            val key: Int = manufacturerSpecificData.keyAt(i)
+            // get the object by the key.
+            val data = manufacturerSpecificData.get(key)
+            result += (data.size+3).toByte()
+            result += DATA_TYPE_MANUFACTURER_SPECIFIC_DATA.toByte()
+            result += byteArrayOf((key and 0xFF).toByte(), ((key shr 8) and 0xFF).toByte())
+            result += data
+        }
+
+        return result
+    }
+
+    fun parseFromBytes(scanRecord: ByteArray): BleScanRecord? {
         var currentPos = 0
         var advertiseFlag = -1
-        var serviceUuids: MutableList<ParcelUuid>? = ArrayList()
-        val serviceSolicitationUuids: MutableList<ParcelUuid> = ArrayList()
+        val serviceUuids: MutableList<ParcelUuid> = mutableListOf()
+        val serviceSolicitationUuids: MutableList<ParcelUuid> = mutableListOf()
         var localName: String? = null
-        var txPowerLevel = Int.MIN_VALUE
+        var txPowerLevel: Int? = null
         val manufacturerData = SparseArray<ByteArray>()
-        val serviceData: MutableMap<ParcelUuid, ByteArray> = ArrayMap()
+        val serviceData: MutableMap<ParcelUuid, ByteArray> = mutableMapOf()
         val advertisingDataMap = HashMap<Int, ByteArray>()
         var transportDiscoveryData: TransportDiscoveryData? = null
         return try {
@@ -319,19 +391,29 @@ internal object ScanRecord {
                 advertisingDataMap[fieldType] = advertisingData
                 when (fieldType) {
                     DATA_TYPE_FLAGS -> advertiseFlag = scanRecord[currentPos].toInt() and 0xFF
-                    DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL, DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE -> parseServiceUuid(
+                    DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL,
+                    DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE,
+                    -> parseServiceUuid(
                         scanRecord, currentPos,
-                        dataLength, BluetoothUuid.UUID_BYTES_16_BIT, serviceUuids
+                        dataLength,
+                        BluetoothUuid.UUID_BYTES_16_BIT, serviceUuids
                     )
 
-                    DATA_TYPE_SERVICE_UUIDS_32_BIT_PARTIAL, DATA_TYPE_SERVICE_UUIDS_32_BIT_COMPLETE -> parseServiceUuid(
+                    DATA_TYPE_SERVICE_UUIDS_32_BIT_PARTIAL,
+                    DATA_TYPE_SERVICE_UUIDS_32_BIT_COMPLETE,
+                    -> parseServiceUuid(
                         scanRecord, currentPos, dataLength,
                         BluetoothUuid.UUID_BYTES_32_BIT, serviceUuids
                     )
 
-                    DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL, DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE -> parseServiceUuid(
-                        scanRecord, currentPos, dataLength,
-                        BluetoothUuid.UUID_BYTES_128_BIT, serviceUuids
+                    DATA_TYPE_SERVICE_UUIDS_128_BIT_PARTIAL,
+                    DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE,
+                    -> parseServiceUuid(
+                        scanRecord,
+                        currentPos,
+                        dataLength,
+                        16,
+                        serviceUuids
                     )
 
                     DATA_TYPE_SERVICE_SOLICITATION_UUIDS_16_BIT -> parseServiceSolicitationUuid(
@@ -355,20 +437,27 @@ internal object ScanRecord {
                         )
 
                     DATA_TYPE_TX_POWER_LEVEL -> txPowerLevel = scanRecord[currentPos].toInt()
-                    DATA_TYPE_SERVICE_DATA_16_BIT, DATA_TYPE_SERVICE_DATA_32_BIT, DATA_TYPE_SERVICE_DATA_128_BIT -> {
-                        var serviceUuidLength: Int = BluetoothUuid.UUID_BYTES_16_BIT
+                    DATA_TYPE_SERVICE_DATA_16_BIT,
+                    DATA_TYPE_SERVICE_DATA_32_BIT,
+                    DATA_TYPE_SERVICE_DATA_128_BIT,
+                    -> {
+                        var serviceUuidLength: Int =
+                            BluetoothUuid.UUID_BYTES_16_BIT
                         if (fieldType == DATA_TYPE_SERVICE_DATA_32_BIT) {
-                            serviceUuidLength = BluetoothUuid.UUID_BYTES_32_BIT
+                            serviceUuidLength =
+                                BluetoothUuid.UUID_BYTES_32_BIT
                         } else if (fieldType == DATA_TYPE_SERVICE_DATA_128_BIT) {
-                            serviceUuidLength = BluetoothUuid.UUID_BYTES_128_BIT
+                            serviceUuidLength =
+                                BluetoothUuid.UUID_BYTES_128_BIT
                         }
                         val serviceDataUuidBytes = extractBytes(
                             scanRecord, currentPos,
                             serviceUuidLength
                         )
-                        val serviceDataUuid: ParcelUuid = BluetoothUuid.parseUuidFrom(
-                            serviceDataUuidBytes
-                        )
+                        val serviceDataUuid: ParcelUuid =
+                            BluetoothUuid.parseUuidFrom(
+                                serviceDataUuidBytes
+                            )
                         val serviceDataArray = extractBytes(
                             scanRecord,
                             currentPos + serviceUuidLength, dataLength - serviceUuidLength
@@ -400,12 +489,10 @@ internal object ScanRecord {
                 }
                 currentPos += dataLength
             }
-            if (serviceUuids!!.isEmpty()) {
-                serviceUuids = null
-            }
+
             BleScanRecord(
                 advertiseFlag = advertiseFlag,
-                serviceUuids = serviceUuids,
+                serviceUuids = serviceUuids.takeIf { it.isNotEmpty() },
                 serviceData = serviceData,
                 serviceSolicitationUuids = serviceSolicitationUuids,
                 deviceName = localName,
@@ -421,17 +508,21 @@ internal object ScanRecord {
 
     // Parse service UUIDs.
     private fun parseServiceUuid(
-        scanRecord: ByteArray, currentPos: Int, dataLength: Int,
-        uuidLength: Int, serviceUuids: MutableList<ParcelUuid>?,
+        scanRecord: ByteArray,
+        currentPos: Int,
+        dataLength: Int,
+        uuidLength: Int,
+        serviceUuids: MutableList<ParcelUuid>,
     ): Int {
         var currentPos = currentPos
         var dataLength = dataLength
         while (dataLength > 0) {
-            val uuidBytes = extractBytes(
-                scanRecord, currentPos,
-                uuidLength
+            val uuidBytes = extractBytes(scanRecord, currentPos, uuidLength)
+            serviceUuids.add(
+                BluetoothUuid.parseUuidFrom(
+                    uuidBytes
+                )
             )
-            serviceUuids!!.add(BluetoothUuid.parseUuidFrom(uuidBytes))
             dataLength -= uuidLength
             currentPos += uuidLength
         }
@@ -442,14 +533,21 @@ internal object ScanRecord {
      * Parse service Solicitation UUIDs.
      */
     private fun parseServiceSolicitationUuid(
-        scanRecord: ByteArray, currentPos: Int,
-        dataLength: Int, uuidLength: Int, serviceSolicitationUuids: MutableList<ParcelUuid>,
+        scanRecord: ByteArray,
+        currentPos: Int,
+        dataLength: Int,
+        uuidLength: Int,
+        serviceSolicitationUuids: MutableList<ParcelUuid>,
     ): Int {
         var currentPos = currentPos
         var dataLength = dataLength
         while (dataLength > 0) {
             val uuidBytes = extractBytes(scanRecord, currentPos, uuidLength)
-            serviceSolicitationUuids.add(BluetoothUuid.parseUuidFrom(uuidBytes))
+            serviceSolicitationUuids.add(
+                BluetoothUuid.parseUuidFrom(
+                    uuidBytes
+                )
+            )
             dataLength -= uuidLength
             currentPos += uuidLength
         }
@@ -462,4 +560,13 @@ internal object ScanRecord {
         System.arraycopy(scanRecord, start, bytes, 0, length)
         return bytes
     }
+}
+
+private fun ParcelUuid.toByteArray(): ByteArray = this.uuid.asBytes().reversed().toByteArray()
+
+private fun UUID.asBytes(): ByteArray {
+    val b = ByteBuffer.wrap(ByteArray(16))
+    b.putLong(mostSignificantBits)
+    b.putLong(leastSignificantBits)
+    return b.array()
 }
