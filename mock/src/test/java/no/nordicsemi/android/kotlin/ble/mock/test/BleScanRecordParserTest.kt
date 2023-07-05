@@ -1,6 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.mock.test
 
-import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
 import no.nordicsemi.android.kotlin.ble.core.mapper.ScanRecordSerializer
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,9 +15,6 @@ internal class BleScanRecordParserTest {
 
         val record = ScanRecordSerializer.parseFromBytes(rawData)!!
         val resultRawData = ScanRecordSerializer.parseToBytes(record)
-
-        println(rawData.toDisplayString())
-        println(resultRawData.toDisplayString())
 
         assertContentEquals(rawData, resultRawData)
     }
