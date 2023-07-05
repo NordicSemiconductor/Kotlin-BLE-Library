@@ -26,14 +26,14 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 /**
- * Represents a scan record from Bluetooth LE scan.
+ * Parser serializing scan record to and from bytes.
  */
 @Suppress("unused")
 @SuppressLint("AndroidFrameworkBluetoothPermission")
 object ScanRecordSerializer {
 
     /**
-     * Parse scan record bytes to [ScanRecord].
+     * Parse scan record bytes to [BleScanRecord].
      *
      *
      * The format is defined in Bluetooth 4.1 specification, Volume 3, Part C, Section 11 and 18.
@@ -42,7 +42,6 @@ object ScanRecordSerializer {
      * All numerical multi-byte entities and values shall use little-endian **byte**
      * order.
      *
-     * @param scanRecord The scan record of Bluetooth LE advertisement and/or scan response.
      * @hide
      */
     fun parseToBytes(record: BleScanRecord): ByteArray {
@@ -57,6 +56,18 @@ object ScanRecordSerializer {
         )
     }
 
+    /**
+     * Parse [BleScanRecord] fields to byte.
+     *
+     *
+     * The format is defined in Bluetooth 4.1 specification, Volume 3, Part C, Section 11 and 18.
+     *
+     *
+     * All numerical multi-byte entities and values shall use little-endian **byte**
+     * order.
+     *
+     * @hide
+     */
     fun parseToBytes(
         advertiseFlag: Int,
         serviceUuids: List<ParcelUuid>?,
@@ -119,6 +130,19 @@ object ScanRecordSerializer {
         return result
     }
 
+    /**
+     * Parse scan record bytes to [ScanRecord].
+     *
+     *
+     * The format is defined in Bluetooth 4.1 specification, Volume 3, Part C, Section 11 and 18.
+     *
+     *
+     * All numerical multi-byte entities and values shall use little-endian **byte**
+     * order.
+     *
+     * @param scanRecord The scan record of Bluetooth LE advertisement and/or scan response.
+     * @hide
+     */
     fun parseFromBytes(scanRecord: ByteArray): BleScanRecord? {
         var currentPos = 0
         var advertiseFlag = -1
@@ -260,7 +284,9 @@ object ScanRecordSerializer {
         }
     }
 
-    // Parse service UUIDs.
+    /**
+     * Parse service UUIDs.
+     */
     private fun parseServiceUuid(
         scanRecord: ByteArray,
         currentPos: Int,
