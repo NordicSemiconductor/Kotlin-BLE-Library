@@ -27,6 +27,9 @@ import java.util.UUID
 
 /**
  * Parser serializing scan record to and from bytes.
+ *
+ * Inspired by: [ScanRecord](https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/framework/java/android/bluetooth/le/ScanRecord.java)
+ *
  */
 @Suppress("unused")
 @SuppressLint("AndroidFrameworkBluetoothPermission")
