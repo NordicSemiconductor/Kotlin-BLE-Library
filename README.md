@@ -5,9 +5,9 @@ native API and uses Kotlin Coroutines for asynchronous operations. The usage is 
 natural according to the BLE specification.
 
 ## BLE Scanner
-This module contains scanner class which provides the list of available Bluetooth LE devices. Each 
-device is kept in aggregator which keeps devices in map together with their scan records. Scanning
-works as long as a Flow has an attached consumer. After the Flow is closes the scanning stops.
+This module contains a scanner class which provides the list of available Bluetooth LE devices. Each 
+device is kept in an aggregator which keeps devices in map together with their scan records. Scanning
+works as long as a Flow has an attached consumer. After the Flow is closed the scanning stops.
 
 ```kotlin
     //Create aggregator which will concat scan records with a device
@@ -38,7 +38,7 @@ viewModelScope.launch {
     ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
     buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
-    //Observe button characteristics which detects when button is pressed.
+    //Observe button characteristic which detects when a button is pressed
     buttonCharacteristic.notification.onEach {
         //_state is a MutableStateFlow which propagates data to UI.
         _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
@@ -47,7 +47,7 @@ viewModelScope.launch {
     //Enables notifications on DK. This is a suspend function which waits until notification is enabled.
     buttonCharacteristic.enableNotifications()
 
-    //Check initial state of the Led. Read() is a suspend function which waits until the value is read from the DK.
+    //Check the initial state of the Led. Read() is a suspend function which waits until the value is read from the DK.
     val isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read())
     _state.value = _state.value.copy(isLedOn = isLedOn)
 }
@@ -59,19 +59,19 @@ viewModelScope.launch {
     if (state.value.isLedOn) {
         //Write is a suspend function which waits for the operation to finish.
         ledCharacteristic.write(byteArrayOf(0x00))
-        //No exception means that write was a success. We can update UI.
+        //No exception means that writing was a success. We can update the UI.
         _state.value = _state.value.copy(isLedOn = false)
     } else {
         //Write is a suspend function which waits for the operation to finish.
         ledCharacteristic.write(byteArrayOf(0x01))
-        //No exception means that write was a success. We can update UI.
+        //No exception means that writing was a success. We can update the UI.
         _state.value = _state.value.copy(isLedOn = true)
     }
 }
 ```
 
 ## BLE Advertiser
-The library allows to advertise a Bluetooth LE server.
+The library is used to advertise the server.
 
 ```kotlin
     val advertiser = BleAdvertiser.create(context)
@@ -92,7 +92,7 @@ The library allows to advertise a Bluetooth LE server.
                 if (it is OnAdvertisingSetStarted) { //Handle advertising start event
                     _state.value = _state.value.copy(isAdvertising = true)
                 }
-                if (it is OnAdvertisingSetStopped) { //Handle advertising top event
+                if (it is OnAdvertisingSetStopped) { //Handle advertising stop event
                     _state.value = _state.value.copy(isAdvertising = false)
                 }
             }
@@ -100,7 +100,7 @@ The library allows to advertise a Bluetooth LE server.
 ```
 
 ## BLE Server
-The library allows to create a Bluetooth LE server. 
+The library is used to create a Bluetooth LE server. 
 
 ### Declaring a server definition
 ```kotlin
