@@ -13,22 +13,18 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 
 fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
-    return if (!isLegacy()) {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         this.toExtendedResult()
     } else {
         this.toLegacyResult()
     }
 }
 
-private fun BleAdvertiseConfig.isLegacy(): Boolean {
-    return this.settings.legacyMode || Build.VERSION.SDK_INT < Build.VERSION_CODES.O
-}
-
 @RequiresApi(Build.VERSION_CODES.O)
 private fun BleAdvertiseConfig.toExtendedResult(): BleExtendedScanResult {
     return BleExtendedScanResult(
         advertisingSid = ScanResult.SID_NOT_PRESENT,
-        primaryPhy = if (isLegacy()) {
+        primaryPhy = settings.primaryPhy ?: if (settings.legacyMode) {
             BleGattPrimaryPhy.PHY_LE_1M
         } else {
             BleGattPrimaryPhy.PHY_LE_CODED
@@ -38,7 +34,7 @@ private fun BleAdvertiseConfig.toExtendedResult(): BleExtendedScanResult {
         rssi = 0,
         periodicAdvertisingInterval = null,
         timestampNanos = System.currentTimeMillis(),
-        isLegacy(),
+        settings.legacyMode,
         isConnectable = settings.connectable,
         dataStatus = BleScanDataStatus.DATA_COMPLETE,
         scanRecord = toScanRecord()
@@ -62,22 +58,32 @@ private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
     val serviceData = (advertiseData?.serviceData?.associate { it.uuid to it.data }
         ?: mapOf()) + (scanResponseData?.serviceData?.associate { it.uuid to it.data }
         ?: mapOf())
-    val serviceSolicitationUuids = listOfNotNull(
-        advertiseData?.serviceSolicitationUuid,
-        scanResponseData?.serviceSolicitationUuid
-    )
-    val deviceName = settings.deviceName?.takeIf {
-        advertiseData?.includeDeviceName == true || scanResponseData?.includeDeviceName == true
+    val serviceSolicitationUuids = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        listOfNotNull(
+            advertiseData?.serviceSolicitationUuid,
+            scanResponseData?.serviceSolicitationUuid
+        )
+    } else {
+        emptyList()
     }
-    val txPowerLevel = settings.txPowerLevel?.takeIf {
-        settings.includeTxPower == true || advertiseData?.includeTxPowerLever == true || scanResponseData?.includeTxPowerLever == true
-    }?.let {
-        if (isLegacy()) {
-            it.toLegacy()
-        } else {
-            it.toNative()
+    val deviceName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        settings.deviceName?.takeIf {
+            advertiseData?.includeDeviceName == true || scanResponseData?.includeDeviceName == true
         }
-    } ?: 0
+    } else {
+        null
+    }
+
+    val txPowerLevel = settings.txPowerLevel
+        ?.takeIf {
+            settings.includeTxPower == true || advertiseData?.includeTxPowerLever == true || scanResponseData?.includeTxPowerLever == true
+        }?.let {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                it.toLegacy()
+            } else {
+                it.toNative()
+            }
+        } ?: 0
     val manufacturerSpecificData = SparseArray<ByteArray>().also { array ->
         advertiseData?.manufacturerData?.forEach {
             array.put(it.id, it.data)

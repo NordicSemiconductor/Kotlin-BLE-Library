@@ -1,7 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.core.scanner
 
 import android.bluetooth.BluetoothDevice
+import android.os.Build
+import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.O)
 enum class BleGattPrimaryPhy(private val value: Int) {
 
     PHY_LE_1M(BluetoothDevice.PHY_LE_1M),
