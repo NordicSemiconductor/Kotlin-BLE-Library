@@ -424,8 +424,9 @@ object MockEngine {
         )
         clientConnections[clientDevice] = newConnection
 
+        val request = requests.newAbortReliableWriteRequest()
         connection.serverApi.onEvent(
-            OnExecuteWrite(connection.client, -1, false) //todo check request id
+            OnExecuteWrite(connection.client, request.requestId, false)
         )
     }
 
@@ -436,8 +437,9 @@ object MockEngine {
         )
         clientConnections[clientDevice] = newConnection
 
+        val request = requests.newExecuteReliableWriteRequest()
         connection.serverApi.onEvent(
-            OnExecuteWrite(connection.client, -1, true) //todo check request id
+            OnExecuteWrite(connection.client, request.requestId, true)
         )
     }
 }

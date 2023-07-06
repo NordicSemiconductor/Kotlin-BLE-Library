@@ -7,16 +7,34 @@ internal sealed interface MockRequest {
     val requestId: Int
 }
 
-data class MockCharacteristicRead(
+internal sealed interface SendResponseRequest : MockRequest
+
+internal data class MockCharacteristicRead(
     override val requestId: Int,
-    val characteristic: IBluetoothGattCharacteristic
-) : MockRequest
+    val characteristic: IBluetoothGattCharacteristic,
+) : SendResponseRequest
 
-data class MockCharacteristicWrite(override val requestId: Int, val characteristic: IBluetoothGattCharacteristic) : MockRequest
-
-data class MockDescriptorRead(
+internal data class MockCharacteristicWrite(
     override val requestId: Int,
-    val descriptor: IBluetoothGattDescriptor
-) : MockRequest
+    val characteristic: IBluetoothGattCharacteristic,
+) : SendResponseRequest
 
-data class MockDescriptorWrite(override val requestId: Int, val descriptor: IBluetoothGattDescriptor) : MockRequest
+internal data class MockDescriptorRead(
+    override val requestId: Int,
+    val descriptor: IBluetoothGattDescriptor,
+) : SendResponseRequest
+
+internal data class MockDescriptorWrite(
+    override val requestId: Int,
+    val descriptor: IBluetoothGattDescriptor,
+) : SendResponseRequest
+
+internal sealed interface ReliableWriteRequest : MockRequest
+
+internal data class MockExecuteReliableWrite(
+    override val requestId: Int,
+) : ReliableWriteRequest
+
+internal data class MockAbortReliableWrite(
+    override val requestId: Int,
+) : ReliableWriteRequest
