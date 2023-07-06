@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.mock.parsers
+package no.nordicsemi.android.kotlin.ble.core.mapper
 
 import android.annotation.SuppressLint
 import android.os.ParcelUuid
@@ -11,6 +11,8 @@ import java.util.UUID
  * Static helper methods and constants to decode the ParcelUuid of remote devices. Bluetooth service
  * UUIDs are defined in the SDP section of the Bluetooth Assigned Numbers document. The constant
  * 128 bit values in this class are calculated as: uuid * 2^96 + [.BASE_UUID].
+ *
+ * Inspired by: [BluetoothUuid](https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/framework/java/android/bluetooth/BluetoothUuid.java)
  *
  * @hide
  */
