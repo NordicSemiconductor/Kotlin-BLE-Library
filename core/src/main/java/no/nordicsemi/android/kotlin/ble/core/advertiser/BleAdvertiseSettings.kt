@@ -31,20 +31,29 @@
 
 package no.nordicsemi.android.kotlin.ble.core.advertiser
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 
-//todo split to clases Legacy and Modern
 data class BleAdvertiseSettings(
-    val deviceName: String? = null,
-    val connectable: Boolean = true,
-    val anonymous: Boolean? = null,
+
+    val txPowerLevel: BleTxPowerLevel? = null,
     val includeTxPower: Boolean? = null,
     val interval: BleAdvertiseInterval? = null,
+    val connectable: Boolean = true,
     val timeout: Int = 0,
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    val deviceName: String? = null,
+    @RequiresApi(Build.VERSION_CODES.O)
+    val anonymous: Boolean? = null,
+    @RequiresApi(Build.VERSION_CODES.O)
     val legacyMode: Boolean = false,
+    @RequiresApi(Build.VERSION_CODES.O)
     val primaryPhy: BleGattPrimaryPhy? = null,
+    @RequiresApi(Build.VERSION_CODES.O)
     val secondaryPhy: BleGattPhy? = null,
+    @RequiresApi(Build.VERSION_CODES.O)
     val scannable: Boolean? = false,
-    val txPowerLevel: BleTxPowerLevel? = null
 )

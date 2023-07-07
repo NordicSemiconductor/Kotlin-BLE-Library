@@ -34,21 +34,28 @@ package no.nordicsemi.android.kotlin.ble.core.scanner
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-data class BleScannerSettings(
+data class BleScannerSettings constructor(
+
     val scanMode: BleScanMode = BleScanMode.SCAN_MODE_LOW_POWER,
+    val reportDelay: Long = 0L,
+
     @RequiresApi(Build.VERSION_CODES.M)
     val callbackType: BleScannerCallbackType = BleScannerCallbackType.CALLBACK_TYPE_ALL_MATCHES,
-    val reportDelay: Long = 0L,
     @RequiresApi(Build.VERSION_CODES.M)
-    val numOfMatches: BleNumOfMatches = BleNumOfMatches.MATCH_NUM_MAX_ADVERTISEMENT,
+    val numOfMatches: BleNumOfMatches? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        BleNumOfMatches.MATCH_NUM_MAX_ADVERTISEMENT
+    } else {
+        null
+    },
     @RequiresApi(Build.VERSION_CODES.M)
-    val matchMode: BleScannerMatchMode = BleScannerMatchMode.MATCH_MODE_AGGRESSIVE,
+    val matchMode: BleScannerMatchMode? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        BleScannerMatchMode.MATCH_MODE_AGGRESSIVE
+    } else {
+        null
+    },
+
     @RequiresApi(Build.VERSION_CODES.O)
     val legacy: Boolean = false,
     @RequiresApi(Build.VERSION_CODES.O)
     val phy: BleScannerPhy = BleScannerPhy.PHY_LE_ALL_SUPPORTED,
-    val useHardwareFilteringIfSupported: Boolean = true,
-    val useHardwareBatchingIfSupported: Boolean = true,
-    val useHardwareCallbackTypesIfSupported: Boolean = true,
-    val matchOptions: MatchOptions = MatchOptions()
 )

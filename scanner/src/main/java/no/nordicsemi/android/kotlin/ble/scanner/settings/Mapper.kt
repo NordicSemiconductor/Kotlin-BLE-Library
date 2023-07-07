@@ -39,8 +39,8 @@ internal fun BleScannerSettings.toNative(): ScanSettings {
     return ScanSettings.Builder().apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             setCallbackType(callbackType.value)
-            setMatchMode(matchMode.toNative())
-            setNumOfMatches(numOfMatches.toNative())
+            matchMode?.let { setMatchMode(it.toNative()) }
+            numOfMatches?.let { setNumOfMatches(it.toNative()) }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setLegacy(legacy)

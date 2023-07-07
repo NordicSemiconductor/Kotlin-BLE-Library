@@ -67,12 +67,12 @@ class BlinkyViewModel @Inject constructor(
         ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
         buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
-        //Observe button characteristics which detects when button is pressed.
+        //Observe button characteristic which detects when a button is pressed
         buttonCharacteristic.getNotifications().onEach {
             _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
         }.launchIn(viewModelScope)
 
-        //Check initial state of the Led.
+        //Check the initial state of the Led.
         val isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read())
         _state.value = _state.value.copy(isLedOn = isLedOn)
     }
