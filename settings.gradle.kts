@@ -54,12 +54,9 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Kotlin-BLE-Library"
 
-include(":app_client")
-include(":app_server")
 include(":advertiser")
 include(":scanner")
 include(":core")
-include(":app_mock")
 include(":profile")
 include(":server-api")
 include(":server-android")
@@ -72,8 +69,3 @@ include(":client")
 include(":mock")
 include(":test")
 include(":logger")
-
-//if (file("../Android-Common-Libraries").exists()) {
-//    includeBuild("../Android-Common-Libraries")
-//}
- 
