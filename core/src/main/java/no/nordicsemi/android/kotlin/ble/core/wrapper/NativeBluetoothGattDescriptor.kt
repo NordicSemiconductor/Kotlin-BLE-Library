@@ -15,7 +15,7 @@ data class NativeBluetoothGattDescriptor(
         get() = descriptor.permissions
 
     override var value: ByteArray
-        get() = descriptor.value
+        get() = descriptor.value ?: byteArrayOf()
         set(value) {
             descriptor.value = value
         }
