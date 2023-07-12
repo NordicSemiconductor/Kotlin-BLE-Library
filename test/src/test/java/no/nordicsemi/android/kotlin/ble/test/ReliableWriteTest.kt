@@ -20,7 +20,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
 import no.nordicsemi.android.kotlin.ble.client.main.callback.BleGattClient
-import no.nordicsemi.android.kotlin.ble.client.main.connect
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -103,7 +102,7 @@ class ReliableWriteTest {
             GattConnectionState.STATE_CONNECTED,
             BleGattConnectionStatus.SUCCESS
         )
-        val client = serverDevice.connect(context)
+        val client = BleGattClient.connect(context, serverDevice)
 
         assertEquals(connectedState, client.connectionStateWithStatus.value)
     }
@@ -114,7 +113,7 @@ class ReliableWriteTest {
             GattConnectionState.STATE_DISCONNECTED,
             BleGattConnectionStatus.SUCCESS
         )
-        val client = serverDevice.connect(context)
+        val client = BleGattClient.connect(context, serverDevice)
 
         server.stopServer()
 
@@ -123,7 +122,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable aborted should return previous value`() = runTest {
-        val client: BleGattClient = serverDevice.connect(context)
+        val client: BleGattClient = BleGattClient.connect(context, serverDevice)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -143,7 +142,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable aborted should return previous value on each characteristic`() = runTest {
-        val client: BleGattClient = serverDevice.connect(context)
+        val client: BleGattClient = BleGattClient.connect(context, serverDevice)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -167,7 +166,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable executed should return new value`() = runTest {
-        val client: BleGattClient = serverDevice.connect(context)
+        val client: BleGattClient = BleGattClient.connect(context, serverDevice)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -188,7 +187,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable executed should return new value on each characteristic`() = runTest {
-        val client: BleGattClient = serverDevice.connect(context)
+        val client: BleGattClient = BleGattClient.connect(context, serverDevice)
 
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
