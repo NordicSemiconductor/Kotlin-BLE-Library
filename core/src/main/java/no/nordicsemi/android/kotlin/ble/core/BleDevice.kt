@@ -31,9 +31,10 @@
 
 package no.nordicsemi.android.kotlin.ble.core
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.bluetooth.BluetoothDevice
 import android.os.Parcelable
+import androidx.annotation.RequiresPermission
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
@@ -60,35 +61,39 @@ sealed interface ServerDevice : BleDevice {
 
 sealed interface ClientDevice : BleDevice
 
-@SuppressLint("MissingPermission")
 @Parcelize
 data class RealClientDevice(
-    val device: BluetoothDevice
+    val device: BluetoothDevice,
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String = device.name ?: ""
+    override val name: String
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        get() = device.name ?: ""
 
     @IgnoredOnParcel
     override val address: String = device.address
 
     override val bondState: BondState
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         get() = BondState.create(device.bondState)
 }
 
-@SuppressLint("MissingPermission")
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String = device.name ?: ""
+    override val name: String
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        get() = device.name ?: ""
 
     @IgnoredOnParcel
     override val address: String = device.address
 
     override val bondState: BondState
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         get() = BondState.create(device.bondState)
 }
 
@@ -96,7 +101,7 @@ data class RealServerDevice(
 data class MockClientDevice(
     override val name: String = "CLIENT",
     override val address: String = "11:22:33:44:55",
-    override val bondState: BondState = BondState.NONE
+    override val bondState: BondState = BondState.NONE,
 ) : ClientDevice, Parcelable
 
 @Parcelize
