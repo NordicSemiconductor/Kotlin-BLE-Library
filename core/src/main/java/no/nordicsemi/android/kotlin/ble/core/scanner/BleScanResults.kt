@@ -19,6 +19,7 @@ data class BleScanResults(
 
     @IgnoredOnParcel
     val highestRssi = scanResult.maxOfOrNull { it.rssi } ?: 0
+
     @IgnoredOnParcel
     val lastScanResult = scanResult.lastOrNull()
 }
