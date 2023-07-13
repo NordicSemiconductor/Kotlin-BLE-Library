@@ -32,6 +32,7 @@ dependencies {
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.nordic.core)
 
     testImplementation(libs.hilt.android.testing)
     testImplementation(libs.androidx.test.rules)

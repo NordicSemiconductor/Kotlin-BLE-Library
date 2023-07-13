@@ -35,33 +35,30 @@ import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
+/**
+ * Defines callback type for Bluetooth LE scan.
+ *
+ * @property value Native Android API value.
+ * @see [ScanSettings.Builder](https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder#setCallbackType(int))
+ */
 enum class BleScannerCallbackType(val value: Int) {
     /**
      * Trigger a callback for every Bluetooth advertisement found that matches the filter criteria.
      * If no filter is active, all advertisement packets are reported.
      */
-    CALLBACK_TYPE_ALL_MATCHES(1),
+    CALLBACK_TYPE_ALL_MATCHES(ScanSettings.CALLBACK_TYPE_ALL_MATCHES),
 
     /**
      * A result callback is only triggered for the first advertisement packet received that matches
      * the filter criteria.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    CALLBACK_TYPE_FIRST_MATCH(2),
+    CALLBACK_TYPE_FIRST_MATCH(ScanSettings.CALLBACK_TYPE_FIRST_MATCH),
 
     /**
      * Receive a callback when advertisements are no longer received from a device that has been
      * previously reported by a first match callback.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    CALLBACK_TYPE_MATCH_LOST(4);
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    fun toNative(): Int {
-        return when (this) {
-            CALLBACK_TYPE_ALL_MATCHES -> ScanSettings.CALLBACK_TYPE_ALL_MATCHES
-            CALLBACK_TYPE_FIRST_MATCH -> ScanSettings.CALLBACK_TYPE_FIRST_MATCH
-            CALLBACK_TYPE_MATCH_LOST -> ScanSettings.CALLBACK_TYPE_MATCH_LOST
-        }
-    }
+    CALLBACK_TYPE_MATCH_LOST(ScanSettings.CALLBACK_TYPE_MATCH_LOST);
 }

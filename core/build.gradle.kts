@@ -60,4 +60,5 @@ android {
 dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.nordic.core)
 }

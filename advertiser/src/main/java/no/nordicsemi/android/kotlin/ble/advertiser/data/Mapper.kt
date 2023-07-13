@@ -48,9 +48,9 @@ internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
         setConnectable(connectable)
         includeTxPower?.let { setIncludeTxPower(it) }
         setLegacyMode(legacyMode)
-        primaryPhy?.toNative()?.let { setPrimaryPhy(it) }
+        primaryPhy?.value?.let { setPrimaryPhy(it) }
         scannable?.let { setScannable(it) }
-        secondaryPhy?.toNative()?.let { setSecondaryPhy(it) }
+        secondaryPhy?.value?.let { setSecondaryPhy(it) }
     }.build()
 }
 

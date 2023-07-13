@@ -5,6 +5,12 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
+/**
+ * Class containing all scan results grouped with an advertising device.
+ *
+ * @property device [ServerDevice] which may be connectable
+ * @property data List of scan results ([BleScanResultData]) captured during scanning.
+ */
 @Parcelize
 data class BleScanResults(
     val device: ServerDevice,

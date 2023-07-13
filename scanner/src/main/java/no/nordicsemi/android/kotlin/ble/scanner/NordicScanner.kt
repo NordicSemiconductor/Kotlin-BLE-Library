@@ -39,10 +39,12 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
+import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
@@ -51,6 +53,14 @@ import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
 
+/**
+ * Wrapper class for the native Android API.
+ * It has a single function that returns a flow that continuously emits single scan items.
+ *
+ * @constructor Initialize scanner's components.
+ *
+ * @param context Android context required to initialize native Android API
+ */
 class NordicScanner(
     context: Context
 ) {
@@ -65,6 +75,15 @@ class NordicScanner(
         bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
     }
 
+    /**
+     * Starts scanning and emit results in the [Flow].
+     * Automatically stops scanning when [CoroutineScope] of the [Flow] is closed.
+     *
+     * Returns [MockServerDevice] if any mock server has been registered.
+     *
+     * @param settings for scanning configuration
+     * @return [Flow] which emits scan findings ([BleScanResult]) in chronological order
+     */
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanResult> = callbackFlow {
         launch {

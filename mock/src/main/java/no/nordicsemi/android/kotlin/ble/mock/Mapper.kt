@@ -4,10 +4,10 @@ import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleExtendedScanResult
+import no.nordicsemi.android.kotlin.ble.core.mapper.ScanRecordSerializer
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleLegacyScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
@@ -21,8 +21,8 @@ fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun BleAdvertiseConfig.toExtendedResult(): BleExtendedScanResult {
-    return BleExtendedScanResult(
+private fun BleAdvertiseConfig.toExtendedResult(): BleScanResultData {
+    return BleScanResultData(
         advertisingSid = ScanResult.SID_NOT_PRESENT,
         primaryPhy = settings.primaryPhy ?: if (settings.legacyMode) {
             BleGattPrimaryPhy.PHY_LE_1M
@@ -34,15 +34,15 @@ private fun BleAdvertiseConfig.toExtendedResult(): BleExtendedScanResult {
         rssi = 0,
         periodicAdvertisingInterval = null,
         timestampNanos = System.currentTimeMillis(),
-        settings.legacyMode,
+        isLegacy = settings.legacyMode,
         isConnectable = settings.connectable,
         dataStatus = BleScanDataStatus.DATA_COMPLETE,
         scanRecord = toScanRecord()
     )
 }
 
-private fun BleAdvertiseConfig.toLegacyResult(): BleLegacyScanResult {
-    return BleLegacyScanResult(
+private fun BleAdvertiseConfig.toLegacyResult(): BleScanResultData {
+    return BleScanResultData(
         rssi = 0,
         timestampNanos = System.currentTimeMillis(),
         scanRecord = toScanRecord()
@@ -92,6 +92,15 @@ private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
             array.put(it.id, it.data)
         }
     }
+    val rawData = ScanRecordSerializer.parseToBytes(
+        flags,
+        serviceUuids,
+        serviceData,
+        serviceSolicitationUuids,
+        deviceName,
+        txPowerLevel,
+        manufacturerSpecificData
+    )
     return BleScanRecord(
         advertiseFlag = flags,
         serviceUuids = serviceUuids,
@@ -99,6 +108,7 @@ private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
         serviceSolicitationUuids = serviceSolicitationUuids,
         deviceName = deviceName,
         txPowerLevel = txPowerLevel,
+        bytes = DataByteArray(rawData),
         manufacturerSpecificData = manufacturerSpecificData
     )
 }

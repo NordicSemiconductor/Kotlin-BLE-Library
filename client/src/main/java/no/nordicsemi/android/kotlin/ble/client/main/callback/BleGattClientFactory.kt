@@ -89,7 +89,7 @@ internal object BleGattClientFactory {
                 options.autoConnect,
                 gattCallback,
                 BluetoothDevice.TRANSPORT_LE,
-                options.phy?.toNative() ?: 0
+                options.phy?.value ?: 0
             )
         } else {
             device.connectGatt(context, options.autoConnect, gattCallback)

@@ -35,26 +35,25 @@ import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleScannerMatchMode{
+/**
+ * Set match mode ([BleScannerMatchMode]) for Bluetooth LE scan filters hardware match.
+ *
+ * @property value Native Android API value.
+ * @see [ScanSettings.Builder](https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder#setMatchMode(int))
+ */
+@RequiresApi(Build.VERSION_CODES.M)
+enum class BleScannerMatchMode(val value: Int){
     /**
      * In Aggressive mode, hw will determine a match sooner even with feeble signal strength and
      * few number of sightings/match in a duration.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_MODE_AGGRESSIVE,
+    MATCH_MODE_AGGRESSIVE(ScanSettings.MATCH_MODE_AGGRESSIVE),
 
     /**
      * For sticky mode, higher threshold of signal strength and sightings is required before
      * reporting by hw.
      */
     @RequiresApi(Build.VERSION_CODES.M)
-    MATCH_MODE_STICKY;
-
-    @RequiresApi(Build.VERSION_CODES.M)
-    fun toNative(): Int {
-        return when (this) {
-            MATCH_MODE_AGGRESSIVE -> ScanSettings.MATCH_MODE_AGGRESSIVE
-            MATCH_MODE_STICKY -> ScanSettings.MATCH_MODE_STICKY
-        }
-    }
+    MATCH_MODE_STICKY(ScanSettings.MATCH_MODE_STICKY);
 }
