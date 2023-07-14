@@ -46,11 +46,31 @@ import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
-interface BleAdvertiser {
+/**
+ * Advertiser class which provides BLE advertising functionality.
+ * It is wrapper around native Android API.
+ *
+ * @see [BluetoothLeAdvertiser](https://developer.android.com/reference/android/bluetooth/le/BluetoothLeAdvertiser)
+ */
+interface NordicAdvertiser {
 
-    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
+    /**
+     * Starts BLE advertising.
+     *
+     * @param config Advertising configuration [BleAdvertiseConfig]
+     * @return [Flow] which emits advertisement process status changes ([BleAdvertisingEvent]).
+     */
+    @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE])
     fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent>
 
+    /**
+     * Starts BLE advertising locally on a device. The devices should be returned by NordicScanner
+     * during scanning.
+     *
+     * @param config Advertising configuration [BleAdvertiseConfig]
+     * @param mock [MockServerDevice] which will advertised locally on a device.
+     * @return which emits advertisement process status changes ([BleAdvertisingEvent]).
+     */
     fun advertise(config: BleAdvertiseConfig, mock: MockServerDevice): Flow<BleAdvertisingEvent> {
         return callbackFlow {
 
@@ -68,11 +88,19 @@ interface BleAdvertiser {
     }
 
     companion object {
-        fun create(context: Context): BleAdvertiser {
+
+        /**
+         * Creates an instance of [NordicAdvertiser]. The implementation differs based on Android
+         * version. Limited functionality is available prior to Android O.
+         *
+         * @param context application context
+         * @return instance of [NordicAdvertiser]
+         */
+        fun create(context: Context): NordicAdvertiser {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                BleAdvertiserOreo(context)
+                NordicAdvertiserOreo(context)
             } else {
-                BleAdvertiserLegacy(context)
+                NordicAdvertiserLegacy(context)
             }
         }
     }

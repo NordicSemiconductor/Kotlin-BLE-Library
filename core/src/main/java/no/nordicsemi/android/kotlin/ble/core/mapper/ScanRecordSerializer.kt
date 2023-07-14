@@ -29,8 +29,7 @@ import java.util.UUID
 /**
  * Parser serializing scan record to and from bytes.
  *
- * Inspired by: [ScanRecord](https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/framework/java/android/bluetooth/le/ScanRecord.java)
- *
+ * @see [ScanRecord](https://cs.android.com/android/platform/superproject/+/master:packages/modules/Bluetooth/framework/java/android/bluetooth/le/ScanRecord.java)
  */
 @Suppress("unused")
 @SuppressLint("AndroidFrameworkBluetoothPermission")
@@ -75,11 +74,11 @@ object ScanRecordSerializer {
     fun parseToBytes(
         advertiseFlag: Int,
         serviceUuids: List<ParcelUuid>?,
-        serviceData: Map<ParcelUuid, ByteArray>,
+        serviceData: Map<ParcelUuid, DataByteArray>,
         serviceSolicitationUuids: List<ParcelUuid>,
         deviceName: String?,
         txPowerLevel: Int?,
-        manufacturerSpecificData: SparseArray<ByteArray>,
+        manufacturerSpecificData: SparseArray<DataByteArray>,
     ): ByteArray {
         var result = byteArrayOf()
 
@@ -95,10 +94,10 @@ object ScanRecordSerializer {
         for (key in serviceData.keys) {
             val data = serviceData[key]!!
             val serializedUuid = key.toByteArray()
-            result += (data.size+serializedUuid.size+1).toByte()
+            result += (data.value.size+serializedUuid.size+1).toByte()
             result += DATA_TYPE_SERVICE_DATA_128_BIT.toByte()
             result += serializedUuid
-            result += data
+            result += data.value
         }
 
         txPowerLevel?.let {
@@ -125,10 +124,10 @@ object ScanRecordSerializer {
             val key: Int = manufacturerSpecificData.keyAt(i)
             // get the object by the key.
             val data = manufacturerSpecificData.get(key)
-            result += (data.size+3).toByte()
+            result += (data.value.size+3).toByte()
             result += DATA_TYPE_MANUFACTURER_SPECIFIC_DATA.toByte()
             result += byteArrayOf((key and 0xFF).toByte(), ((key shr 8) and 0xFF).toByte())
-            result += data
+            result += data.value
         }
 
         return result
@@ -154,9 +153,9 @@ object ScanRecordSerializer {
         val serviceSolicitationUuids: MutableList<ParcelUuid> = mutableListOf()
         var localName: String? = null
         var txPowerLevel: Int? = null
-        val manufacturerData = SparseArray<ByteArray>()
-        val serviceData: MutableMap<ParcelUuid, ByteArray> = mutableMapOf()
-        val advertisingDataMap = HashMap<Int, ByteArray>()
+        val manufacturerData = SparseArray<DataByteArray>()
+        val serviceData: MutableMap<ParcelUuid, DataByteArray> = mutableMapOf()
+        val advertisingDataMap = HashMap<Int, DataByteArray>()
         var transportDiscoveryData: TransportDiscoveryData? = null
         return try {
             while (currentPos < scanRecord.size) {
@@ -170,7 +169,7 @@ object ScanRecordSerializer {
                 // fieldType is unsigned int.
                 val fieldType = scanRecord[currentPos++].toInt() and 0xFF
                 val advertisingData = extractBytes(scanRecord, currentPos, dataLength)
-                advertisingDataMap[fieldType] = advertisingData
+                advertisingDataMap[fieldType] = DataByteArray(advertisingData)
                 when (fieldType) {
                     DATA_TYPE_FLAGS -> advertiseFlag = scanRecord[currentPos].toInt() and 0xFF
                     DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL,
@@ -244,7 +243,7 @@ object ScanRecordSerializer {
                             scanRecord,
                             currentPos + serviceUuidLength, dataLength - serviceUuidLength
                         )
-                        serviceData[serviceDataUuid] = serviceDataArray
+                        serviceData[serviceDataUuid] = DataByteArray(serviceDataArray)
                     }
 
                     DATA_TYPE_MANUFACTURER_SPECIFIC_DATA -> {
@@ -257,7 +256,7 @@ object ScanRecordSerializer {
                             scanRecord, currentPos + 2,
                             dataLength - 2
                         )
-                        manufacturerData.put(manufacturerId, manufacturerDataBytes)
+                        manufacturerData.put(manufacturerId, DataByteArray(manufacturerDataBytes))
                     }
 
 //                        DATA_TYPE_TRANSPORT_DISCOVERY_DATA -> {

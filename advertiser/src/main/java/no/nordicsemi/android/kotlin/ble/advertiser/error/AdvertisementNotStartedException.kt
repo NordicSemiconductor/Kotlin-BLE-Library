@@ -31,4 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.error
 
+/**
+ * An exception thrown when error occurs during an attempt to start advertising.
+ *
+ * @property error An error ([BleAdvertiseError]) return by an advertiser.
+ */
 data class AdvertisementNotStartedException(val error: BleAdvertiseError) : Exception("Starting advertising failed with an exception: $error")

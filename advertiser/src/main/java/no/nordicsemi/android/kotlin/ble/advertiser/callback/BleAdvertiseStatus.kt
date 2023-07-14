@@ -31,12 +31,57 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.callback
 
+import android.bluetooth.le.AdvertisingSetCallback
+
+/**
+ * An advertise process status.
+ *
+ * @property value Native Android API value.
+ *
+ * @see [AdvertisingSetCallback](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback)
+ */
 enum class BleAdvertiseStatus(internal val value: Int) {
+
+    /**
+     * Failed to start advertising as the advertising is already started.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_FAILED_ALREADY_STARTED]
+     */
     ADVERTISE_FAILED_ALREADY_STARTED(3),
+
+    /**
+     * Failed to start advertising as the advertise data to be broadcasted is too large.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_FAILED_DATA_TOO_LARGE]
+     */
     ADVERTISE_FAILED_DATA_TOO_LARGE(1),
+
+    /**
+     * This feature is not supported on this platform.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED]
+     */
     ADVERTISE_FAILED_FEATURE_UNSUPPORTED(5),
+
+    /**
+     * Operation failed due to an internal error.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_FAILED_INTERNAL_ERROR]
+     */
     ADVERTISE_FAILED_INTERNAL_ERROR(4),
+
+    /**
+     * Failed to start advertising because no advertising instance is available.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS]
+     */
     ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(2),
+
+    /**
+     * The requested operation was successful.
+     *
+     * @see [AdvertisingSetCallback.ADVERTISE_SUCCESS]
+     */
     ADVERTISE_SUCCESS(0);
 
     companion object {

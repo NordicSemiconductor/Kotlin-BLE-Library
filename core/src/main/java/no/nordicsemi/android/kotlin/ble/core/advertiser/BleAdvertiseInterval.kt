@@ -35,12 +35,34 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 
+/**
+ * Advertising interval which is tightly correlated with power consumption.
+ * A helper class which is a wrapper around Native Android API.
+ * It unifies parameters between different Android versions.
+ *
+ * @see [AdvertiseSettings](https://developer.android.com/reference/android/bluetooth/le/AdvertiseSettings) for Android < O)
+ * @see [AdvertisingSetParameters](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetParameters)
+ */
 enum class BleAdvertiseInterval {
+
+    /**
+     * Perform Bluetooth LE advertising in low power mode.
+     */
     INTERVAL_LOW,
+
+    /**
+     * Perform Bluetooth LE advertising in balanced power mode.
+     */
     INTERVAL_MEDIUM,
+
+    /**
+     * Perform Bluetooth LE advertising in low latency, high power mode.
+     */
     INTERVAL_HIGH;
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     @RequiresApi(Build.VERSION_CODES.O)
     fun toNative(): Int {
         return when (this) {
@@ -50,6 +72,7 @@ enum class BleAdvertiseInterval {
         }
     }
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     fun toLegacy(): Int {
         return when (this) {
             INTERVAL_LOW -> AdvertiseSettings.ADVERTISE_MODE_LOW_POWER

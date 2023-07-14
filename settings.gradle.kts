@@ -69,3 +69,7 @@ include(":client")
 include(":mock")
 include(":test")
 include(":logger")
+
+if (file("../Android-Common-Libraries").exists()) {
+    includeBuild("../Android-Common-Libraries")
+}

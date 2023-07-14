@@ -31,31 +31,50 @@
 
 package no.nordicsemi.android.kotlin.ble.advertiser.error
 
+import android.bluetooth.le.AdvertiseCallback
+
+/**
+ * Error class which is a wrapper around native Android error code returned by
+ * [AdvertiseCallback.onStartFailure].
+ *
+ * @property value Native Android API value.
+ */
 enum class BleAdvertiseError(internal val value: Int) {
+
     /**
      * Failed to start advertising as the advertising is already started.
+     *
+     * @see [AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_ALREADY_STARTED)
      */
-    ADVERTISE_FAILED_ALREADY_STARTED(3),
+    ADVERTISE_FAILED_ALREADY_STARTED(AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED),
 
     /**
      * Failed to start advertising as the advertise data to be broadcasted is larger than 31 bytes.
+     *
+     * @see [AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_DATA_TOO_LARGE)
      */
-    ADVERTISE_FAILED_DATA_TOO_LARGE(1),
+    ADVERTISE_FAILED_DATA_TOO_LARGE(AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE),
 
     /**
      * This feature is not supported on this platform.
+     *
+     * @see [AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_FEATURE_UNSUPPORTED)
      */
-    ADVERTISE_FAILED_FEATURE_UNSUPPORTED(5),
+    ADVERTISE_FAILED_FEATURE_UNSUPPORTED(AdvertiseCallback.ADVERTISE_FAILED_FEATURE_UNSUPPORTED),
 
     /**
      * Operation failed due to an internal error.
+     *
+     * @see [AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_INTERNAL_ERROR)
      */
-    ADVERTISE_FAILED_INTERNAL_ERROR(4),
+    ADVERTISE_FAILED_INTERNAL_ERROR(AdvertiseCallback.ADVERTISE_FAILED_INTERNAL_ERROR),
 
     /**
      * Failed to start advertising because no advertising instance is available.
+     *
+     * @see [AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_TOO_MANY_ADVERTISERS)
      */
-    ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(2);
+    ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS);
 
     companion object {
         fun create(value: Int): BleAdvertiseError {

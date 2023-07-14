@@ -37,7 +37,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 @RequiresApi(Build.VERSION_CODES.O)
-class BleAdvertisingSetCallback(
+internal class BleAdvertisingSetCallback(
     private val onEvent: (BleAdvertisingEvent) -> Unit
 ) : AdvertisingSetCallback() {
 

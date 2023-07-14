@@ -23,11 +23,10 @@ import no.nordicsemi.android.common.core.DataByteArray
 data class BleScanRecord(
     val advertiseFlag: Int,
     val serviceUuids: List<ParcelUuid>?,
-    val serviceData: Map<ParcelUuid, ByteArray>,
+    val serviceData: Map<ParcelUuid, DataByteArray>,
     val serviceSolicitationUuids: List<ParcelUuid>,
     val deviceName: String?,
     val txPowerLevel: Int?,
     val bytes: DataByteArray? = null,
-    val manufacturerSpecificData: SparseArray<ByteArray>,
-) : Parcelable {
-}
+    val manufacturerSpecificData: SparseArray<DataByteArray>,
+) : Parcelable

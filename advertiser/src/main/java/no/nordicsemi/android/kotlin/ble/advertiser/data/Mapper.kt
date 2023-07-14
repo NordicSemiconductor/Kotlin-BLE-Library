@@ -72,10 +72,10 @@ internal fun BleAdvertiseData.toNative(): AdvertiseData {
         serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
     }
     serviceData.forEach {
-        builder.addServiceData(it.uuid, it.data)
+        builder.addServiceData(it.uuid, it.data.value)
     }
     manufacturerData.forEach {
-        builder.addManufacturerData(it.id, it.data)
+        builder.addManufacturerData(it.id, it.data.value)
     }
     return builder.build()
 }

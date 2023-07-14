@@ -31,11 +31,30 @@
 
 package no.nordicsemi.android.kotlin.ble.core.advertiser
 
+import android.bluetooth.le.AdvertiseSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 
+/**
+ * The class provide a way to adjust advertising preferences for each Bluetooth LE
+ * advertisement instance.
+ *
+ * @property txPowerLevel The TX power level ([BleTxPowerLevel]) for advertising.
+ * @property includeTxPower Whether the TX Power will be included.
+ * @property interval The advertising interval ([BleAdvertiseInterval]).
+ * @property connectable Whether the advertisement will be connectable.
+ * @property timeout The advertising time limit in milliseconds.
+ * @property deviceName The advertising display name.
+ * @property anonymous Whether the advertisement will be anonymous.
+ * @property legacyMode Whether the legacy advertisement will be used.
+ * @property primaryPhy The primary advertising phy ([BleGattPrimaryPhy]).
+ * @property secondaryPhy The secondary advertising phy ([BleGattPhy]).
+ * @property scannable Whether the advertisement will be scannable.
+ *
+ * @see [AdvertiseSettings](https://developer.android.com/reference/android/bluetooth/le/AdvertiseSettings)
+ */
 data class BleAdvertiseSettings(
 
     val txPowerLevel: BleTxPowerLevel? = null,

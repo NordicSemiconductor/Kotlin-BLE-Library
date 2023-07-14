@@ -1,7 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.core.ext.toDisplayString
+import no.nordicsemi.android.common.core.toDisplayString
 import java.util.UUID
 
 data class NativeBluetoothGattDescriptor(

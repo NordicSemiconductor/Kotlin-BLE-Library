@@ -84,7 +84,7 @@ private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
                 it.toNative()
             }
         } ?: 0
-    val manufacturerSpecificData = SparseArray<ByteArray>().also { array ->
+    val manufacturerSpecificData = SparseArray<DataByteArray>().also { array ->
         advertiseData?.manufacturerData?.forEach {
             array.put(it.id, it.data)
         }

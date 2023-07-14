@@ -31,26 +31,55 @@
 
 package no.nordicsemi.android.kotlin.ble.core.advertiser
 
+import android.bluetooth.le.AdvertiseData
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
+import no.nordicsemi.android.common.core.DataByteArray
 
+/**
+ * Advertise data packet container for Bluetooth LE advertising. This represents the data to be
+ * advertised as well as the scan response data for active scans.
+ *
+ * @property serviceUuid A service UUID to advertise data.
+ * @property includeDeviceName Whether the device name should be included in advertise packet.
+ * @property includeTxPowerLever Whether the transmission power level should be included in the
+ * advertise packet.
+ * @property manufacturerData Manufacturer specific data ([ManufacturerData]).
+ * @property serviceData Service data ([ServiceData]) to advertise data.
+ * @property serviceSolicitationUuid Service solicitation UUID to advertise data.
+ *
+ * @see [AdvertiseData](https://developer.android.com/reference/android/bluetooth/le/AdvertiseData)
+ */
 data class BleAdvertiseData(
     val serviceUuid: ParcelUuid,
-    @RequiresApi(Build.VERSION_CODES.M)
-    val serviceSolicitationUuid: ParcelUuid? = null,
     val includeDeviceName: Boolean = true,
     val includeTxPowerLever: Boolean = false,
     val manufacturerData: List<ManufacturerData> = emptyList(),
-    val serviceData: List<ServiceData> = emptyList()
+    val serviceData: List<ServiceData> = emptyList(),
+
+    @RequiresApi(Build.VERSION_CODES.M)
+    val serviceSolicitationUuid: ParcelUuid? = null,
 )
 
+/**
+ * A helper class which groups manufacturer id and it's data.
+ *
+ * @property id manufacturer id
+ * @property data manufacturer data
+ */
 data class ManufacturerData(
     val id: Int,
-    val data: ByteArray
+    val data: DataByteArray
 )
 
+/**
+ * A helper class which groups service id and it's data.
+ *
+ * @property uuid service id
+ * @property data service data
+ */
 data class ServiceData(
     val uuid: ParcelUuid,
-    val data: ByteArray
+    val data: DataByteArray
 )

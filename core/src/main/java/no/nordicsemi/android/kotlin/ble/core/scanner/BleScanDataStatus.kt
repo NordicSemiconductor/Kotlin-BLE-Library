@@ -5,7 +5,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 /**
- * The data status
+ * The data status.
  *
  * @property value Native Android API value.
  * @see [ScanResult.getDataStatus](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanResult?hl=en#getdatastatus)

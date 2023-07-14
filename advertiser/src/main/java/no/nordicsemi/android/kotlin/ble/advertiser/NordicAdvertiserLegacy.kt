@@ -34,30 +34,29 @@ package no.nordicsemi.android.kotlin.ble.advertiser
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.bluetooth.le.AdvertiseCallback
+import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
-import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
+import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
+import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
+import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertiseError
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 
-@RequiresApi(Build.VERSION_CODES.O)
-internal class BleAdvertiserOreo(
+internal class NordicAdvertiserLegacy(
     context: Context,
-) : BleAdvertiser {
+) : NordicAdvertiser {
 
     private val bluetoothManager: BluetoothManager by lazy { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     private val bluetoothAdapter: BluetoothAdapter by lazy { bluetoothManager.adapter }
-    private val bluetoothLeScanner: BluetoothLeScanner by lazy { bluetoothAdapter.bluetoothLeScanner }
     private val bluetoothLeAdvertiser: BluetoothLeAdvertiser by lazy { bluetoothAdapter.bluetoothLeAdvertiser }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
@@ -66,30 +65,31 @@ internal class BleAdvertiserOreo(
         val advertiseData = config.advertiseData
         val scanResponseData = config.scanResponseData
 
-        val callback = BleAdvertisingSetCallback {
-            trySend(it)
-        }
+        val callback = object : AdvertiseCallback() {
+            override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
+                trySend(
+                    OnAdvertisingSetStarted(
+                        null,
+                        settingsInEffect!!.txPowerLevel,
+                        BleAdvertiseStatus.ADVERTISE_SUCCESS
+                    )
+                )
+            }
 
-        bluetoothAdapter.setName(config.settings.deviceName)
-
-        bluetoothLeAdvertiser.startAdvertisingSet(
-            settings.toNative(),
-            advertiseData?.toNative(),
-            scanResponseData?.toNative(),
-            null,
-            null,
-            callback
-        )
-
-        if (settings.timeout > 0) {
-            launch {
-                delay(settings.timeout.toLong())
-                close(cause = Exception("Advertise finished after ${settings.timeout}s"))
+            override fun onStartFailure(errorCode: Int) {
+                close(AdvertisementNotStartedException(BleAdvertiseError.create(errorCode)))
             }
         }
 
+        bluetoothLeAdvertiser.startAdvertising(
+            settings.toLegacy(),
+            advertiseData?.toNative(),
+            scanResponseData?.toNative(),
+            callback
+        )
+
         awaitClose {
-            bluetoothLeAdvertiser.stopAdvertisingSet(callback)
+            bluetoothLeAdvertiser.stopAdvertising(callback)
         }
     }
 }

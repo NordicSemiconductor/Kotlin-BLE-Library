@@ -35,13 +35,36 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 
+/**
+ * Tx (transmitting) power level. A helper class which is a wrapper around Native Android API.
+ * It unifies parameters between different Android versions.
+ */
 enum class BleTxPowerLevel {
+
+    /**
+     * Advertise using the lowest transmission (TX) power level. Low transmission power can be used
+     * to restrict the visibility range of advertising packets.
+     */
     TX_POWER_ULTRA_LOW,
+
+    /**
+     * Advertise using low TX power level.
+     */
     TX_POWER_LOW,
+
+    /**
+     * Advertise using medium TX power level.
+     */
     TX_POWER_MEDIUM,
+
+    /**
+     * Advertise using high TX power level. This corresponds to largest visibility range of the advertising packet.
+     */
     TX_POWER_HIGH;
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     fun value(): Int {
         return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             toLegacy()
