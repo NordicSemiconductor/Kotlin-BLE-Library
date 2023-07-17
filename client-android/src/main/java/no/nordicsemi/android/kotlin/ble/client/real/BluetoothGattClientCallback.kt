@@ -35,9 +35,11 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import androidx.annotation.RestrictTo
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
@@ -60,6 +62,9 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacte
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 
+/**
+ * A class which maps [BluetoothGattCallback] methods into [GattClientEvent] events.
+ */
 class BluetoothGattClientCallback: BluetoothGattCallback() {
 
     private val _event = MutableSharedFlow<GattClientEvent>(
@@ -68,25 +73,36 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
     )
     val event = _event.asSharedFlow()
 
-
+    /**
+     * @see [OnServicesDiscovered]
+     */
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         val services = gatt.services.map { NativeBluetoothGattService(it) }
         _event.tryEmit(OnServicesDiscovered(services, BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnConnectionStateChanged]
+     */
     override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
         _event.tryEmit(OnConnectionStateChanged(BleGattConnectionStatus.create(status), GattConnectionState.create(newState)))
     }
 
+    /**
+     * @see [OnCharacteristicChanged]
+     */
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray
     ) {
         val native = NativeBluetoothGattCharacteristic(characteristic)
-        _event.tryEmit(OnCharacteristicChanged(native, value))
+        _event.tryEmit(OnCharacteristicChanged(native, DataByteArray(value)))
     }
 
+    /**
+     * @see [OnCharacteristicChanged]
+     */
     @Deprecated("In use for Android < 13")
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt?,
@@ -94,10 +110,13 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
     ) {
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(it)
-            _event.tryEmit(OnCharacteristicChanged(native, native.value))
+            _event.tryEmit(OnCharacteristicChanged(native, DataByteArray(native.value)))
         }
     }
 
+    /**
+     * @see [OnCharacteristicRead]
+     */
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -105,9 +124,12 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         status: Int
     ) {
         val native = NativeBluetoothGattCharacteristic(characteristic)
-        _event.tryEmit(OnCharacteristicRead(native, value, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnCharacteristicRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnCharacteristicRead]
+     */
     @Deprecated("In use for Android < 13")
     override fun onCharacteristicRead(
         gatt: BluetoothGatt?,
@@ -116,10 +138,13 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
     ) {
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(characteristic)
-            _event.tryEmit(OnCharacteristicRead(native, native.value, BleGattOperationStatus.create(status)))
+            _event.tryEmit(OnCharacteristicRead(native, DataByteArray(native.value), BleGattOperationStatus.create(status)))
         }
     }
 
+    /**
+     * @see [OnCharacteristicWrite]
+     */
     override fun onCharacteristicWrite(
         gatt: BluetoothGatt?,
         characteristic: BluetoothGattCharacteristic?,
@@ -131,6 +156,9 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         }
     }
 
+    /**
+     * @see [OnDescriptorRead]
+     */
     override fun onDescriptorRead(
         gatt: BluetoothGatt,
         descriptor: BluetoothGattDescriptor,
@@ -138,9 +166,12 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         value: ByteArray
     ) {
         val native = NativeBluetoothGattDescriptor(descriptor)
-        _event.tryEmit(OnDescriptorRead(native, value, BleGattOperationStatus.create(status)))
+        _event.tryEmit(OnDescriptorRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnDescriptorRead]
+     */
     @Deprecated("In use for Android < 13")
     override fun onDescriptorRead(
         gatt: BluetoothGatt?,
@@ -149,10 +180,13 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
     ) {
         descriptor?.let {
             val native = NativeBluetoothGattDescriptor(descriptor)
-            _event.tryEmit(OnDescriptorRead(native, native.value, BleGattOperationStatus.create(status)))
+            _event.tryEmit(OnDescriptorRead(native, DataByteArray(native.value), BleGattOperationStatus.create(status)))
         }
     }
 
+    /**
+     * @see [OnDescriptorWrite]
+     */
     override fun onDescriptorWrite(
         gatt: BluetoothGatt?,
         descriptor: BluetoothGattDescriptor?,
@@ -164,10 +198,16 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         }
     }
 
+    /**
+     * @see [OnMtuChanged]
+     */
     override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
         _event.tryEmit(OnMtuChanged(mtu, BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnPhyRead]
+     */
     override fun onPhyRead(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
             OnPhyRead(
@@ -178,6 +218,9 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         )
     }
 
+    /**
+     * @see [OnPhyUpdate]
+     */
     override fun onPhyUpdate(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
         _event.tryEmit(
             OnPhyUpdate(
@@ -188,18 +231,31 @@ class BluetoothGattClientCallback: BluetoothGattCallback() {
         )
     }
 
+    /**
+     * @see [OnReadRemoteRssi]
+     */
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
         _event.tryEmit(OnReadRemoteRssi(rssi, BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnReliableWriteCompleted]
+     */
     override fun onReliableWriteCompleted(gatt: BluetoothGatt?, status: Int) {
         _event.tryEmit(OnReliableWriteCompleted(BleGattOperationStatus.create(status)))
     }
 
+    /**
+     * @see [OnServiceChanged]
+     */
     override fun onServiceChanged(gatt: BluetoothGatt) {
         _event.tryEmit(OnServiceChanged())
     }
 
+    /**
+     * Auxiliary class for propagating events. For internal use only.
+     */
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     fun onEvent(event: GattClientEvent) {
         _event.tryEmit(event)
     }

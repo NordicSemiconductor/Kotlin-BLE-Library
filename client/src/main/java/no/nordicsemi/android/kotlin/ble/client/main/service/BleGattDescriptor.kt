@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 import android.Manifest
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.core.toDisplayString
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
@@ -79,10 +80,10 @@ class BleGattDescriptor internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray) {
+    suspend fun write(value: DataByteArray) {
         mutex.lock()
         suspendCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: ${value.toDisplayString()}")
+            logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: $value")
             pendingWriteEvent = {
                 pendingWriteEvent = null
                 if (it.status.isSuccess) {
@@ -100,7 +101,7 @@ class BleGattDescriptor internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun read(): ByteArray {
+    suspend fun read(): DataByteArray {
         mutex.lock()
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")

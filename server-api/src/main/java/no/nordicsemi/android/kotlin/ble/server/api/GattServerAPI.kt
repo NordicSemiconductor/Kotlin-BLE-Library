@@ -1,6 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.server.api
 
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -17,14 +18,14 @@ interface GattServerAPI {
         requestId: Int,
         status: Int,
         offset: Int,
-        value: ByteArray?
+        value: DataByteArray?
     )
 
     fun notifyCharacteristicChanged(
         device: ClientDevice,
         characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
-        value: ByteArray
+        value: DataByteArray
     )
 
     fun close()

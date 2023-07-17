@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -45,24 +46,24 @@ class NativeServerAPI(
         requestId: Int,
         status: Int,
         offset: Int,
-        value: ByteArray?
+        value: DataByteArray?
     ) {
         val bleDevice = (device as? RealClientDevice)?.device!!
-        server.sendResponse(bleDevice, requestId, status, offset, value)
+        server.sendResponse(bleDevice, requestId, status, offset, value?.value)
     }
 
     override fun notifyCharacteristicChanged(
         device: ClientDevice,
         characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
-        value: ByteArray
+        value: DataByteArray
     ) {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         val bleDevice = (device as? RealClientDevice)?.device!!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            server.notifyCharacteristicChanged(bleDevice, characteristic, confirm, value)
+            server.notifyCharacteristicChanged(bleDevice, characteristic, confirm, value.value)
         } else {
-            characteristic.value = value
+            characteristic.value = value.value
             server.notifyCharacteristicChanged(bleDevice, characteristic, confirm)
         }
     }

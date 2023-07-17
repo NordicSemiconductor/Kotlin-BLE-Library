@@ -32,4 +32,5 @@ dependencies {
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
+    api(libs.nordic.core)
 }

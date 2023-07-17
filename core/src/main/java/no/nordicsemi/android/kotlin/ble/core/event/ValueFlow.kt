@@ -2,14 +2,15 @@ package no.nordicsemi.android.kotlin.ble.core.event
 
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 
 @ExperimentalApi
 class ValueFlow private constructor(
-    private val mutableSharedFlow: MutableSharedFlow<ByteArray>,
-) : MutableSharedFlow<ByteArray> by mutableSharedFlow {
+    private val mutableSharedFlow: MutableSharedFlow<DataByteArray>,
+) : MutableSharedFlow<DataByteArray> by mutableSharedFlow {
 
     val value
-        get() = mutableSharedFlow.replayCache.firstOrNull() ?: byteArrayOf()
+        get() = mutableSharedFlow.replayCache.firstOrNull() ?: DataByteArray()
 
     companion object {
         fun create(): ValueFlow {

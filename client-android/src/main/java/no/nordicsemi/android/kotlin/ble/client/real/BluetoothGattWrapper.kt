@@ -33,9 +33,12 @@ package no.nordicsemi.android.kotlin.ble.client.real
 
 import android.Manifest
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
@@ -51,6 +54,14 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacte
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import java.lang.reflect.Method
 
+/**
+ * A wrapper around [BluetoothGatt] and [BluetoothGattCallback]. As an input it uses methods of
+ * [BluetoothGatt] and as an output callbacks from [BluetoothGattCallback].
+ *
+ * @property gatt Native Android API [BluetoothGatt].
+ * @property callback Native wrapper around Android [BluetoothGattCallback].
+ * @property autoConnect Boolean value passed during connection.
+ */
 class BluetoothGattWrapper(
     private val gatt: BluetoothGatt,
     private val callback: BluetoothGattClientCallback,
@@ -62,6 +73,7 @@ class BluetoothGattWrapper(
     override val device: ServerDevice
         get() = RealServerDevice(gatt.device)
 
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
     override fun onEvent(event: GattClientEvent) {
         callback.onEvent(event)
     }
@@ -69,15 +81,15 @@ class BluetoothGattWrapper(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun writeCharacteristic(
         characteristic: IBluetoothGattCharacteristic,
-        value: ByteArray,
+        value: DataByteArray,
         writeType: BleWriteType
     ) {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(characteristic, value, writeType.value)
+            gatt.writeCharacteristic(characteristic, value.value, writeType.value)
         } else {
             characteristic.writeType = writeType.value
-            characteristic.value = value
+            characteristic.value = value.value
             gatt.writeCharacteristic(characteristic)
         }
     }
@@ -103,12 +115,12 @@ class BluetoothGattWrapper(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: ByteArray) {
+    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
         val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeDescriptor(descriptor, value)
+            gatt.writeDescriptor(descriptor, value.value)
         } else {
-            descriptor.value = value
+            descriptor.value = value.value
             gatt.writeDescriptor(descriptor)
         }
     }

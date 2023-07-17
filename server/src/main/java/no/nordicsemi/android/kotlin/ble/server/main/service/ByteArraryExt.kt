@@ -1,6 +1,8 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-fun ByteArray.getChunk(offset: Int, mtu: Int): ByteArray {
+import no.nordicsemi.android.common.core.DataByteArray
+
+fun DataByteArray.getChunk(offset: Int, mtu: Int): DataByteArray {
     val maxSize = mtu - 3
     val sizeLeft = this.size - offset
     return if (sizeLeft > 0) {
@@ -10,7 +12,7 @@ fun ByteArray.getChunk(offset: Int, mtu: Int): ByteArray {
             this.copyOfRange(offset, this.size)
         }
     } else {
-        byteArrayOf()
+        DataByteArray()
     }
 }
 

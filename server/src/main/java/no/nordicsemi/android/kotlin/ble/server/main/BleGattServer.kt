@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -105,7 +106,7 @@ class BleGattServer internal constructor(
                 is OnServerPhyUpdate -> onPhyUpdate(it)
                 is OnServerMtuChanged -> onMtuChanged(it)
             }
-        }.launchIn(ServerScope)
+        }.launchIn(ApplicationScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

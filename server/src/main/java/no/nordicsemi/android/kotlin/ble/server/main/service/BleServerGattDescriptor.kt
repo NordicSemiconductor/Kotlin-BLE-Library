@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
@@ -53,7 +54,7 @@ class BleServerGattDescriptor internal constructor(
 
     val uuid = descriptor.uuid
 
-    private var transactionalValue = byteArrayOf()
+    private var transactionalValue = DataByteArray()
     private val _value = ValueFlow.create()
     val value = _value.asSharedFlow()
 
@@ -64,7 +65,7 @@ class BleServerGattDescriptor internal constructor(
         }
     }
 
-    fun setValue(value: ByteArray) {
+    fun setValue(value: DataByteArray) {
         _value.tryEmit(value)
     }
 
@@ -76,11 +77,11 @@ class BleServerGattDescriptor internal constructor(
 
     internal fun onExecuteWrite(event: OnExecuteWrite) {
         if (!event.execute) {
-            transactionalValue = byteArrayOf()
+            transactionalValue = DataByteArray()
             return
         }
         _value.tryEmit(transactionalValue)
-        transactionalValue = byteArrayOf()
+        transactionalValue = DataByteArray()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 

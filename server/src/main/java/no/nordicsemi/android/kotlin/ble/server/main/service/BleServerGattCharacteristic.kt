@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
@@ -61,7 +62,7 @@ class BleServerGattCharacteristic internal constructor(
     val uuid = characteristic.uuid
     val instanceId = characteristic.instanceId
 
-    private var transactionalValue = byteArrayOf()
+    private var transactionalValue = DataByteArray()
 
     private val _value = ValueFlow.create()
     val value = _value.asSharedFlow()
@@ -80,12 +81,12 @@ class BleServerGattCharacteristic internal constructor(
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
-    fun setValue(value: ByteArray) {
+    fun setValue(value: DataByteArray) {
         // only notify once when the value changes
         //todo think about improving this
 //        if (value.contentEquals(_value.value)) return
         _value.tryEmit(value)
-        characteristic.value = value
+        characteristic.value = value.value
 
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
@@ -130,7 +131,7 @@ class BleServerGattCharacteristic internal constructor(
             return
         }
         _value.tryEmit(transactionalValue)
-        transactionalValue = byteArrayOf()
+        transactionalValue = DataByteArray()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 

@@ -37,12 +37,15 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
+import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
@@ -52,8 +55,9 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
 import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.client.main.ClientScope
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
@@ -75,7 +79,12 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * Dokka test
+ * A class for managing BLE connection. It propagates events ([GattClientEvent]) to it's
+ * corresponding characteristics ([BleGattCharacteristic]) and descriptors ([BleGattDescriptor]).
+ * Thanks to that values are getting updated.
+ *
+ * Despite that it's responsible for exposing connection parameters like mtu, phy, connection state
+ * and request their changes.
  */
 class BleGattClient(
     private val gatt: GattClientAPI,
@@ -84,20 +93,44 @@ class BleGattClient(
 ) {
 
     private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
+
+    /**
+     * Returns last observed [GattConnectionState] with it's corresponding status [BleGattConnectionStatus].
+     */
     val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
 
+    /**
+     * Returns whether a device is connected.
+     */
     val isConnected
         get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
 
     private val mtuProvider = MtuProvider()
 
+    /**
+     * Established MTU size. There are incoming changes on Android 14 where this value is gonna to
+     * be always max value - 517 and wouldn't be able to change.
+     */
     val mtu = mtuProvider.mtu
+
+    /**
+     * Returns last [GattConnectionState] without it's status.
+     */
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
     private val _services = MutableStateFlow<BleGattServices?>(null)
+
+    /**
+     * Returns [Flow] which emits services. Services can be outdated which results in emitting
+     * [OnServiceChanged]. That's why usage of [Flow] may be handy.
+     */
     val services = _services.asStateFlow()
 
     private val _bondState = MutableStateFlow<BondState?>(null)
+
+    /**
+     * Returns bond state of the server device.
+     */
     val bondState = _bondState.asStateFlow()
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? =
@@ -122,7 +155,7 @@ class BleGattClient(
                 is OnMtuChanged -> onEvent(it)
                 is OnBondStateChanged -> onBondStateChanged(it.bondState)
             }
-        }.launchIn(ClientScope)
+        }.launchIn(ApplicationScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -152,6 +185,12 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Suspend function requesting new mtu size.
+     *
+     * @param mtu New mtu size.
+     * @return mtu size after the request. It can be different that requested mtu.
+     */
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock()
         return suspendCoroutine { continuation ->
@@ -172,6 +211,11 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Suspend function reading server device's rssi.
+     *
+     * @return Rssi of the device.
+     */
     suspend fun readRssi(): Int {
         mutex.lock()
         return suspendCoroutine { continuation ->
@@ -192,6 +236,14 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Sets preferred phy for the connection.
+     *
+     * @param txPhy Phy ([BleGattPhy]) of a transmitter.
+     * @param rxPhy Phy ([BleGattPhy]) of a receiver.
+     * @param phyOption Phy option ([PhyOption]).
+     * @return PHY values set after the request. They may differ from requested values.
+     */
     suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {
         mutex.lock()
         return suspendCoroutine { continuation ->
@@ -215,6 +267,9 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Disconnects current device.
+     */
     fun disconnect() {
         //emulate disconnecting state as it is not emitted by Android
         _connectionStateWithStatus.value = GattConnectionStateWithStatus(
@@ -225,6 +280,9 @@ class BleGattClient(
         gatt.disconnect()
     }
 
+    /**
+     * Clears service cache.
+     */
     fun clearServicesCache() {
         logger.log(Log.INFO, "Clearing service cache...")
         gatt.clearServicesCache()
@@ -247,6 +305,15 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Auxiliary function which waits for bonding. The bonding may be initiated in different
+     * scenarios e.g. after connected or when reading from characteristic which is protected.
+     *
+     * This function is suppose to help waiting for bonding to be initiated in scenarios when
+     * this is expected.
+     *
+     * @param timeInMillis Initial delay before bond state changes are started to be observed.
+     */
     suspend fun waitForBonding(timeInMillis: Long = 2000) {
         mutex.lock()
         delay(timeInMillis)
@@ -265,14 +332,26 @@ class BleGattClient(
         }
     }
 
+    /**
+     * Begins reliable write. All writes to a characteristics which supports this feature will be
+     * transactional which means that they can be reverted in case of data inconsistency.
+     */
     fun beginReliableWrite() {
         gatt.beginReliableWrite()
     }
 
+    /**
+     * Aborts reliable write. All writes to a characteristics which supports reliable writes will be
+     * reverted to a state preceding call to [beginReliableWrite].
+     */
     fun abortReliableWrite() {
         gatt.abortReliableWrite()
     }
 
+    /**
+     * Executes reliable write. All writes to a characteristics which supports reliable write will be
+     * executed and new values will be set permanently.
+     */
     fun executeReliableWrite() {
         gatt.executeReliableWrite()
     }
@@ -337,6 +416,15 @@ class BleGattClient(
 
     companion object {
 
+        /**
+         * Connects to the specified device. Device is provided using mac address.
+         *
+         * @param context Application context.
+         * @param macAddress MAC address of a device.
+         * @param options Connection options.
+         * @param logger Logger which is responsible for displaying logs from the BLE device.
+         * @return [BleGattClient] with initiated connection based on [options] provided.
+         */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun connect(
             context: Context,
@@ -348,6 +436,15 @@ class BleGattClient(
             return BleGattClientFactory.connect(context, macAddress, options, logger)
         }
 
+        /**
+         * Connects to the specified device. Device is provided using mac address.
+         *
+         * @param context Application context.
+         * @param device A server device returned by scanner.
+         * @param options Connection options.
+         * @param logger Logger which is responsible for displaying logs from the BLE device.
+         * @return [BleGattClient] with initiated connection based on [options] provided.
+         */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun connect(
             context: Context,

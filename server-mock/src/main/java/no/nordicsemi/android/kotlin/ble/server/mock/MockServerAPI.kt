@@ -4,6 +4,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -26,7 +27,7 @@ class MockServerAPI(
         _event.tryEmit(event)
     }
 
-    override fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: ByteArray?) {
+    override fun sendResponse(device: ClientDevice, requestId: Int, status: Int, offset: Int, value: DataByteArray?) {
         mockEngine.sendResponse(device, requestId, status, offset, value)
     }
 
@@ -34,7 +35,7 @@ class MockServerAPI(
         device: ClientDevice,
         characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
-        value: ByteArray
+        value: DataByteArray
     ) {
         mockEngine.notifyCharacteristicChanged(device, characteristic, confirm, value)
     }

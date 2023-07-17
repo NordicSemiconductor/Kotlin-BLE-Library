@@ -28,5 +28,7 @@ android {
 dependencies {
     implementation(project(":core"))
 
+    implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
+    api(libs.nordic.core)
 }

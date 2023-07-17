@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.core.toDisplayString
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
@@ -59,7 +59,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
-import no.nordicsemi.android.kotlin.ble.core.splitter.split
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import java.util.*
@@ -67,9 +66,9 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-private val ENABLE_NOTIFICATION_VALUE = byteArrayOf(0x01, 0x00)
-private val ENABLE_INDICATION_VALUE = byteArrayOf(0x02, 0x00)
-private val DISABLE_NOTIFICATION_VALUE = byteArrayOf(0x00, 0x00)
+private val ENABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x01, 0x00))
+private val ENABLE_INDICATION_VALUE = DataByteArray(byteArrayOf(0x02, 0x00))
+private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
 
 class BleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
@@ -87,10 +86,10 @@ class BleGattCharacteristic internal constructor(
 
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
-    private val _notifications = MutableSharedFlow<ByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _notifications = MutableSharedFlow<DataByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     @SuppressLint("MissingPermission")
-    suspend fun getNotifications(): Flow<ByteArray> {
+    suspend fun getNotifications(): Flow<DataByteArray> {
         try {
             enableIndicationsOrNotifications()
         } catch (e: Exception) {
@@ -120,8 +119,8 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private fun log(data: ByteArray) {
-        logger.log(Log.VERBOSE, "On notification received: ${data.toDisplayString()}")
+    private fun log(data: DataByteArray) {
+        logger.log(Log.VERBOSE, "On notification received: $data")
     }
 
     private fun onEvent(event: CharacteristicEvent) {
@@ -139,15 +138,15 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun write(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
+    suspend fun write(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         mutex.lock()
         return suspendCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
+            logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: $value, type: $writeType")
             validateWriteProperties(writeType)
             pendingWriteEvent = {
                 pendingWriteEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.INFO, "Value written: ${value.toDisplayString()} to $uuid")
+                    logger.log(Log.INFO, "Value written: $value to $uuid")
                     continuation.resume(Unit)
                 } else {
                     logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
@@ -160,8 +159,8 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun splitWrite(value: ByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
-        logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value.toDisplayString()}, type: $writeType")
+    suspend fun splitWrite(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
+        logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value}, type: $writeType")
         value.split(mtuProvider.availableMtu(writeType)).forEach {
             write(it, writeType)
         }
@@ -189,7 +188,7 @@ class BleGattCharacteristic internal constructor(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun read(): ByteArray {
+    suspend fun read(): DataByteArray {
         mutex.lock()
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
@@ -201,7 +200,7 @@ class BleGattCharacteristic internal constructor(
             pendingReadEvent = {
                 pendingReadEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.INFO, "Value read: ${it.value.toDisplayString()} from $uuid")
+                    logger.log(Log.INFO, "Value read: ${it.value} from $uuid")
                     continuation.resume(it.value.copyOf())
                 } else {
                     logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")

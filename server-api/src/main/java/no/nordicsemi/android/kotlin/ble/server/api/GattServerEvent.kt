@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.api
 
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -94,7 +95,7 @@ data class OnCharacteristicWriteRequest(
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,
-    val value: ByteArray
+    val value: DataByteArray
 ) : CharacteristicEvent
 
 data class OnNotificationSent(
@@ -120,7 +121,7 @@ data class OnDescriptorWriteRequest(
     val preparedWrite: Boolean,
     val responseNeeded: Boolean,
     val offset: Int,
-    val value: ByteArray
+    val value: DataByteArray
 ) : DescriptorEvent
 
 data class OnExecuteWrite(

@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.mock
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
@@ -166,7 +167,7 @@ object MockEngine {
         requestId: Int,
         status: Int,
         offset: Int,
-        value: ByteArray?,
+        value: DataByteArray?,
     ) {
         val gattStatus = BleGattOperationStatus.create(status)
         val connection = clientConnections[device]
@@ -195,7 +196,7 @@ object MockEngine {
         device: ClientDevice,
         characteristic: IBluetoothGattCharacteristic,
         confirm: Boolean,
-        value: ByteArray,
+        value: DataByteArray,
     ) {
         val connection = clientConnections[device] ?: return
         if (connection.enabledNotification[characteristic.uuid] == true) {
@@ -252,7 +253,7 @@ object MockEngine {
         serverDevice: ServerDevice,
         clientDevice: ClientDevice,
         characteristic: IBluetoothGattCharacteristic,
-        value: ByteArray,
+        value: DataByteArray,
         writeType: BleWriteType,
     ) {
         val connection = clientConnections[clientDevice]!!
@@ -310,7 +311,7 @@ object MockEngine {
         device: MockServerDevice,
         clientDevice: ClientDevice,
         descriptor: IBluetoothGattDescriptor,
-        value: ByteArray,
+        value: DataByteArray,
     ) {
         val connection = clientConnections[clientDevice]!!
         val request = requests.newWriteRequest(descriptor)

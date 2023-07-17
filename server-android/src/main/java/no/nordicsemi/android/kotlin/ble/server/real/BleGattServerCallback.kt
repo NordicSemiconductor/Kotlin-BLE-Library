@@ -39,6 +39,7 @@ import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -98,7 +99,7 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
                 preparedWrite,
                 responseNeeded,
                 offset,
-                value!!
+                DataByteArray(value!!)
             )
         )
     }
@@ -137,7 +138,7 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
                 preparedWrite,
                 responseNeeded,
                 offset,
-                value!!
+                DataByteArray(value!!)
             )
         )
     }

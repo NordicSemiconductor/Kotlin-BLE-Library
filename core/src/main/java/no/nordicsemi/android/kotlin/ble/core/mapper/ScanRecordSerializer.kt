@@ -107,7 +107,7 @@ object ScanRecordSerializer {
         }
 
         if (!deviceName.isNullOrBlank()) {
-            val data = deviceName!!.toByteArray()
+            val data = deviceName.toByteArray()
             result += (data.size+1).toByte()
             result += DATA_TYPE_LOCAL_NAME_SHORT.toByte()
             result += data
@@ -156,7 +156,7 @@ object ScanRecordSerializer {
         val manufacturerData = SparseArray<DataByteArray>()
         val serviceData: MutableMap<ParcelUuid, DataByteArray> = mutableMapOf()
         val advertisingDataMap = HashMap<Int, DataByteArray>()
-        var transportDiscoveryData: TransportDiscoveryData? = null
+//        var transportDiscoveryData: TransportDiscoveryData? = null
         return try {
             while (currentPos < scanRecord.size) {
                 // length is unsigned int.
