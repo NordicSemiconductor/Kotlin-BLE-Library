@@ -31,17 +31,21 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import android.bluetooth.BluetoothGattService
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import java.util.UUID
 
-enum class BleGattServerServiceType {
+data class ServerBleGattCharacteristicConfig(
+    val uuid: UUID,
+    val properties: List<BleGattProperty> = emptyList(),
+    val permissions: List<BleGattPermission> = emptyList(),
+    val descriptorConfigs: List<ServerBleGattDescriptorConfig> = emptyList(),
+    val initialValue: DataByteArray? = null
+) {
 
-    SERVICE_TYPE_PRIMARY,
-    SERVICE_TYPE_SECONDARY;
-
-    fun toNative(): Int {
-        return when (this) {
-            SERVICE_TYPE_PRIMARY -> BluetoothGattService.SERVICE_TYPE_PRIMARY
-            SERVICE_TYPE_SECONDARY -> BluetoothGattService.SERVICE_TYPE_SECONDARY
+    val hasNotifications: Boolean
+        get() {
+            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
         }
-    }
 }

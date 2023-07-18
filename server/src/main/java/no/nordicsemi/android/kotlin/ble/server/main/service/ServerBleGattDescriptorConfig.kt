@@ -31,22 +31,10 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import java.util.UUID
 
-class BleGattServerServices internal constructor(
-    private val server: GattServerAPI,
-    private val device: ClientDevice,
-    private val services: List<BleGattServerService>
-) {
-
-    fun findService(uuid: UUID): BleGattServerService? {
-        return services.firstOrNull { it.uuid == uuid }
-    }
-
-    internal fun onEvent(event: ServiceEvent) {
-        services.forEach { it.onEvent(event) }
-    }
-}
+data class ServerBleGattDescriptorConfig(
+    val uuid: UUID,
+    val permissions: List<BleGattPermission>
+)

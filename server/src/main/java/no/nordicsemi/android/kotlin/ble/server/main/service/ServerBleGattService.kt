@@ -32,25 +32,59 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
-import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import java.util.UUID
 
-data class BluetoothGattServerConnection internal constructor(
-    private val device: ClientDevice,
+/**
+ * A class which groups service's characteristic on a server side.
+ *
+ * @property server [GattServerAPI] for communication with a client devices.
+ * @property device A client device.
+ * @property service Identifier of a service.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
+data class ServerBleGattService internal constructor(
     private val server: GattServerAPI,
-    val services: BleGattServerServices,
-    val mtuProvider: MtuProvider = MtuProvider(),
-    val txPhy: BleGattPhy? = null,
-    val rxPhy: BleGattPhy? = null
+    private val device: ClientDevice,
+    private val service: IBluetoothGattService,
+    private val mtuProvider: MtuProvider
 ) {
 
-    fun readPhy() {
-        server.readPhy(device)
+    /**
+     * [UUID] of the characteristic.
+     */
+    val uuid = service.uuid
+
+    /**
+     * All characteristics of a service.
+     */
+    private val characteristics = service.characteristics.map {
+        ServerBleGattCharacteristic(server, device, it, mtuProvider)
     }
 
-    fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
-        server.requestPhy(device, txPhy, rxPhy, phyOption)
+    /**
+     * Finds characteristic based on [uuid] and eventually [instanceId].
+     *
+     * @param uuid An [UUID] of a characteristic.
+     * @param instanceId Instance id.
+     * @return Characteristic or null if not found.
+     */
+    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): ServerBleGattCharacteristic? {
+        return characteristics.firstOrNull { characteristic ->
+            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+        }
+    }
+
+    /**
+     * Propagates GATT events to all of it's characteristics. Each characteristic and descriptor is
+     * responsible to decide if it's the receiver of an event.
+     *
+     * @param event A GATT event.
+     */
+    internal fun onEvent(event: ServiceEvent) {
+        characteristics.onEach { it.onEvent(event) }
     }
 }

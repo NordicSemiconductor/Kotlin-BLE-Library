@@ -56,9 +56,9 @@ import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
-import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattDescriptor
-import no.nordicsemi.android.kotlin.ble.client.main.service.BleGattServices
+import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescriptor
+import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -80,13 +80,13 @@ import kotlin.coroutines.suspendCoroutine
 
 /**
  * A class for managing BLE connection. It propagates events ([GattClientEvent]) to it's
- * corresponding characteristics ([BleGattCharacteristic]) and descriptors ([BleGattDescriptor]).
+ * corresponding characteristics ([ClientBleGattCharacteristic]) and descriptors ([ClientBleGattDescriptor]).
  * Thanks to that values are getting updated.
  *
  * Despite that it's responsible for exposing connection parameters like mtu, phy, connection state
  * and request their changes.
  */
-class BleGattClient(
+class ClientBleGatt(
     private val gatt: GattClientAPI,
     private val logger: BlekLogger,
     private val mutex: MutexWrapper = MutexWrapper(),
@@ -118,7 +118,7 @@ class BleGattClient(
      */
     val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
 
-    private val _services = MutableStateFlow<BleGattServices?>(null)
+    private val _services = MutableStateFlow<ClientBleGattServices?>(null)
 
     /**
      * Returns [Flow] which emits services. Services can be outdated which results in emitting
@@ -139,7 +139,7 @@ class BleGattClient(
     private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
     private var bondStateCallback: ((BondState) -> Unit)? = null
-    private var onServicesDiscovered: ((BleGattServices) -> Unit)? = null
+    private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
 
     init {
         gatt.event.onEach {
@@ -356,7 +356,7 @@ class BleGattClient(
         gatt.executeReliableWrite()
     }
 
-    suspend fun discoverServices(): BleGattServices {
+    suspend fun discoverServices(): ClientBleGattServices {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
@@ -381,7 +381,7 @@ class BleGattClient(
             Log.DEBUG,
             "Discovered services: ${gattServices.map { it.uuid }}, status: $status"
         )
-        val services = gattServices.let { BleGattServices(gatt, it, logger, mutex, mtuProvider) }
+        val services = gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, mtuProvider) }
         _services.value = services
         onServicesDiscovered?.invoke(services)
     }
@@ -423,7 +423,7 @@ class BleGattClient(
          * @param macAddress MAC address of a device.
          * @param options Connection options.
          * @param logger Logger which is responsible for displaying logs from the BLE device.
-         * @return [BleGattClient] with initiated connection based on [options] provided.
+         * @return [ClientBleGatt] with initiated connection based on [options] provided.
          */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun connect(
@@ -431,9 +431,9 @@ class BleGattClient(
             macAddress: String,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BlekLogger = DefaultBlekLogger(context),
-        ): BleGattClient {
+        ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
-            return BleGattClientFactory.connect(context, macAddress, options, logger)
+            return ClientBleGattFactory.connect(context, macAddress, options, logger)
         }
 
         /**
@@ -443,7 +443,7 @@ class BleGattClient(
          * @param device A server device returned by scanner.
          * @param options Connection options.
          * @param logger Logger which is responsible for displaying logs from the BLE device.
-         * @return [BleGattClient] with initiated connection based on [options] provided.
+         * @return [ClientBleGatt] with initiated connection based on [options] provided.
          */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun connect(
@@ -451,9 +451,9 @@ class BleGattClient(
             device: ServerDevice,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BlekLogger = DefaultBlekLogger(context),
-        ): BleGattClient {
+        ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
-            return BleGattClientFactory.connect(context, device, options, logger)
+            return ClientBleGattFactory.connect(context, device, options, logger)
         }
     }
 }

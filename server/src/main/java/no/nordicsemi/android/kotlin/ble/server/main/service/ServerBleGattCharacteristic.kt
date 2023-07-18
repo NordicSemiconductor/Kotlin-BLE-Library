@@ -52,7 +52,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.*
 
 @SuppressLint("MissingPermission")
-class BleServerGattCharacteristic internal constructor(
+class ServerBleGattCharacteristic internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
     private val characteristic: IBluetoothGattCharacteristic,
@@ -74,10 +74,10 @@ class BleServerGattCharacteristic internal constructor(
         get() = BleGattProperty.createProperties(characteristic.properties)
 
     private val descriptors = characteristic.descriptors.map {
-        BleServerGattDescriptor(server, instanceId, it, mtuProvider)
+        ServerBleGattDescriptor(server, instanceId, it, mtuProvider)
     }
 
-    fun findDescriptor(uuid: UUID): BleServerGattDescriptor? {
+    fun findDescriptor(uuid: UUID): ServerBleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 

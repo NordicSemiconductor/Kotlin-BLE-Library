@@ -36,7 +36,6 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.os.Build
-import android.util.Log
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
@@ -107,7 +106,7 @@ internal object BluetoothGattServiceFactory {
         return clone
     }
 
-    fun createMock(config: BleServerGattServiceConfig): MockBluetoothGattService {
+    fun createMock(config: ServerBleGattServiceConfig): MockBluetoothGattService {
         val service = MockBluetoothGattService(config.uuid, config.type.toNative())
 
         config.characteristicConfigs.forEach {
@@ -142,7 +141,7 @@ internal object BluetoothGattServiceFactory {
         return service
     }
 
-    fun createNative(config: BleServerGattServiceConfig): NativeBluetoothGattService {
+    fun createNative(config: ServerBleGattServiceConfig): NativeBluetoothGattService {
         val service = BluetoothGattService(config.uuid, config.type.toNative())
 
         config.characteristicConfigs.forEach {
@@ -152,7 +151,7 @@ internal object BluetoothGattServiceFactory {
                 BleGattPermission.toInt(it.permissions)
             )
 
-            characteristic.value = it.initialValue
+            characteristic.value = it.initialValue?.value
 
             it.descriptorConfigs.forEach {
                 val descriptor = BluetoothGattDescriptor(

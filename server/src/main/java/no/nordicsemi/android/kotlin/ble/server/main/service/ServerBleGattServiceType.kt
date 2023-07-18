@@ -31,33 +31,17 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
-import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
-import java.util.UUID
+import android.bluetooth.BluetoothGattService
 
-class BleGattServerService internal constructor(
-    private val server: GattServerAPI,
-    private val device: ClientDevice,
-    private val service: IBluetoothGattService,
-    private val mtuProvider: MtuProvider
-) {
+enum class ServerBleGattServiceType {
 
-    val uuid = service.uuid
+    SERVICE_TYPE_PRIMARY,
+    SERVICE_TYPE_SECONDARY;
 
-    val characteristics = service.characteristics.map {
-        BleServerGattCharacteristic(server, device, it, mtuProvider)
-    }
-
-    internal fun onEvent(event: ServiceEvent) {
-        characteristics.onEach { it.onEvent(event) }
-    }
-
-    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleServerGattCharacteristic? {
-        return characteristics.firstOrNull { characteristic ->
-            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
+    fun toNative(): Int {
+        return when (this) {
+            SERVICE_TYPE_PRIMARY -> BluetoothGattService.SERVICE_TYPE_PRIMARY
+            SERVICE_TYPE_SECONDARY -> BluetoothGattService.SERVICE_TYPE_SECONDARY
         }
     }
 }

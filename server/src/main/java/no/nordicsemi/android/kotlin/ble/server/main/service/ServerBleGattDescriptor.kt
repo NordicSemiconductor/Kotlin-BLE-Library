@@ -45,7 +45,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
 @SuppressLint("MissingPermission")
-class BleServerGattDescriptor internal constructor(
+class ServerBleGattDescriptor internal constructor(
     private val server: GattServerAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: IBluetoothGattDescriptor,

@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
@@ -70,7 +71,19 @@ private val ENABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x01, 0x00))
 private val ENABLE_INDICATION_VALUE = DataByteArray(byteArrayOf(0x02, 0x00))
 private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
 
-class BleGattCharacteristic internal constructor(
+/**
+ * A helper class which provides operation which can happen on a GATT characteristic. It main
+ * responsibility is to provide write/read/notify features in a synchronous manner, because
+ * simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned which
+ * can change during communication.
+ *
+ * @property gatt [GattClientAPI] for communication with the server device.
+ * @property characteristic Identifier of a characteristic.
+ * @property logger Logger class for displaying logs.
+ * @property mutex Mutex for synchronising requests.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
+class ClientBleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
     private val characteristic: IBluetoothGattCharacteristic,
     private val logger: BlekLogger,
@@ -78,16 +91,37 @@ class BleGattCharacteristic internal constructor(
     private val mtuProvider: MtuProvider,
 ) {
 
+    /**
+     * [UUID] of the characteristic.
+     */
     val uuid = characteristic.uuid
 
+    /**
+     * Instance id of the characteristic.
+     */
     val instanceId = characteristic.instanceId
 
+    /**
+     * Permissions of the characteristic.
+     */
     val permissions = BleGattPermission.createPermissions(characteristic.permissions)
 
+    /**
+     * Properties of the characteristic.
+     */
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
     private val _notifications = MutableSharedFlow<DataByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
+    /**
+     * Enables and observes notifications/indications of the characteristic. After subscriber is
+     * closed the notifications should be disabled.
+     *
+     * It is suspend function which suspends and waits for result. It will also suspend when other
+     * request is already being executed.
+     *
+     * @return [Flow] which emits new bytes on notification.
+     */
     @SuppressLint("MissingPermission")
     suspend fun getNotifications(): Flow<DataByteArray> {
         try {
@@ -102,15 +136,27 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { BleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
+    private val descriptors = characteristic.descriptors.map { ClientBleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
 
     private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
 
-    fun findDescriptor(uuid: UUID): BleGattDescriptor? {
+    /**
+     * Finds a descriptor by [UUID].
+     *
+     * @param uuid An [UUID] of a descriptor.
+     * @return The descriptor or null if not found.
+     */
+    fun findDescriptor(uuid: UUID): ClientBleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
+    /**
+     * Consumes events emitted by [BluetoothGattCallback]. Events are emitted everywhere. It is this
+     * class responsibility to verify if it's the event destination.
+     *
+     * @param event A gatt event.
+     */
     internal fun onEvent(event: ServiceEvent) {
         when (event) {
             is CharacteristicEvent -> onEvent(event)
@@ -137,6 +183,15 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Writes bytes to a characteristic and waits for a request to finish.
+     *
+     * @throws GattOperationException on GATT communication failure.
+     * @throws MissingPropertyException when property defined by [writeType] is missing.
+     *
+     * @param value Bytes to write.
+     * @param writeType Write type method.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         mutex.lock()
@@ -158,6 +213,16 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Writes bytes to a characteristic and waits for a request to finish. If value is bigger than
+     * MTU then it splits the value and send it in consecutive messages.
+     *
+     * @throws GattOperationException on GATT communication failure.
+     * @throws MissingPropertyException when property defined by [writeType] is missing.
+     *
+     * @param value Bytes to write.
+     * @param writeType Write type method.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun splitWrite(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value}, type: $writeType")
@@ -187,6 +252,14 @@ class BleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Reads value from a characteristic and suspends for the result.
+     *
+     * @throws MissingPropertyException when [BleGattProperty.PROPERTY_READ] not found on a characteristic.
+     * @throws GattOperationException on GATT communication failure.
+     *
+     * @return Read value.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read(): DataByteArray {
         mutex.lock()

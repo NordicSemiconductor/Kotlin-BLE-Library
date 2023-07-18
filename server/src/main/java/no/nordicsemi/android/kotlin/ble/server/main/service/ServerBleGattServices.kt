@@ -31,20 +31,41 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.ClientDevice
+import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.UUID
 
-data class BleServerGattCharacteristicConfig(
-    val uuid: UUID,
-    val properties: List<BleGattProperty> = emptyList(),
-    val permissions: List<BleGattPermission> = emptyList(),
-    val descriptorConfigs: List<BleServerGattDescriptorConfig> = emptyList(),
-    val initialValue: ByteArray? = null
+/**
+ * Helper class for grouping all services available on a server.
+ *
+ * @property server [GattServerAPI] for communication with a client devices.
+ * @property device A client device.
+ * @property services Identifiers of a services.
+ */
+class ServerBleGattServices internal constructor(
+    private val server: GattServerAPI,
+    private val device: ClientDevice,
+    private val services: List<ServerBleGattService>
 ) {
 
-    val hasNotifications: Boolean
-        get() {
-            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
-        }
+    /**
+     * Finds service based on [uuid].
+     *
+     * @param uuid An [UUID] of a service.
+     * @return Service or null if not found.
+     */
+    fun findService(uuid: UUID): ServerBleGattService? {
+        return services.firstOrNull { it.uuid == uuid }
+    }
+
+    /**
+     * Propagates GATT events to all of it's services. Each characteristic and descriptor is
+     * responsible to decide if it's the receiver of an event.
+     *
+     * @param event A GATT event.
+     */
+    internal fun onEvent(event: ServiceEvent) {
+        services.forEach { it.onEvent(event) }
+    }
 }

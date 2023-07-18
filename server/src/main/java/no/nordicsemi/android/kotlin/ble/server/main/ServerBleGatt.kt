@@ -59,13 +59,13 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerService
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServices
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattServiceConfig
-import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServerConnection
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServices
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
 
-class BleGattServer internal constructor(
+class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BlekLogger,
 ) {
@@ -75,19 +75,19 @@ class BleGattServer internal constructor(
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun create(
             context: Context,
-            vararg config: BleServerGattServiceConfig,
+            vararg config: ServerBleGattServiceConfig,
             logger: BlekLogger = DefaultBlekLogger(context),
             mock: MockServerDevice? = null,
-        ): BleGattServer {
-            return BleGattServerFactory.create(context, logger, *config, mock = mock)
+        ): ServerBleGatt {
+            return ServerBleGattFactory.create(context, logger, *config, mock = mock)
         }
     }
 
-    private val _onNewConnection = simpleSharedFlow<BluetoothGattServerConnection>()
+    private val _onNewConnection = simpleSharedFlow<ServerBluetoothGattConnection>()
     val onNewConnection = _onNewConnection.asSharedFlow()
 
     private val _connections =
-        MutableStateFlow(mapOf<ClientDevice, BluetoothGattServerConnection>())
+        MutableStateFlow(mapOf<ClientDevice, ServerBluetoothGattConnection>())
     val connections = _connections.asStateFlow()
 
     private var services: List<IBluetoothGattService> = emptyList()
@@ -147,13 +147,13 @@ class BleGattServer internal constructor(
     private fun connectDevice(device: ClientDevice) {
         val mtuProvider = MtuProvider()
         val copiedServices = services.map {
-            BleGattServerService(
+            ServerBleGattService(
                 server, device, BluetoothGattServiceFactory.copy(it), mtuProvider
             )
         }
         val mutableMap = connections.value.toMutableMap()
-        val connection = BluetoothGattServerConnection(
-            device, server, BleGattServerServices(server, device, copiedServices)
+        val connection = ServerBluetoothGattConnection(
+            device, server, ServerBleGattServices(server, device, copiedServices)
         )
         mutableMap[device] = connection
         _onNewConnection.tryEmit(connection)

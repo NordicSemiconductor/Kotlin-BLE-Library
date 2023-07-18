@@ -33,8 +33,8 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import java.util.UUID
 
-data class BleServerGattServiceConfig(
+data class ServerBleGattServiceConfig(
     val uuid: UUID,
-    val type: BleGattServerServiceType,
-    val characteristicConfigs: List<BleServerGattCharacteristicConfig>
+    val type: ServerBleGattServiceType,
+    val characteristicConfigs: List<ServerBleGattCharacteristicConfig>
 )

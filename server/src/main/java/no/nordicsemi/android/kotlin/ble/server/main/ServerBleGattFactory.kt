@@ -7,22 +7,22 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.server.real.NativeServerAPI
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-object BleGattServerFactory {
+object ServerBleGattFactory {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun create(
         context: Context,
         logger: BlekLogger = DefaultBlekLogger(context),
-        vararg config: BleServerGattServiceConfig,
+        vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
-    ): BleGattServer {
+    ): ServerBleGatt {
         return mock?.let {
             createMockServer(it, logger, *config)
         } ?: createRealServer(context, logger, *config)
@@ -31,23 +31,23 @@ object BleGattServerFactory {
     private fun createMockServer(
         device: MockServerDevice,
         logger: BlekLogger,
-        vararg config: BleServerGattServiceConfig,
-    ): BleGattServer {
+        vararg config: ServerBleGattServiceConfig,
+    ): ServerBleGatt {
         val api = MockServerAPI(MockEngine, device)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return BleGattServer(api, logger).also { MockEngine.registerServer(api, device, services) }
+        return ServerBleGatt(api, logger).also { MockEngine.registerServer(api, device, services) }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun createRealServer(
         context: Context,
         logger: BlekLogger,
-        vararg config: BleServerGattServiceConfig,
-    ): BleGattServer {
+        vararg config: ServerBleGattServiceConfig,
+    ): ServerBleGatt {
         return suspendCoroutine {
             val nativeServer = NativeServerAPI.create(context)
-            val server = BleGattServer(nativeServer, logger)
+            val server = ServerBleGatt(nativeServer, logger)
             var index = 0
 
             nativeServer.callback.onServiceAdded = {

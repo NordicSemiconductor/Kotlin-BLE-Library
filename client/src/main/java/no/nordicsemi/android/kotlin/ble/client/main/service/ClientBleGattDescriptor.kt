@@ -32,25 +32,39 @@
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
+import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.toDisplayString
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
 import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
+import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class BleGattDescriptor internal constructor(
+/**
+ * A helper class which provides operation which can happen on a GATT descriptor. It main
+ * responsibility is to provide write/read features in a synchronous manner, because
+ * simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned which
+ * can change during communication.
+ *
+ * @property gatt [GattClientAPI] for communication with the server device.
+ * @property descriptor Identifier of a descriptor.
+ * @property characteristicInstanceId Instance id of a parent characteristic.
+ * @property logger Logger class for displaying logs.
+ * @property mutex Mutex for synchronising requests.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
+class ClientBleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: IBluetoothGattDescriptor,
@@ -59,13 +73,25 @@ class BleGattDescriptor internal constructor(
     private val mtuProvider: MtuProvider
 ) {
 
+    /**
+     * [UUID] of the descriptor.
+     */
     val uuid = descriptor.uuid
 
+    /**
+     * Permissions of the descriptor.
+     */
     val permissions = BleGattPermission.createPermissions(descriptor.permissions)
 
     private var pendingReadEvent: ((OnDescriptorRead) -> Unit)? = null
     private var pendingWriteEvent: ((OnDescriptorWrite) -> Unit)? = null
 
+    /**
+     * Consumes events emitted by [BluetoothGattCallback]. Events are emitted everywhere. It is this
+     * class responsibility to verify if it's the event destination.
+     *
+     * @param event A gatt event.
+     */
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
             is OnDescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event) }
@@ -73,12 +99,25 @@ class BleGattDescriptor internal constructor(
         }
     }
 
+    /**
+     * Verifies if a current descriptor is the event's destination and executes action if so.
+     *
+     * @param eventDescriptor An event destination.
+     * @param block An action to execute.
+     */
     private fun onLocalEvent(eventDescriptor: IBluetoothGattDescriptor, block: () -> Unit) {
         if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
             block()
         }
     }
 
+    /**
+     * Writes value to a descriptor.
+     *
+     * @throws GattOperationException on GATT communication failure.
+     *
+     * @param value A bytes to write.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: DataByteArray) {
         mutex.lock()
@@ -100,6 +139,13 @@ class BleGattDescriptor internal constructor(
         }
     }
 
+    /**
+     * Reads value from a descriptor and suspends for the result.
+     *
+     * @throws GattOperationException on GATT communication failure.
+     *
+     * @return Read value.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read(): DataByteArray {
         mutex.lock()

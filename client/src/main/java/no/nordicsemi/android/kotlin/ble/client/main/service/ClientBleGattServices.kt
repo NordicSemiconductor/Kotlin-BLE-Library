@@ -39,27 +39,42 @@ import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
-class BleGattService internal constructor(
-    gatt: GattClientAPI,
-    service: IBluetoothGattService,
-    logger: BlekLogger,
-    mutex: MutexWrapper,
-    mtu: MtuProvider
+/**
+ * Helper class for grouping all services available on a remote device.
+ *
+ * @property gatt [GattClientAPI] for communication with the server device.
+ * @property androidGattServices Identifiers of a services.
+ * @property logger Logger class for displaying logs.
+ * @property mutex Mutex for synchronising requests.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
+data class ClientBleGattServices internal constructor(
+    private val gatt: GattClientAPI,
+    private val androidGattServices: List<IBluetoothGattService>,
+    private val logger: BlekLogger,
+    private val mutex: MutexWrapper,
+    private val mtuProvider: MtuProvider
 ) {
 
-    val uuid = service.uuid
+    private val services = androidGattServices.map { ClientBleGattService(gatt, it, logger, mutex, mtuProvider) }
 
-    private val characteristics = service.characteristics.map {
-        BleGattCharacteristic(gatt, it, logger, mutex, mtu)
+    /**
+     * Finds service based on [uuid].
+     *
+     * @param uuid An [UUID] of a service.
+     * @return Service or null if not found.
+     */
+    fun findService(uuid: UUID): ClientBleGattService? {
+        return services.firstOrNull { it.uuid == uuid }
     }
 
-    fun findCharacteristic(uuid: UUID, instanceId: Int? = null): BleGattCharacteristic? {
-        return characteristics.firstOrNull { characteristic ->
-            characteristic.uuid == uuid && instanceId?.let { characteristic.instanceId == it } ?: true
-        }
-    }
-
-    internal fun onEvent(event: ServiceEvent) {
-        characteristics.forEach { it.onEvent(event) }
+    /**
+     * Propagates GATT events to all of it's services. Each characteristic and descriptor is
+     * responsible to decide if it's the receiver of an event.
+     *
+     * @param event A GATT event.
+     */
+    internal fun onCharacteristicEvent(event: ServiceEvent) {
+        services.forEach { it.onEvent(event) }
     }
 }
