@@ -31,27 +31,84 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
+/**
+ * Permissions representing read/write operation restrictions.
+ *
+ * @property value Native Android value.
+ */
 enum class BleGattPermission(internal val value: Int) {
 
+    /**
+     * Descriptor read permission.
+     */
     PERMISSION_READ(1),
+
+    /**
+     * Descriptor permission: Allow encrypted read operations.
+     */
     PERMISSION_READ_ENCRYPTED(2),
+
+    /**
+     * Descriptor permission: Allow encrypted read operations.
+     */
     PERMISSION_READ_ENCRYPTED_MITM(4),
+
+    /**
+     * Descriptor write permission.
+     */
     PERMISSION_WRITE(16),
+
+    /**
+     * Descriptor permission: Allow encrypted writes.
+     */
     PERMISSION_WRITE_ENCRYPTED(32),
+
+    /**
+     * Descriptor permission: Allow encrypted writes with person-in-the-middle protection.
+     */
     PERMISSION_WRITE_ENCRYPTED_MITM(64),
+
+    /**
+     * Descriptor permission: Allow signed write operations.
+     */
     PERMISSION_WRITE_SIGNED(128),
+
+    /**
+     * Descriptor permission: Allow signed write operations with person-in-the-middle protection.
+     */
     PERMISSION_WRITE_SIGNED_MITM(256);
 
     companion object {
+
+        /**
+         * Creates all permissions encoded in [Int] value.
+         *
+         * @param permissions [Int] value where each permission is represented by a separate bit.
+         * @return [List] of permissions. The list may be empty.
+         */
         fun createPermissions(permissions: Int): List<BleGattPermission> {
             return values().filter { (it.value and permissions) > 0 }
         }
 
+        /**
+         * Creates a single permission from [Int] value.
+         *
+         * @throws IllegalStateException when permission cannot be decoded.
+         *
+         * @param value [Int] value of a permission.
+         * @return Decoded permission.
+         */
         fun create(value: Int): BleGattPermission {
             return values().firstOrNull { it.value == value }
                 ?: throw IllegalStateException("Cannot create permission for value: $value")
         }
 
+        /**
+         * Decodes permissions into single [Int] value.
+         *
+         * @param permissions [List] of permissions to be encoded.
+         * @return Single [Int] value representing all the permissions.
+         */
         fun toInt(permissions: List<BleGattPermission>): Int {
             return permissions.fold(0) { current, next ->
                 current or next.value

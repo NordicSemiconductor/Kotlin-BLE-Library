@@ -1,5 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.core.data
 
+/**
+ * Possible statuses of BLE connection.
+ *
+ * @property value Native Android API value.
+ */
 enum class BleGattConnectionStatus(internal val value: Int) {
 
     UNKNOWN(-1),
@@ -17,7 +22,6 @@ enum class BleGattConnectionStatus(internal val value: Int) {
      * This reason will only be reported when [ConnectRequest.useAutoConnect]} was
      * called with parameter set to true, and connection to the device was lost for any reason
      * other than graceful disconnection initiated by the peer user.
-     *
      *
      * Android will try to reconnect automatically.
      */

@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.server.main
+package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.Manifest
 import android.content.Context
@@ -7,15 +7,26 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
-import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
-import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
+import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.server.real.NativeServerAPI
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
-object ServerBleGattFactory {
+/**
+ * Factory object responsible for creating an instance of [ServerBleGatt].
+ */
+internal object ServerBleGattFactory {
 
+    /**
+     * Creates [ServerBleGatt] instance. It can be
+     *
+     * @param context An application context.
+     * @param logger An object responsible for displaying logs.
+     * @param config
+     * @param mock
+     * @return
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun create(
         context: Context,

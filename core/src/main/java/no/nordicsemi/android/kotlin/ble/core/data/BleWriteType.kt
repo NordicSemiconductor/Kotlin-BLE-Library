@@ -31,6 +31,11 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
+/**
+ * Defines available BLE write types.
+ *
+ * @property value Native Android value.
+ */
 enum class BleWriteType(val value: Int) {
     /**
      * Write characteristic, requesting acknowledgement by the remote device.

@@ -39,28 +39,63 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
 
+/**
+ * Class representing BLE device. It can be either mocked or native variant.
+ */
 sealed interface BleDevice : Parcelable {
 
+    /**
+     * Name of a device.
+     */
     val name: String
+
+    /**
+     * MAC address of a device.
+     */
     val address: String
+
+    /**
+     * Bond state. It can change over time.
+     */
     val bondState: BondState
+
+    /**
+     * Returns true if a device is bonded.
+     */
     val isBonded: Boolean
         get() = bondState == BondState.BONDED
+
+    /**
+     * Returns true if a device is in the middle of bonding process.
+     */
     val isBonding: Boolean
         get() = bondState == BondState.BONDING
 
+    /**
+     * Returns true if a device has not empty name.
+     */
     val hasName
         get() = name.isNotEmpty()
 }
 
+/**
+ * Class representing BLE server device. It can be either mocked or native variant.
+ * It can be connected to using [ClientBleGatt].
+ */
 sealed interface ServerDevice : BleDevice {
 
     override val name: String
     override val address: String
 }
 
+/**
+ * Class representing BLE client device. It can be either mocked or native variant.
+ */
 sealed interface ClientDevice : BleDevice
 
+/**
+ * Class representing real BLE client device. It is a wrapper around native [BluetoothDevice].
+ */
 @Parcelize
 data class RealClientDevice(
     val device: BluetoothDevice,
@@ -79,6 +114,9 @@ data class RealClientDevice(
         get() = BondState.create(device.bondState)
 }
 
+/**
+ * Class representing real BLE server device. It is a wrapper around native [BluetoothDevice].
+ */
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
@@ -97,6 +135,10 @@ data class RealServerDevice(
         get() = BondState.create(device.bondState)
 }
 
+/**
+ * Class representing mocked BLE server device. It is independent from native Android API.
+ * It's good for testing or local connection.
+ */
 @Parcelize
 data class MockClientDevice(
     override val name: String = "CLIENT",
@@ -104,6 +146,10 @@ data class MockClientDevice(
     override val bondState: BondState = BondState.NONE,
 ) : ClientDevice, Parcelable
 
+/**
+ * Class representing mocked BLE server device. It is independent from native Android API.
+ * It's good for testing or local connection.
+ */
 @Parcelize
 data class MockServerDevice(
     override val name: String = "SERVER",

@@ -51,6 +51,17 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import java.util.*
 
+/**
+ * A helper class which handles operation which can happen on a GATT characteristic on a server
+ * side. Its main responsibility is to handle write/read/notify requests in a synchronous manner,
+ * because simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned
+ * which can change during communication.
+ *
+ * @property server [GattServerAPI] for communication with the client device.
+ * @property device A client device to which this characteristic belongs.
+ * @property characteristic Identifier of a characteristic.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
 @SuppressLint("MissingPermission")
 class ServerBleGattCharacteristic internal constructor(
     private val server: GattServerAPI,
@@ -59,12 +70,26 @@ class ServerBleGattCharacteristic internal constructor(
     private val mtuProvider: MtuProvider
 ) {
 
+    /**
+     * [UUID] of the characteristic.
+     */
     val uuid = characteristic.uuid
+
+    /**
+     * Instance id of the characteristic.
+     */
     val instanceId = characteristic.instanceId
 
+    /**
+     * Temporary value used during reliable write operation.
+     */
     private var transactionalValue = DataByteArray()
 
     private val _value = ValueFlow.create()
+
+    /**
+     * The last value stored on this characteristic.
+     */
     val value = _value.asSharedFlow()
 
     val permissions: List<BleGattPermission>

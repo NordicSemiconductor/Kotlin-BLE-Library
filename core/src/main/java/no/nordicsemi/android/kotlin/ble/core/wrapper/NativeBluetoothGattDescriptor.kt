@@ -4,6 +4,9 @@ import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.android.common.core.toDisplayString
 import java.util.UUID
 
+/**
+ * Native variant of a descriptor. It's a wrapper around [BluetoothGattDescriptor].
+ */
 data class NativeBluetoothGattDescriptor(
     val descriptor: BluetoothGattDescriptor,
 ) : IBluetoothGattDescriptor {

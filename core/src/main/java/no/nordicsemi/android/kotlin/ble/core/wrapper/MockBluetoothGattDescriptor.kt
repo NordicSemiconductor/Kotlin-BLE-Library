@@ -2,6 +2,13 @@ package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import java.util.UUID
 
+/**
+ * Mock variant of the descriptor. It's special feature is that it is independent from
+ * Android dependencies and can be used for unit testing.
+ *
+ * Circular dependency between characteristic and descriptor results in custom [equals],
+ * [hashCode] and [toString] implementations.
+ */
 data class MockBluetoothGattDescriptor(
     override val uuid: UUID,
     override val permissions: Int,

@@ -4,6 +4,9 @@ import android.bluetooth.BluetoothGattCharacteristic
 import no.nordicsemi.android.common.core.toDisplayString
 import java.util.UUID
 
+/**
+ * Native variant of a characteristic. It's a wrapper around [BluetoothGattCharacteristic].
+ */
 data class NativeBluetoothGattCharacteristic(
     val characteristic: BluetoothGattCharacteristic
 ) : IBluetoothGattCharacteristic {
@@ -18,7 +21,9 @@ data class NativeBluetoothGattCharacteristic(
         get() = characteristic.properties
     override var writeType: Int
         get() = characteristic.writeType
-        set(value) {}
+        set(value) {
+            characteristic.writeType = value
+        }
     override var value: ByteArray
         get() = characteristic.value ?: byteArrayOf()
         set(value) {

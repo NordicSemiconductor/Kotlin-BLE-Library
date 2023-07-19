@@ -64,6 +64,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattFactory
 
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,

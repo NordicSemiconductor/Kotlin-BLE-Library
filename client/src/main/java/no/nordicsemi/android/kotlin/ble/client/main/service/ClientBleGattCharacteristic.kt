@@ -72,10 +72,9 @@ private val ENABLE_INDICATION_VALUE = DataByteArray(byteArrayOf(0x02, 0x00))
 private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
 
 /**
- * A helper class which provides operation which can happen on a GATT characteristic. It main
+ * A helper class which provides operation which can happen on a GATT characteristic. Its main
  * responsibility is to provide write/read/notify features in a synchronous manner, because
- * simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned which
- * can change during communication.
+ * simultaneous calls will be ignored by Android API.
  *
  * @property gatt [GattClientAPI] for communication with the server device.
  * @property characteristic Identifier of a characteristic.
