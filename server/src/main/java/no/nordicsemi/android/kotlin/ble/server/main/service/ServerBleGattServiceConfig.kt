@@ -31,8 +31,16 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
+/**
+ * A configuration class which is used as a prescription to create [IBluetoothGattService].
+ *
+ * @property uuid [UUID] of a service being created.
+ * @property type Type of a service being created.
+ * @property characteristicConfigs Characteristic configs of a service being created.
+ */
 data class ServerBleGattServiceConfig(
     val uuid: UUID,
     val type: ServerBleGattServiceType,

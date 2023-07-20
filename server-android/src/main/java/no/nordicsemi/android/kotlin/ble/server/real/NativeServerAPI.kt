@@ -15,7 +15,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 
@@ -25,9 +25,9 @@ class NativeServerAPI(
     val callback: BleGattServerCallback
 ) : GattServerAPI {
 
-    override val event: SharedFlow<GattServerEvent> = callback.event
+    override val event: SharedFlow<ServerGattEvent> = callback.event
 
-    override fun onEvent(event: GattServerEvent) {
+    override fun onEvent(event: ServerGattEvent) {
         callback.onEvent(event)
     }
 

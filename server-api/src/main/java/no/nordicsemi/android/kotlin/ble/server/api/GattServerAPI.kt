@@ -9,9 +9,9 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristi
 
 interface GattServerAPI {
 
-    val event: SharedFlow<GattServerEvent>
+    val event: SharedFlow<ServerGattEvent>
 
-    fun onEvent(event: GattServerEvent)
+    fun onEvent(event: ServerGattEvent)
 
     fun sendResponse(
         device: ClientDevice,

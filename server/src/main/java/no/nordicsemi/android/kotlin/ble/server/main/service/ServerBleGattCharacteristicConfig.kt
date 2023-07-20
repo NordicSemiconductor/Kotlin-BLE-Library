@@ -34,8 +34,18 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import java.util.UUID
 
+/**
+ * A configuration class which is used as a prescription to create [IBluetoothGattCharacteristic].
+ *
+ * @property uuid [UUID] of a characteristic being created.
+ * @property properties Properties of a characteristic being created.
+ * @property permissions Permissions of a characteristic being created.
+ * @property descriptorConfigs Descriptor configs of a characteristic being created.
+ * @property initialValue Initial value of a characteristic being created.
+ */
 data class ServerBleGattCharacteristicConfig(
     val uuid: UUID,
     val properties: List<BleGattProperty> = emptyList(),
@@ -44,6 +54,9 @@ data class ServerBleGattCharacteristicConfig(
     val initialValue: DataByteArray? = null
 ) {
 
+    /**
+     * Helper property telling if the characteristic will have indication/notification feature.
+     */
     val hasNotifications: Boolean
         get() {
             return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)

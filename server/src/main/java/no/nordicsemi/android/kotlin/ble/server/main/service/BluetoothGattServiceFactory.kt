@@ -159,7 +159,7 @@ internal object BluetoothGattServiceFactory {
             characteristic
         }
 
-        return MockBluetoothGattService(config.uuid, config.type.toNative(), characteristics)
+        return MockBluetoothGattService(config.uuid, config.type.value, characteristics)
     }
 
     /**
@@ -169,7 +169,7 @@ internal object BluetoothGattServiceFactory {
      * @return An instance of [NativeBluetoothGattService].
      */
     fun createNative(config: ServerBleGattServiceConfig): NativeBluetoothGattService {
-        val service = BluetoothGattService(config.uuid, config.type.toNative())
+        val service = BluetoothGattService(config.uuid, config.type.value)
 
         config.characteristicConfigs.forEach {
             val characteristic = BluetoothGattCharacteristic(

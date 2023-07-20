@@ -19,13 +19,13 @@ import kotlin.coroutines.suspendCoroutine
 internal object ServerBleGattFactory {
 
     /**
-     * Creates [ServerBleGatt] instance. It can be
+     * Creates [ServerBleGatt] instance. It can be both mocked or real BLE variant.
      *
      * @param context An application context.
      * @param logger An object responsible for displaying logs.
-     * @param config
-     * @param mock
-     * @return
+     * @param config Prescription for future BLE services creation.
+     * @param mock Mock server device if a server should be run locally.
+     * @return New instance of [ServerBleGatt].
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun create(
@@ -39,6 +39,15 @@ internal object ServerBleGattFactory {
         } ?: createRealServer(context, logger, *config)
     }
 
+    /**
+     * Creates mock variant of the server which will be used locally on a device without the
+     * actual use of BLE stack.
+     *
+     * @param device Mocked server device associated with this server.
+     * @param logger An object responsible for displaying logs.
+     * @param config Prescription for future BLE services creation.
+     * @return New instance of [ServerBleGatt].
+     */
     private fun createMockServer(
         device: MockServerDevice,
         logger: BlekLogger,
@@ -50,8 +59,16 @@ internal object ServerBleGattFactory {
         return ServerBleGatt(api, logger).also { MockEngine.registerServer(api, device, services) }
     }
 
+    /**
+     * Creates real variant of a server which will use BLE stack for communication.
+     *
+     * @param context An application context.
+     * @param logger An object responsible for displaying logs.
+     * @param config Prescription for future BLE services creation.
+     * @return New instance of [ServerBleGatt].
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    suspend fun createRealServer(
+    private suspend fun createRealServer(
         context: Context,
         logger: BlekLogger,
         vararg config: ServerBleGattServiceConfig,

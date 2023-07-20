@@ -93,8 +93,8 @@ interface NordicAdvertiser {
          * Creates an instance of [NordicAdvertiser]. The implementation differs based on Android
          * version. Limited functionality is available prior to Android O.
          *
-         * @param context application context
-         * @return instance of [NordicAdvertiser]
+         * @param context An application context.
+         * @return Instance of [NordicAdvertiser].
          */
         fun create(context: Context): NordicAdvertiser {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

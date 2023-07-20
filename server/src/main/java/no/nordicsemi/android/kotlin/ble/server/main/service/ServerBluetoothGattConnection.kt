@@ -37,6 +37,16 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
+/**
+ * Class wrapping properties of BLE connection between server and it's client device.
+ *
+ * @property device A client device
+ * @property server A server API instance unique per server. It is shared between all connected devices.
+ * @property services Cloned services separate for this connection.
+ * @property mtuProvider MTU provider for this connection.
+ * @property txPhy Transmitter PHY value.
+ * @property rxPhy Receiver PHY value.
+ */
 data class ServerBluetoothGattConnection internal constructor(
     private val device: ClientDevice,
     private val server: GattServerAPI,
@@ -46,10 +56,20 @@ data class ServerBluetoothGattConnection internal constructor(
     val rxPhy: BleGattPhy? = null
 ) {
 
+    /**
+     * Request reading PHY values for this connection.
+     */
     fun readPhy() {
         server.readPhy(device)
     }
 
+    /**
+     * Request new PHY values for this connectino.
+     *
+     * @param txPhy Transmitter PHY value.
+     * @param rxPhy Receiver PHY value.
+     * @param phyOption PHY option.
+     */
     fun requestPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
         server.requestPhy(device, txPhy, rxPhy, phyOption)
     }

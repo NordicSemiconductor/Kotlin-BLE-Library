@@ -32,12 +32,14 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
@@ -92,9 +94,15 @@ class ServerBleGattCharacteristic internal constructor(
      */
     val value = _value.asSharedFlow()
 
+    /**
+     * Permissions of the characteristic.
+     */
     val permissions: List<BleGattPermission>
         get() = BleGattPermission.createPermissions(characteristic.permissions)
 
+    /**
+     * Properties of the characteristic.
+     */
     val properties: List<BleGattProperty>
         get() = BleGattProperty.createProperties(characteristic.properties)
 
@@ -102,10 +110,22 @@ class ServerBleGattCharacteristic internal constructor(
         ServerBleGattDescriptor(server, instanceId, it, mtuProvider)
     }
 
+    /**
+     * Finds descriptor of this characteristic based on [uuid].
+     *
+     * @param uuid Id of descriptor.
+     * @return Descriptor or null if not found.
+     */
     fun findDescriptor(uuid: UUID): ServerBleGattDescriptor? {
         return descriptors.firstOrNull { it.uuid == uuid }
     }
 
+    /**
+     * Sets value for this characteristic. If value has notification/indication property then
+     * notification with this value will be send.
+     *
+     * @param value Bytes to set.
+     */
     fun setValue(value: DataByteArray) {
         // only notify once when the value changes
         //todo think about improving this
@@ -121,6 +141,12 @@ class ServerBleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Consumes events emitted by [BluetoothGattServerCallback]. Events are emitted everywhere.
+     * It is this class responsibility to verify if it's the event destination.
+     *
+     * @param event A gatt request.
+     */
     internal fun onEvent(event: ServiceEvent) {
         when (event) {
             is CharacteristicEvent -> onCharacteristicEvent(event)
@@ -129,12 +155,24 @@ class ServerBleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Verifies if the target of this event is a descriptor belonged to this characteristic.
+     * If yes then propagates event to all of its descriptors.
+     *
+     * @param event A descriptor event.
+     */
     private fun onDescriptorEvent(event: DescriptorEvent) {
         if (event.descriptor.characteristic == characteristic) {
             descriptors.forEach { it.onEvent(event) }
         }
     }
 
+    /**
+     * Verifies if the target of this event is this characteristic.
+     * If yes then it consumes the request.
+     *
+     * @param event A characteristic event.
+     */
     private fun onCharacteristicEvent(event: CharacteristicEvent) {
         when (event) {
             is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
@@ -143,16 +181,28 @@ class ServerBleGattCharacteristic internal constructor(
         }
     }
 
-    private fun onLocalEvent(eventCharacteristic: IBluetoothGattCharacteristic, block: () -> Unit) {
-        if (eventCharacteristic.uuid == characteristic.uuid && eventCharacteristic.instanceId == characteristic.instanceId) {
+    /**
+     * Verifies if the target of the event is this characteristic.
+     *
+     * @param c A characteristic id from the event.
+     */
+    private fun onLocalEvent(c: IBluetoothGattCharacteristic, block: () -> Unit) {
+        if (c.uuid == characteristic.uuid && c.instanceId == characteristic.instanceId) {
             block()
         }
     }
 
+    /**
+     * Handles execute write event. It can be either execute or abort request.
+     * If abort then temporary value is cleared and previous value will be used.
+     * If execute then temporary value will replace previous value.
+     *
+     * @param event An execute write event.
+     */
     private fun onExecuteWrite(event: OnExecuteWrite) {
         descriptors.onEach { it.onExecuteWrite(event) }
         if (!event.execute) {
-            transactionalValue
+            transactionalValue = DataByteArray()
             return
         }
         _value.tryEmit(transactionalValue)
@@ -163,6 +213,15 @@ class ServerBleGattCharacteristic internal constructor(
     private fun onNotificationSent(event: OnNotificationSent) {
     }
 
+    /**
+     * Handles write request. It stores received value in [_value] field.
+     * In case of reliable write then the value is stored in a temporary field until
+     * [OnExecuteWrite] event received.
+     * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
+     * about received value is sent to client.
+     *
+     * @param event A write request event.
+     */
     private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
         val value = event.value.copyOf()
         val status = BleGattOperationStatus.GATT_SUCCESS
@@ -182,6 +241,13 @@ class ServerBleGattCharacteristic internal constructor(
         }
     }
 
+    /**
+     * Handles read request. It gets value stored in [_value] field and tries to send it. If the
+     * size of [DataByteArray] is bigger than mtu value provided by [mtuProvider] then byte array
+     * is send in consecutive chunks.
+     *
+     * @param event A read request event.
+     */
     private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset

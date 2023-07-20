@@ -41,14 +41,14 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristi
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 
-sealed interface GattServerEvent
+sealed interface ServerGattEvent
 
 data class OnServiceAdded(
     val service: IBluetoothGattService,
     val status: BleGattOperationStatus
-) : GattServerEvent
+) : ServerGattEvent
 
-sealed interface GattConnectionEvent : GattServerEvent {
+sealed interface GattConnectionEvent : ServerGattEvent {
     val device: ClientDevice
 }
 

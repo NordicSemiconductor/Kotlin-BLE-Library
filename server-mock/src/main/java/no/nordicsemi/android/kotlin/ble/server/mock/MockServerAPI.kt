@@ -12,7 +12,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
 class MockServerAPI(
     private val mockEngine: MockEngine,
@@ -20,10 +20,10 @@ class MockServerAPI(
 ) : GattServerAPI {
 
     //todo verify reply side-effects
-    private val _event = MutableSharedFlow<GattServerEvent>(replay = 10, extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val event: SharedFlow<GattServerEvent> = _event.asSharedFlow()
+    private val _event = MutableSharedFlow<ServerGattEvent>(replay = 10, extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val event: SharedFlow<ServerGattEvent> = _event.asSharedFlow()
 
-    override fun onEvent(event: GattServerEvent) {
+    override fun onEvent(event: ServerGattEvent) {
         _event.tryEmit(event)
     }
 

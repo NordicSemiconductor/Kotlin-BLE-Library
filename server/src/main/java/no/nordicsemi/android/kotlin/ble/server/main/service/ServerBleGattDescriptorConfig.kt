@@ -32,8 +32,15 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import java.util.UUID
 
+/**
+ * A configuration class which is used as a prescription to create [IBluetoothGattDescriptor].
+ *
+ * @property uuid [UUID] of a descriptor being created.
+ * @property permissions Permissions of a descriptor being created.
+ */
 data class ServerBleGattDescriptorConfig(
     val uuid: UUID,
     val permissions: List<BleGattPermission>

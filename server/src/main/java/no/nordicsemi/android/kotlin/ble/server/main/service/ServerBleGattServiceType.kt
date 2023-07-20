@@ -33,15 +33,20 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.bluetooth.BluetoothGattService
 
-enum class ServerBleGattServiceType {
+/**
+ * BLE service type.
+ *
+ * @property value Native Android value.
+ */
+enum class ServerBleGattServiceType(val value: Int) {
 
-    SERVICE_TYPE_PRIMARY,
-    SERVICE_TYPE_SECONDARY;
+    /**
+     * Primary service.
+     */
+    SERVICE_TYPE_PRIMARY(BluetoothGattService.SERVICE_TYPE_PRIMARY),
 
-    fun toNative(): Int {
-        return when (this) {
-            SERVICE_TYPE_PRIMARY -> BluetoothGattService.SERVICE_TYPE_PRIMARY
-            SERVICE_TYPE_SECONDARY -> BluetoothGattService.SERVICE_TYPE_SECONDARY
-        }
-    }
+    /**
+     * Secondary service (included by primary services).
+     */
+    SERVICE_TYPE_SECONDARY(BluetoothGattService.SERVICE_TYPE_SECONDARY);
 }

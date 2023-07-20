@@ -36,6 +36,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -58,14 +59,25 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServices
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattFactory
 
+/**
+ * A class for managing BLE connections. It propagates events ([ServerGattEvent]) to specified connection's
+ * corresponding characteristics ([ServerBleGattCharacteristic]) and descriptors ([ServerBleGattDescriptor]).
+ * Thanks to that values are getting updated.
+ *
+ * @property server [GattServerAPI] for communication with a client devices.
+ * @property logger Logger instance for displaying logs.
+ */
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BlekLogger,
@@ -73,6 +85,16 @@ class ServerBleGatt internal constructor(
 
     companion object {
 
+        /**
+         * Declares and starts server based on [config]. It can be either real BLE server or mocked
+         * variant which run locally on a device.
+         *
+         * @param context An application context.
+         * @param config Service config which is used later to create services per each connection.
+         * @param logger Logger instance for displaying logs.
+         * @param mock A mock device if run as a mocked variant.
+         * @return An instance of [ServerBleGatt]
+         */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun create(
             context: Context,
@@ -85,10 +107,19 @@ class ServerBleGatt internal constructor(
     }
 
     private val _onNewConnection = simpleSharedFlow<ServerBluetoothGattConnection>()
+
+    /**
+     * [Flow] which emits each time a new connection is established.
+     * It can be used to set up new connection's services behaviour.
+     */
     val onNewConnection = _onNewConnection.asSharedFlow()
 
     private val _connections =
         MutableStateFlow(mapOf<ClientDevice, ServerBluetoothGattConnection>())
+
+    /**
+     * [Flow] which emits collected connections as a [Map] each time a new connection is established.
+     */
     val connections = _connections.asStateFlow()
 
     private var services: List<IBluetoothGattService> = emptyList()
@@ -110,17 +141,32 @@ class ServerBleGatt internal constructor(
         }.launchIn(ApplicationScope)
     }
 
+    /**
+     * Stops server. All connections will be dropped.
+     */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun stopServer() {
         logger.log(Log.INFO, "Stopping server")
         server.close()
     }
 
+    /**
+     * Cancels connection with a particular device.
+     *
+     * @param device A client device.
+     */
     fun cancelConnection(device: ClientDevice) {
         logger.log(Log.INFO, "Cancelling connection with client: ${device.address}")
         server.cancelConnection(device)
     }
 
+    /**
+     * Callback informing that the client's connection has been changed.
+     *
+     * @param device A client device which has connected/disconnected.
+     * @param status Status of the operation.
+     * @param newState New connection state.
+     */
     private fun onConnectionStateChanged(
         device: ClientDevice,
         status: BleGattConnectionStatus,
@@ -138,12 +184,23 @@ class ServerBleGatt internal constructor(
         }
     }
 
+    /**
+     * Removes device from connections list each time device gets disconnected.
+     *
+     * @param device A client device to remove.
+     */
     private fun removeDevice(device: ClientDevice) {
         val mutableMap = connections.value.toMutableMap()
         mutableMap.remove(device)
         _connections.value = mutableMap.toMap()
     }
 
+    /**
+     * Connects server to a new device. Each new connection is created by making a new instances
+     * of services declared for this server and by assigning connection parameters like MTU, PHY etc.
+     *
+     * @param device A client device to connect.
+     */
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: ClientDevice) {
         val mtuProvider = MtuProvider()
@@ -163,6 +220,14 @@ class ServerBleGatt internal constructor(
         server.connect(device, true)
     }
 
+    /**
+     * This callback is invoked each time a server has been added to the server.
+     * Generally the flow assumes adding all services at the server initiation so this callback
+     * should be invoked once per each service declared at the start of the server.
+     *
+     * @param service An added service.
+     * @param status If service has been added successfully.
+     */
     private fun onServiceAdded(service: IBluetoothGattService, status: BleGattOperationStatus) {
         logger.log(Log.DEBUG, "Service added: ${service.uuid}, status: $status")
         if (status == BleGattOperationStatus.GATT_SUCCESS) {
@@ -170,6 +235,13 @@ class ServerBleGatt internal constructor(
         }
     }
 
+    /**
+     * Callback informing that PHY parameters of the connection has been read.
+     * This function updates local information for the specific device and
+     * propagates this information up.
+     *
+     * @param event PHY read event data.
+     */
     private fun onPhyRead(event: OnServerPhyRead) {
         logger.log(Log.DEBUG, "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
@@ -180,6 +252,13 @@ class ServerBleGatt internal constructor(
         }.toMap()
     }
 
+    /**
+     * Callback informing that PHY parameters of the connection has been updated.
+     * This function updates local information for the specific device and
+     * propagates this information up.
+     *
+     * @param event PHY update event data.
+     */
     private fun onPhyUpdate(event: OnServerPhyUpdate) {
         logger.log(Log.DEBUG, "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
@@ -190,6 +269,13 @@ class ServerBleGatt internal constructor(
         }.toMap()
     }
 
+    /**
+     * Callback informing that MTU parameter of the connection has been updated.
+     * This function updates local information for the specific device and
+     * propagates this information up.
+     *
+     * @param event MTU changed event data.
+     */
     private fun onMtuChanged(event: OnServerMtuChanged) {
         logger.log(Log.DEBUG, "New mtu - device: ${event.device.address}, mtu: ${event.mtu}")
         _connections.value[event.device]?.mtuProvider?.updateMtu(event.mtu)

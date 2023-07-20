@@ -32,9 +32,11 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
@@ -43,7 +45,19 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
+import java.util.UUID
 
+/**
+ * A helper class which handles operation which can happen on a GATT characteristic on a server
+ * side. Its main responsibility is to handle write/read requests in a synchronous manner,
+ * because simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned
+ * which can change during communication.
+ *
+ * @property server [GattServerAPI] for communication with the client device.
+ * @property characteristicInstanceId Instance id of a parent characteristic.
+ * @property descriptor Identifier of a descriptor.
+ * @property mtuProvider For providing mtu value established per connection.
+ */
 @SuppressLint("MissingPermission")
 class ServerBleGattDescriptor internal constructor(
     private val server: GattServerAPI,
@@ -52,12 +66,25 @@ class ServerBleGattDescriptor internal constructor(
     private val mtuProvider: MtuProvider
 ) {
 
+    /**
+     * [UUID] of the descriptor.
+     */
     val uuid = descriptor.uuid
 
     private var transactionalValue = DataByteArray()
     private val _value = ValueFlow.create()
+
+    /**
+     * The last value stored on this descriptor.
+     */
     val value = _value.asSharedFlow()
 
+    /**
+     * Consumes events emitted by [BluetoothGattServerCallback]. Events are emitted everywhere.
+     * It is this class responsibility to verify if it's the event destination.
+     *
+     * @param event A gatt request.
+     */
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
             is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
@@ -65,16 +92,34 @@ class ServerBleGattDescriptor internal constructor(
         }
     }
 
+    /**
+     * Sets new [DataByteArray] value on this descriptor which will be visible for further read
+     * requests.
+     *
+     * @param value New [DataByteArray] value.
+     */
     fun setValue(value: DataByteArray) {
         _value.tryEmit(value)
     }
 
+    /**
+     * Verifies if the target of the event is this descriptor.
+     *
+     * @param c A characteristic id from the event.
+     */
     private fun onLocalEvent(eventDescriptor: IBluetoothGattDescriptor, block: () -> Unit) {
         if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {
             block()
         }
     }
 
+    /**
+     * Handles execute write event. It can be either execute or abort request.
+     * If abort then temporary value is cleared and previous value will be used.
+     * If execute then temporary value will replace previous value.
+     *
+     * @param event An execute write event.
+     */
     internal fun onExecuteWrite(event: OnExecuteWrite) {
         if (!event.execute) {
             transactionalValue = DataByteArray()
@@ -85,6 +130,15 @@ class ServerBleGattDescriptor internal constructor(
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 
+    /**
+     * Handles write request. It stores received value in [_value] field.
+     * In case of reliable write then the value is stored in a temporary field until
+     * [OnExecuteWrite] event received.
+     * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
+     * about received value is sent to client.
+     *
+     * @param event A write request event.
+     */
     private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val value = event.value.copyOf()
@@ -104,6 +158,13 @@ class ServerBleGattDescriptor internal constructor(
         }
     }
 
+    /**
+     * Handles read request. It gets value stored in [_value] field and tries to send it. If the
+     * size of [DataByteArray] is bigger than mtu value provided by [mtuProvider] then byte array
+     * is send in consecutive chunks.
+     *
+     * @param event A read request event.
+     */
     private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset

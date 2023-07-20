@@ -48,7 +48,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
-import no.nordicsemi.android.kotlin.ble.server.api.GattServerEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
@@ -63,7 +63,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
 
 class BleGattServerCallback : BluetoothGattServerCallback() {
 
-    private val _event = MutableSharedFlow<GattServerEvent>(
+    private val _event = MutableSharedFlow<ServerGattEvent>(
         extraBufferCapacity = 10,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
@@ -183,7 +183,7 @@ class BleGattServerCallback : BluetoothGattServerCallback() {
         onServiceAdded?.invoke()
     }
 
-    fun onEvent(event: GattServerEvent) {
+    fun onEvent(event: ServerGattEvent) {
         _event.tryEmit(event)
     }
 }
