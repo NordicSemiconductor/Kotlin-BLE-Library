@@ -35,12 +35,25 @@ import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
+import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
 
+/**
+ * Class responsible for aggregating scan results with a single server device.
+ * By default [NordicScanner] emits one [BleScanResult] at time.
+ * Grouping data is a responsibility of this class.
+ *
+ */
 class BleScanResultAggregator {
     private val devices = mutableMapOf<ServerDevice, List<BleScanResultData>?>()
     val results
         get() = devices.map { BleScanResults(it.key, it.value ?: emptyList()) }
 
+    /**
+     * Adds new scan item to [List] and returns aggregated values.
+     *
+     * @param scanItem New scan item.
+     * @return Aggregated values.
+     */
     fun aggregate(scanItem: BleScanResult): List<BleScanResults> {
         val data = scanItem.data
         if (data != null) {
@@ -51,6 +64,14 @@ class BleScanResultAggregator {
         return results
     }
 
+    /**
+     * Adds new scan item to [List] and returns all [ServerDevice] which advertised something.
+     * Can be used in a scenario when scan record data are not important and one want only to
+     * display list of devices.
+     *
+     * @param scanItem New scan item.
+     * @return [List] of all devices which advertised something.
+     */
     fun aggregateDevices(scanItem: BleScanResult): List<ServerDevice> {
         return aggregate(scanItem).map { it.device }
     }

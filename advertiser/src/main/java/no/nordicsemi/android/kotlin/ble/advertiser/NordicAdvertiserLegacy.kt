@@ -51,6 +51,13 @@ import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertiseError
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 
+/**
+ * Class responsible for starting advertisements on Android API level < 26.
+ *
+ * @constructor Creates an instance of an advertiser.
+ *
+ * @param context An Application context.
+ */
 internal class NordicAdvertiserLegacy(
     context: Context,
 ) : NordicAdvertiser {

@@ -9,8 +9,8 @@ import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
-import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
-import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattWrapper
+import no.nordicsemi.android.kotlin.ble.client.real.ClientBleGattCallback
+import no.nordicsemi.android.kotlin.ble.client.real.NativeClientBleAPI
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
@@ -100,7 +100,7 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
     ): GattClientAPI {
-        val gattCallback = BluetoothGattClientCallback()
+        val gattCallback = ClientBleGattCallback()
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 
@@ -116,6 +116,6 @@ internal object ClientBleGattFactory {
             device.connectGatt(context, options.autoConnect, gattCallback)
         }
 
-        return BluetoothGattWrapper(gatt, gattCallback, options.autoConnect)
+        return NativeClientBleAPI(gatt, gattCallback, options.autoConnect)
     }
 }

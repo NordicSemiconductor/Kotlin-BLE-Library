@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -33,13 +33,13 @@ class BleMockGatt(
     override val autoConnect: Boolean
 ) : GattClientAPI {
 
-    private val _event = MutableSharedFlow<GattClientEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val event: SharedFlow<GattClientEvent> = _event.asSharedFlow()
+    private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val event: SharedFlow<ClientGattEvent> = _event.asSharedFlow()
 
     override val device: ServerDevice
         get() = serverDevice
 
-    override fun onEvent(event: GattClientEvent) {
+    override fun onEvent(event: ClientGattEvent) {
         _event.tryEmit(event)
     }
 

@@ -49,7 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
  *
  * @see [BluetoothGattCallback](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback)
  */
-sealed interface GattClientEvent
+sealed interface ClientGattEvent
 
 /**
  * Event emitted when the list of remote services, characteristics and descriptors for the remote
@@ -60,7 +60,7 @@ sealed interface GattClientEvent
  *
  * @see [BluetoothGattCallback.onServicesDiscovered](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onServicesDiscovered(android.bluetooth.BluetoothGatt,%20int))
  */
-data class OnServicesDiscovered(val services: List<IBluetoothGattService>, val status: BleGattOperationStatus) : GattClientEvent
+data class OnServicesDiscovered(val services: List<IBluetoothGattService>, val status: BleGattOperationStatus) : ClientGattEvent
 
 /**
  * Event emitted when GATT client has connected/disconnected to/from a remote GATT server.
@@ -73,7 +73,7 @@ data class OnServicesDiscovered(val services: List<IBluetoothGattService>, val s
 data class OnConnectionStateChanged(
     val status: BleGattConnectionStatus,
     val newState: GattConnectionState
-) : GattClientEvent
+) : ClientGattEvent
 
 /**
  * Event emitted as result of [BluetoothGatt.readPhy].
@@ -88,7 +88,7 @@ data class OnPhyRead(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattClientEvent
+) : ClientGattEvent
 
 /**
  * Event emitted as result of [BluetoothGatt.setPreferredPhy], or as a result of remote device
@@ -104,7 +104,7 @@ data class OnPhyUpdate(
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattClientEvent
+) : ClientGattEvent
 
 /**
  * Event reporting the RSSI for a remote device connection. This callback is triggered in
@@ -115,7 +115,7 @@ data class OnPhyUpdate(
  *
  * @see [BluetoothGattCallback.onReadRemoteRssi](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onReadRemoteRssi(android.bluetooth.BluetoothGatt,%20int,%20int))
  */
-data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : GattClientEvent
+data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) : ClientGattEvent
 
 /**
  * This is an additional event which doesn't exist in [BluetoothGattCallback].
@@ -126,7 +126,7 @@ data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) :
  *
  * @see [BluetoothDevice.ACTION_BOND_STATE_CHANGED]
  */
-data class OnBondStateChanged(val bondState: BondState) : GattClientEvent
+data class OnBondStateChanged(val bondState: BondState) : ClientGattEvent
 
 /**
  * An event indicating service changed event is received.
@@ -135,12 +135,12 @@ data class OnBondStateChanged(val bondState: BondState) : GattClientEvent
  *
  * @see [BluetoothGattCallback.onServiceChanged](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onServiceChanged(android.bluetooth.BluetoothGatt))
  */
-class OnServiceChanged : GattClientEvent
+class OnServiceChanged : ClientGattEvent
 
 /**
  * Interface which groups service related event.
  */
-sealed interface ServiceEvent : GattClientEvent
+sealed interface ServiceEvent : ClientGattEvent
 
 /**
  * Interface which groups characteristic related event.
@@ -161,7 +161,7 @@ sealed interface DescriptorEvent : ServiceEvent
  *
  * @see [BluetoothGattCallback.onMtuChanged](https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onMtuChanged(android.bluetooth.BluetoothGatt,%20int,%20int))
  */
-data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : GattClientEvent
+data class OnMtuChanged(val mtu: Int, val status: BleGattOperationStatus) : ClientGattEvent
 
 /**
  * Event triggered as a result of a remote characteristic notification. Note that the value

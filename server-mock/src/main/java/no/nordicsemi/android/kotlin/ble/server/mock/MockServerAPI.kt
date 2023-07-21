@@ -14,6 +14,13 @@ import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
+/**
+ * A class for communication with [MockEngine]. It allows for sending responses to connected client
+ * devices.
+ *
+ * @property mockEngine An instance of a [MockEngine].
+ * @property serverDevice A server device.
+ */
 class MockServerAPI(
     private val mockEngine: MockEngine,
     private val serverDevice: MockServerDevice

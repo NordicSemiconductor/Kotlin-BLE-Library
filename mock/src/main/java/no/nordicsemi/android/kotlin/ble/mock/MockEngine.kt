@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.mock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
@@ -75,7 +76,22 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
+/**
+ * An object responsible for connecting client with mocked servers.
+ * Each server can be start by setting [MockServerDevice] parameter.
+ * If so then instead of calling BLE API it will be communicating with client using [MockEngine].
+ * All communication will happen locally, but API the server and client side will be using is the
+ * same as for BLE calls.
+ *
+ * Generally this is a proxy object. It catches requests emitted by [GattClientAPI] and emits them
+ * as an [ServerGattEvent] on a server side. The server responds to those events
+ * using [GattServerAPI] which are mapped here to [ClientGattEvent] and send back to client.
+ *
+ * Using this solution may be helpful for testing BLE communication before getting real BLE device
+ * or for local junit tests.
+ */
 object MockEngine {
     private val _advertisedServers = MutableStateFlow(mapOf<MockServerDevice, BleScanResultData>())
     internal val advertisedServers = _advertisedServers.asStateFlow()
@@ -84,7 +100,7 @@ object MockEngine {
     private val serverConnections = mutableMapOf<MockServerDevice, List<ClientDevice>>()
     private val clientConnections = mutableMapOf<ClientDevice, ServerConnection>()
 
-    private var requests = MockRequestHolder()
+    private var requests = MockRequestProvider()
 
     fun registerServer(
         server: GattServerAPI,

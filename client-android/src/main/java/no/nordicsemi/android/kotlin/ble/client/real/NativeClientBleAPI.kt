@@ -40,7 +40,7 @@ import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -62,19 +62,19 @@ import java.lang.reflect.Method
  * @property callback Native wrapper around Android [BluetoothGattCallback].
  * @property autoConnect Boolean value passed during connection.
  */
-class BluetoothGattWrapper(
+class NativeClientBleAPI(
     private val gatt: BluetoothGatt,
-    private val callback: BluetoothGattClientCallback,
+    private val callback: ClientBleGattCallback,
     override val autoConnect: Boolean
 ) : GattClientAPI {
 
-    override val event: SharedFlow<GattClientEvent> = callback.event
+    override val event: SharedFlow<ClientGattEvent> = callback.event
 
     override val device: ServerDevice
         get() = RealServerDevice(gatt.device)
 
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    override fun onEvent(event: GattClientEvent) {
+    override fun onEvent(event: ClientGattEvent) {
         callback.onEvent(event)
     }
 

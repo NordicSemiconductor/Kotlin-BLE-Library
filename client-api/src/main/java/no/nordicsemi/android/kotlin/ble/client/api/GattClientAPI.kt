@@ -45,8 +45,8 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristi
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
 /**
- * Interface around native Android API. For real BLE connections it uses [BluetoothGatt] under the
- * hood, for mock device it utilizes [MockEngine] under the hood.
+ * Interface around native Android API. For real BLE connections it uses [BluetoothGatt], whereas
+ * for mock device it utilizes [MockEngine].
  */
 interface GattClientAPI {
 
@@ -54,7 +54,7 @@ interface GattClientAPI {
      * Flow which emits BLE events. For real BLE connections it collects events from
      * [BluetoothGattCallback] under the hood, for mock device it gets events from [MockEngine].
      */
-    val event: SharedFlow<GattClientEvent>
+    val event: SharedFlow<ClientGattEvent>
 
     /**
      * A server device which has been used to establish connection. It can be either mock or real
@@ -73,7 +73,7 @@ interface GattClientAPI {
      * @param event equivalent of a callback method from [BluetoothGattCallback]
      */
     @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-    fun onEvent(event: GattClientEvent)
+    fun onEvent(event: ClientGattEvent)
 
     /**
      * Writes value to a characteristic.

@@ -12,7 +12,12 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 
-fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
+/**
+ * Maps advertising data into scan result.
+ *
+ * @return Scan result data class.
+ */
+internal fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         this.toExtendedResult()
     } else {

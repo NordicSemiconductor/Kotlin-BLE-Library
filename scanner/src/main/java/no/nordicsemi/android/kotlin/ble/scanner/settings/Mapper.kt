@@ -35,6 +35,11 @@ import android.bluetooth.le.ScanSettings
 import android.os.Build
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 
+/**
+ * Maps library [BleScannerSettings] to Android native API.
+ *
+ * @return Android native scan settings.
+ */
 internal fun BleScannerSettings.toNative(): ScanSettings {
     return ScanSettings.Builder().apply {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

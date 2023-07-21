@@ -33,9 +33,26 @@ package no.nordicsemi.android.kotlin.ble.core.data
 
 import android.bluetooth.BluetoothDevice
 
+/**
+ * PHY coded option.
+ *
+ * @property value Native Android API value.
+ */
 enum class PhyOption(val value: Int) {
+
+    /**
+     * No preferred coding when transmitting on the LE Coded PHY.
+     */
     NO_PREFERRED(BluetoothDevice.PHY_OPTION_NO_PREFERRED),
+
+    /**
+     * Prefer the S=2 coding to be used when transmitting on the LE Coded PHY.
+     */
     S2(BluetoothDevice.PHY_OPTION_S2),
+
+    /**
+     * Prefer the S=8 coding to be used when transmitting on the LE Coded PHY.
+     */
     S8(BluetoothDevice.PHY_OPTION_S8);
 
 

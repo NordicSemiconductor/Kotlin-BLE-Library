@@ -36,6 +36,15 @@ import android.util.Log
 import no.nordicsemi.android.log.LogContract
 import no.nordicsemi.android.log.Logger
 
+/**
+ * Helper class implementing [BlekLoggerAndLauncher] responsible for printing logs to console and
+ * nRF Logger and responsible for starting nRF Logger in most basic manner.
+ *
+ * @property context An application context.
+ * @property key The session key, which is used to group sessions.
+ * @param profile Application profile which will be concatenated to the application name.
+ * @param name The human readable session name.
+ */
 class NordicBlekLogger private constructor(
     private val context: Context,
     profile: String?,

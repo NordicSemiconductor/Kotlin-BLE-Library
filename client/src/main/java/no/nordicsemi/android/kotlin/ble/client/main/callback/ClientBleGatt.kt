@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
@@ -79,7 +79,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * A class for managing BLE connection. It propagates events ([GattClientEvent]) to it's
+ * A class for managing BLE connection. It propagates events ([ClientGattEvent]) to it's
  * corresponding characteristics ([ClientBleGattCharacteristic]) and descriptors ([ClientBleGattDescriptor]).
  * Thanks to that values are getting updated.
  *

@@ -31,4 +31,11 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.errors
 
-data class ScanningFailedException(val errorCode: ScanFailedError) : Exception("Scanning failed with the code: $errorCode")
+/**
+ * Exception indicating that BLE scanning failed.
+ *
+ * @property errorCode A detailed error code.
+ */
+data class ScanningFailedException(
+    val errorCode: ScanFailedError,
+) : Exception("Scanning failed with the code: $errorCode")

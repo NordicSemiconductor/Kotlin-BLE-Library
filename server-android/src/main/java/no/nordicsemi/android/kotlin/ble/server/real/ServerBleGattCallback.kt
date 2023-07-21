@@ -32,6 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattServerCallback
@@ -61,7 +62,10 @@ import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
 
-class BleGattServerCallback : BluetoothGattServerCallback() {
+/**
+ * A class which maps [BluetoothGattServerCallback] methods into [ServerGattEvent] events.
+ */
+class ServerBleGattCallback : BluetoothGattServerCallback() {
 
     private val _event = MutableSharedFlow<ServerGattEvent>(
         extraBufferCapacity = 10,

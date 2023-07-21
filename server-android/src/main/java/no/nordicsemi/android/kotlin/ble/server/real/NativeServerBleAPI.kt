@@ -1,7 +1,10 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
@@ -15,14 +18,22 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
+/**
+ * A wrapper around [BluetoothGattServer] and [BluetoothGattServerCallback].
+ * As an input it uses callbacks of [BluetoothGattServerCallback] and as an output calls to
+ * [BluetoothGattServer].
+ *
+ * @property server Native Android API [BluetoothGattServer].
+ * @property callback Native wrapper around Android [BluetoothGattServerCallback].
+ */
 @SuppressLint("MissingPermission")
-class NativeServerAPI(
+class NativeServerBleAPI(
     val server: BluetoothGattServer,
-    val callback: BleGattServerCallback
+    val callback: ServerBleGattCallback
 ) : GattServerAPI {
 
     override val event: SharedFlow<ServerGattEvent> = callback.event
@@ -32,12 +43,12 @@ class NativeServerAPI(
     }
 
     companion object {
-        fun create(context: Context): NativeServerAPI {
+        fun create(context: Context): NativeServerBleAPI {
             val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-            val callback = BleGattServerCallback()
+            val callback = ServerBleGattCallback()
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
-            return NativeServerAPI(bluetoothGattServer, callback)
+            return NativeServerBleAPI(bluetoothGattServer, callback)
         }
     }
 

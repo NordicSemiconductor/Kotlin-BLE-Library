@@ -40,15 +40,20 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 
+/**
+ * Class responsible for starting advertisements on Android API level >= 26.
+ *
+ * @constructor Creates an instance of an advertiser.
+ *
+ * @param context An Application context.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 internal class NordicAdvertiserOreo(
     context: Context,

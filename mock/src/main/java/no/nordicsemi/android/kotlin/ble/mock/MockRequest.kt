@@ -3,38 +3,85 @@ package no.nordicsemi.android.kotlin.ble.mock
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
+/**
+ * An interface grouping requests.
+ */
 internal sealed interface MockRequest {
+
+    /**
+     * Request id which should be unique for every request.
+     */
     val requestId: Int
 }
 
+/**
+ * An interface grouping requests which require sending response.
+ */
 internal sealed interface SendResponseRequest : MockRequest
 
+/**
+ * A characteristic read request.
+ *
+ * @property requestId Unique request id.
+ * @property characteristic Characteristic id.
+ */
 internal data class MockCharacteristicRead(
     override val requestId: Int,
     val characteristic: IBluetoothGattCharacteristic,
 ) : SendResponseRequest
 
+/**
+ * A characteristic write request.
+ *
+ * @property requestId Unique request id.
+ * @property characteristic Characteristic id.
+ */
 internal data class MockCharacteristicWrite(
     override val requestId: Int,
     val characteristic: IBluetoothGattCharacteristic,
 ) : SendResponseRequest
 
+/**
+ * A descriptor read request.
+ *
+ * @property requestId Unique request id.
+ * @property descriptor Descriptor id.
+ */
 internal data class MockDescriptorRead(
     override val requestId: Int,
     val descriptor: IBluetoothGattDescriptor,
 ) : SendResponseRequest
 
+/**
+ * A descriptor write request.
+ *
+ * @property requestId Unique request id.
+ * @property descriptor Descriptor id.
+ */
 internal data class MockDescriptorWrite(
     override val requestId: Int,
     val descriptor: IBluetoothGattDescriptor,
 ) : SendResponseRequest
 
+/**
+ * An interface grouping reliable write request which require sending result of the operation.
+ */
 internal sealed interface ReliableWriteRequest : MockRequest
 
+/**
+ * Execute reliable write request.
+ *
+ * @property requestId Unique request id.
+ */
 internal data class MockExecuteReliableWrite(
     override val requestId: Int,
 ) : ReliableWriteRequest
 
+/**
+ * Abort reliable write request.
+ *
+ * @property requestId Unique request id.
+ */
 internal data class MockAbortReliableWrite(
     override val requestId: Int,
 ) : ReliableWriteRequest

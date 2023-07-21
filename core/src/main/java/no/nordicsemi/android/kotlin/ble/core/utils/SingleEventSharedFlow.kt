@@ -34,6 +34,11 @@ package no.nordicsemi.android.kotlin.ble.core.utils
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
+/**
+ * Helper class for creating [MutableSharedFlow] with small buffer of size 1.
+ *
+ * @param T Type of the value stored inside [MutableSharedFlow].
+ */
 fun <T> simpleSharedFlow() = MutableSharedFlow<T>(
     extraBufferCapacity = 1,
     onBufferOverflow = BufferOverflow.DROP_OLDEST

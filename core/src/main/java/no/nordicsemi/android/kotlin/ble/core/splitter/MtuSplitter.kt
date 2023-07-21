@@ -14,6 +14,12 @@ fun Flow<ByteArray>.splitWithMtu(mtu: Int) {
     }
 }
 
+/**
+ * Splits [ByteArray] into elements which satisfies [size] requirement.
+ *
+ * @param size Maximum size of a chunk.
+ * @return [List] containing chunked elements.
+ */
 fun ByteArray.split(size: Int): List<ByteArray> {
     return this.asList().chunked(size).map { it.toByteArray() }
 }

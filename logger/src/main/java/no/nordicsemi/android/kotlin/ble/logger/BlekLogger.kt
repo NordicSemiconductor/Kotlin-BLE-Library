@@ -3,6 +3,10 @@ package no.nordicsemi.android.kotlin.ble.logger
 import android.content.Context
 import android.util.Log
 
+/**
+ * Interface grouping [BlekLauncher] and [BlekLogger]. Needed to be used as a return type.
+ *
+ */
 interface BlekLoggerAndLauncher : BlekLauncher, BlekLogger
 
 /**

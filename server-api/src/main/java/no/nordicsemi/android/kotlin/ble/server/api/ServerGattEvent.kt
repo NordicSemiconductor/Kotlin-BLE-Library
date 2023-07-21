@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.api
 
+import android.bluetooth.BluetoothGattServerCallback
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -41,46 +42,124 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristi
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 
+/**
+ * An event class which maps [BluetoothGattServerCallback] callbacks into data classes.
+ *
+ * @see [BluetoothGattServerCallback](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback)
+ */
 sealed interface ServerGattEvent
 
+/**
+ * Indicates whether a local service has been added successfully.
+ *
+ * @property service The service that has been added.
+ * @property status Status of the operation.
+ *
+ * @see [BluetoothGattServerCallback.onServiceAdded](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onServiceAdded(int,%20android.bluetooth.BluetoothGattService))
+ */
 data class OnServiceAdded(
     val service: IBluetoothGattService,
     val status: BleGattOperationStatus
 ) : ServerGattEvent
 
-sealed interface GattConnectionEvent : ServerGattEvent {
+/**
+ * Interface grouping events related to a specific client device.
+ */
+sealed interface GattClientConnectionEvent : ServerGattEvent {
+
+    /**
+     * A client device which has requested some action from the server.
+     */
     val device: ClientDevice
 }
 
+/**
+ * Event indicating when a remote device has been connected or disconnected.
+ *
+ * @property device Remote device that has been connected or disconnected.
+ * @property status Status of the operation.
+ * @property newState Returns the new connection state.
+ *
+ * @see [BluetoothGattServerCallback.onConnectionStateChange](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onConnectionStateChange(android.bluetooth.BluetoothDevice,%20int,%20int))
+ */
 data class OnClientConnectionStateChanged(
     override val device: ClientDevice,
     val status: BleGattConnectionStatus,
     val newState: GattConnectionState
-) : GattConnectionEvent
+) : GattClientConnectionEvent
 
+/**
+ * Event triggered as result of [GattServerAPI.readPhy].
+ *
+ * @property device The remote device that requested the PHY read.
+ * @property txPhy The transmitter PHY in use.
+ * @property rxPhy The receiver PHY in use.
+ * @property status Status of the operation.
+ *
+ * @see [BluetoothGattServerCallback.onPhyRead](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onPhyRead(android.bluetooth.BluetoothDevice,%20int,%20int,%20int))
+ */
 data class OnServerPhyRead(
     override val device: ClientDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattConnectionEvent
+) : GattClientConnectionEvent
 
+/**
+ * Event triggered as result of BluetoothGattServer#setPreferredPhy, or as a result of remote device
+ * changing the PHY.
+ *
+ * @property device The remote device.
+ * @property txPhy The transmitter PHY in use.
+ * @property rxPhy The receiver PHY in use.
+ * @property status Status of the operation.
+ *
+ * @see [BluetoothGattServerCallback.onPhyUpdate](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onPhyUpdate(android.bluetooth.BluetoothDevice,%20int,%20int,%20int))
+ */
 data class OnServerPhyUpdate(
     override val device: ClientDevice,
     val txPhy: BleGattPhy,
     val rxPhy: BleGattPhy,
     val status: BleGattOperationStatus
-) : GattConnectionEvent
+) : GattClientConnectionEvent
 
-sealed interface ServiceEvent : GattConnectionEvent
-
-sealed interface CharacteristicEvent : ServiceEvent
-
+/**
+ * Event indicating the MTU for a given device connection has changed.
+ * This callback will be invoked if a remote client has requested to change the MTU for
+ * a given connection.
+ *
+ * @property device The remote device that requested the MTU change.
+ * @property mtu The new MTU size.
+ *
+ * @see [BluetoothGattServerCallback.onMtuChanged](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onMtuChanged(android.bluetooth.BluetoothDevice,%20int))
+ */
 data class OnServerMtuChanged(
     override val device: ClientDevice,
     val mtu: Int
-) : GattConnectionEvent
+) : GattClientConnectionEvent
 
+/**
+ * Interface grouping events related to services.
+ */
+sealed interface ServiceEvent : GattClientConnectionEvent
+
+/**
+ * Interface grouping events related to characteristics.
+ */
+sealed interface CharacteristicEvent : ServiceEvent
+
+/**
+ * A remote client has requested to read a local characteristic.
+ *
+ * An application must call [GattServerAPI.sendResponse] to complete the request.
+ *
+ * @property device The remote device that has requested the read operation
+ * @property requestId The Id of the request.
+ * @property offset Offset into the value of the characteristic.
+ * @property characteristic Characteristic to be read.
+ *
+ * @see BluetoothGattServerCallback.onCharacteristicReadRequest[](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onCharacteristicReadRequest(android.bluetooth.BluetoothDevice,%20int,%20int,%20android.bluetooth.BluetoothGattCharacteristic))
+ */
 data class OnCharacteristicReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
@@ -88,6 +167,21 @@ data class OnCharacteristicReadRequest(
     val characteristic: IBluetoothGattCharacteristic
 ) : CharacteristicEvent
 
+/**
+ * A remote client has requested to write to a local characteristic.
+ *
+ * An application must call [GattServerAPI.sendResponse] to complete the request.
+ *
+ * @property device The remote device that has requested the write operation.
+ * @property requestId The Id of the request.
+ * @property characteristic Characteristic to be written to.
+ * @property preparedWrite True, if this write operation should be queued for later execution.
+ * @property responseNeeded True, if the remote device requires a response.
+ * @property offset The offset given for the value.
+ * @property value The value the client wants to assign to the characteristic.
+ *
+ * @see [BluetoothGattServerCallback.onCharacteristicWriteRequest](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onCharacteristicWriteRequest(android.bluetooth.BluetoothDevice,%20int,%20android.bluetooth.BluetoothGattCharacteristic,%20boolean,%20boolean,%20int,%20byte[]))
+ */
 data class OnCharacteristicWriteRequest(
     override val device: ClientDevice,
     val requestId: Int,
@@ -98,15 +192,41 @@ data class OnCharacteristicWriteRequest(
     val value: DataByteArray
 ) : CharacteristicEvent
 
+/**
+ * Event emitted when a notification or indication has been sent to a remote device.
+ *
+ * When multiple notifications are to be sent, an application must wait for this callback to be
+ * received before sending additional notifications.
+ *
+ * @property device The remote device the notification has been sent to.
+ * @property status Status of the operation.
+ *
+ * @see [BluetoothGattServerCallback.onNotificationSent](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onNotificationSent(android.bluetooth.BluetoothDevice,%20int))
+ */
 data class OnNotificationSent(
     override val device: ClientDevice,
     val status: BleGattOperationStatus
 ) : CharacteristicEvent
 
+/**
+ * Interface grouping events related to descriptors.
+ */
 sealed interface DescriptorEvent : ServiceEvent {
     val descriptor: IBluetoothGattDescriptor
 }
 
+/**
+ * A remote client has requested to read a local descriptor.
+ *
+ * An application must call [GattServerAPI.sendResponse] to complete the request.
+ *
+ * @property device The remote device that has requested the read operation.
+ * @property requestId The Id of the request.
+ * @property offset Offset into the value of the characteristic.
+ * @property descriptor Descriptor to be read.
+ *
+ * @see [BluetoothGattServerCallback.onDescriptorReadRequest](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onDescriptorReadRequest(android.bluetooth.BluetoothDevice,%20int,%20int,%20android.bluetooth.BluetoothGattDescriptor))
+ */
 data class OnDescriptorReadRequest(
     override val device: ClientDevice,
     val requestId: Int,
@@ -114,6 +234,21 @@ data class OnDescriptorReadRequest(
     override val descriptor: IBluetoothGattDescriptor
 ) : DescriptorEvent
 
+/**
+ * A remote client has requested to write to a local descriptor.
+ *
+ * An application must call [GattServerAPI.sendResponse] to complete the request.
+ *
+ * @property device The remote device that has requested the write operation.
+ * @property requestId The Id of the request.
+ * @property descriptor Descriptor to be written to.
+ * @property preparedWrite True, if this write operation should be queued for later execution.
+ * @property responseNeeded True, if the remote device requires a response
+ * @property offset The offset given for the value.
+ * @property value The value the client wants to assign to the descriptor.
+ *
+ * @see [BluetoothGattServerCallback.onDescriptorWriteRequest](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onDescriptorWriteRequest(android.bluetooth.BluetoothDevice,%20int,%20android.bluetooth.BluetoothGattDescriptor,%20boolean,%20boolean,%20int,%20byte[]))
+ */
 data class OnDescriptorWriteRequest(
     override val device: ClientDevice,
     val requestId: Int,
@@ -124,6 +259,17 @@ data class OnDescriptorWriteRequest(
     val value: DataByteArray
 ) : DescriptorEvent
 
+/**
+ * Execute all pending write operations for this device.
+ *
+ * An application must call [GattServerAPI.sendResponse] to complete the request.
+ *
+ * @property device The remote device that has requested the write operations.
+ * @property requestId The Id of the request.
+ * @property execute Whether the pending writes should be executed (true) or cancelled (false).
+ *
+ * @see [BluetoothGattServerCallback.onExecuteWrite](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onExecuteWrite(android.bluetooth.BluetoothDevice,%20int,%20boolean))
+ */
 data class OnExecuteWrite(
     override val device: ClientDevice,
     val requestId: Int,

@@ -10,13 +10,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
-import no.nordicsemi.android.kotlin.ble.client.real.BluetoothGattClientCallback
+import no.nordicsemi.android.kotlin.ble.client.real.ClientBleGattCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
 
 /**
  * A broadcast receiver to observe [BluetoothDevice.ACTION_BOND_STATE_CHANGED] events.
- * It contains a list of BLE devices and notifies using callback ([BluetoothGattClientCallback])
+ * It contains a list of BLE devices and notifies using callback ([ClientBleGattCallback])
  * about their bond state changes.
  */
 class BondingBroadcastReceiver : BroadcastReceiver() {
@@ -36,7 +36,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
 
     companion object {
 
-        private val callbacks = mutableMapOf<String, BluetoothGattClientCallback>()
+        private val callbacks = mutableMapOf<String, ClientBleGattCallback>()
 
         private var instance: BondingBroadcastReceiver? = null
 
@@ -48,7 +48,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
          * @param device An BLE device which changes should be observed.
          * @param callback Bond state changes callback.
          */
-        fun register(context: Context, device: BleDevice, callback: BluetoothGattClientCallback) {
+        fun register(context: Context, device: BleDevice, callback: ClientBleGattCallback) {
             callbacks[device.address] = callback
             callback.onEvent(OnBondStateChanged(device.bondState))
 

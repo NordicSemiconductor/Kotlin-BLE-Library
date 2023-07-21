@@ -9,7 +9,7 @@ import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
-import no.nordicsemi.android.kotlin.ble.server.real.NativeServerAPI
+import no.nordicsemi.android.kotlin.ble.server.real.NativeServerBleAPI
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -74,7 +74,7 @@ internal object ServerBleGattFactory {
         vararg config: ServerBleGattServiceConfig,
     ): ServerBleGatt {
         return suspendCoroutine {
-            val nativeServer = NativeServerAPI.create(context)
+            val nativeServer = NativeServerBleAPI.create(context)
             val server = ServerBleGatt(nativeServer, logger)
             var index = 0
 
