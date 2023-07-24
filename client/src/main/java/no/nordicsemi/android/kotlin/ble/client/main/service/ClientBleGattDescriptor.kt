@@ -52,7 +52,7 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 /**
- * A helper class which provides operation which can happen on a GATT descriptor. It main
+ * A helper class which provides operations which can happen on a GATT descriptor. It main
  * responsibility is to provide write/read features in a synchronous manner, because
  * simultaneous calls will be ignored by Android API. It has [DataByteArray] value assigned which
  * can change during communication.
@@ -62,7 +62,7 @@ import kotlin.coroutines.suspendCoroutine
  * @property characteristicInstanceId Instance id of a parent characteristic.
  * @property logger Logger class for displaying logs.
  * @property mutex Mutex for synchronising requests.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property mtuProvider For providing MTU value established per connection.
  */
 class ClientBleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,

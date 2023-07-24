@@ -5,7 +5,6 @@ import android.util.Log
 
 /**
  * Interface grouping [BlekLauncher] and [BlekLogger]. Needed to be used as a return type.
- *
  */
 interface BlekLoggerAndLauncher : BlekLauncher, BlekLogger
 
@@ -38,7 +37,7 @@ fun interface BlekLogger {
  * Default implementation of [BlekLoggerAndLauncher] which print logs to Logcat and launch main page
  * of [the Logger app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.log&hl=en&gl=US).
  *
- * @property context
+ * @property context An application context.
  */
 class DefaultBlekLogger(private val context: Context) : BlekLoggerAndLauncher {
 

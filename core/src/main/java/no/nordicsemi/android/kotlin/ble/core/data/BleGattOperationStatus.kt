@@ -39,10 +39,13 @@ import android.util.Log
  * Gatt operation status. It contains values presented in documentation and additional helper
  * values observed and needed during real device operation.
  *
- * @property value
+ * @property value Native Android value.
  */
 enum class BleGattOperationStatus(val value: Int) {
 
+    /**
+     * Unknown error.
+     */
     GATT_UNKNOWN(-1),
 
     /**

@@ -119,7 +119,7 @@ data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) :
 
 /**
  * This is an additional event which doesn't exist in [BluetoothGattCallback].
- * It was added to here to make events complete, but the source of the emission comes from
+ * It is added here to make events complete, but the source of the emission comes from
  * [BondingBroadcastReceiver].
  *
  * @property bondState New bond state ([BondState]) of the remote device.
@@ -129,7 +129,7 @@ data class OnReadRemoteRssi(val rssi: Int, val status: BleGattOperationStatus) :
 data class OnBondStateChanged(val bondState: BondState) : ClientGattEvent
 
 /**
- * An event indicating service changed event is received.
+ * An event indicating "service changed" event is received.
  * Receiving this event means that the GATT database is out of sync with the remote device.
  * [BluetoothGatt.discoverServices] should be called to re-discover the services.
  *
@@ -138,12 +138,12 @@ data class OnBondStateChanged(val bondState: BondState) : ClientGattEvent
 class OnServiceChanged : ClientGattEvent
 
 /**
- * Interface which groups service related event.
+ * Interface which groups service related events.
  */
 sealed interface ServiceEvent : ClientGattEvent
 
 /**
- * Interface which groups characteristic related event.
+ * Interface which groups characteristic related events.
  */
 sealed interface CharacteristicEvent : ServiceEvent
 

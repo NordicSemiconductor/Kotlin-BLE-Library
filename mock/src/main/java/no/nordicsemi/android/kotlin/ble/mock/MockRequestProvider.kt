@@ -6,7 +6,6 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 /**
  * A class responsible for generating new requests with unique request ids and store them.
  * After the request has been processed by the server stored request is used to send a response.
- *
  */
 internal class MockRequestProvider {
     private var requestId = 0

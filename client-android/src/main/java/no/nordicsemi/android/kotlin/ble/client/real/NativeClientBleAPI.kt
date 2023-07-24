@@ -58,7 +58,7 @@ import java.lang.reflect.Method
  * A wrapper around [BluetoothGatt] and [BluetoothGattCallback]. As an input it uses methods of
  * [BluetoothGatt] and as an output callbacks from [BluetoothGattCallback].
  *
- * @property gatt Native Android API [BluetoothGatt].
+ * @property gatt Native Android API ([BluetoothGatt]) for BLE calls.
  * @property callback Native wrapper around Android [BluetoothGattCallback].
  * @property autoConnect Boolean value passed during connection.
  */

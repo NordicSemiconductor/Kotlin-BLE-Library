@@ -24,7 +24,7 @@ interface GattServerAPI {
     /**
      * Internal function for propagating events to [event] shared flow. For internal usage only.
      *
-     * @param event equivalent of a callback method from [BluetoothGattServerCallback]
+     * @param event Equivalent of a callback method from [BluetoothGattServerCallback].
      */
     fun onEvent(event: ServerGattEvent)
 
@@ -56,7 +56,7 @@ interface GattServerAPI {
     /**
      * Send a notification or indication that a local characteristic has been updated.
      *
-     * @param device The remote device to receive the notification/indication This value cannot be null.
+     * @param device The remote device to receive the notification/indication. This value cannot be null.
      * @param characteristic The local characteristic that has been updated.
      * @param confirm True to request confirmation from the client (indication) or false to send a notification
      * @param value
@@ -95,7 +95,7 @@ interface GattServerAPI {
      * device is available. A [OnClientConnectionStateChanged] event will
      * be triggered when the connection state changes as a result of this function.
      *
-     * The autoConnect parameter determines whether to actively connect to the remote device, or
+     * The [autoConnect] parameter determines whether to actively connect to the remote device, or
      * rather passively scan and finalize the connection when the remote device is in
      * range/available. Generally, the first ever connection to a device should be direct
      * (autoConnect set to false) and subsequent connections to known devices should be invoked

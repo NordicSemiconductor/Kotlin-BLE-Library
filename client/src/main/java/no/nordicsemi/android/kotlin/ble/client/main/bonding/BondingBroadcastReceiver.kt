@@ -16,7 +16,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BondState
 
 /**
  * A broadcast receiver to observe [BluetoothDevice.ACTION_BOND_STATE_CHANGED] events.
- * It contains a list of BLE devices and notifies using callback ([ClientBleGattCallback])
+ * It contains a list of BLE devices and notifies using ([ClientBleGattCallback])
  * about their bond state changes.
  */
 class BondingBroadcastReceiver : BroadcastReceiver() {

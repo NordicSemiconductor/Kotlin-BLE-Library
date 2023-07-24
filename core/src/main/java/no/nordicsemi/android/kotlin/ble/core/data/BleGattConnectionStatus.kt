@@ -7,6 +7,9 @@ package no.nordicsemi.android.kotlin.ble.core.data
  */
 enum class BleGattConnectionStatus(internal val value: Int) {
 
+    /**
+     * Unknown error.
+     */
     UNKNOWN(-1),
 
     /** The disconnection was initiated by the user.  */

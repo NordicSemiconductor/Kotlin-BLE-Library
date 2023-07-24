@@ -27,7 +27,7 @@ class ValueFlow private constructor(
         /**
          * Creates an instance of [ValueFlow] with predefined parameters.
          *
-         * @return
+         * @return An instance of [ValueFlow].
          */
         fun create(): ValueFlow {
             return ValueFlow(

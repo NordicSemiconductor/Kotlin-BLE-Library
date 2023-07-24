@@ -9,7 +9,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.Mtu
  * Provides an MTU value.
  *
  * MTU value is shared between many components. To avoid propagating MTU value changed event to
- * all of the components the [MtuProvider] is shared instead in constructor and value is updated
+ * all of the components, the [MtuProvider] is shared instead in constructor and value is updated
  * using it's field.
  *
  */

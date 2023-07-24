@@ -186,10 +186,10 @@ class ClientBleGatt(
     }
 
     /**
-     * Suspend function requesting new mtu size.
+     * Suspend function requesting new MTU size.
      *
-     * @param mtu New mtu size.
-     * @return mtu size after the request. It can be different that requested mtu.
+     * @param mtu New MTU size.
+     * @return mtu Size after the request. It can be different than requested MTU.
      */
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock()
@@ -212,9 +212,9 @@ class ClientBleGatt(
     }
 
     /**
-     * Suspend function reading server device's rssi.
+     * Suspend function reading server device's RSSI.
      *
-     * @return Rssi of the device.
+     * @return RSSI of the device.
      */
     suspend fun readRssi(): Int {
         mutex.lock()
@@ -237,11 +237,11 @@ class ClientBleGatt(
     }
 
     /**
-     * Sets preferred phy for the connection.
+     * Sets preferred PHY for the connection.
      *
-     * @param txPhy Phy ([BleGattPhy]) of a transmitter.
-     * @param rxPhy Phy ([BleGattPhy]) of a receiver.
-     * @param phyOption Phy option ([PhyOption]).
+     * @param txPhy PHY ([BleGattPhy]) of a transmitter.
+     * @param rxPhy PHY ([BleGattPhy]) of a receiver.
+     * @param phyOption PHY option ([PhyOption]).
      * @return PHY values set after the request. They may differ from requested values.
      */
     suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {

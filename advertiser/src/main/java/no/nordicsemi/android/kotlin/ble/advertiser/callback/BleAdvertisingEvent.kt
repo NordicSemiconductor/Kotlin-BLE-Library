@@ -47,8 +47,8 @@ sealed interface BleAdvertisingEvent
  * Event emitted in response to [AdvertisingSet.setAdvertisingData] indicating result of the
  * operation. If status is [BleAdvertiseStatus.ADVERTISE_SUCCESS], then data was changed.
  *
- * @property advertisingSet
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onAdvertisingDataSet](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onAdvertisingDataSet(android.bluetooth.le.AdvertisingSet,%20int)
  */
@@ -62,9 +62,9 @@ data class OnAdvertisingDataSet(
  * the operation. If status is [BleAdvertiseStatus.ADVERTISE_SUCCESS], then advertising set is
  * advertising.
  *
- * @property advertisingSet
- * @property enable
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property enable Is advertising enabled.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onAdvertisingEnabled](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onAdvertisingEnabled(android.bluetooth.le.AdvertisingSet,%20boolean,%20int))
  */
@@ -78,9 +78,9 @@ data class OnAdvertisingEnabled(
  * Event emitted in response to [AdvertisingSet.setAdvertisingParameters] indicating result of
  * the operation.
  *
- * @property advertisingSet
- * @property txPower
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property txPower Transmitter power that will be used for this set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onAdvertisingParametersUpdated](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onAdvertisingParametersUpdated(android.bluetooth.le.AdvertisingSet,%20int,%20int))
  */
@@ -96,17 +96,13 @@ data class OnAdvertisingParametersUpdated(
  * the started set and it is advertising. If error occurred, advertisingSet is null, and status will
  * be set to proper error code.
  *
- * @property advertisingSet
- * @property txPower
- * @property status
+ * @property advertisingSet The advertising set. Null on Android < Oreo.
+ * @property txPower Transmitter power that will be used for this set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onAdvertisingSetStarted](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onAdvertisingSetStarted(android.bluetooth.le.AdvertisingSet,%20int,%20int))
  */
 data class OnAdvertisingSetStarted(
-
-    /**
-     * Returns null for legacy advertisement for Android < Oreo.
-     */
     val advertisingSet: AdvertisingSet?,
     val txPower: Int,
     val status: BleAdvertiseStatus
@@ -116,7 +112,7 @@ data class OnAdvertisingSetStarted(
  * Event emitted in response to [BluetoothLeAdvertiser.stopAdvertisingSet] indicating advertising
  * set is stopped.
  *
- * @property advertisingSet
+ * @property advertisingSet The advertising set.
  *
  * @see [AdvertisingSetCallback.onAdvertisingSetStopped](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onAdvertisingSetStopped(android.bluetooth.le.AdvertisingSet))
  */
@@ -126,8 +122,8 @@ data class OnAdvertisingSetStopped(val advertisingSet: AdvertisingSet?) : BleAdv
  * Event emitted in response to [AdvertisingSet.setPeriodicAdvertisingData] indicating result of
  * the operation.
  *
- * @property advertisingSet
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onPeriodicAdvertisingDataSet](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onPeriodicAdvertisingDataSet(android.bluetooth.le.AdvertisingSet,%20int))
  */
@@ -140,9 +136,9 @@ data class OnPeriodicAdvertisingDataSet(
  * Event emitted in response to [AdvertisingSet.setPeriodicAdvertisingEnabled] indicating result
  * of the operation.
  *
- * @property advertisingSet
- * @property enable
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property enable Is advertising enabled.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onPeriodicAdvertisingEnabled](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onPeriodicAdvertisingEnabled(android.bluetooth.le.AdvertisingSet,%20boolean,%20int))
  */
@@ -156,8 +152,8 @@ data class OnPeriodicAdvertisingEnabled(
  * Event emitted in response to [AdvertisingSet.setPeriodicAdvertisingParameters] indicating
  * result of the operation.
  *
- * @property advertisingSet
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onPeriodicAdvertisingParametersUpdated](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onPeriodicAdvertisingParametersUpdated(android.bluetooth.le.AdvertisingSet,%20int))
  */
@@ -170,8 +166,8 @@ data class OnPeriodicAdvertisingParametersUpdated(
  * Event emitted in response to [AdvertisingSet.setAdvertisingData] indicating result of the
  * operation.
  *
- * @property advertisingSet
- * @property status
+ * @property advertisingSet The advertising set.
+ * @property status Status of the operation.
  *
  * @see [AdvertisingSetCallback.onScanResponseDataSet](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback#onScanResponseDataSet(android.bluetooth.le.AdvertisingSet,%20int))
  */

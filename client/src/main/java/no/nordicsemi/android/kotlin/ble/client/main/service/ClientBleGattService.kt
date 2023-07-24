@@ -46,7 +46,7 @@ import java.util.UUID
  * @property service Identifier of a service.
  * @property logger Logger class for displaying logs.
  * @property mutex Mutex for synchronising requests.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property mtuProvider For providing MTU value established per connection.
  */
 data class ClientBleGattService internal constructor(
     private val gatt: GattClientAPI,

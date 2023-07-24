@@ -55,7 +55,6 @@ enum class PhyOption(val value: Int) {
      */
     S8(BluetoothDevice.PHY_OPTION_S8);
 
-
     companion object {
         fun create(value: Int): PhyOption {
             return PhyOption.values().find { it.value == value }

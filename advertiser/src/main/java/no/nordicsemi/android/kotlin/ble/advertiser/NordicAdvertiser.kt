@@ -57,7 +57,7 @@ interface NordicAdvertiser {
     /**
      * Starts BLE advertising.
      *
-     * @param config Advertising configuration [BleAdvertiseConfig]
+     * @param config Advertising configuration [BleAdvertiseConfig].
      * @return [Flow] which emits advertisement process status changes ([BleAdvertisingEvent]).
      */
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE])
@@ -67,8 +67,8 @@ interface NordicAdvertiser {
      * Starts BLE advertising locally on a device. The devices should be returned by NordicScanner
      * during scanning.
      *
-     * @param config Advertising configuration [BleAdvertiseConfig]
-     * @param mock [MockServerDevice] which will advertised locally on a device.
+     * @param config Advertising configuration [BleAdvertiseConfig].
+     * @param mock [MockServerDevice] which will advertise locally on a device.
      * @return which emits advertisement process status changes ([BleAdvertisingEvent]).
      */
     fun advertise(config: BleAdvertiseConfig, mock: MockServerDevice): Flow<BleAdvertisingEvent> {

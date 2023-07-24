@@ -65,8 +65,8 @@ data class BleAdvertiseData(
 /**
  * A helper class which groups manufacturer id and it's data.
  *
- * @property id manufacturer id
- * @property data manufacturer data
+ * @property id Manufacturer id.
+ * @property data Manufacturer data.
  */
 data class ManufacturerData(
     val id: Int,
@@ -76,8 +76,8 @@ data class ManufacturerData(
 /**
  * A helper class which groups service id and it's data.
  *
- * @property uuid service id
- * @property data service data
+ * @property uuid Service id.
+ * @property data Service data.
  */
 data class ServiceData(
     val uuid: ParcelUuid,

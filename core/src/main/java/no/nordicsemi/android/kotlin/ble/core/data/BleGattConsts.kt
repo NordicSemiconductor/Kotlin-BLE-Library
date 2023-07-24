@@ -37,6 +37,7 @@ import java.util.UUID
  * BLE constant values.
  */
 object BleGattConsts {
+
     /**
      * CCCD UUID - Client Characteristic Configuration Descriptor.
      * An id of a descriptor responsible for enabling/disabling notification/indication on a
@@ -49,6 +50,7 @@ object BleGattConsts {
  * MTU related constants.
  */
 object Mtu {
+
     /**
      * Min value of MTU.
      */

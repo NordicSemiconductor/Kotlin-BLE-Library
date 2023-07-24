@@ -36,7 +36,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 
 /**
- * Set the number of matches for Bluetooth LE scan filters hardware match.
+ * Sets the number of matches for Bluetooth LE scan filters hardware match.
  *
  * @property value Native Android API value.
  * @see [ScanSettings.Builder](https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder#setNumOfMatches(int))
@@ -51,14 +51,14 @@ enum class BleNumOfMatches(val value: Int) {
 
     /**
      * Match few advertisement per filter, depends on current capability and availability of
-     * the resources in hw.
+     * the resources in HW.
      */
     @RequiresApi(Build.VERSION_CODES.M)
     MATCH_NUM_FEW_ADVERTISEMENT(ScanSettings.MATCH_NUM_FEW_ADVERTISEMENT),
 
     /**
-     * Match as many advertisement per filter as hw could allow, depends on current capability and
-     * availability of the resources in hw.
+     * Match as many advertisement per filter as HW could allow, depends on current capability and
+     * availability of the resources in HW.
      */
     @RequiresApi(Build.VERSION_CODES.M)
     MATCH_NUM_MAX_ADVERTISEMENT(ScanSettings.MATCH_NUM_MAX_ADVERTISEMENT);

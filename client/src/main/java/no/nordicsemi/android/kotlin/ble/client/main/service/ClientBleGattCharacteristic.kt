@@ -72,7 +72,7 @@ private val ENABLE_INDICATION_VALUE = DataByteArray(byteArrayOf(0x02, 0x00))
 private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
 
 /**
- * A helper class which provides operation which can happen on a GATT characteristic. Its main
+ * A helper class which provides operations which can happen on a GATT characteristic. Its main
  * responsibility is to provide write/read/notify features in a synchronous manner, because
  * simultaneous calls will be ignored by Android API.
  *
@@ -80,7 +80,7 @@ private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
  * @property characteristic Identifier of a characteristic.
  * @property logger Logger class for displaying logs.
  * @property mutex Mutex for synchronising requests.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property mtuProvider For providing MTU value established per connection.
  */
 class ClientBleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,

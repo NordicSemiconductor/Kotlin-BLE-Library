@@ -41,7 +41,6 @@ import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
  * Class responsible for aggregating scan results with a single server device.
  * By default [NordicScanner] emits one [BleScanResult] at time.
  * Grouping data is a responsibility of this class.
- *
  */
 class BleScanResultAggregator {
     private val devices = mutableMapOf<ServerDevice, List<BleScanResultData>?>()

@@ -80,7 +80,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
 /**
  * An object responsible for connecting client with mocked servers.
- * Each server can be start by setting [MockServerDevice] parameter.
+ * Each server can be started by setting [MockServerDevice] parameter.
  * If so then instead of calling BLE API it will be communicating with client using [MockEngine].
  * All communication will happen locally, but API the server and client side will be using is the
  * same as for BLE calls.

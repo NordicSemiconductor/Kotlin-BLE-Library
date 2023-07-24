@@ -79,7 +79,7 @@ interface GattClientAPI {
      * Writes value to a characteristic.
      *
      * @param characteristic A characteristic to which the value will be written.
-     * @param value A value as [ByteArray].
+     * @param value A value as [DataByteArray].
      * @param writeType A write type method [BleWriteType].
      */
     fun writeCharacteristic(
@@ -113,7 +113,7 @@ interface GattClientAPI {
      * Writes value to a descriptor.
      *
      * @param descriptor A descriptor to which the value will be written.
-     * @param value A value as [ByteArray].
+     * @param value A value as [DataByteArray].
      */
     fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray)
 
