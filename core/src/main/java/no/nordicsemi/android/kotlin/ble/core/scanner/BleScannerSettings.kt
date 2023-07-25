@@ -34,19 +34,33 @@ package no.nordicsemi.android.kotlin.ble.core.scanner
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-data class BleScannerSettings constructor(
+/**
+ * Data class that offers configuration parameters for a scanner.
+ *
+ * @property scanMode Set scan mode ([BleScanMode]) for Bluetooth LE scan.
+ * @property reportDelay Set report delay timestamp for Bluetooth LE scan.
+ * @property callbackType Set callback type ([BleScannerCallbackType]) for Bluetooth LE scan.
+ * @property numOfMatches Set the number of matches ([BleNumOfMatches]) for Bluetooth LE scan filters hardware match.
+ * @property matchMode Set match mode ([BleScannerMatchMode]) for Bluetooth LE scan filters hardware match.
+ * @property legacy Set whether only legacy advertisements should be returned in scan results.
+ * @property phy Set the Physical Layer ([BleScannerPhy]) to use during this scan.
+ */
+data class BleScannerSettings(
 
     val scanMode: BleScanMode = BleScanMode.SCAN_MODE_LOW_POWER,
+
     val reportDelay: Long = 0L,
 
     @RequiresApi(Build.VERSION_CODES.M)
     val callbackType: BleScannerCallbackType = BleScannerCallbackType.CALLBACK_TYPE_ALL_MATCHES,
+
     @RequiresApi(Build.VERSION_CODES.M)
     val numOfMatches: BleNumOfMatches? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         BleNumOfMatches.MATCH_NUM_MAX_ADVERTISEMENT
     } else {
         null
     },
+
     @RequiresApi(Build.VERSION_CODES.M)
     val matchMode: BleScannerMatchMode? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         BleScannerMatchMode.MATCH_MODE_AGGRESSIVE
@@ -56,6 +70,7 @@ data class BleScannerSettings constructor(
 
     @RequiresApi(Build.VERSION_CODES.O)
     val legacy: Boolean = false,
+
     @RequiresApi(Build.VERSION_CODES.O)
-    val phy: BleScannerPhy = BleScannerPhy.PHY_LE_ALL_SUPPORTED,
+    val phy: BleScannerPhy? = null,
 )

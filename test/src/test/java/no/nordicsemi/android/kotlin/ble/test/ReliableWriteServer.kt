@@ -8,15 +8,15 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
-import no.nordicsemi.android.kotlin.ble.server.main.BleGattServer
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleGattServerServiceType
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattCharacteristicConfig
-import no.nordicsemi.android.kotlin.ble.server.main.service.BleServerGattServiceConfig
-import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServerConnection
+import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceType
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristicConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,10 +32,10 @@ class ReliableWriteServer @Inject constructor(
     private val scope: CoroutineScope
 ) {
 
-    lateinit var server: BleGattServer
+    lateinit var server: ServerBleGatt
 
-    lateinit var firstCharacteristic: BleServerGattCharacteristic
-    lateinit var secondCharacteristic: BleServerGattCharacteristic
+    lateinit var firstCharacteristic: ServerBleGattCharacteristic
+    lateinit var secondCharacteristic: ServerBleGattCharacteristic
 
     fun start(
         context: Context,
@@ -44,32 +44,32 @@ class ReliableWriteServer @Inject constructor(
             address = "55:44:33:22:11"
         ),
     ) = scope.launch {
-        val firstCharacteristic = BleServerGattCharacteristicConfig(
+        val firstCharacteristic = ServerBleGattCharacteristicConfig(
             FIRST_CHARACTERISTIC,
             listOf(BleGattProperty.PROPERTY_WRITE, BleGattProperty.PROPERTY_READ),
             listOf(BleGattPermission.PERMISSION_WRITE, BleGattPermission.PERMISSION_READ)
         )
 
-        val secondCharacteristic = BleServerGattCharacteristicConfig(
+        val secondCharacteristic = ServerBleGattCharacteristicConfig(
             SECOND_CHARACTERISTIC,
             listOf(BleGattProperty.PROPERTY_WRITE, BleGattProperty.PROPERTY_READ),
             listOf(BleGattPermission.PERMISSION_WRITE, BleGattPermission.PERMISSION_READ)
         )
 
-        val serviceConfig = BleServerGattServiceConfig(
+        val serviceConfig = ServerBleGattServiceConfig(
             RELIABLE_WRITE_SERVICE,
-            BleGattServerServiceType.SERVICE_TYPE_PRIMARY,
+            ServerBleGattServiceType.SERVICE_TYPE_PRIMARY,
             listOf(firstCharacteristic, secondCharacteristic)
         )
 
-        server = BleGattServer.create(
+        server = ServerBleGatt.create(
             context = context,
             config = arrayOf(serviceConfig),
             mock = device
         )
 
         val advertiser = BleAdvertiser.create(context)
-        advertiser.advertise(config = BleAdvertiseConfig(), mock = device).launchIn(scope)
+        advertiser.advertise(config = BleAdvertisingConfig(), mock = device).launchIn(scope)
 
         launch {
             server.connections
@@ -82,7 +82,7 @@ class ReliableWriteServer @Inject constructor(
         server.stopServer()
     }
 
-    private fun setUpConnection(connection: BluetoothGattServerConnection) {
+    private fun setUpConnection(connection: ServerBluetoothGattConnection) {
         val glsService = connection.services.findService(RELIABLE_WRITE_SERVICE)!!
         firstCharacteristic = glsService.findCharacteristic(FIRST_CHARACTERISTIC)!!
         secondCharacteristic = glsService.findCharacteristic(SECOND_CHARACTERISTIC)!!

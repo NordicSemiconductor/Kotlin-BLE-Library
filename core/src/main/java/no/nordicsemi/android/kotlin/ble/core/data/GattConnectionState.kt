@@ -33,10 +33,31 @@ package no.nordicsemi.android.kotlin.ble.core.data
 
 import android.bluetooth.BluetoothProfile
 
+/**
+ * Connection state status.
+ *
+ * @property value Native Android API value.
+ */
 enum class GattConnectionState(internal val value: Int) {
+
+    /**
+     * Device is connected.
+     */
     STATE_DISCONNECTED(BluetoothProfile.STATE_DISCONNECTED),
+
+    /**
+     * Connection has been initiated.
+     */
     STATE_CONNECTING(BluetoothProfile.STATE_CONNECTING),
+
+    /**
+     * Device is disconnected.
+     */
     STATE_CONNECTED(BluetoothProfile.STATE_CONNECTED),
+
+    /**
+     * Disconnection has been initiated.
+     */
     STATE_DISCONNECTING(BluetoothProfile.STATE_DISCONNECTING);
 
     companion object {

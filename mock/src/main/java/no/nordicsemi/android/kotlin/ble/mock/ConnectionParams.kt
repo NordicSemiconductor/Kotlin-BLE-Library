@@ -3,7 +3,16 @@ package no.nordicsemi.android.kotlin.ble.mock
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 
-data class ConnectionParams(
+/**
+ * Wrapper class grouping connection related parameters.
+ *
+ * @property mtu MTU value.
+ * @property rssi RSSI value.
+ * @property txPhy Transmitter PHY
+ * @property rxPhy Receiver PHY.
+ * @property phyOption PHY coding option.
+ */
+internal data class ConnectionParams(
     val mtu: Int = 0,
     val rssi: Int = 0,
     val txPhy: BleGattPhy = BleGattPhy.PHY_LE_1M,

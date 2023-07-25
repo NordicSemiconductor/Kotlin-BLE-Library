@@ -4,77 +4,29 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.SparseArray
 import kotlinx.parcelize.Parcelize
-import no.nordicsemi.android.kotlin.ble.core.mapper.ScanRecordSerializer
+import no.nordicsemi.android.common.core.DataByteArray
 
+/**
+ * Represents a scan record from Bluetooth LE scan.
+ *
+ * @property advertiseFlag Returns the advertising flags indicating the discoverable mode and capability of the device.
+ * @property serviceUuids Returns a list of service UUIDs within the advertisement that are used to identify the bluetooth GATT services.
+ * @property serviceData Returns a map of service UUID and its corresponding service data.
+ * @property serviceSolicitationUuids Returns a list of service solicitation UUIDs within the advertisement that are used to identify the Bluetooth GATT services.
+ * @property deviceName Returns the local name of the BLE device.
+ * @property txPowerLevel Returns the transmission power level of the packet in dBm.
+ * @property bytes Returns raw bytes of scan record.
+ * @property manufacturerSpecificData Returns a sparse array of manufacturer identifier and its corresponding manufacturer specific data.
+ * @see [ScanRecord](https://developer.android.com/reference/kotlin/android/bluetooth/le/ScanRecord)
+ */
 @Parcelize
 data class BleScanRecord(
     val advertiseFlag: Int,
     val serviceUuids: List<ParcelUuid>?,
-    val serviceData: Map<ParcelUuid, ByteArray>,
+    val serviceData: Map<ParcelUuid, DataByteArray>,
     val serviceSolicitationUuids: List<ParcelUuid>,
     val deviceName: String?,
     val txPowerLevel: Int?,
-    val bytes: ByteArray? = null,
-    val manufacturerSpecificData: SparseArray<ByteArray>,
-) : Parcelable {
-
-    constructor(
-        advertiseFlag: Int,
-        serviceUuids: List<ParcelUuid>?,
-        serviceData: Map<ParcelUuid, ByteArray>,
-        serviceSolicitationUuids: List<ParcelUuid>,
-        deviceName: String?,
-        txPowerLevel: Int,
-        manufacturerSpecificData: SparseArray<ByteArray>,
-    ) : this(
-        advertiseFlag,
-        serviceUuids,
-        serviceData,
-        serviceSolicitationUuids,
-        deviceName,
-        txPowerLevel,
-        ScanRecordSerializer.parseToBytes(
-            advertiseFlag,
-            serviceUuids,
-            serviceData,
-            serviceSolicitationUuids,
-            deviceName,
-            txPowerLevel,
-            manufacturerSpecificData
-        ),
-        manufacturerSpecificData
-    )
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as BleScanRecord
-
-        if (advertiseFlag != other.advertiseFlag) return false
-        if (serviceUuids != other.serviceUuids) return false
-        if (serviceData != other.serviceData) return false
-        if (serviceSolicitationUuids != other.serviceSolicitationUuids) return false
-        if (deviceName != other.deviceName) return false
-        if (txPowerLevel != other.txPowerLevel) return false
-        if (bytes != null) {
-            if (other.bytes == null) return false
-            if (!bytes.contentEquals(other.bytes)) return false
-        } else if (other.bytes != null) return false
-        if (manufacturerSpecificData != other.manufacturerSpecificData) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = advertiseFlag
-        result = 31 * result + (serviceUuids?.hashCode() ?: 0)
-        result = 31 * result + serviceData.hashCode()
-        result = 31 * result + serviceSolicitationUuids.hashCode()
-        result = 31 * result + (deviceName?.hashCode() ?: 0)
-        result = 31 * result + (txPowerLevel ?: 0)
-        result = 31 * result + (bytes?.contentHashCode() ?: 0)
-        result = 31 * result + manufacturerSpecificData.hashCode()
-        return result
-    }
-}
+    val bytes: DataByteArray? = null,
+    val manufacturerSpecificData: SparseArray<DataByteArray>,
+) : Parcelable

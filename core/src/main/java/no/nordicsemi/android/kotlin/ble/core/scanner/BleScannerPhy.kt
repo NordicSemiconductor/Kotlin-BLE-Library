@@ -36,23 +36,31 @@ import android.bluetooth.le.ScanSettings
 import android.os.Build
 import androidx.annotation.RequiresApi
 
-enum class BleScannerPhy {
+/**
+ * Set the Physical Layer to use during this scan.
+ *
+ * @property value Native Android API value.
+ * @see [ScanSettings.Builder](https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder#setPhy(int))
+ */
+@RequiresApi(Build.VERSION_CODES.O)
+enum class BleScannerPhy(val value: Int) {
 
-    PHY_LE_1M,
-    PHY_LE_CODED,
+    /**
+     * Bluetooth LE 1M PHY. Used to refer to LE 1M Physical Channel for advertising, scanning or connection.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    PHY_LE_1M(BluetoothDevice.PHY_LE_1M),
+
+    /**
+     * Bluetooth LE Coded PHY. Used to refer to LE Coded Physical Channel for advertising, scanning or connection.
+     */
+    @RequiresApi(Build.VERSION_CODES.O)
+    PHY_LE_CODED(BluetoothDevice.PHY_LE_CODED),
 
     /**
      * Use all supported PHYs for scanning. This will check the controller capabilities,
      * and start the scan on 1Mbit and LE Coded PHYs if supported, or on the 1Mbit PHY only.
      */
-    PHY_LE_ALL_SUPPORTED;
-
     @RequiresApi(Build.VERSION_CODES.O)
-    fun toNative(): Int {
-        return when (this) {
-            PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-            PHY_LE_ALL_SUPPORTED -> ScanSettings.PHY_LE_ALL_SUPPORTED
-        }
-    }
+    PHY_LE_ALL_SUPPORTED(ScanSettings.PHY_LE_ALL_SUPPORTED);
 }

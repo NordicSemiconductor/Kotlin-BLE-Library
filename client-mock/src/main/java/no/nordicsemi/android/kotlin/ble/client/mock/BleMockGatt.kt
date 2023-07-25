@@ -4,8 +4,9 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -16,6 +17,15 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristi
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
+/**
+ * A class for communication with [MockEngine]. It allows for connecting to mock servers registered
+ * locally on a device.
+ *
+ * @property mockEngine An instance of a [MockEngine].
+ * @property serverDevice A server device from a connection.
+ * @property clientDevice A client device from a connection.
+ * @property autoConnect Boolean value passed during connection.
+ */
 class BleMockGatt(
     private val mockEngine: MockEngine,
     private val serverDevice: MockServerDevice,
@@ -23,19 +33,19 @@ class BleMockGatt(
     override val autoConnect: Boolean
 ) : GattClientAPI {
 
-    private val _event = MutableSharedFlow<GattClientEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val event: SharedFlow<GattClientEvent> = _event.asSharedFlow()
+    private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    override val event: SharedFlow<ClientGattEvent> = _event.asSharedFlow()
 
     override val device: ServerDevice
         get() = serverDevice
 
-    override fun onEvent(event: GattClientEvent) {
+    override fun onEvent(event: ClientGattEvent) {
         _event.tryEmit(event)
     }
 
     override fun writeCharacteristic(
         characteristic: IBluetoothGattCharacteristic,
-        value: ByteArray,
+        value: DataByteArray,
         writeType: BleWriteType
     ) {
         mockEngine.writeCharacteristic(serverDevice, clientDevice, characteristic, value, writeType)
@@ -53,7 +63,7 @@ class BleMockGatt(
         mockEngine.disableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
-    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: ByteArray) {
+    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
         mockEngine.writeDescriptor(serverDevice, clientDevice, descriptor, value)
     }
 

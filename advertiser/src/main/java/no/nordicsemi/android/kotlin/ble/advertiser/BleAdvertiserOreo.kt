@@ -35,21 +35,25 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeAdvertiser
-import android.bluetooth.le.BluetoothLeScanner
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 
+/**
+ * Class responsible for starting advertisements on Android API level >= 26.
+ *
+ * @constructor Creates an instance of an advertiser.
+ *
+ * @param context An Application context.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 internal class BleAdvertiserOreo(
     context: Context,
@@ -57,11 +61,10 @@ internal class BleAdvertiserOreo(
 
     private val bluetoothManager: BluetoothManager by lazy { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     private val bluetoothAdapter: BluetoothAdapter by lazy { bluetoothManager.adapter }
-    private val bluetoothLeScanner: BluetoothLeScanner by lazy { bluetoothAdapter.bluetoothLeScanner }
     private val bluetoothLeAdvertiser: BluetoothLeAdvertiser by lazy { bluetoothAdapter.bluetoothLeAdvertiser }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent> = callbackFlow {
+    override fun advertise(config: BleAdvertisingConfig): Flow<BleAdvertisingEvent> = callbackFlow {
         val settings = config.settings
         val advertiseData = config.advertiseData
         val scanResponseData = config.scanResponseData
@@ -70,7 +73,7 @@ internal class BleAdvertiserOreo(
             trySend(it)
         }
 
-        bluetoothAdapter.setName(config.settings.deviceName)
+        bluetoothAdapter.name = config.settings.deviceName
 
         bluetoothLeAdvertiser.startAdvertisingSet(
             settings.toNative(),
@@ -80,13 +83,6 @@ internal class BleAdvertiserOreo(
             null,
             callback
         )
-
-        if (settings.timeout > 0) {
-            launch {
-                delay(settings.timeout.toLong())
-                close(cause = Exception("Advertise finished after ${settings.timeout}s"))
-            }
-        }
 
         awaitClose {
             bluetoothLeAdvertiser.stopAdvertisingSet(callback)

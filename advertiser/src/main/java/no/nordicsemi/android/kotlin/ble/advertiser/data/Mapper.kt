@@ -36,11 +36,11 @@ import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
 import androidx.annotation.RequiresApi
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseData
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseSettings
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
 
 @RequiresApi(Build.VERSION_CODES.O)
-internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
+internal fun BleAdvertisingSettings.toNative(): AdvertisingSetParameters {
     return AdvertisingSetParameters.Builder().apply {
         anonymous?.let { setAnonymous(it) }
         txPowerLevel?.toNative()?.let { setTxPowerLevel(it) }
@@ -48,13 +48,13 @@ internal fun BleAdvertiseSettings.toNative(): AdvertisingSetParameters {
         setConnectable(connectable)
         includeTxPower?.let { setIncludeTxPower(it) }
         setLegacyMode(legacyMode)
-        primaryPhy?.toNative()?.let { setPrimaryPhy(it) }
+        primaryPhy?.value?.let { setPrimaryPhy(it) }
         scannable?.let { setScannable(it) }
-        secondaryPhy?.toNative()?.let { setSecondaryPhy(it) }
+        secondaryPhy?.value?.let { setSecondaryPhy(it) }
     }.build()
 }
 
-internal fun BleAdvertiseSettings.toLegacy(): AdvertiseSettings {
+internal fun BleAdvertisingSettings.toLegacy(): AdvertiseSettings {
     return AdvertiseSettings.Builder().apply {
         txPowerLevel?.toLegacy()?.let { setTxPowerLevel(it) }
         interval?.toLegacy()?.let { setAdvertiseMode(it) }
@@ -63,7 +63,7 @@ internal fun BleAdvertiseSettings.toLegacy(): AdvertiseSettings {
     }.build()
 }
 
-internal fun BleAdvertiseData.toNative(): AdvertiseData {
+internal fun BleAdvertisingData.toNative(): AdvertiseData {
     val builder = AdvertiseData.Builder()
     builder.setIncludeTxPowerLevel(includeTxPowerLever)
     builder.setIncludeDeviceName(includeDeviceName)
@@ -72,10 +72,10 @@ internal fun BleAdvertiseData.toNative(): AdvertiseData {
         serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
     }
     serviceData.forEach {
-        builder.addServiceData(it.uuid, it.data)
+        builder.addServiceData(it.uuid, it.data.value)
     }
     manufacturerData.forEach {
-        builder.addManufacturerData(it.id, it.data)
+        builder.addManufacturerData(it.id, it.data.value)
     }
     return builder.build()
 }

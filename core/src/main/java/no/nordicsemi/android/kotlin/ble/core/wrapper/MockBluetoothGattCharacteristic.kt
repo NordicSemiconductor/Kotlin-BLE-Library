@@ -3,6 +3,13 @@ package no.nordicsemi.android.kotlin.ble.core.wrapper
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import java.util.UUID
 
+/**
+ * Mock variant of the characteristic. It's special feature is that it is independent from
+ * Android dependencies and can be used for unit testing.
+ *
+ * Circular dependency between characteristic and descriptor results in custom [equals] and
+ * [hashCode] implementations.
+ */
 data class MockBluetoothGattCharacteristic private constructor(
     override val uuid: UUID,
     override val permissions: Int,
@@ -12,10 +19,6 @@ data class MockBluetoothGattCharacteristic private constructor(
     private var _descriptors: List<IBluetoothGattDescriptor>,
     override var writeType: Int,
 ) : IBluetoothGattCharacteristic {
-
-    override fun toString(): String {
-        return super.toString()
-    }
 
     constructor(uuid: UUID, permissions: Int, properties: Int) : this(
         uuid,
@@ -30,6 +33,12 @@ data class MockBluetoothGattCharacteristic private constructor(
     override val descriptors: List<IBluetoothGattDescriptor>
         get() = _descriptors
 
+    /**
+     * Adds descriptor to this characteristic. It can't be passed in the constructor, because an
+     * instance of a characteristics needs to be passed to descriptor.
+     *
+     * @param descriptor A descriptor to add.
+     */
     fun addDescriptor(descriptor: IBluetoothGattDescriptor) {
         _descriptors = _descriptors + descriptor
     }

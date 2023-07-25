@@ -31,59 +31,160 @@
 
 package no.nordicsemi.android.kotlin.ble.client.api
 
+import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCallback
+import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 
+/**
+ * Interface around native Android API. For real BLE connections it uses [BluetoothGatt], whereas
+ * for mock device it utilizes [MockEngine].
+ */
 interface GattClientAPI {
 
-    val event: SharedFlow<GattClientEvent>
+    /**
+     * Flow which emits BLE events. For real BLE connections it collects events from
+     * [BluetoothGattCallback] under the hood, for mock device it gets events from [MockEngine].
+     */
+    val event: SharedFlow<ClientGattEvent>
 
+    /**
+     * A server device which has been used to establish connection. It can be either mock or real
+     * BLE server device.
+     */
     val device: ServerDevice
 
+    /**
+     * Parameter obtained from [BleGattConnectOptions.autoConnect] created during connection.
+     */
     val autoConnect: Boolean
 
-    fun onEvent(event: GattClientEvent)
+    /**
+     * Internal function for propagating events to [event] shared flow. For internal usage only.
+     *
+     * @param event equivalent of a callback method from [BluetoothGattCallback]
+     */
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    fun onEvent(event: ClientGattEvent)
 
+    /**
+     * Writes value to a characteristic.
+     *
+     * @param characteristic A characteristic to which the value will be written.
+     * @param value A value as [DataByteArray].
+     * @param writeType A write type method [BleWriteType].
+     */
     fun writeCharacteristic(
         characteristic: IBluetoothGattCharacteristic,
-        value: ByteArray,
+        value: DataByteArray,
         writeType: BleWriteType
     )
 
+    /**
+     * Reads value from a characteristic.
+     *
+     * @param characteristic A characteristic from which the value will be read.
+     */
     fun readCharacteristic(characteristic: IBluetoothGattCharacteristic)
 
+    /**
+     * Enables notifications on a characteristic.
+     *
+     * @param characteristic A characteristic on which notifications will be enabled.
+     */
     fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
 
+    /**
+     * Disables notifications on a characteristic.
+     *
+     * @param characteristic A characteristic on which notifications will be disabled.
+     */
     fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
 
-    fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: ByteArray)
+    /**
+     * Writes value to a descriptor.
+     *
+     * @param descriptor A descriptor to which the value will be written.
+     * @param value A value as [DataByteArray].
+     */
+    fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray)
 
+    /**
+     * Reads value from a descriptor.
+     *
+     * @param descriptor A descriptor from which the value will be read.
+     */
     fun readDescriptor(descriptor: IBluetoothGattDescriptor)
 
+    /**
+     * Requests mtu. Max value is 517, min 23.
+     *
+     * @param mtu A mtu value.
+     */
     fun requestMtu(mtu: Int)
 
+    /**
+     * Reads rssi of a remote server device.
+     */
     fun readRemoteRssi()
 
+    /**
+     * Reads phy properties of the connection
+     */
     fun readPhy()
 
+    /**
+     * Discover services available on a remote server device.
+     */
     fun discoverServices()
 
+    /**
+     * Sets preferred phy for the connection.
+     *
+     * @param txPhy Phy ([BleGattPhy]) of a transmitter.
+     * @param rxPhy Phy ([BleGattPhy]) of a receiver.
+     * @param phyOption Phy option ([PhyOption]).
+     */
     fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 
+    /**
+     * Disconnect remote server.
+     */
     fun disconnect()
 
+    /**
+     * Clears services cache. It should invoke [BluetoothGattCallback.onServiceChanged] callback.
+     */
     fun clearServicesCache()
 
+    /**
+     * Releases connection resources. It should be called after [disconnect] succeeds.
+     */
     fun close()
 
+    /**
+     * Begins reliable write. All writes to a characteristics which supports this feature will be
+     * transactional which means that they can be reverted in case of data inconsistency.
+     */
     fun beginReliableWrite()
 
+    /**
+     * Aborts reliable write. All writes to a characteristics which supports reliable writes will be
+     * reverted to a state preceding call to [beginReliableWrite].
+     */
     fun abortReliableWrite()
 
+    /**
+     * Executes reliable write. All writes to a characteristics which supports reliable write will be
+     * executed and new values will be set permanently.
+     */
     fun executeReliableWrite()
 }

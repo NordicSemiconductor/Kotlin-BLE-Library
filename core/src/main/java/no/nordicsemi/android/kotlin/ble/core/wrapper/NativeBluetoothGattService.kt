@@ -3,6 +3,9 @@ package no.nordicsemi.android.kotlin.ble.core.wrapper
 import android.bluetooth.BluetoothGattService
 import java.util.UUID
 
+/**
+ * Native variant of a service. It's a wrapper around [BluetoothGattService].
+ */
 data class NativeBluetoothGattService(
     val service: BluetoothGattService,
 ) : IBluetoothGattService {

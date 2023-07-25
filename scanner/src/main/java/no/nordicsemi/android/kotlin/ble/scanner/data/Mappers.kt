@@ -5,24 +5,24 @@ import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.map
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleExtendedScanResult
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleLegacyScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanRecord
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 
-fun ScanRecord.toDomain(): BleScanRecord {
+internal fun ScanRecord.toDomain(): BleScanRecord {
     return BleScanRecord(
         this.advertiseFlags,
         this.serviceUuids,
-        this.serviceData,
+        this.serviceData.mapValues { DataByteArray(it.value) },
         getSolicitationUuids(this),
         this.deviceName ?: "",
         this.txPowerLevel,
-        this.bytes,
-        this.manufacturerSpecificData
+        DataByteArray(this.bytes),
+        this.manufacturerSpecificData.map { DataByteArray(it) }
     )
 }
 
@@ -34,23 +34,23 @@ private fun getSolicitationUuids(scanRecord: ScanRecord): List<ParcelUuid> {
     }
 }
 
-fun ScanResult.toDomain(): BleScanResultData {
+internal fun ScanResult.toDomain(): BleScanResultData {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        BleExtendedScanResult(
+        BleScanResultData(
+            this.rssi,
+            this.timestampNanos,
+            this.scanRecord?.toDomain(),
             getAdvertisingSid(this),
             BleGattPrimaryPhy.create(this.primaryPhy),
             getSecondaryPhy(this),
             getTxPower(this),
-            this.rssi,
             getPeriodicAdvertisingInterval(this),
-            this.timestampNanos,
             this.isLegacy,
             this.isConnectable,
             BleScanDataStatus.create(this.dataStatus),
-            this.scanRecord?.toDomain()
         )
     } else {
-        BleLegacyScanResult(
+        BleScanResultData(
             this.rssi,
             this.timestampNanos,
             this.scanRecord?.toDomain()

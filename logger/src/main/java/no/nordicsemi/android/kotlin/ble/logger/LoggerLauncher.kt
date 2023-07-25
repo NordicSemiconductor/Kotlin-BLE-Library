@@ -38,6 +38,9 @@ import android.net.Uri
 private const val LOGGER_PACKAGE_NAME = "no.nordicsemi.android.log"
 private const val LOGGER_LINK = "https://play.google.com/store/apps/details?id=no.nordicsemi.android.log"
 
+/**
+ * Helper object responsible for launching nRF Logger app.
+ */
 object LoggerLauncher {
 
     /**

@@ -30,4 +30,5 @@ dependencies {
     implementation(project(":server-api"))
 
     implementation(libs.kotlinx.coroutines.android)
+    api(libs.nordic.core)
 }

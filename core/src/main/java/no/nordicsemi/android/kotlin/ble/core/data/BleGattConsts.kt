@@ -33,14 +33,41 @@ package no.nordicsemi.android.kotlin.ble.core.data
 
 import java.util.UUID
 
+/**
+ * BLE constant values.
+ */
 object BleGattConsts {
+
+    /**
+     * CCCD UUID - Client Characteristic Configuration Descriptor.
+     * An id of a descriptor responsible for enabling/disabling notification/indication on a
+     * characteristic.
+     */
     val NOTIFICATION_DESCRIPTOR = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 }
 
+/**
+ * MTU related constants.
+ */
 object Mtu {
+
+    /**
+     * Min value of MTU.
+     */
     val min = 23
+
+    /**
+     * Max value of MTU.
+     */
     val max = 517
 
+    /**
+     * DEFAULT_WRITE byte size used for checksum.
+     */
     val defaultWrite = 3
+
+    /**
+     * SIGNED_WRITE byte size used for checksum.
+     */
     val signedWrite = 3+8
 }

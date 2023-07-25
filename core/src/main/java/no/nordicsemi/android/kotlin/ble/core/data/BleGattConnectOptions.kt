@@ -31,14 +31,15 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
+/**
+ * Connection options for establishing BLE connection.
+ *
+ * @property autoConnect Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
+ * @property phy Only takes effect if [autoConnect] is set to false.
+ */
 data class BleGattConnectOptions(
-    /**
-     * boolean: Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
-     */
+
     val autoConnect: Boolean = false,
 
-    /**
-     * Only takes effect if [autoConnect] is set to false.
-     */
     val phy: BleGattPhy? = null
 )

@@ -36,6 +36,11 @@ import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.scanner.data.toDomain
 
-fun ScanResult.toScanItem(): BleScanResult {
+/**
+ * Map Android native scan result into library [BleScanResult].
+ *
+ * @return Parsed [BleScanResult].
+ */
+internal fun ScanResult.toScanItem(): BleScanResult {
     return BleScanResult(RealServerDevice(device), this.toDomain())
 }
