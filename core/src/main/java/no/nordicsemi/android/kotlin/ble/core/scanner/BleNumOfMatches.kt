@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Nordic Semiconductor
+ * Copyright (c) 2023, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
