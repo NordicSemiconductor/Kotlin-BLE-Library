@@ -31,55 +31,53 @@
 
 package no.nordicsemi.android.kotlin.ble.core.advertiser
 
-import android.bluetooth.le.AdvertiseData
+import android.bluetooth.le.AdvertiseSettings
+import android.bluetooth.le.AdvertisingSetParameters
 import android.os.Build
-import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
-import no.nordicsemi.android.common.core.DataByteArray
+import androidx.annotation.RestrictTo
 
 /**
- * Advertise data packet container for Bluetooth LE advertising. This represents the data to be
- * advertised as well as the scan response data for active scans.
+ * Advertising interval which is tightly correlated with power consumption.
+ * A helper class which is a wrapper around Native Android API.
+ * It unifies parameters between different Android versions.
  *
- * @property serviceUuid A service UUID to advertise data.
- * @property includeDeviceName Whether the device name should be included in advertise packet.
- * @property includeTxPowerLever Whether the transmission power level should be included in the
- * advertise packet.
- * @property manufacturerData Manufacturer specific data ([ManufacturerData]).
- * @property serviceData Service data ([ServiceData]) to advertise data.
- * @property serviceSolicitationUuid Service solicitation UUID to advertise data.
- *
- * @see [AdvertiseData](https://developer.android.com/reference/android/bluetooth/le/AdvertiseData)
+ * @see [AdvertiseSettings](https://developer.android.com/reference/android/bluetooth/le/AdvertiseSettings) for Android < O)
+ * @see [AdvertisingSetParameters](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetParameters)
  */
-data class BleAdvertiseData(
-    val serviceUuid: ParcelUuid,
-    val includeDeviceName: Boolean = true,
-    val includeTxPowerLever: Boolean = false,
-    val manufacturerData: List<ManufacturerData> = emptyList(),
-    val serviceData: List<ServiceData> = emptyList(),
+enum class BleAdvertisingInterval {
 
-    @RequiresApi(Build.VERSION_CODES.M)
-    val serviceSolicitationUuid: ParcelUuid? = null,
-)
+    /**
+     * Perform Bluetooth LE advertising in low power mode.
+     */
+    INTERVAL_LOW,
 
-/**
- * A helper class which groups manufacturer id and it's data.
- *
- * @property id Manufacturer id.
- * @property data Manufacturer data.
- */
-data class ManufacturerData(
-    val id: Int,
-    val data: DataByteArray
-)
+    /**
+     * Perform Bluetooth LE advertising in balanced power mode.
+     */
+    INTERVAL_MEDIUM,
 
-/**
- * A helper class which groups service id and it's data.
- *
- * @property uuid Service id.
- * @property data Service data.
- */
-data class ServiceData(
-    val uuid: ParcelUuid,
-    val data: DataByteArray
-)
+    /**
+     * Perform Bluetooth LE advertising in low latency, high power mode.
+     */
+    INTERVAL_HIGH;
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun toNative(): Int {
+        return when (this) {
+            INTERVAL_LOW -> AdvertisingSetParameters.INTERVAL_LOW
+            INTERVAL_MEDIUM -> AdvertisingSetParameters.INTERVAL_MEDIUM
+            INTERVAL_HIGH -> AdvertisingSetParameters.INTERVAL_HIGH
+        }
+    }
+
+    @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+    fun toLegacy(): Int {
+        return when (this) {
+            INTERVAL_LOW -> AdvertiseSettings.ADVERTISE_MODE_LOW_POWER
+            INTERVAL_MEDIUM -> AdvertiseSettings.ADVERTISE_MODE_BALANCED
+            INTERVAL_HIGH -> AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY
+        }
+    }
+}

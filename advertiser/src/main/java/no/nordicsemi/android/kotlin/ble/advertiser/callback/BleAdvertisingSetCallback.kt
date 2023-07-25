@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.advertiser.callback
 
 import android.bluetooth.le.AdvertisingSet
 import android.bluetooth.le.AdvertisingSetCallback
-import android.bluetooth.le.BluetoothLeAdvertiser
 import android.os.Build
 import androidx.annotation.RequiresApi
 
@@ -53,28 +52,28 @@ internal class BleAdvertisingSetCallback(
      * Callback responsible for emitting event [OnAdvertisingDataSet].
      */
     override fun onAdvertisingDataSet(advertisingSet: AdvertisingSet?, status: Int) {
-        onEvent(OnAdvertisingDataSet(advertisingSet!!, BleAdvertiseStatus.create(status)))
+        onEvent(OnAdvertisingDataSet(advertisingSet!!, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnAdvertisingEnabled].
      */
     override fun onAdvertisingEnabled(advertisingSet: AdvertisingSet?, enable: Boolean, status: Int) {
-        onEvent(OnAdvertisingEnabled(advertisingSet!!, enable, BleAdvertiseStatus.create(status)))
+        onEvent(OnAdvertisingEnabled(advertisingSet!!, enable, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnAdvertisingParametersUpdated].
      */
     override fun onAdvertisingParametersUpdated(advertisingSet: AdvertisingSet?, txPower: Int, status: Int) {
-        onEvent(OnAdvertisingParametersUpdated(advertisingSet!!, txPower, BleAdvertiseStatus.create(status)))
+        onEvent(OnAdvertisingParametersUpdated(advertisingSet!!, txPower, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnAdvertisingSetStarted].
      */
     override fun onAdvertisingSetStarted(advertisingSet: AdvertisingSet?, txPower: Int, status: Int) {
-        onEvent(OnAdvertisingSetStarted(advertisingSet!!, txPower, BleAdvertiseStatus.create(status)))
+        onEvent(OnAdvertisingSetStarted(advertisingSet!!, txPower, BleAdvertisingStatus.create(status)))
     }
 
     /**
@@ -88,27 +87,27 @@ internal class BleAdvertisingSetCallback(
      * Callback responsible for emitting event [OnPeriodicAdvertisingDataSet].
      */
     override fun onPeriodicAdvertisingDataSet(advertisingSet: AdvertisingSet?, status: Int) {
-        onEvent(OnPeriodicAdvertisingDataSet(advertisingSet!!, BleAdvertiseStatus.create(status)))
+        onEvent(OnPeriodicAdvertisingDataSet(advertisingSet!!, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnPeriodicAdvertisingEnabled].
      */
     override fun onPeriodicAdvertisingEnabled(advertisingSet: AdvertisingSet?, enable: Boolean, status: Int) {
-        onEvent(OnPeriodicAdvertisingEnabled(advertisingSet!!, enable, BleAdvertiseStatus.create(status)))
+        onEvent(OnPeriodicAdvertisingEnabled(advertisingSet!!, enable, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnPeriodicAdvertisingParametersUpdated].
      */
     override fun onPeriodicAdvertisingParametersUpdated(advertisingSet: AdvertisingSet?, status: Int) {
-        onEvent(OnPeriodicAdvertisingParametersUpdated(advertisingSet!!, BleAdvertiseStatus.create(status)))
+        onEvent(OnPeriodicAdvertisingParametersUpdated(advertisingSet!!, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnScanResponseDataSet].
      */
     override fun onScanResponseDataSet(advertisingSet: AdvertisingSet?, status: Int) {
-        onEvent(OnScanResponseDataSet(advertisingSet!!, BleAdvertiseStatus.create(status)))
+        onEvent(OnScanResponseDataSet(advertisingSet!!, BleAdvertisingStatus.create(status)))
     }
 }

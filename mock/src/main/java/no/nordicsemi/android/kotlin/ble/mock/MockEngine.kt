@@ -53,7 +53,7 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -168,7 +168,7 @@ object MockEngine {
         )
     }
 
-    fun advertiseServer(device: MockServerDevice, config: BleAdvertiseConfig) {
+    fun advertiseServer(device: MockServerDevice, config: BleAdvertisingConfig) {
         _advertisedServers.value = _advertisedServers.value + (device to config.toScanResult())
     }
 

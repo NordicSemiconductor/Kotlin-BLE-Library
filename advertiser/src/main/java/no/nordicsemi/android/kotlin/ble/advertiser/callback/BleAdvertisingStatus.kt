@@ -40,7 +40,7 @@ import android.bluetooth.le.AdvertisingSetCallback
  *
  * @see [AdvertisingSetCallback](https://developer.android.com/reference/android/bluetooth/le/AdvertisingSetCallback)
  */
-enum class BleAdvertiseStatus(internal val value: Int) {
+enum class BleAdvertisingStatus(internal val value: Int) {
 
     /**
      * Failed to start advertising as the advertising is already started.
@@ -85,7 +85,7 @@ enum class BleAdvertiseStatus(internal val value: Int) {
     ADVERTISE_SUCCESS(0);
 
     companion object {
-        fun create(value: Int): BleAdvertiseStatus {
+        fun create(value: Int): BleAdvertisingStatus {
             return values().firstOrNull { it.value == value }
                 ?: throw IllegalStateException("Can't create status for value: $value")
         }

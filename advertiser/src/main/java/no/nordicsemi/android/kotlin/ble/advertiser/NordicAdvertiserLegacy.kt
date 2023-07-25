@@ -42,14 +42,14 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
-import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertiseError
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertisingError
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 
 /**
  * Class responsible for starting advertisements on Android API level < 26.
@@ -67,7 +67,7 @@ internal class NordicAdvertiserLegacy(
     private val bluetoothLeAdvertiser: BluetoothLeAdvertiser by lazy { bluetoothAdapter.bluetoothLeAdvertiser }
 
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE, Manifest.permission.BLUETOOTH_CONNECT])
-    override fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent> = callbackFlow {
+    override fun advertise(config: BleAdvertisingConfig): Flow<BleAdvertisingEvent> = callbackFlow {
         val settings = config.settings
         val advertiseData = config.advertiseData
         val scanResponseData = config.scanResponseData
@@ -78,13 +78,13 @@ internal class NordicAdvertiserLegacy(
                     OnAdvertisingSetStarted(
                         null,
                         settingsInEffect!!.txPowerLevel,
-                        BleAdvertiseStatus.ADVERTISE_SUCCESS
+                        BleAdvertisingStatus.ADVERTISE_SUCCESS
                     )
                 )
             }
 
             override fun onStartFailure(errorCode: Int) {
-                close(AdvertisementNotStartedException(BleAdvertiseError.create(errorCode)))
+                close(AdvertisementNotStartedException(BleAdvertisingError.create(errorCode)))
             }
         }
 

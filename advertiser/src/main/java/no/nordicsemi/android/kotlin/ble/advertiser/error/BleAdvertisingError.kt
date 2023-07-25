@@ -39,7 +39,7 @@ import android.bluetooth.le.AdvertiseCallback
  *
  * @property value Native Android API value.
  */
-enum class BleAdvertiseError(internal val value: Int) {
+enum class BleAdvertisingError(internal val value: Int) {
 
     /**
      * Failed to start advertising as the advertising is already started.
@@ -77,7 +77,7 @@ enum class BleAdvertiseError(internal val value: Int) {
     ADVERTISE_FAILED_TOO_MANY_ADVERTISERS(AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS);
 
     companion object {
-        fun create(value: Int): BleAdvertiseError {
+        fun create(value: Int): BleAdvertisingError {
             return values().firstOrNull { it.value == value }
                 ?: throw IllegalArgumentException("Can't create an error for value: $value")
         }

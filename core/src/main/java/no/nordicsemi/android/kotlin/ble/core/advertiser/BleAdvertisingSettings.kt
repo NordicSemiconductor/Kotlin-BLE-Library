@@ -43,7 +43,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
  *
  * @property txPowerLevel The TX power level ([BleTxPowerLevel]) for advertising.
  * @property includeTxPower Whether the TX Power will be included.
- * @property interval The advertising interval ([BleAdvertiseInterval]).
+ * @property interval The advertising interval ([BleAdvertisingInterval]).
  * @property connectable Whether the advertisement will be connectable.
  * @property timeout The advertising time limit in milliseconds.
  * @property deviceName The advertising display name.
@@ -55,11 +55,11 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
  *
  * @see [AdvertiseSettings](https://developer.android.com/reference/android/bluetooth/le/AdvertiseSettings)
  */
-data class BleAdvertiseSettings(
+data class BleAdvertisingSettings(
 
     val txPowerLevel: BleTxPowerLevel? = null,
     val includeTxPower: Boolean? = null,
-    val interval: BleAdvertiseInterval? = null,
+    val interval: BleAdvertisingInterval? = null,
     val connectable: Boolean = true,
     val timeout: Int = 0,
 

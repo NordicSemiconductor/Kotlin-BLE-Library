@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.NordicAdvertiser
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
@@ -69,7 +69,7 @@ class ReliableWriteServer @Inject constructor(
         )
 
         val advertiser = NordicAdvertiser.create(context)
-        advertiser.advertise(config = BleAdvertiseConfig(), mock = device).launchIn(scope)
+        advertiser.advertise(config = BleAdvertisingConfig(), mock = device).launchIn(scope)
 
         launch {
             server.connections

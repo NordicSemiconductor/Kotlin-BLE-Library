@@ -5,7 +5,7 @@ import android.os.Build
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.mapper.ScanRecordSerializer
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
@@ -17,7 +17,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
  *
  * @return Scan result data class.
  */
-internal fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
+internal fun BleAdvertisingConfig.toScanResult(): BleScanResultData {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         this.toExtendedResult()
     } else {
@@ -26,7 +26,7 @@ internal fun BleAdvertiseConfig.toScanResult(): BleScanResultData {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-private fun BleAdvertiseConfig.toExtendedResult(): BleScanResultData {
+private fun BleAdvertisingConfig.toExtendedResult(): BleScanResultData {
     return BleScanResultData(
         advertisingSid = ScanResult.SID_NOT_PRESENT,
         primaryPhy = settings.primaryPhy ?: if (settings.legacyMode) {
@@ -46,7 +46,7 @@ private fun BleAdvertiseConfig.toExtendedResult(): BleScanResultData {
     )
 }
 
-private fun BleAdvertiseConfig.toLegacyResult(): BleScanResultData {
+private fun BleAdvertisingConfig.toLegacyResult(): BleScanResultData {
     return BleScanResultData(
         rssi = 0,
         timestampNanos = System.currentTimeMillis(),
@@ -54,7 +54,7 @@ private fun BleAdvertiseConfig.toLegacyResult(): BleScanResultData {
     )
 }
 
-private fun BleAdvertiseConfig.toScanRecord(): BleScanRecord {
+private fun BleAdvertisingConfig.toScanRecord(): BleScanRecord {
     val flags: Int = 0b00000110
     val serviceUuids = listOfNotNull(
         advertiseData?.serviceUuid,

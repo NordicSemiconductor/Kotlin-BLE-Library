@@ -45,7 +45,7 @@ sealed interface BleAdvertisingEvent
 
 /**
  * Event emitted in response to [AdvertisingSet.setAdvertisingData] indicating result of the
- * operation. If status is [BleAdvertiseStatus.ADVERTISE_SUCCESS], then data was changed.
+ * operation. If status is [BleAdvertisingStatus.ADVERTISE_SUCCESS], then data was changed.
  *
  * @property advertisingSet The advertising set.
  * @property status Status of the operation.
@@ -54,12 +54,12 @@ sealed interface BleAdvertisingEvent
  */
 data class OnAdvertisingDataSet(
     val advertisingSet: AdvertisingSet,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
  * Event emitted in response to [BluetoothLeAdvertiser.startAdvertisingSet] indicating result of
- * the operation. If status is [BleAdvertiseStatus.ADVERTISE_SUCCESS], then advertising set is
+ * the operation. If status is [BleAdvertisingStatus.ADVERTISE_SUCCESS], then advertising set is
  * advertising.
  *
  * @property advertisingSet The advertising set.
@@ -71,7 +71,7 @@ data class OnAdvertisingDataSet(
 data class OnAdvertisingEnabled(
     val advertisingSet: AdvertisingSet,
     val enable: Boolean,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
@@ -87,12 +87,12 @@ data class OnAdvertisingEnabled(
 data class OnAdvertisingParametersUpdated(
     val advertisingSet: AdvertisingSet,
     val txPower: Int,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
  * Event emitted in response to [BluetoothLeAdvertiser.startAdvertisingSet] indicating result of
- * the operation. If status is [BleAdvertiseStatus.ADVERTISE_SUCCESS], then advertisingSet contains
+ * the operation. If status is [BleAdvertisingStatus.ADVERTISE_SUCCESS], then advertisingSet contains
  * the started set and it is advertising. If error occurred, advertisingSet is null, and status will
  * be set to proper error code.
  *
@@ -105,7 +105,7 @@ data class OnAdvertisingParametersUpdated(
 data class OnAdvertisingSetStarted(
     val advertisingSet: AdvertisingSet?,
     val txPower: Int,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
@@ -129,7 +129,7 @@ data class OnAdvertisingSetStopped(val advertisingSet: AdvertisingSet?) : BleAdv
  */
 data class OnPeriodicAdvertisingDataSet(
     val advertisingSet: AdvertisingSet,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
@@ -145,7 +145,7 @@ data class OnPeriodicAdvertisingDataSet(
 data class OnPeriodicAdvertisingEnabled(
     val advertisingSet: AdvertisingSet,
     val enable: Boolean,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
@@ -159,7 +159,7 @@ data class OnPeriodicAdvertisingEnabled(
  */
 data class OnPeriodicAdvertisingParametersUpdated(
     val advertisingSet: AdvertisingSet,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent
 
 /**
@@ -173,5 +173,5 @@ data class OnPeriodicAdvertisingParametersUpdated(
  */
 data class OnScanResponseDataSet(
     val advertisingSet: AdvertisingSet,
-    val status: BleAdvertiseStatus
+    val status: BleAdvertisingStatus
 ) : BleAdvertisingEvent

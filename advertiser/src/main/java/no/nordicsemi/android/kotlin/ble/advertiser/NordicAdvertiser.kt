@@ -38,11 +38,11 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertiseStatus
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertiseConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
@@ -57,27 +57,27 @@ interface NordicAdvertiser {
     /**
      * Starts BLE advertising.
      *
-     * @param config Advertising configuration [BleAdvertiseConfig].
+     * @param config Advertising configuration [BleAdvertisingConfig].
      * @return [Flow] which emits advertisement process status changes ([BleAdvertisingEvent]).
      */
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_ADVERTISE])
-    fun advertise(config: BleAdvertiseConfig): Flow<BleAdvertisingEvent>
+    fun advertise(config: BleAdvertisingConfig): Flow<BleAdvertisingEvent>
 
     /**
      * Starts BLE advertising locally on a device. The devices should be returned by NordicScanner
      * during scanning.
      *
-     * @param config Advertising configuration [BleAdvertiseConfig].
+     * @param config Advertising configuration [BleAdvertisingConfig].
      * @param mock [MockServerDevice] which will advertise locally on a device.
      * @return which emits advertisement process status changes ([BleAdvertisingEvent]).
      */
-    fun advertise(config: BleAdvertiseConfig, mock: MockServerDevice): Flow<BleAdvertisingEvent> {
+    fun advertise(config: BleAdvertisingConfig, mock: MockServerDevice): Flow<BleAdvertisingEvent> {
         return callbackFlow {
 
             MockEngine.advertiseServer(mock, config)
 
             trySend(
-                OnAdvertisingSetStarted(null, 0, BleAdvertiseStatus.ADVERTISE_SUCCESS)
+                OnAdvertisingSetStarted(null, 0, BleAdvertisingStatus.ADVERTISE_SUCCESS)
             )
 
             awaitClose {
