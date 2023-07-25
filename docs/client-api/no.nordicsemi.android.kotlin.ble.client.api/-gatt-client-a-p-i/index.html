@@ -53,7 +53,7 @@
   <div class="breadcrumbs"><a href="../../index.html">client-api</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.android.kotlin.ble.client.api</a><span class="delimiter">/</span><span class="current">GattClientAPI</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Gatt</span><wbr><span>Client</span><wbr><span><span>API</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">GattClientAPI</a></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">GattClientAPI</a></div><p class="paragraph">Interface around native Android API. For real BLE connections it uses <a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGatt.html">BluetoothGatt</a>, whereas for mock device it utilizes MockEngine.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
@@ -70,7 +70,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="auto-connect.html">autoConnect</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="auto-connect.html">autoConnect</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Parameter obtained from <a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-connect-options/auto-connect.html">BleGattConnectOptions.autoConnect</a> created during connection.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -85,7 +85,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="device.html">device</a><span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="device.html">device</a><span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a></div><div class="brief "><p class="paragraph">A server device which has been used to establish connection. It can be either mock or real BLE server device.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -100,7 +100,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="event.html">event</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-gatt-client-event/index.html">GattClientEvent</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">val </span><a href="event.html">event</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/SharedFlow///PointingToDeclaration/">SharedFlow</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-client-gatt-event/index.html">ClientGattEvent</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Flow which emits BLE events. For real BLE connections it collects events from <a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGattCallback.html">BluetoothGattCallback</a> under the hood, for mock device it gets events from MockEngine.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -119,7 +119,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Aborts reliable write. All writes to a characteristics which supports reliable writes will be reverted to a state preceding call to <a href="begin-reliable-write.html">beginReliableWrite</a>.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -134,7 +134,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Begins reliable write. All writes to a characteristics which supports this feature will be transactional which means that they can be reverted in case of data inconsistency.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="clear-services-cache.html"><span class="token function">clearServicesCache</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="clear-services-cache.html"><span class="token function">clearServicesCache</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Clears services cache. It should invoke <a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGattCallback.html#onservicechanged">BluetoothGattCallback.onServiceChanged</a> callback.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -164,7 +164,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Releases connection resources. It should be called after <a href="disconnect.html">disconnect</a> succeeds.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -179,7 +179,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="disable-characteristic-notification.html"><span class="token function">disableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="disable-characteristic-notification.html"><span class="token function">disableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Disables notifications on a characteristic.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -194,7 +194,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="disconnect.html"><span class="token function">disconnect</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="disconnect.html"><span class="token function">disconnect</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Disconnect remote server.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -209,7 +209,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="discover-services.html"><span class="token function">discoverServices</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="discover-services.html"><span class="token function">discoverServices</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Discover services available on a remote server device.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="enable-characteristic-notification.html"><span class="token function">enableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="enable-characteristic-notification.html"><span class="token function">enableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Enables notifications on a characteristic.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -239,22 +239,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Executes reliable write. All writes to a characteristics which supports reliable write will be executed and new values will be set permanently.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-916152176%2FFunctions%2F-928740869" anchor-label="onEvent" id="-916152176%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
+<a data-name="-470165872%2FFunctions%2F-928740869" anchor-label="onEvent" id="-470165872%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="on-event.html"><span>on</span><wbr><span><span>Event</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-916152176%2FFunctions%2F-928740869"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-470165872%2FFunctions%2F-928740869"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="on-event.html"><span class="token function">onEvent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../-gatt-client-event/index.html">GattClientEvent</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.html"><span class="token annotation builtin">RestrictTo</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="token punctuation">[</span><span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RestrictTo.Scope.LIBRARY_GROUP.html">RestrictTo.Scope.LIBRARY_GROUP</a></span><wbr><span class="token punctuation">]</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="on-event.html"><span class="token function">onEvent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">event<span class="token operator">: </span><a href="../-client-gatt-event/index.html">ClientGattEvent</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Internal function for propagating events to <a href="on-event.html">event</a> shared flow. For internal usage only.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -269,7 +269,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-characteristic.html"><span class="token function">readCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-characteristic.html"><span class="token function">readCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Reads value from a characteristic.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -284,7 +284,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-descriptor.html"><span class="token function">readDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-descriptor.html"><span class="token function">readDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Reads value from a descriptor.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -299,7 +299,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Reads phy properties of the connection</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -314,7 +314,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-remote-rssi.html"><span class="token function">readRemoteRssi</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-remote-rssi.html"><span class="token function">readRemoteRssi</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Reads rssi of a remote server device.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -329,7 +329,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="request-mtu.html"><span class="token function">requestMtu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="request-mtu.html"><span class="token function">requestMtu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Requests mtu. Max value is 517, min 23.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -344,37 +344,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-preferred-phy.html"><span class="token function">setPreferredPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-preferred-phy.html"><span class="token function">setPreferredPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets preferred phy for the connection.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-871289889%2FFunctions%2F-928740869" anchor-label="writeCharacteristic" id="-871289889%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
+<a data-name="-725486669%2FFunctions%2F-928740869" anchor-label="writeCharacteristic" id="-725486669%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="write-characteristic.html"><span>write</span><wbr><span><span>Characteristic</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-871289889%2FFunctions%2F-928740869"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-725486669%2FFunctions%2F-928740869"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-characteristic.html"><span class="token function">writeCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">writeType<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-write-type/index.html">BleWriteType</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-characteristic.html"><span class="token function">writeCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span><span class="token punctuation">, </span></span><span class="parameter ">writeType<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-write-type/index.html">BleWriteType</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Writes value to a characteristic.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1493711374%2FFunctions%2F-928740869" anchor-label="writeDescriptor" id="-1493711374%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
+<a data-name="-1980364682%2FFunctions%2F-928740869" anchor-label="writeDescriptor" id="-1980364682%2FFunctions%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="write-descriptor.html"><span>write</span><wbr><span><span>Descriptor</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1493711374%2FFunctions%2F-928740869"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1980364682%2FFunctions%2F-928740869"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-descriptor.html"><span class="token function">writeDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-descriptor.html"><span class="token function">writeDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Writes value to a descriptor.</p></div></div></div>
                 </div>
               </div>
             </div>

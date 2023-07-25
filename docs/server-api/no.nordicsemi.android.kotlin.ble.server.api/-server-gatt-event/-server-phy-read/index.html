@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ServerPhyRead</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+<a href="../../../../index.html">
+<span>Kotlin-BLE-Library</span>            </a>    </div>
+    <div>
+    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":server-api:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="server-api::no.nordicsemi.android.kotlin.ble.server.api/ServerGattEvent.ServerPhyRead///PointingToDeclaration//-1523335293">
+  <div class="breadcrumbs"><a href="../../../index.html">server-api</a><span class="delimiter">/</span><a href="../../index.html">no.nordicsemi.android.kotlin.ble.server.api</a><span class="delimiter">/</span><a href="../index.html">ServerGattEvent</a><span class="delimiter">/</span><span class="current">ServerPhyRead</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Server</span><wbr><span>Phy</span><wbr><span><span>Read</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">ServerPhyRead</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>device<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>txPhy<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>rxPhy<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span> : <a href="../-gatt-client-connection-event/index.html">ServerGattEvent.GattClientConnectionEvent</a></div><p class="paragraph">Event triggered as result of <a href="../../-gatt-server-a-p-i/read-phy.html">GattServerAPI.readPhy</a>.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGattServerCallback.html#onphyread"><span>Bluetooth</span><wbr><span>Gatt</span><wbr><span>Server</span><wbr><span>Callback.</span><wbr><span>onPhyRead</span></a></div></span></div><div><div class="title"><p class="paragraph">(https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onPhyRead(android.bluetooth.BluetoothDevice,%20int,%20int,%20int))</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1257144222%2FConstructors%2F-1523335293" anchor-label="ServerPhyRead" id="-1257144222%2FConstructors%2F-1523335293" data-filterable-set=":server-api:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-server-phy-read.html"><span>Server</span><wbr><span>Phy</span><wbr><span><span>Read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1257144222%2FConstructors%2F-1523335293"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1398453834%2FProperties%2F-1523335293" anchor-label="device" id="-1398453834%2FProperties%2F-1523335293" data-filterable-set=":server-api:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device.html"><span><span>device</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1398453834%2FProperties%2F-1523335293"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="device.html">device</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></div><div class="brief "><p class="paragraph">The remote device that requested the PHY read.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1171705171%2FProperties%2F-1523335293" anchor-label="rxPhy" id="1171705171%2FProperties%2F-1523335293" data-filterable-set=":server-api:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rx-phy.html"><span>rx</span><wbr><span><span>Phy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1171705171%2FProperties%2F-1523335293"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="rx-phy.html">rxPhy</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a></div><div class="brief "><p class="paragraph">The receiver PHY in use.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="124411802%2FProperties%2F-1523335293" anchor-label="status" id="124411802%2FProperties%2F-1523335293" data-filterable-set=":server-api:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="status.html"><span><span>status</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="124411802%2FProperties%2F-1523335293"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="status.html">status</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></div><div class="brief "><p class="paragraph">Status of the operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1194337425%2FProperties%2F-1523335293" anchor-label="txPhy" id="1194337425%2FProperties%2F-1523335293" data-filterable-set=":server-api:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":server-api:dokkaHtmlPartial/release" data-filterable-set=":server-api:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tx-phy.html"><span>tx</span><wbr><span><span>Phy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1194337425%2FProperties%2F-1523335293"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":server-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="tx-phy.html">txPhy</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a></div><div class="brief "><p class="paragraph">The transmitter PHY in use.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
+
