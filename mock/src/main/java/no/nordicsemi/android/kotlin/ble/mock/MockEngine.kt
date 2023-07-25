@@ -35,20 +35,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
-import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
-import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
-import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
-import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
-import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -117,7 +105,7 @@ object MockEngine {
         servers.remove(device)
         serverConnections.remove(device)?.forEach {
             clientConnections.remove(it)?.clientApi?.onEvent(
-                OnConnectionStateChanged(
+                ConnectionStateChanged(
                     BleGattConnectionStatus.SUCCESS,
                     GattConnectionState.STATE_DISCONNECTED
                 )
@@ -134,7 +122,7 @@ object MockEngine {
             GattConnectionState.STATE_DISCONNECTED
         ))
 
-        connection.clientApi.onEvent(OnConnectionStateChanged(
+        connection.clientApi.onEvent(ConnectionStateChanged(
             BleGattConnectionStatus.SUCCESS,
             GattConnectionState.STATE_DISCONNECTED
         ))
@@ -190,20 +178,20 @@ object MockEngine {
         val client = connection?.clientApi
 
         if (value == null) {
-            client?.onEvent(OnReliableWriteCompleted(BleGattOperationStatus.GATT_SUCCESS))
+            client?.onEvent(ReliableWriteCompleted(BleGattOperationStatus.GATT_SUCCESS))
             return
         }
 
         val event = when (val request = requests.getRequest(requestId)) {
-            is MockCharacteristicRead -> OnCharacteristicRead(
+            is MockCharacteristicRead -> CharacteristicRead(
                 request.characteristic,
                 value,
                 gattStatus
             )
 
-            is MockCharacteristicWrite -> OnCharacteristicWrite(request.characteristic, gattStatus)
-            is MockDescriptorRead -> OnDescriptorRead(request.descriptor, value, gattStatus)
-            is MockDescriptorWrite -> OnDescriptorWrite(request.descriptor, gattStatus)
+            is MockCharacteristicWrite -> CharacteristicWrite(request.characteristic, gattStatus)
+            is MockDescriptorRead -> DescriptorRead(request.descriptor, value, gattStatus)
+            is MockDescriptorWrite -> DescriptorWrite(request.descriptor, gattStatus)
         }
         client?.onEvent(event)
     }
@@ -216,13 +204,13 @@ object MockEngine {
     ) {
         val connection = clientConnections[device] ?: return
         if (connection.enabledNotification[characteristic.uuid] == true) {
-            connection.clientApi.onEvent(OnCharacteristicChanged(characteristic, value))
+            connection.clientApi.onEvent(CharacteristicChanged(characteristic, value))
         }
     }
 
     fun connect(device: ClientDevice, autoConnect: Boolean) {
         clientConnections[device]?.clientApi?.onEvent(
-            OnConnectionStateChanged(
+            ConnectionStateChanged(
                 BleGattConnectionStatus.SUCCESS,
                 GattConnectionState.STATE_CONNECTED
             )
@@ -259,7 +247,7 @@ object MockEngine {
             it.serverApi.onEvent(
                 OnServerPhyUpdate(device, txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
             )
-            it.clientApi.onEvent(OnPhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS))
+            it.clientApi.onEvent(PhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS))
         }
     }
 
@@ -354,14 +342,14 @@ object MockEngine {
     fun readRemoteRssi(clientDevice: ClientDevice, device: MockServerDevice) {
         val connection = clientConnections[clientDevice]!!
         connection.clientApi.onEvent(
-            OnReadRemoteRssi(connection.params.rssi, BleGattOperationStatus.GATT_SUCCESS)
+            ReadRemoteRssi(connection.params.rssi, BleGattOperationStatus.GATT_SUCCESS)
         )
     }
 
     fun readPhy(clientDevice: ClientDevice, device: MockServerDevice) {
         val connection = clientConnections[clientDevice]!!
         connection.clientApi.onEvent(
-            OnPhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_ERROR)
+            PhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_ERROR)
         )
     }
 
@@ -369,7 +357,7 @@ object MockEngine {
         val connection = clientConnections[clientDevice]!!
         val services = connection.services
 
-        val event = OnServicesDiscovered(services, BleGattOperationStatus.GATT_SUCCESS)
+        val event = ServicesDiscovered(services, BleGattOperationStatus.GATT_SUCCESS)
 
         connection.clientApi.onEvent(event)
     }
@@ -388,7 +376,7 @@ object MockEngine {
         clientConnections[clientDevice] = newConnection
 
         connection.clientApi.onEvent(
-            OnPhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
+            PhyUpdate(txPhy, rxPhy, BleGattOperationStatus.GATT_SUCCESS)
         )
 
         connection.serverApi.onEvent(
@@ -404,7 +392,7 @@ object MockEngine {
         clientConnections[clientDevice] = newConnection
 
         connection.clientApi.onEvent(
-            OnMtuChanged(mtu, BleGattOperationStatus.GATT_SUCCESS)
+            MtuChanged(mtu, BleGattOperationStatus.GATT_SUCCESS)
         )
 
         connection.serverApi.onEvent(
@@ -423,7 +411,7 @@ object MockEngine {
 
     fun clearServiceCache(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
         val connection = clientConnections[clientDevice]!!
-        connection.clientApi.onEvent(OnServiceChanged())
+        connection.clientApi.onEvent(ServiceChanged())
     }
 
     fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {

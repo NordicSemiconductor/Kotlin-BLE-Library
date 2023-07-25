@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
-import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -147,7 +147,7 @@ class NativeClientBleAPI(
             gatt.readPhy()
         } else {
             callback.onEvent(
-                OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
+                PhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }
@@ -163,7 +163,7 @@ class NativeClientBleAPI(
             gatt.setPreferredPhy(txPhy.value, rxPhy.value, phyOption.value)
         } else {
             callback.onEvent(
-                OnPhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
+                PhyUpdate(BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS)
             )
         }
     }

@@ -46,15 +46,7 @@ import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
-import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnMtuChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnPhyRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnPhyUpdate
-import no.nordicsemi.android.kotlin.ble.client.api.OnReadRemoteRssi
-import no.nordicsemi.android.kotlin.ble.client.api.OnServiceChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnServicesDiscovered
-import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescriptor
@@ -122,7 +114,7 @@ class ClientBleGatt(
 
     /**
      * Returns [Flow] which emits services. Services can be outdated which results in emitting
-     * [OnServiceChanged]. That's why usage of [Flow] may be handy.
+     * [ServiceChanged]. That's why usage of [Flow] may be handy.
      */
     val services = _services.asStateFlow()
 
@@ -135,8 +127,8 @@ class ClientBleGatt(
 
     private var onConnectionStateChangedCallback: ((GattConnectionState, BleGattConnectionStatus) -> Unit)? =
         null
-    private var mtuCallback: ((OnMtuChanged) -> Unit)? = null
-    private var rssiCallback: ((OnReadRemoteRssi) -> Unit)? = null
+    private var mtuCallback: ((MtuChanged) -> Unit)? = null
+    private var rssiCallback: ((ReadRemoteRssi) -> Unit)? = null
     private var phyCallback: ((PhyInfo, BleGattOperationStatus) -> Unit)? = null
     private var bondStateCallback: ((BondState) -> Unit)? = null
     private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
@@ -145,15 +137,15 @@ class ClientBleGatt(
         gatt.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
-                is OnConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                is OnPhyRead -> onEvent(it)
-                is OnPhyUpdate -> onEvent(it)
-                is OnReadRemoteRssi -> onEvent(it)
-                is OnServiceChanged -> onEvent(it)
-                is OnServicesDiscovered -> onServicesDiscovered(it.services, it.status)
+                is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
+                is PhyRead -> onEvent(it)
+                is PhyUpdate -> onEvent(it)
+                is ReadRemoteRssi -> onEvent(it)
+                is ServiceChanged -> onEvent(it)
+                is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
                 is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
-                is OnMtuChanged -> onEvent(it)
-                is OnBondStateChanged -> onBondStateChanged(it.bondState)
+                is MtuChanged -> onEvent(it)
+                is BondStateChanged -> onBondStateChanged(it.bondState)
             }
         }.launchIn(ApplicationScope)
     }
@@ -391,25 +383,25 @@ class ClientBleGatt(
         bondStateCallback?.invoke(bondState)
     }
 
-    private fun onEvent(event: OnMtuChanged) {
+    private fun onEvent(event: MtuChanged) {
         mtuProvider.updateMtu(event.mtu)
         mtuCallback?.invoke(event)
     }
 
-    private fun onEvent(event: OnPhyRead) {
+    private fun onEvent(event: PhyRead) {
         phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy), event.status)
     }
 
-    private fun onEvent(event: OnPhyUpdate) {
+    private fun onEvent(event: PhyUpdate) {
         phyCallback?.invoke(PhyInfo(event.txPhy, event.rxPhy), event.status)
     }
 
-    private fun onEvent(event: OnReadRemoteRssi) {
+    private fun onEvent(event: ReadRemoteRssi) {
         rssiCallback?.invoke(event)
     }
 
     @SuppressLint("MissingPermission")
-    private fun onEvent(event: OnServiceChanged) {
+    private fun onEvent(event: ServiceChanged) {
         mutex.tryLock()
         gatt.discoverServices()
     }

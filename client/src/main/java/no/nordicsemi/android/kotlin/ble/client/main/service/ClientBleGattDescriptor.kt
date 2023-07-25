@@ -36,10 +36,8 @@ import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnDescriptorWrite
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
@@ -83,8 +81,8 @@ class ClientBleGattDescriptor internal constructor(
      */
     val permissions = BleGattPermission.createPermissions(descriptor.permissions)
 
-    private var pendingReadEvent: ((OnDescriptorRead) -> Unit)? = null
-    private var pendingWriteEvent: ((OnDescriptorWrite) -> Unit)? = null
+    private var pendingReadEvent: ((DescriptorRead) -> Unit)? = null
+    private var pendingWriteEvent: ((DescriptorWrite) -> Unit)? = null
 
     /**
      * Consumes events emitted by [BluetoothGattCallback]. Events are emitted everywhere. It is this
@@ -94,8 +92,8 @@ class ClientBleGattDescriptor internal constructor(
      */
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
-            is OnDescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event) }
-            is OnDescriptorWrite -> onLocalEvent(event.descriptor) { pendingWriteEvent?.invoke(event) }
+            is DescriptorRead -> onLocalEvent(event.descriptor) { pendingReadEvent?.invoke(event) }
+            is DescriptorWrite -> onLocalEvent(event.descriptor) { pendingWriteEvent?.invoke(event) }
         }
     }
 

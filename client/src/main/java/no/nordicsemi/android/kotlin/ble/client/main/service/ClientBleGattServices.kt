@@ -31,8 +31,8 @@
 
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
@@ -74,7 +74,7 @@ data class ClientBleGattServices internal constructor(
      *
      * @param event A GATT event.
      */
-    internal fun onCharacteristicEvent(event: ServiceEvent) {
+    internal fun onCharacteristicEvent(event: ClientGattEvent.ServiceEvent) {
         services.forEach { it.onEvent(event) }
     }
 }

@@ -43,14 +43,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.kotlin.ble.client.api.CharacteristicEvent
-import no.nordicsemi.android.kotlin.ble.client.api.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicChanged
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicRead
-import no.nordicsemi.android.kotlin.ble.client.api.OnCharacteristicWrite
-import no.nordicsemi.android.kotlin.ble.client.api.OnReliableWriteCompleted
-import no.nordicsemi.android.kotlin.ble.client.api.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.NotificationDescriptorNotFoundException
@@ -137,8 +131,8 @@ class ClientBleGattCharacteristic internal constructor(
 
     private val descriptors = characteristic.descriptors.map { ClientBleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
 
-    private var pendingReadEvent: ((OnCharacteristicRead) -> Unit)? = null
-    private var pendingWriteEvent: ((OnCharacteristicWrite) -> Unit)? = null
+    private var pendingReadEvent: ((CharacteristicRead) -> Unit)? = null
+    private var pendingWriteEvent: ((CharacteristicWrite) -> Unit)? = null
 
     /**
      * Finds a descriptor by [UUID].
@@ -160,7 +154,7 @@ class ClientBleGattCharacteristic internal constructor(
         when (event) {
             is CharacteristicEvent -> onEvent(event)
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
-            is OnReliableWriteCompleted -> { }
+            is ReliableWriteCompleted -> { }
         }
     }
 
@@ -170,9 +164,9 @@ class ClientBleGattCharacteristic internal constructor(
 
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
-            is OnCharacteristicChanged -> onLocalEvent(event.characteristic) { _notifications.tryEmit(event.value) }
-            is OnCharacteristicRead -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
-            is OnCharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
+            is CharacteristicChanged -> onLocalEvent(event.characteristic) { _notifications.tryEmit(event.value) }
+            is CharacteristicRead -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
+            is CharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
         }
     }
 

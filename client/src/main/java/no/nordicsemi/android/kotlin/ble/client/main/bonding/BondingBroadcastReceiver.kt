@@ -9,7 +9,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import no.nordicsemi.android.kotlin.ble.client.api.OnBondStateChanged
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.BondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.real.ClientBleGattCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
@@ -30,7 +30,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
             val bondState = intent.getIntExtra(EXTRA_BOND_STATE, ERROR)
             val previousBondState = intent.getIntExtra(EXTRA_PREVIOUS_BOND_STATE, ERROR)
 
-            callbacks[address]?.onEvent(OnBondStateChanged(BondState.create(bondState)))
+            callbacks[address]?.onEvent(BondStateChanged(BondState.create(bondState)))
         }
     }
 
@@ -50,7 +50,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
          */
         fun register(context: Context, device: BleDevice, callback: ClientBleGattCallback) {
             callbacks[device.address] = callback
-            callback.onEvent(OnBondStateChanged(device.bondState))
+            callback.onEvent(BondStateChanged(device.bondState))
 
             if (instance == null) {
                 instance = BondingBroadcastReceiver()
