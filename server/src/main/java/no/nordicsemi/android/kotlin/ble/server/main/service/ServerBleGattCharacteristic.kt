@@ -43,14 +43,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
-import no.nordicsemi.android.kotlin.ble.server.api.CharacteristicEvent
-import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicReadRequest
-import no.nordicsemi.android.kotlin.ble.server.api.OnCharacteristicWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
-import no.nordicsemi.android.kotlin.ble.server.api.OnNotificationSent
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import java.util.*
 
 /**
@@ -151,7 +145,7 @@ class ServerBleGattCharacteristic internal constructor(
         when (event) {
             is CharacteristicEvent -> onCharacteristicEvent(event)
             is DescriptorEvent -> onDescriptorEvent(event)
-            is OnExecuteWrite -> onExecuteWrite(event)
+            is ExecuteWrite -> onExecuteWrite(event)
         }
     }
 
@@ -175,9 +169,9 @@ class ServerBleGattCharacteristic internal constructor(
      */
     private fun onCharacteristicEvent(event: CharacteristicEvent) {
         when (event) {
-            is OnCharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
-            is OnCharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
-            is OnNotificationSent -> onNotificationSent(event)
+            is CharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
+            is CharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
+            is NotificationSent -> onNotificationSent(event)
         }
     }
 
@@ -199,7 +193,7 @@ class ServerBleGattCharacteristic internal constructor(
      *
      * @param event An execute write event.
      */
-    private fun onExecuteWrite(event: OnExecuteWrite) {
+    private fun onExecuteWrite(event: ExecuteWrite) {
         descriptors.onEach { it.onExecuteWrite(event) }
         if (!event.execute) {
             transactionalValue = DataByteArray()
@@ -210,19 +204,19 @@ class ServerBleGattCharacteristic internal constructor(
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
 
-    private fun onNotificationSent(event: OnNotificationSent) {
+    private fun onNotificationSent(event: NotificationSent) {
     }
 
     /**
      * Handles write request. It stores received value in [_value] field.
      * In case of reliable write then the value is stored in a temporary field until
-     * [OnExecuteWrite] event received.
+     * [ExecuteWrite] event received.
      * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
      * about received value is sent to client.
      *
      * @param event A write request event.
      */
-    private fun onCharacteristicWriteRequest(event: OnCharacteristicWriteRequest) {
+    private fun onCharacteristicWriteRequest(event: CharacteristicWriteRequest) {
         val value = event.value.copyOf()
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
@@ -248,7 +242,7 @@ class ServerBleGattCharacteristic internal constructor(
      *
      * @param event A read request event.
      */
-    private fun onCharacteristicReadRequest(event: OnCharacteristicReadRequest) {
+    private fun onCharacteristicReadRequest(event: CharacteristicReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
         val value = _value.value

@@ -33,7 +33,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import java.util.UUID
 
 /**
@@ -65,7 +65,7 @@ class ServerBleGattServices internal constructor(
      *
      * @param event A GATT event.
      */
-    internal fun onEvent(event: ServiceEvent) {
+    internal fun onEvent(event: ServerGattEvent.ServiceEvent) {
         services.forEach { it.onEvent(event) }
     }
 }

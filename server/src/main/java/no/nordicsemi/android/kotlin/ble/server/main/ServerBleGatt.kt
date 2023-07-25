@@ -54,21 +54,16 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerMtuChanged
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
-import no.nordicsemi.android.kotlin.ble.server.api.OnServiceAdded
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
-import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
-import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServices
-import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
-import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattFactory
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServices
+import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
 
 /**
  * A class for managing BLE connections. It propagates events ([ServerGattEvent]) to specified connection's
@@ -128,15 +123,15 @@ class ServerBleGatt internal constructor(
         server.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
-                is OnServiceAdded -> onServiceAdded(it.service, it.status)
-                is OnClientConnectionStateChanged -> onConnectionStateChanged(
+                is ServiceAdded -> onServiceAdded(it.service, it.status)
+                is ClientConnectionStateChanged -> onConnectionStateChanged(
                     it.device, it.status, it.newState
                 )
 
                 is ServiceEvent -> connections.value[it.device]?.services?.onEvent(it)
-                is OnServerPhyRead -> onPhyRead(it)
-                is OnServerPhyUpdate -> onPhyUpdate(it)
-                is OnServerMtuChanged -> onMtuChanged(it)
+                is ServerPhyRead -> onPhyRead(it)
+                is ServerPhyUpdate -> onPhyUpdate(it)
+                is ServerMtuChanged -> onMtuChanged(it)
             }
         }.launchIn(ApplicationScope)
     }
@@ -242,7 +237,7 @@ class ServerBleGatt internal constructor(
      *
      * @param event PHY read event data.
      */
-    private fun onPhyRead(event: OnServerPhyRead) {
+    private fun onPhyRead(event: ServerPhyRead) {
         logger.log(Log.DEBUG, "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
@@ -259,7 +254,7 @@ class ServerBleGatt internal constructor(
      *
      * @param event PHY update event data.
      */
-    private fun onPhyUpdate(event: OnServerPhyUpdate) {
+    private fun onPhyUpdate(event: ServerPhyUpdate) {
         logger.log(Log.DEBUG, "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
@@ -276,7 +271,7 @@ class ServerBleGatt internal constructor(
      *
      * @param event MTU changed event data.
      */
-    private fun onMtuChanged(event: OnServerMtuChanged) {
+    private fun onMtuChanged(event: ServerMtuChanged) {
         logger.log(Log.DEBUG, "New mtu - device: ${event.device.address}, mtu: ${event.mtu}")
         _connections.value[event.device]?.mtuProvider?.updateMtu(event.mtu)
     }

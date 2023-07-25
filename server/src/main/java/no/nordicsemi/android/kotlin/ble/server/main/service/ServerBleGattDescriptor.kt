@@ -40,10 +40,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.server.api.DescriptorEvent
-import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorReadRequest
-import no.nordicsemi.android.kotlin.ble.server.api.OnDescriptorWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.api.OnExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import java.util.UUID
 
@@ -87,8 +84,8 @@ class ServerBleGattDescriptor internal constructor(
      */
     internal fun onEvent(event: DescriptorEvent) {
         when (event) {
-            is OnDescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
-            is OnDescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
+            is DescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
+            is DescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
         }
     }
 
@@ -120,7 +117,7 @@ class ServerBleGattDescriptor internal constructor(
      *
      * @param event An execute write event.
      */
-    internal fun onExecuteWrite(event: OnExecuteWrite) {
+    internal fun onExecuteWrite(event: ExecuteWrite) {
         if (!event.execute) {
             transactionalValue = DataByteArray()
             return
@@ -133,13 +130,13 @@ class ServerBleGattDescriptor internal constructor(
     /**
      * Handles write request. It stores received value in [_value] field.
      * In case of reliable write then the value is stored in a temporary field until
-     * [OnExecuteWrite] event received.
+     * [ExecuteWrite] event received.
      * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
      * about received value is sent to client.
      *
      * @param event A write request event.
      */
-    private fun onDescriptorWriteRequest(event: OnDescriptorWriteRequest) {
+    private fun onDescriptorWriteRequest(event: DescriptorWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val value = event.value.copyOf()
         if (event.preparedWrite) {
@@ -165,7 +162,7 @@ class ServerBleGattDescriptor internal constructor(
      *
      * @param event A read request event.
      */
-    private fun onDescriptorReadRequest(event: OnDescriptorReadRequest) {
+    private fun onDescriptorReadRequest(event: DescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
         val data = _value.value.getChunk(offset, mtuProvider.mtu.value)

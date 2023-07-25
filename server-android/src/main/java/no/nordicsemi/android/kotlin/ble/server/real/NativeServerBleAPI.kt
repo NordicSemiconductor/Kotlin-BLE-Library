@@ -1,8 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.server.real
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattServer
 import android.bluetooth.BluetoothGattServerCallback
 import android.bluetooth.BluetoothManager
@@ -18,8 +16,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyRead
-import no.nordicsemi.android.kotlin.ble.server.api.OnServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 
 /**
@@ -99,7 +95,14 @@ class NativeServerBleAPI(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             server.readPhy(bleDevice)
         } else {
-            callback.onEvent(OnServerPhyRead(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+            callback.onEvent(
+                ServerGattEvent.ServerPhyRead(
+                    device,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattOperationStatus.GATT_SUCCESS
+                )
+            )
         }
     }
 
@@ -107,7 +110,14 @@ class NativeServerBleAPI(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             server.setPreferredPhy((device as RealClientDevice).device, txPhy.value, rxPhy.value, phyOption.value)
         } else {
-            callback.onEvent(OnServerPhyUpdate(device, BleGattPhy.PHY_LE_1M, BleGattPhy.PHY_LE_1M, BleGattOperationStatus.GATT_SUCCESS))
+            callback.onEvent(
+                ServerGattEvent.ServerPhyUpdate(
+                    device,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattPhy.PHY_LE_1M,
+                    BleGattOperationStatus.GATT_SUCCESS
+                )
+            )
         }
     }
 }

@@ -35,7 +35,7 @@ import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
-import no.nordicsemi.android.kotlin.ble.server.api.ServiceEvent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import java.util.UUID
 
 /**
@@ -84,7 +84,7 @@ data class ServerBleGattService internal constructor(
      *
      * @param event A GATT event.
      */
-    internal fun onEvent(event: ServiceEvent) {
+    internal fun onEvent(event: ServerGattEvent.ServiceEvent) {
         characteristics.onEach { it.onEvent(event) }
     }
 }
