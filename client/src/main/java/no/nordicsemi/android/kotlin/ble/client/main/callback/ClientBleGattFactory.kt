@@ -16,7 +16,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
@@ -39,7 +39,7 @@ internal object ClientBleGattFactory {
         context: Context,
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BlekLogger = DefaultBlekLogger(context),
+        logger: BleLogger = DefaultBlekLogger(context),
     ): ClientBleGatt {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
@@ -62,7 +62,7 @@ internal object ClientBleGattFactory {
         context: Context,
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BlekLogger = DefaultBlekLogger(context),
+        logger: BleLogger = DefaultBlekLogger(context),
     ): ClientBleGatt {
         return when (device) {
             is MockServerDevice -> connectDevice(device, options, logger)
@@ -74,7 +74,7 @@ internal object ClientBleGattFactory {
     private suspend fun connectDevice(
         device: MockServerDevice,
         options: BleGattConnectOptions,
-        logger: BlekLogger,
+        logger: BleLogger,
     ): ClientBleGatt {
         val clientDevice = MockClientDevice()
         val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect)
@@ -88,7 +88,7 @@ internal object ClientBleGattFactory {
         device: RealServerDevice,
         context: Context,
         options: BleGattConnectOptions,
-        logger: BlekLogger,
+        logger: BleLogger,
     ): ClientBleGatt {
         return ClientBleGatt(device.createConnection(context, options), logger).also {
             it.waitForConnection()

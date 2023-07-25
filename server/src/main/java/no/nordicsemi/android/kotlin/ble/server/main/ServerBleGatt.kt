@@ -51,7 +51,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.utils.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
-import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.OnClientConnectionStateChanged
@@ -80,7 +80,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattFactory
  */
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
-    private val logger: BlekLogger,
+    private val logger: BleLogger,
 ) {
 
     companion object {
@@ -99,7 +99,7 @@ class ServerBleGatt internal constructor(
         suspend fun create(
             context: Context,
             vararg config: ServerBleGattServiceConfig,
-            logger: BlekLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultBlekLogger(context),
             mock: MockServerDevice? = null,
         ): ServerBleGatt {
             return ServerBleGattFactory.create(context, logger, *config, mock = mock)

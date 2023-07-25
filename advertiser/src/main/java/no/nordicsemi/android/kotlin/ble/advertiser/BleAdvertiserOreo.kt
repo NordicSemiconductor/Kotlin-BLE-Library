@@ -34,33 +34,30 @@ package no.nordicsemi.android.kotlin.ble.advertiser
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
-import android.bluetooth.le.AdvertiseCallback
-import android.bluetooth.le.AdvertiseSettings
 import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
-import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
-import no.nordicsemi.android.kotlin.ble.advertiser.error.AdvertisementNotStartedException
-import no.nordicsemi.android.kotlin.ble.advertiser.error.BleAdvertisingError
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 
 /**
- * Class responsible for starting advertisements on Android API level < 26.
+ * Class responsible for starting advertisements on Android API level >= 26.
  *
  * @constructor Creates an instance of an advertiser.
  *
  * @param context An Application context.
  */
-internal class NordicAdvertiserLegacy(
+@RequiresApi(Build.VERSION_CODES.O)
+internal class BleAdvertiserOreo(
     context: Context,
-) : NordicAdvertiser {
+) : BleAdvertiser {
 
     private val bluetoothManager: BluetoothManager by lazy { context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager }
     private val bluetoothAdapter: BluetoothAdapter by lazy { bluetoothManager.adapter }
@@ -72,31 +69,23 @@ internal class NordicAdvertiserLegacy(
         val advertiseData = config.advertiseData
         val scanResponseData = config.scanResponseData
 
-        val callback = object : AdvertiseCallback() {
-            override fun onStartSuccess(settingsInEffect: AdvertiseSettings?) {
-                trySend(
-                    OnAdvertisingSetStarted(
-                        null,
-                        settingsInEffect!!.txPowerLevel,
-                        BleAdvertisingStatus.ADVERTISE_SUCCESS
-                    )
-                )
-            }
-
-            override fun onStartFailure(errorCode: Int) {
-                close(AdvertisementNotStartedException(BleAdvertisingError.create(errorCode)))
-            }
+        val callback = BleAdvertisingSetCallback {
+            trySend(it)
         }
 
-        bluetoothLeAdvertiser.startAdvertising(
-            settings.toLegacy(),
+        bluetoothAdapter.name = config.settings.deviceName
+
+        bluetoothLeAdvertiser.startAdvertisingSet(
+            settings.toNative(),
             advertiseData?.toNative(),
             scanResponseData?.toNative(),
+            null,
+            null,
             callback
         )
 
         awaitClose {
-            bluetoothLeAdvertiser.stopAdvertising(callback)
+            bluetoothLeAdvertiser.stopAdvertisingSet(callback)
         }
     }
 }

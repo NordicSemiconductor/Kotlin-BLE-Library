@@ -26,7 +26,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
-import no.nordicsemi.android.kotlin.ble.logger.NordicBlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.DefaultBleLogger
 import org.junit.After
 import org.junit.Assert.*
 import org.junit.Before
@@ -55,7 +55,7 @@ class ReliableWriteTest {
     lateinit var context: Context
 
     @RelaxedMockK
-    lateinit var logger: NordicBlekLogger
+    lateinit var logger: DefaultBleLogger
 
     @Inject
     lateinit var serverDevice: MockServerDevice
@@ -89,8 +89,8 @@ class ReliableWriteTest {
 
     @Before
     fun prepareLogger() {
-        mockkObject(NordicBlekLogger.Companion)
-        every { NordicBlekLogger.create(any(), any(), any(), any()) } returns mockk()
+        mockkObject(DefaultBleLogger.Companion)
+        every { DefaultBleLogger.create(any(), any(), any(), any()) } returns mockk()
     }
 
     @Test

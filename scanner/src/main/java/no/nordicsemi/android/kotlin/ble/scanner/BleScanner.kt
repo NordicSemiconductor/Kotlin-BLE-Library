@@ -61,7 +61,7 @@ import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
  *
  * @param context Android context required to initialize native Android API
  */
-class NordicScanner(
+class BleScanner(
     context: Context
 ) {
 

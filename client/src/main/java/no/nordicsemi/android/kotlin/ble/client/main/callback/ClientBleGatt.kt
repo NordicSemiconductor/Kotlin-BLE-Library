@@ -72,7 +72,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
-import no.nordicsemi.android.kotlin.ble.logger.BlekLogger
+import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -88,7 +88,7 @@ import kotlin.coroutines.suspendCoroutine
  */
 class ClientBleGatt(
     private val gatt: GattClientAPI,
-    private val logger: BlekLogger,
+    private val logger: BleLogger,
     private val mutex: MutexWrapper = MutexWrapper(),
 ) {
 
@@ -430,7 +430,7 @@ class ClientBleGatt(
             context: Context,
             macAddress: String,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BlekLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultBlekLogger(context),
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
             return ClientBleGattFactory.connect(context, macAddress, options, logger)
@@ -450,7 +450,7 @@ class ClientBleGatt(
             context: Context,
             device: ServerDevice,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BlekLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultBlekLogger(context),
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
             return ClientBleGattFactory.connect(context, device, options, logger)

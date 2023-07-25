@@ -4,14 +4,14 @@ import android.content.Context
 import android.util.Log
 
 /**
- * Interface grouping [BlekLauncher] and [BlekLogger]. Needed to be used as a return type.
+ * Interface grouping [BleRemoteLoggerLauncher] and [BleLogger]. Needed to be used as a return type.
  */
-interface BlekLoggerAndLauncher : BlekLauncher, BlekLogger
+interface BleLoggerAndLauncher : BleRemoteLoggerLauncher, BleLogger
 
 /**
  * Functional interface responsible for launching a dedicated logger app.
  */
-fun interface BlekLauncher {
+fun interface BleRemoteLoggerLauncher {
 
     /**
      * Launches dedicated logger app.
@@ -22,7 +22,7 @@ fun interface BlekLauncher {
 /**
  * Functional interface which defines logs logging action.
  */
-fun interface BlekLogger {
+fun interface BleLogger {
 
     /**
      * Prints log.
@@ -34,12 +34,12 @@ fun interface BlekLogger {
 }
 
 /**
- * Default implementation of [BlekLoggerAndLauncher] which print logs to Logcat and launch main page
+ * Default implementation of [BleLoggerAndLauncher] which print logs to Logcat and launch main page
  * of [the Logger app](https://play.google.com/store/apps/details?id=no.nordicsemi.android.log&hl=en&gl=US).
  *
  * @property context An application context.
  */
-class DefaultBlekLogger(private val context: Context) : BlekLoggerAndLauncher {
+class DefaultBlekLogger(private val context: Context) : BleLoggerAndLauncher {
 
     override fun log(priority: Int, log: String) {
         Log.println(priority, "BLEK-LOG", log)

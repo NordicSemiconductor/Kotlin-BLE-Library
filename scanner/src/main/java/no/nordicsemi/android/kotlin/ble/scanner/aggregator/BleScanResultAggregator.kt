@@ -35,11 +35,11 @@ import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
-import no.nordicsemi.android.kotlin.ble.scanner.NordicScanner
+import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
 
 /**
  * Class responsible for aggregating scan results with a single server device.
- * By default [NordicScanner] emits one [BleScanResult] at time.
+ * By default [BleScanner] emits one [BleScanResult] at time.
  * Grouping data is a responsibility of this class.
  */
 class BleScanResultAggregator {

@@ -52,7 +52,7 @@ import no.nordicsemi.android.kotlin.ble.mock.MockEngine
  *
  * @see [BluetoothLeAdvertiser](https://developer.android.com/reference/android/bluetooth/le/BluetoothLeAdvertiser)
  */
-interface NordicAdvertiser {
+interface BleAdvertiser {
 
     /**
      * Starts BLE advertising.
@@ -90,17 +90,17 @@ interface NordicAdvertiser {
     companion object {
 
         /**
-         * Creates an instance of [NordicAdvertiser]. The implementation differs based on Android
+         * Creates an instance of [BleAdvertiser]. The implementation differs based on Android
          * version. Limited functionality is available prior to Android O.
          *
          * @param context An application context.
-         * @return Instance of [NordicAdvertiser].
+         * @return Instance of [BleAdvertiser].
          */
-        fun create(context: Context): NordicAdvertiser {
+        fun create(context: Context): BleAdvertiser {
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NordicAdvertiserOreo(context)
+                BleAdvertiserOreo(context)
             } else {
-                NordicAdvertiserLegacy(context)
+                BleAdvertiserLegacy(context)
             }
         }
     }

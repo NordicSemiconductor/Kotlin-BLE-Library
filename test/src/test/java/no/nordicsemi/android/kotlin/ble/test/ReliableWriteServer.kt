@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.advertiser.NordicAdvertiser
+import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
@@ -68,7 +68,7 @@ class ReliableWriteServer @Inject constructor(
             mock = device
         )
 
-        val advertiser = NordicAdvertiser.create(context)
+        val advertiser = BleAdvertiser.create(context)
         advertiser.advertise(config = BleAdvertisingConfig(), mock = device).launchIn(scope)
 
         launch {
