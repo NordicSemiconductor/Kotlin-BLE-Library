@@ -29,46 +29,27 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+package no.nordicsemi.android.kotlin.ble.ui.scanner.repository
+
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
+
+sealed class ScanningState {
+
+    object Loading : ScanningState()
+
+    data class Error(val errorCode: Int) : ScanningState()
+
+    data class DevicesDiscovered(val devices: List<BleScanResults>) : ScanningState() {
+        val bonded: List<BleScanResults> = devices.filter { it.device.isBonded }
+
+        val notBonded: List<BleScanResults> = devices.filter { !it.device.isBonded }
+
+        fun size(): Int = bonded.size + notBonded.size
+
+        fun isEmpty(): Boolean = devices.isEmpty()
     }
-}
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
+    fun isRunning(): Boolean {
+        return this is Loading || this is DevicesDiscovered
     }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
-
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
 }

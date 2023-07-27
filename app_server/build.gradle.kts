@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2022, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,46 +29,31 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+plugins {
+    alias(libs.plugins.nordic.application.compose)
+    alias(libs.plugins.nordic.hilt)
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
+group = "no.nordicsemi.android.kotlin.ble"
+
+android {
+    namespace = "no.nordicsemi.android.kotlin.ble.app.server"
 }
-rootProject.name = "Kotlin-BLE-Library"
 
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
+dependencies {
+    implementation(project(":advertiser"))
+    implementation(project(":scanner"))
+    implementation(project(":server"))
+    implementation(project(":core"))
 
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
+    implementation(libs.nordic.theme)
+    implementation(libs.nordic.navigation)
+    implementation(libs.nordic.permissions.ble)
+
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.iconsExtended)
 }

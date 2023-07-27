@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2022, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,46 +29,25 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+package no.nordicsemi.android.kotlin.ble.ui.scanner
+
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
+
+@Module
+@InstallIn(SingletonComponent::class)
+internal class HiltModule {
+
+    @Provides
+    fun providesScanner(
+        @ApplicationContext
+        context: Context
+    ): BleScanner {
+        return BleScanner(context)
     }
-}
-
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
-
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
 }

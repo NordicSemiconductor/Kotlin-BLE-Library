@@ -29,46 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package no.nordicsemi.android.kotlin.ble.ui.scanner
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
+sealed interface ScannerScreenResult
 
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
-}
+object ScanningCancelled : ScannerScreenResult
+
+data class DeviceSelected(val scanResults: BleScanResults) : ScannerScreenResult

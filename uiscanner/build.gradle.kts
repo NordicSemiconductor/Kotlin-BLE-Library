@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2022, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,46 +29,41 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+plugins {
+    alias(libs.plugins.nordic.feature)
+    alias(libs.plugins.nordic.nexus)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
+group = "no.nordicsemi.android.common"
+
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "uiscanner"
+    POM_NAME = "Nordic library for Android with UI screens utilizing uiscanner library."
+
+    POM_DESCRIPTION = "Nordic Android Common Libraries"
+    POM_URL = "https://github.com/NordicPlayground/Android-Common-Libraries"
+    POM_SCM_URL = "https://github.com/NordicPlayground/Android-Common-Libraries"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicPlayground/Android-Common-Libraries.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicPlayground/Android-Common-Libraries.git"
+
+    POM_DEVELOPER_ID = "syzi"
+    POM_DEVELOPER_NAME = "Sylwester Zieliński"
+    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
 }
-rootProject.name = "Kotlin-BLE-Library"
 
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
+android {
+    namespace = "no.nordicsemi.android.common.ui.scanner"
+}
 
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
+dependencies {
+    implementation(project(":scanner"))
+
+    implementation(libs.nordic.theme)
+    implementation(libs.nordic.core)
+    implementation(libs.nordic.permissions.ble)
+    implementation(libs.accompanist.flowlayout)
+
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material.iconsExtended)
 }

@@ -29,46 +29,39 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+package no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BluetoothSearching
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.android.common.theme.view.WarningView
+import no.nordicsemi.android.common.ui.scanner.R
+
+@Composable
+internal fun ScanErrorView(
+    error: Int,
+) {
+    WarningView(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        imageVector = Icons.Default.BluetoothSearching,
+        title = stringResource(id = R.string.scanner_error),
+        hint = stringResource(id = R.string.scan_failed, error),
+    )
 }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
+@Preview
+@Composable
+private fun ErrorSectionPreview() {
+    NordicTheme {
+        ScanErrorView(3)
     }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
-
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
 }

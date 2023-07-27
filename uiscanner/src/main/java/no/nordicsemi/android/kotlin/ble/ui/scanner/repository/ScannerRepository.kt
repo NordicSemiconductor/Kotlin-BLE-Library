@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2022, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,46 +29,18 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-}
+package no.nordicsemi.android.kotlin.ble.ui.scanner.repository
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
-}
-rootProject.name = "Kotlin-BLE-Library"
+import android.annotation.SuppressLint
+import dagger.hilt.android.scopes.ViewModelScoped
+import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
+import javax.inject.Inject
 
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
+@ViewModelScoped
+class ScannerRepository @Inject internal constructor(
+    private val nordicScanner: BleScanner
+) {
 
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
+    @SuppressLint("MissingPermission")
+    fun getScannerState() = nordicScanner.scan()
 }

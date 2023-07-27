@@ -28,47 +28,44 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package no.nordicsemi.android.kotlin.ble.ui.scanner
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+import android.os.ParcelUuid
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
+import no.nordicsemi.android.common.ui.scanner.R
+import no.nordicsemi.android.kotlin.ble.ui.scanner.main.DeviceListItem
+import no.nordicsemi.android.kotlin.ble.ui.scanner.view.ScannerAppBar
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
+
+@Composable
+fun ScannerScreen(
+    title: String = stringResource(id = R.string.scanner_screen),
+    uuid: ParcelUuid?,
+    cancellable: Boolean = true,
+    onResult: (ScannerScreenResult) -> Unit,
+    deviceItem: @Composable (BleScanResults) -> Unit = {
+        DeviceListItem(it.device.name, it.device.address)
     }
-}
+) {
+    var isScanning by rememberSaveable { mutableStateOf(false) }
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
+    Column {
+        if (cancellable) {
+            ScannerAppBar(title, isScanning) { onResult(ScanningCancelled) }
+        } else {
+            ScannerAppBar(title, isScanning)
+        }
+        ScannerView(
+            uuid = uuid,
+            onScanningStateChanged = { isScanning = it },
+            onResult = { onResult(DeviceSelected(it)) },
+            deviceItem = deviceItem,
+        )
     }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
-
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
 }

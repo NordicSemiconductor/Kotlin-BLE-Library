@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2022, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,46 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-pluginManagement {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
+package no.nordicsemi.android.kotlin.ble.app.mock.screen.repository
+
+import no.nordicsemi.android.common.core.DataByteArray
+
+object BlinkyButtonParser {
+
+    private val STATE_OFF = DataByteArray.from(0x00)
+    private val STATE_ON = DataByteArray.from(0x01)
+
+    fun isButtonPressed(data: DataByteArray): Boolean {
+        return when (data) {
+            STATE_ON -> true
+            STATE_OFF -> false
+            else -> false
+        }
     }
-}
 
-dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
+    fun ByteArray.toDisplayString(): String {
+        return this.joinToString(".") {
+            it.toUByte().toString()
+        }
     }
-}
-rootProject.name = "Kotlin-BLE-Library"
-
-include(":app_client")
-include(":app_server")
-include(":app_mock")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
-
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
 }
