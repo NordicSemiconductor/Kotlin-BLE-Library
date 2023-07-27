@@ -61,7 +61,7 @@ fun MainScreen() {
     ) {
         Box(modifier = Modifier.padding(it)) {
             RequireBluetooth {
-                RequireLocation { isLocationRequiredAndDisabled ->
+                RequireLocation {
                     val viewModel = hiltViewModel<ServerViewModel>()
                     val state = viewModel.state.collectAsState().value
 

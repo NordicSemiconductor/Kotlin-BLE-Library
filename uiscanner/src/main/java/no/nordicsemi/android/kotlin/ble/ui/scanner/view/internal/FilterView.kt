@@ -60,7 +60,7 @@ internal fun FilterView(
         horizontalArrangement = Arrangement.Start,
         modifier = modifier,
     ) {
-        config.filterUuidRequired?.let {
+        config.filterUuidRequired.let {
             ElevatedFilterChip(
                 selected = !it,
                 onClick = { onChanged(config.copy(filterUuidRequired = !it)) },

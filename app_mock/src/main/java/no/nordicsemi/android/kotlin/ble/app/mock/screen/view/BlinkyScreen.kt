@@ -61,7 +61,7 @@ fun BlinkyScreen() {
     ) {
         Box(modifier = Modifier.padding(it).padding(top = 16.dp)) {
             RequireBluetooth {
-                RequireLocation { isLocationRequiredAndDisabled ->
+                RequireLocation {
                     val viewModel = hiltViewModel<BlinkyViewModel>()
                     val state = viewModel.state.collectAsState().value
                     val device = viewModel.device.collectAsState().value
