@@ -2,13 +2,25 @@ package no.nordicsemi.android.kotlin.ble.app.mock.repository
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.ParcelUuid
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.cancellable
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.app.mock.screen.viewmodel.BlinkySpecifications
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
@@ -17,9 +29,11 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceType
 import javax.inject.Inject
 
+private const val TAG = "Blinky server"
+
 @SuppressLint("MissingPermission")
 class BlinkyServer @Inject constructor(
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) {
 
     fun start(context: Context) = scope.launch {
@@ -41,19 +55,46 @@ class BlinkyServer @Inject constructor(
             listOf(ledCharacteristic, buttonCharacteristic)
         )
 
+        val advertiser = BleAdvertiser.create(context)
+        val advertiserConfig = BleAdvertisingConfig(
+            settings = BleAdvertisingSettings(
+                deviceName = "nRF Blinky" // Advertise a device name
+            ),
+            advertiseData = BleAdvertisingData(
+                ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE) //Advertise main service uuid.
+            )
+        )
+
+        val mockDevice = MockServerDevice()
+
+        advertiser.advertise(advertiserConfig, mockDevice) //Start advertising
+            .cancellable()
+            .catch { it.printStackTrace() }
+            .onEach { //Observe advertiser lifecycle events
+                if (it is OnAdvertisingSetStarted) { //Handle advertising start event
+                    Log.d(TAG, "Advertising started.")
+                }
+                if (it is OnAdvertisingSetStopped) { //Handle advertising top event
+                    Log.d(TAG, "Advertising stopped.")
+                }
+            }.launchIn(this)
+
         val server = ServerBleGatt.create(
             context = context,
             config = arrayOf(serviceConfig),
-            mock = MockServerDevice()
+            mock = mockDevice
         )
 
         launch {
             server.connections
                 .mapNotNull { it.values.firstOrNull() }
                 .collect {
-                    val service = it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
-                    val ledCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
-                    val buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
+                    val service =
+                        it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)!!
+                    val ledCharacteristic =
+                        service.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
+                    val buttonCharacteristic =
+                        service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
                     launch {
                         while (true) {
