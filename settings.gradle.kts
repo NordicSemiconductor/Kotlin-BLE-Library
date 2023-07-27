@@ -46,11 +46,6 @@ dependencyResolutionManagement {
         mavenCentral()
         maven(url = "https://jitpack.io")
     }
-    versionCatalogs {
-        create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:1.8.0")
-        }
-    }
 }
 rootProject.name = "Kotlin-BLE-Library"
 
