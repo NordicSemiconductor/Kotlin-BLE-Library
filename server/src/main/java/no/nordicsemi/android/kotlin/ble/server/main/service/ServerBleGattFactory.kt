@@ -35,7 +35,7 @@ import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBlekLogger
+import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
@@ -61,7 +61,7 @@ internal object ServerBleGattFactory {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun create(
         context: Context,
-        logger: BleLogger = DefaultBlekLogger(context),
+        logger: BleLogger = DefaultConsoleLogger(context),
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
     ): ServerBleGatt {

@@ -33,10 +33,17 @@ package no.nordicsemi.android.kotlin.ble.profile.common
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.IntRange
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.FloatFormat
+import no.nordicsemi.android.common.core.IntFormat
+import no.nordicsemi.android.common.core.LongFormat
+import no.nordicsemi.android.common.core.getTypeLen
 
 class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
-    protected var value: ByteArray?
+    var value: ByteArray
 ) {
+    val size
+        get() = value.size
     /**
      * Updates the locally stored value of this data.
      *
@@ -44,12 +51,12 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      * @return true if the locally stored value has been set, false if the
      * requested value could not be stored locally.
      */
-    fun setValue(value: ByteArray?): Boolean {
+    fun setValue(value: ByteArray): Boolean {
         this.value = value
         return true
     }
 
-    fun toByteData() = ByteData(value ?: byteArrayOf())
+    fun toByteData() = DataByteArray(value ?: byteArrayOf())
 
     /**
      * Updates the byte at offset position.
@@ -61,9 +68,8 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      */
     fun setByte(value: Int, @IntRange(from = 0) offset: Int): Boolean {
         val len = offset + 1
-        if (this.value == null) this.value = ByteArray(len)
-        if (len > this.value!!.size) return false
-        this.value!![offset] = value.toByte()
+        if (len > this.value.size) return false
+        this.value[offset] = value.toByte()
         return true
     }
 
@@ -77,84 +83,83 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      * @param offset     Offset at which the value should be placed
      * @return true if the locally stored value has been set
      */
-    fun setValue(value: Int, formatType: IntFormat?, @IntRange(from = 0) offset: Int): Boolean {
+    fun setValue(value: Int, formatType: IntFormat, @IntRange(from = 0) offset: Int): Boolean {
         var value = value
         var offset = offset
-        val len = offset + getTypeLen(formatType!!)
-        if (this.value == null) this.value = ByteArray(len)
-        if (len > this.value!!.size) return false
+        val len = offset + getTypeLen(formatType)
+        if (len > this.value.size) return false
 
         when (formatType) {
             IntFormat.FORMAT_SINT8 -> {
                 value = intToSignedBits(value, 8)
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
-            IntFormat.FORMAT_UINT8 -> this.value!![offset] = (value and 0xFF).toByte()
+            IntFormat.FORMAT_UINT8 -> this.value[offset] = (value and 0xFF).toByte()
             IntFormat.FORMAT_SINT16_LE -> {
                 value = intToSignedBits(value, 16)
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset] = ((value shr 8) and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT16_LE -> {
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset] = ((value shr 8) and 0xFF).toByte()
             }
             IntFormat.FORMAT_SINT16_BE -> {
                 value = intToSignedBits(value, 16)
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT16_BE -> {
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             IntFormat.FORMAT_SINT24_LE -> {
                 value = intToSignedBits(value, 24)
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = ((value shr 16) and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT24_LE -> {
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = ((value shr 16) and 0xFF).toByte()
             }
             IntFormat.FORMAT_SINT24_BE -> {
                 value = intToSignedBits(value, 24)
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT24_BE -> {
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             IntFormat.FORMAT_SINT32_LE -> {
                 value = intToSignedBits(value, 32)
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset] = ((value shr 24) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset] = ((value shr 24) and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT32_LE -> {
-                this.value!![offset++] = (value and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset] = ((value shr 24) and 0xFF).toByte()
+                this.value[offset++] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset] = ((value shr 24) and 0xFF).toByte()
             }
             IntFormat.FORMAT_SINT32_BE -> {
                 value = intToSignedBits(value, 32)
-                this.value!![offset++] = ((value shr 24) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 24) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             IntFormat.FORMAT_UINT32_BE -> {
-                this.value!![offset++] = ((value shr 24) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFF).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFF).toByte()
-                this.value!![offset] = (value and 0xFF).toByte()
+                this.value[offset++] = ((value shr 24) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFF).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFF).toByte()
+                this.value[offset] = (value and 0xFF).toByte()
             }
             else -> return false
         }
@@ -172,28 +177,28 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      * @param offset     Offset at which the value should be placed
      * @return true if the locally stored value has been set
      */
-    fun setValue(mantissa: Int, exponent: Int, formatType: FloatFormat?, @IntRange(from = 0) offset: Int): Boolean {
+    fun setValue(mantissa: Int, exponent: Int, formatType: FloatFormat, @IntRange(from = 0) offset: Int): Boolean {
         var mantissa = mantissa
         var exponent = exponent
         var offset = offset
-        val len = offset + getTypeLen(formatType!!)
+        val len = offset + getTypeLen(formatType)
         if (value == null) value = ByteArray(len)
-        if (len > value!!.size) return false
+        if (len > value.size) return false
         when (formatType) {
             FloatFormat.FORMAT_SFLOAT -> {
                 mantissa = intToSignedBits(mantissa, 12)
                 exponent = intToSignedBits(exponent, 4)
-                value!![offset++] = (mantissa and 0xFF).toByte()
-                value!![offset] = ((mantissa shr 8) and 0x0F).toByte()
-                value!![offset] = (value!![offset] + ((exponent and 0x0F) shl 4)).toByte()
+                value[offset++] = (mantissa and 0xFF).toByte()
+                value[offset] = ((mantissa shr 8) and 0x0F).toByte()
+                value[offset] = (value[offset] + ((exponent and 0x0F) shl 4)).toByte()
             }
             FloatFormat.FORMAT_FLOAT -> {
                 mantissa = intToSignedBits(mantissa, 24)
                 exponent = intToSignedBits(exponent, 8)
-                value!![offset++] = (mantissa and 0xFF).toByte()
-                value!![offset++] = (mantissa shr 8 and 0xFF).toByte()
-                value!![offset++] = (mantissa shr 16 and 0xFF).toByte()
-                value!![offset] = (value!![offset] + (exponent and 0xFF).toByte()).toByte()
+                value[offset++] = (mantissa and 0xFF).toByte()
+                value[offset++] = (mantissa shr 8 and 0xFF).toByte()
+                value[offset++] = (mantissa shr 16 and 0xFF).toByte()
+                value[offset] = (value[offset] + (exponent and 0xFF).toByte()).toByte()
             }
         }
         return true
@@ -209,38 +214,38 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      * @param offset     Offset at which the value should be placed
      * @return true if the locally stored value has been set
      */
-    fun setValue(value: Long, formatType: LongFormat?, @IntRange(from = 0) offset: Int): Boolean {
+    fun setValue(value: Long, formatType: LongFormat, @IntRange(from = 0) offset: Int): Boolean {
         var value = value
         var offset = offset
-        val len = offset + getTypeLen(formatType!!)
+        val len = offset + getTypeLen(formatType)
         if (this.value == null) this.value = ByteArray(len)
-        if (len > this.value!!.size) return false
+        if (len > this.value.size) return false
         when (formatType) {
             LongFormat.FORMAT_SINT32_LE -> {
                 value = longToSignedBits(value, 32)
-                this.value!![offset++] = (value and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFFL).toByte()
-                this.value!![offset] = ((value shr 24) and 0xFFL).toByte()
+                this.value[offset++] = (value and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFFL).toByte()
+                this.value[offset] = ((value shr 24) and 0xFFL).toByte()
             }
             LongFormat.FORMAT_UINT32_LE -> {
-                this.value!![offset++] = (value and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFFL).toByte()
-                this.value!![offset] = ((value shr 24) and 0xFFL).toByte()
+                this.value[offset++] = (value and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFFL).toByte()
+                this.value[offset] = ((value shr 24) and 0xFFL).toByte()
             }
             LongFormat.FORMAT_SINT32_BE -> {
                 value = longToSignedBits(value, 32)
-                this.value!![offset++] = ((value shr 24) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFFL).toByte()
-                this.value!![offset] = (value and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 24) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFFL).toByte()
+                this.value[offset] = (value and 0xFFL).toByte()
             }
             LongFormat.FORMAT_UINT32_BE -> {
-                this.value!![offset++] = ((value shr 24) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 16) and 0xFFL).toByte()
-                this.value!![offset++] = ((value shr 8) and 0xFFL).toByte()
-                this.value!![offset] = (value and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 24) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 16) and 0xFFL).toByte()
+                this.value[offset++] = ((value shr 8) and 0xFFL).toByte()
+                this.value[offset] = (value and 0xFFL).toByte()
             }
         }
         return true
@@ -256,23 +261,22 @@ class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
      * @param offset     Offset at which the value should be placed
      * @return true if the locally stored value has been set
      */
-    fun setValue(value: Float, formatType: FloatFormat?, @IntRange(from = 0) offset: Int): Boolean {
+    fun setValue(value: Float, formatType: FloatFormat, @IntRange(from = 0) offset: Int): Boolean {
         var offset = offset
-        val len = offset + getTypeLen(formatType!!)
-        if (this.value == null) this.value = ByteArray(len)
-        if (len > this.value!!.size) return false
+        val len = offset + getTypeLen(formatType)
+        if (len > this.value.size) return false
         when (formatType) {
             FloatFormat.FORMAT_SFLOAT -> {
                 val sfloatAsInt = sfloatToInt(value)
-                this.value!![offset++] = (sfloatAsInt and 0xFF).toByte()
-                this.value!![offset] = ((sfloatAsInt shr 8) and 0xFF).toByte()
+                this.value[offset++] = (sfloatAsInt and 0xFF).toByte()
+                this.value[offset] = ((sfloatAsInt shr 8) and 0xFF).toByte()
             }
             FloatFormat.FORMAT_FLOAT -> {
                 val floatAsInt = floatToInt(value)
-                this.value!![offset++] = (floatAsInt and 0xFF).toByte()
-                this.value!![offset++] = ((floatAsInt shr 8) and 0xFF).toByte()
-                this.value!![offset++] = ((floatAsInt shr 16) and 0xFF).toByte()
-                this.value!![offset] = (this.value!![offset] + (floatAsInt shr 24) and 0xFF).toByte()
+                this.value[offset++] = (floatAsInt and 0xFF).toByte()
+                this.value[offset++] = ((floatAsInt shr 8) and 0xFF).toByte()
+                this.value[offset++] = ((floatAsInt shr 16) and 0xFF).toByte()
+                this.value[offset] = (this.value[offset] + (floatAsInt shr 24) and 0xFF).toByte()
             }
         }
         return true

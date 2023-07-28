@@ -31,26 +31,25 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.bps
 
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.FloatFormat
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BPMStatus
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BloodPressureMeasurementData
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BloodPressureType
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
 import java.util.Calendar
 
 object BloodPressureMeasurementParser {
 
-    fun parse(byteArray: ByteArray): BloodPressureMeasurementData? {
-        val data = ByteData(byteArray)
-        if (data.size() < 7) {
+    fun parse(bytes: DataByteArray): BloodPressureMeasurementData? {
+        if (bytes.size < 7) {
             return null
         }
 
         // First byte: flags
         var offset = 0
-        val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+        val flags: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
 
         // See UNIT_* for unit options
         val unit: BloodPressureType = if (flags and 0x01 == BloodPressureType.UNIT_MMHG.value) {
@@ -63,7 +62,7 @@ object BloodPressureMeasurementParser {
         val userIdPresent = flags and 0x08 != 0
         val measurementStatusPresent = flags and 0x10 != 0
 
-        if (data.size() < (7
+        if (bytes.size < (7
                     + (if (timestampPresent) 7 else 0) + (if (pulseRatePresent) 2 else 0)
                     + (if (userIdPresent) 1 else 0) + if (measurementStatusPresent) 2 else 0)
         ) {
@@ -71,36 +70,36 @@ object BloodPressureMeasurementParser {
         }
 
         // Following bytes - systolic, diastolic and mean arterial pressure
-        val systolic: Float = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset) ?: return null
-        val diastolic: Float = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 2) ?: return null
-        val meanArterialPressure: Float = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 4) ?: return null
+        val systolic: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset) ?: return null
+        val diastolic: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 2) ?: return null
+        val meanArterialPressure: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 4) ?: return null
         offset += 6
 
         // Parse timestamp if present
         var calendar: Calendar? = null
         if (timestampPresent) {
-            calendar = DateTimeParser.parse(data, offset)
+            calendar = DateTimeParser.parse(bytes, offset)
             offset += 7
         }
 
         // Parse pulse rate if present
         var pulseRate: Float? = null
         if (pulseRatePresent) {
-            pulseRate = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
+            pulseRate = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
             offset += 2
         }
 
         // Read user id if present
         var userId: Int? = null
         if (userIdPresent) {
-            userId = data.getIntValue(IntFormat.FORMAT_UINT8, offset)
+            userId = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset)
             offset += 1
         }
 
         // Read measurement status if present
         var status: BPMStatus? = null
         if (measurementStatusPresent) {
-            val measurementStatus: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
+            val measurementStatus: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
             // offset += 2;
             status = BPMStatus(measurementStatus)
         }

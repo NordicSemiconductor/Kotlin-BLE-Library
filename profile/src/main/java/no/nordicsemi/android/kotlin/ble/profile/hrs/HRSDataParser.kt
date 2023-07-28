@@ -31,16 +31,15 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.hrs
 
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.hrs.data.HRSData
 
 object HRSDataParser {
 
-    fun parse(byteArray: ByteArray): HRSData? {
-        val data = ByteData(byteArray)
+    fun parse(bytes: DataByteArray): HRSData? {
 
-        if (data.size() < 2) {
+        if (bytes.size < 2) {
             return null
         }
 
@@ -48,7 +47,7 @@ object HRSDataParser {
 
         // Read flags
         var offset = 0
-        val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
+        val flags: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
         val hearRateType: IntFormat = if (flags and 0x01 == 0) {
             IntFormat.FORMAT_UINT8
         } else {
@@ -63,7 +62,7 @@ object HRSDataParser {
 
 
         // Validate packet length
-        if (data.size() < (1 + (hearRateType.value and 0x0F) + (if (energyExpandedPresent) 2 else 0) + if (rrIntervalsPresent) 2 else 0)) {
+        if (bytes.size < (1 + (hearRateType.value and 0x0F) + (if (energyExpandedPresent) 2 else 0) + if (rrIntervalsPresent) 2 else 0)) {
             return null
         }
 
@@ -72,20 +71,20 @@ object HRSDataParser {
         // Prepare data
         val sensorContact = if (sensorContactSupported) sensorContactDetected else false
 
-        val heartRate: Int = data.getIntValue(hearRateType, offset) ?: return null
+        val heartRate: Int = bytes.getIntValue(hearRateType, offset) ?: return null
         offset += hearRateType.value and 0xF
 
         var energyExpanded: Int? = null
         if (energyExpandedPresent) {
-            energyExpanded = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)
+            energyExpanded = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)
             offset += 2
         }
 
         val rrIntervals = if (rrIntervalsPresent) {
-            val count: Int = (data.size() - offset) / 2
+            val count: Int = (bytes.size - offset) / 2
             val intervals: MutableList<Int> = ArrayList(count)
             for (i in 0 until count) {
-                intervals.add(data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!)
+                intervals.add(bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!)
                 offset += 2
             }
             intervals.toList()

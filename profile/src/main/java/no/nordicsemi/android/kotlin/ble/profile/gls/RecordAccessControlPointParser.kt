@@ -31,8 +31,8 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.gls
 
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.NumberOfRecordsData
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.RecordAccessControlPointData
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.ResponseData
@@ -44,19 +44,18 @@ object RecordAccessControlPointParser {
     private const val OP_CODE_RESPONSE_CODE = 6
     private const val OPERATOR_NULL = 0
 
-    fun parse(byteArray: ByteArray): RecordAccessControlPointData? {
-        val data = ByteData(byteArray)
+    fun parse(bytes: DataByteArray): RecordAccessControlPointData? {
 
-        if (data.size() < 3) {
+        if (bytes.size < 3) {
             return null
         }
 
-        val opCode: Int = data.getIntValue(IntFormat.FORMAT_UINT8, 0) ?: return null
+        val opCode: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, 0) ?: return null
         if (opCode != OP_CODE_NUMBER_OF_STORED_RECORDS_RESPONSE && opCode != OP_CODE_RESPONSE_CODE) {
             return null
         }
 
-        val operator: Int = data.getIntValue(IntFormat.FORMAT_UINT8, 1) ?: return null
+        val operator: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, 1) ?: return null
         if (operator != OPERATOR_NULL) {
             return null
         }
@@ -64,10 +63,10 @@ object RecordAccessControlPointParser {
         when (opCode) {
             OP_CODE_NUMBER_OF_STORED_RECORDS_RESPONSE -> {
                 // Field size is defined per service
-                val numberOfRecords: Int = when (data.size() - 2) {
-                    1 -> data.getIntValue(IntFormat.FORMAT_UINT8, 2) ?: return null
-                    2 -> data.getIntValue(IntFormat.FORMAT_UINT16_LE, 2) ?: return null
-                    4 -> data.getIntValue(IntFormat.FORMAT_UINT32_LE, 2) ?: return null
+                val numberOfRecords: Int = when (bytes.size - 2) {
+                    1 -> bytes.getIntValue(IntFormat.FORMAT_UINT8, 2) ?: return null
+                    2 -> bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, 2) ?: return null
+                    4 -> bytes.getIntValue(IntFormat.FORMAT_UINT32_LE, 2) ?: return null
                     else -> {
                         // Other field sizes are not supported
                         return null
@@ -76,12 +75,12 @@ object RecordAccessControlPointParser {
                 return NumberOfRecordsData(numberOfRecords)
             }
             OP_CODE_RESPONSE_CODE -> {
-                if (data.size() != 4) {
+                if (bytes.size != 4) {
                     return null
                 }
-                val requestCode: Int = data.getIntValue(IntFormat.FORMAT_UINT8, 2) ?: return null
+                val requestCode: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, 2) ?: return null
                 val racpOpCode = RACPOpCode.create(requestCode)
-                val responseCode: Int = data.getIntValue(IntFormat.FORMAT_UINT8, 3) ?: return null
+                val responseCode: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, 3) ?: return null
                 val racpResponseCode = RACPResponseCode.create(responseCode)
                 return ResponseData(racpOpCode, racpResponseCode)
             }

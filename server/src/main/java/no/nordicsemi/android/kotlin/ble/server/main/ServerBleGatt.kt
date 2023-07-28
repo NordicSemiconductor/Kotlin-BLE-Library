@@ -44,7 +44,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBlekLogger
+import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -94,7 +94,7 @@ class ServerBleGatt internal constructor(
         suspend fun create(
             context: Context,
             vararg config: ServerBleGattServiceConfig,
-            logger: BleLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
         ): ServerBleGatt {
             return ServerBleGattFactory.create(context, logger, *config, mock = mock)

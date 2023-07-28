@@ -31,9 +31,9 @@
 package no.nordicsemi.android.kotlin.ble.profile.gls
 
 import androidx.annotation.IntRange
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData.Companion.opCode
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.DataByteArray.Companion.opCode
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.common.MutableData
 
 object RecordAccessControlPointInputParser {
@@ -51,29 +51,29 @@ object RecordAccessControlPointInputParser {
     private const val OPERATOR_FIRST_RECORD: Byte = 5
     private const val OPERATOR_LAST_RECORD: Byte = 6
 
-    fun reportAllStoredRecords(): ByteData {
+    fun reportAllStoredRecords(): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_ALL_RECORDS)
     }
 
-    fun reportFirstStoredRecord(): ByteData {
+    fun reportFirstStoredRecord(): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_FIRST_RECORD)
     }
 
-    fun reportLastStoredRecord(): ByteData {
+    fun reportLastStoredRecord(): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_LAST_RECORD)
     }
 
     fun reportStoredRecordsLessThenOrEqualTo(
         filter: FilterType, formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
     fun reportStoredRecordsGreaterThenOrEqualTo(
         filter: FilterType, formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
@@ -81,11 +81,11 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         start: Int, end: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_STORED_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
-    fun reportStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun reportStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_REPORT_STORED_RECORDS,
             OPERATOR_LESS_THEN_OR_EQUAL,
@@ -95,7 +95,7 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun reportStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun reportStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_REPORT_STORED_RECORDS,
             OPERATOR_GREATER_THEN_OR_EQUAL,
@@ -108,7 +108,7 @@ object RecordAccessControlPointInputParser {
     fun reportStoredRecordsFromRange(
         @IntRange(from = 0) startSequenceNumber: Int,
         @IntRange(from = 0) endSequenceNumber: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(
             OP_CODE_REPORT_STORED_RECORDS,
             OPERATOR_WITHING_RANGE,
@@ -119,15 +119,15 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun deleteAllStoredRecords(): ByteData {
+    fun deleteAllStoredRecords(): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_ALL_RECORDS)
     }
 
-    fun deleteFirstStoredRecord(): ByteData {
+    fun deleteFirstStoredRecord(): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_FIRST_RECORD)
     }
 
-    fun deleteLastStoredRecord(): ByteData {
+    fun deleteLastStoredRecord(): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_LAST_RECORD)
     }
 
@@ -135,7 +135,7 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
@@ -143,7 +143,7 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
@@ -151,11 +151,11 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         start: Int, end: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_DELETE_STORED_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
-    fun deleteStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun deleteStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_DELETE_STORED_RECORDS,
             OPERATOR_LESS_THEN_OR_EQUAL,
@@ -165,7 +165,7 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun deleteStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun deleteStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_DELETE_STORED_RECORDS,
             OPERATOR_GREATER_THEN_OR_EQUAL,
@@ -178,7 +178,7 @@ object RecordAccessControlPointInputParser {
     fun deleteStoredRecordsFromRange(
         @IntRange(from = 0) startSequenceNumber: Int,
         @IntRange(from = 0) endSequenceNumber: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(
             OP_CODE_DELETE_STORED_RECORDS, OPERATOR_WITHING_RANGE,
             FilterType.SEQUENCE_NUMBER, IntFormat.FORMAT_UINT16_LE,
@@ -186,7 +186,7 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun reportNumberOfAllStoredRecords(): ByteData {
+    fun reportNumberOfAllStoredRecords(): DataByteArray {
         return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_ALL_RECORDS)
     }
 
@@ -194,7 +194,7 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_LESS_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
@@ -202,7 +202,7 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         parameter: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_GREATER_THEN_OR_EQUAL, filter, formatType, parameter)
     }
 
@@ -210,11 +210,11 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         start: Int, end: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(OP_CODE_REPORT_NUMBER_OF_RECORDS, OPERATOR_WITHING_RANGE, filter, formatType, start, end)
     }
 
-    fun reportNumberOfStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun reportNumberOfStoredRecordsLessThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_REPORT_NUMBER_OF_RECORDS,
             OPERATOR_LESS_THEN_OR_EQUAL,
@@ -224,7 +224,7 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun reportNumberOfStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): ByteData {
+    fun reportNumberOfStoredRecordsGreaterThenOrEqualTo(@IntRange(from = 0) sequenceNumber: Int): DataByteArray {
         return create(
             OP_CODE_REPORT_NUMBER_OF_RECORDS,
             OPERATOR_GREATER_THEN_OR_EQUAL,
@@ -237,7 +237,7 @@ object RecordAccessControlPointInputParser {
     fun reportNumberOfStoredRecordsFromRange(
         @IntRange(from = 0) startSequenceNumber: Int,
         @IntRange(from = 0) endSequenceNumber: Int
-    ): ByteData {
+    ): DataByteArray {
         return create(
             OP_CODE_REPORT_NUMBER_OF_RECORDS,
             OPERATOR_WITHING_RANGE,
@@ -248,11 +248,11 @@ object RecordAccessControlPointInputParser {
         )
     }
 
-    fun abortOperation(): ByteData {
+    fun abortOperation(): DataByteArray {
         return create(OP_CODE_ABORT_OPERATION, OPERATOR_NULL)
     }
 
-    private fun create(opCode: Byte, operator: Byte): ByteData {
+    private fun create(opCode: Byte, operator: Byte): DataByteArray {
         return opCode(opCode, operator)
     }
 
@@ -261,7 +261,7 @@ object RecordAccessControlPointInputParser {
         filter: FilterType,
         formatType: IntFormat,
         vararg parameters: Int
-    ): ByteData {
+    ): DataByteArray {
         val parameterLen = formatType.value and 0x0F
         val data = MutableData(ByteArray(2 + 1 + parameters.size * parameterLen))
         data.setByte(opCode.toInt(), 0)

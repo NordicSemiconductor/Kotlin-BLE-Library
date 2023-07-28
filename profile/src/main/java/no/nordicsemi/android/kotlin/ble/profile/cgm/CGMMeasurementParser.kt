@@ -31,19 +31,17 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.cgm
 
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.FloatFormat
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.cgm.data.CGMRecord
 import no.nordicsemi.android.kotlin.ble.profile.cgm.data.CGMStatus
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.CRC16
-import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 
 object CGMMeasurementParser {
 
-    fun parse(byteArray: ByteArray): List<CGMRecord>? {
-        val data = ByteData(byteArray)
-
-        if (data.size() < 1) {
+    fun parse(bytes: DataByteArray): List<CGMRecord>? {
+        if (bytes.size < 1) {
             return null
         }
 
@@ -51,15 +49,15 @@ object CGMMeasurementParser {
 
         val result = mutableListOf<CGMRecord>()
 
-        while (offset < data.size()) {
+        while (offset < bytes.size) {
             // Packet size
-            val size: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
-            if (size < 6 || offset + size > data.size()) {
+            val size: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset) ?: return null
+            if (size < 6 || offset + size > bytes.size) {
                 return null
             }
 
             // Flags
-            val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset + 1) ?: return null
+            val flags: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset + 1) ?: return null
             val cgmTrendInformationPresent = flags and 0x01 != 0
             val cgmQualityInformationPresent = flags and 0x02 != 0
             val sensorWarningOctetPresent = flags and 0x20 != 0
@@ -74,8 +72,8 @@ object CGMMeasurementParser {
             }
             val crcPresent = size == dataSize + 2
             if (crcPresent) {
-                val expectedCrc: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset + dataSize) ?: return null
-                val actualCrc: Int = CRC16.MCRF4XX(data.value, offset, dataSize)
+                val expectedCrc: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset + dataSize) ?: return null
+                val actualCrc: Int = CRC16.MCRF4XX(bytes.value, offset, dataSize)
                 if (expectedCrc != actualCrc) {
                     continue
                 }
@@ -83,11 +81,11 @@ object CGMMeasurementParser {
             offset += 2
 
             // Glucose concentration
-            val glucoseConcentration: Float = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset) ?: return null
+            val glucoseConcentration: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset) ?: return null
             offset += 2
 
             // Time offset (in minutes since Session Start)
-            val timeOffset: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
+            val timeOffset: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
             offset += 2
 
             // Sensor Status Annunciation
@@ -96,13 +94,13 @@ object CGMMeasurementParser {
             var sensorStatus = 0
             var status: CGMStatus? = null
             if (sensorWarningOctetPresent) {
-                warningStatus = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+                warningStatus = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
             }
             if (sensorCalTempOctetPresent) {
-                calibrationTempStatus = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+                calibrationTempStatus = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
             }
             if (sensorStatusOctetPresent) {
-                sensorStatus = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+                sensorStatus = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
             }
             if (sensorWarningOctetPresent || sensorCalTempOctetPresent || sensorStatusOctetPresent) {
                 status = CGMStatus(warningStatus, calibrationTempStatus, sensorStatus)
@@ -111,14 +109,14 @@ object CGMMeasurementParser {
             // CGM Trend Information
             var trend: Float? = null
             if (cgmTrendInformationPresent) {
-                trend = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
+                trend = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
                 offset += 2
             }
 
             // CGM Quality Information
             var quality: Float? = null
             if (cgmQualityInformationPresent) {
-                quality = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
+                quality = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
                 offset += 2
             }
 

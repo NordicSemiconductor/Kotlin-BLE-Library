@@ -31,15 +31,14 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.hrs
 
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.IntFormat
 
 object BodySensorLocationParser {
 
-    fun parse(byteArray: ByteArray): Int? {
-        val data = ByteData(byteArray)
+    fun parse(data: DataByteArray): Int? {
 
-        if (data.size() < 1) {
+        if (data.size < 1) {
             return null
         }
 

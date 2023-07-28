@@ -38,7 +38,7 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBlekLogger
+import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
@@ -70,7 +70,7 @@ internal object ClientBleGattFactory {
         context: Context,
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BleLogger = DefaultBlekLogger(context),
+        logger: BleLogger = DefaultConsoleLogger(context),
     ): ClientBleGatt {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
@@ -93,7 +93,7 @@ internal object ClientBleGattFactory {
         context: Context,
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BleLogger = DefaultBlekLogger(context),
+        logger: BleLogger = DefaultConsoleLogger(context),
     ): ClientBleGatt {
         return when (device) {
             is MockServerDevice -> connectDevice(device, options, logger)

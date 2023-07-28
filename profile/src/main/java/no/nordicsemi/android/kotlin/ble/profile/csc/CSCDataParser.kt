@@ -31,8 +31,8 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.csc
 
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.csc.data.CSCData
 import no.nordicsemi.android.kotlin.ble.profile.csc.data.CSCDataSnapshot
 import no.nordicsemi.android.kotlin.ble.profile.csc.data.WheelSize
@@ -48,36 +48,34 @@ class CSCDataParser {
     private var crankRevolutions: Long = -1
     private var crankEventTime: Int = -1
 
-    fun parse(byteArray: ByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData? {
-        val data = ByteData(byteArray)
-
-        if (data.size() < 1) {
+    fun parse(bytes: DataByteArray, wheelSize: WheelSize = WheelSizes.default): CSCData? {
+        if (bytes.size < 1) {
             return null
         }
 
         // Decode the new data
         var offset = 0
-        val flags: Byte = data.getByte(offset)!!
+        val flags: Byte = bytes.getByte(offset)!!
         offset += 1
 
         val wheelRevPresent = (flags and 0x01).toInt() != 0
         val crankRevPreset = (flags and 0x02).toInt() != 0
 
-        if (data.size() < 1 + (if (wheelRevPresent) 6 else 0) + (if (crankRevPreset) 4 else 0)) {
+        if (bytes.size < 1 + (if (wheelRevPresent) 6 else 0) + (if (crankRevPreset) 4 else 0)) {
             return null
         }
 
         if (wheelRevPresent) {
-            wheelRevolutions = data.getIntValue(IntFormat.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
+            wheelRevolutions = bytes.getIntValue(IntFormat.FORMAT_UINT32_LE, offset)!!.toLong() and 0xFFFFFFFFL
             offset += 4
-            wheelEventTime = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!! // 1/1024 s
+            wheelEventTime = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!! // 1/1024 s
             offset += 2
         }
 
         if (crankRevPreset) {
-            crankRevolutions = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!.toLong()
+            crankRevolutions = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!.toLong()
             offset += 2
-            crankEventTime = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!
+            crankEventTime = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset)!!
             // offset += 2;
         }
 

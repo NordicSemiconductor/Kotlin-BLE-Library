@@ -32,28 +32,26 @@
 package no.nordicsemi.android.kotlin.ble.profile.cgm
 
 import android.annotation.SuppressLint
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.cgm.data.CGMFeatures
 import no.nordicsemi.android.kotlin.ble.profile.cgm.data.CGMFeaturesEnvelope
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
 import no.nordicsemi.android.kotlin.ble.profile.common.CRC16
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
 
 object CGMFeatureParser {
 
-    fun parse(byteArray: ByteArray): CGMFeaturesEnvelope? {
-        val data = ByteData(byteArray)
-
-        if (data.size() != 6) {
+    fun parse(bytes: DataByteArray): CGMFeaturesEnvelope? {
+        if (bytes.size != 6) {
             return null
         }
 
-        val featuresValue: Int = data.getIntValue(IntFormat.FORMAT_UINT24_LE, 0) ?: return null
-        val typeAndSampleLocation: Int = data.getIntValue(IntFormat.FORMAT_UINT8, 3) ?: return null
-        val expectedCrc: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, 4) ?: return null
+        val featuresValue: Int = bytes.getIntValue(IntFormat.FORMAT_UINT24_LE, 0) ?: return null
+        val typeAndSampleLocation: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, 3) ?: return null
+        val expectedCrc: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, 4) ?: return null
 
         val features = CGMFeatures(featuresValue)
         if (features.e2eCrcSupported) {
-            val actualCrc: Int = CRC16.MCRF4XX(data.value, 0, 4)
+            val actualCrc: Int = CRC16.MCRF4XX(bytes.value, 0, 4)
             if (actualCrc != expectedCrc) {
                 return null
             }

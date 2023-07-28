@@ -31,9 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.gls
 
-import no.nordicsemi.android.kotlin.ble.profile.common.ByteData
-import no.nordicsemi.android.kotlin.ble.profile.common.FloatFormat
-import no.nordicsemi.android.kotlin.ble.profile.common.IntFormat
+import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.core.FloatFormat
+import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.ConcentrationUnit
 import no.nordicsemi.android.kotlin.ble.profile.gls.data.GLSRecord
@@ -44,37 +44,36 @@ import java.util.Calendar
 
 object GlucoseMeasurementParser {
 
-    fun parse(byteArray: ByteArray): GLSRecord? {
-        val data = ByteData(byteArray)
+    fun parse(bytes: DataByteArray): GLSRecord? {
 
-        if (data.size() < 10) {
+        if (bytes.size < 10) {
             return null
         }
 
         var offset = 0
 
-        val flags: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+        val flags: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
         val timeOffsetPresent = flags and 0x01 != 0
         val glucoseDataPresent = flags and 0x02 != 0
         val unitMolL = flags and 0x04 != 0
         val sensorStatusAnnunciationPresent = flags and 0x08 != 0
         val contextInformationFollows = flags and 0x10 != 0
 
-        if (data.size() < (10 + (if (timeOffsetPresent) 2 else 0) + (if (glucoseDataPresent) 3 else 0)
+        if (bytes.size < (10 + (if (timeOffsetPresent) 2 else 0) + (if (glucoseDataPresent) 3 else 0)
                     + if (sensorStatusAnnunciationPresent) 2 else 0)
         ) {
             return null
         }
 
         // Required fields
-        val sequenceNumber: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
+        val sequenceNumber: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
         offset += 2
-        val baseTime: Calendar = DateTimeParser.parse(data, 3) ?: return null
+        val baseTime: Calendar = DateTimeParser.parse(bytes, 3) ?: return null
         offset += 7
 
         // Optional fields
         if (timeOffsetPresent) {
-            val timeOffset: Int = data.getIntValue(IntFormat.FORMAT_SINT16_LE, offset) ?: return null
+            val timeOffset: Int = bytes.getIntValue(IntFormat.FORMAT_SINT16_LE, offset) ?: return null
             offset += 2
             baseTime.add(Calendar.MINUTE, timeOffset)
         }
@@ -84,8 +83,8 @@ object GlucoseMeasurementParser {
         var type: Int? = null
         var sampleLocation: Int? = null
         if (glucoseDataPresent) {
-            glucoseConcentration = data.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
-            val typeAndSampleLocation: Int = data.getIntValue(IntFormat.FORMAT_UINT8, offset + 2) ?: return null
+            glucoseConcentration = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
+            val typeAndSampleLocation: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset + 2) ?: return null
             offset += 3
             type = typeAndSampleLocation and 0x0F
             sampleLocation = typeAndSampleLocation shr 4
@@ -94,7 +93,7 @@ object GlucoseMeasurementParser {
 
         var status: GlucoseStatus? = null
         if (sensorStatusAnnunciationPresent) {
-            val value: Int = data.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
+            val value: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
             // offset += 2;
             status = GlucoseStatus(value)
         }

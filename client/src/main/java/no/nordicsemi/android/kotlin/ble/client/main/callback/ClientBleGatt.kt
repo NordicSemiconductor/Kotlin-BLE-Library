@@ -45,7 +45,7 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBlekLogger
+import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -422,7 +422,7 @@ class ClientBleGatt(
             context: Context,
             macAddress: String,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BleLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultConsoleLogger(context),
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
             return ClientBleGattFactory.connect(context, macAddress, options, logger)
@@ -442,7 +442,7 @@ class ClientBleGatt(
             context: Context,
             device: ServerDevice,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BleLogger = DefaultBlekLogger(context),
+            logger: BleLogger = DefaultConsoleLogger(context),
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
             return ClientBleGattFactory.connect(context, device, options, logger)
