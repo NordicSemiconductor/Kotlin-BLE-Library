@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
@@ -43,7 +44,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.logger.BleLogger
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException

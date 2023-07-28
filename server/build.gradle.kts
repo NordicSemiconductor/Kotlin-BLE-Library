@@ -58,12 +58,13 @@ android {
 
 dependencies {
     api(project(":core"))
-    api(project(":logger"))
+    api(libs.nordic.logger)
 
     implementation(project(":server-api"))
     implementation(project(":mock"))
     implementation(project(":server-mock"))
     implementation(project(":server-android"))
+
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)

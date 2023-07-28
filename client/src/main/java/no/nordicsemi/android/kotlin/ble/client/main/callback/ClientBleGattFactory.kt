@@ -37,6 +37,8 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
+import no.nordicsemi.android.common.logger.BleLogger
+import no.nordicsemi.android.common.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
@@ -47,8 +49,6 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.logger.BleLogger
-import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 /**

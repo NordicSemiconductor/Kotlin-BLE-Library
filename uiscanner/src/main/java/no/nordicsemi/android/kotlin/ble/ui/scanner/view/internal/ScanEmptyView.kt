@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.core.parseBold
 import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.android.common.theme.view.WarningView
-import no.nordicsemi.android.common.ui.scanner.R
+import no.nordicsemi.android.kotlin.ble.ui.scanner.R
 
 @Composable
 internal fun ScanEmptyView(

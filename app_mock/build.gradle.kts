@@ -14,11 +14,11 @@ dependencies {
     implementation(project(":scanner"))
     implementation(project(":client"))
     implementation(project(":server"))
-    implementation(project(":logger"))
 
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
     implementation(libs.nordic.permissions.ble)
+    implementation(libs.nordic.logger)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.core.ktx)

@@ -58,7 +58,7 @@ android {
 
 dependencies {
     api(project(":core"))
-    api(project(":logger"))
+    api(libs.nordic.logger)
 
     implementation(project(":client-api"))
     implementation(project(":mock"))

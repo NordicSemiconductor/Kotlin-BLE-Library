@@ -34,9 +34,9 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import no.nordicsemi.android.common.logger.BleLogger
+import no.nordicsemi.android.common.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
-import no.nordicsemi.android.kotlin.ble.logger.BleLogger
-import no.nordicsemi.android.kotlin.ble.logger.DefaultBlekLogger
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI

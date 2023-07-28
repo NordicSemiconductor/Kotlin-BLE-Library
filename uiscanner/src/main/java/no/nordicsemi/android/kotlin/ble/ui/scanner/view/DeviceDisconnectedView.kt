@@ -53,8 +53,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.android.common.theme.view.CircularIcon
-import no.nordicsemi.android.common.ui.scanner.R
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
+import no.nordicsemi.android.kotlin.ble.ui.scanner.R
 
 enum class Reason {
     USER, UNKNOWN, LINK_LOSS, MISSING_SERVICE

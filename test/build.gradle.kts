@@ -55,7 +55,8 @@ dependencies {
     implementation(project(":server-android"))
     implementation(project(":server-mock"))
     implementation(project(":server-api"))
-    implementation(project(":logger"))
+
+    implementation(libs.nordic.logger)
 
     testImplementation(libs.hilt.android.testing)
     kaptTest(libs.hilt.compiler)
