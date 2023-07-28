@@ -12,7 +12,7 @@ works as long as a Flow has an attached consumer. After the Flow is closed the s
 ```kotlin
     //Create aggregator which will concat scan records with a device
     val aggregator = BleScanResultAggregator()
-    scanner.scan()
+    BleScanner(context).scan()
         .map { aggregator.aggregateDevices(it) } //Add new device and return an aggregated list
         .onEach { _devices.value = it } //Propagated state to UI
         .launchIn(viewModelScope) //Scanning will stop after we leave the screen
@@ -28,7 +28,7 @@ Connection to the Blinky DK may look like that:
 ```kotlin
 viewModelScope.launch {
     //Connect a Bluetooth LE device. This is a suspend function which waits until device is in conncted state.
-    val connection = blinkyDevice.connect(context)
+    val connection = blinkyDevice.connect(context) //blinkyDevice from scanner
 
     //Discover services on the Bluetooth LE Device. This is a suspend function which waits until device discovery is finished.
     val services = connection.discoverServices()
@@ -39,14 +39,12 @@ viewModelScope.launch {
     buttonCharacteristic = service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
     //Observe button characteristic which detects when a button is pressed
-    buttonCharacteristic.notification.onEach {
+    //getNotifications() is a suspend function which waits until notification is enabled.
+    buttonCharacteristic.getNotifications().onEach {
         //_state is a MutableStateFlow which propagates data to UI.
         _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(it))
     }.launchIn(viewModelScope)
-
-    //Enables notifications on DK. This is a suspend function which waits until notification is enabled.
-    buttonCharacteristic.enableNotifications()
-
+    
     //Check the initial state of the Led. Read() is a suspend function which waits until the value is read from the DK.
     val isLedOn = BlinkyLedParser.isLedOn(ledCharacteristic.read())
     _state.value = _state.value.copy(isLedOn = isLedOn)
@@ -161,6 +159,6 @@ The library is used to create a Bluetooth LE server.
         } else {
             byteArrayOf(0x00)
         }
-        buttonCharacteristic?.setValue(value)
+        buttonCharacteristic.setValue(value)
     }
 ```
