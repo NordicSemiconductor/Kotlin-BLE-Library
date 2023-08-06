@@ -35,6 +35,7 @@ import android.bluetooth.le.ScanRecord
 import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.os.ParcelUuid
+import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.core.map
@@ -53,7 +54,7 @@ internal fun ScanRecord.toDomain(): BleScanRecord {
         this.deviceName ?: "",
         this.txPowerLevel,
         DataByteArray(this.bytes),
-        this.manufacturerSpecificData.map { DataByteArray(it) }
+        this.manufacturerSpecificData.map { DataByteArray(it ?: byteArrayOf()) }
     )
 }
 
