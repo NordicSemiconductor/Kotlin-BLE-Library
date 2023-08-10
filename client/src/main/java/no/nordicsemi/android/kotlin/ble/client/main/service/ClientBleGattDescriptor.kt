@@ -119,6 +119,7 @@ class ClientBleGattDescriptor internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: DataByteArray) {
         mutex.lock()
+        val stacktrace = Exception() //Helper exception to display valid stacktrace.
         suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: $value")
             pendingWriteEvent = {
@@ -128,7 +129,7 @@ class ClientBleGattDescriptor internal constructor(
                     continuation.resume(Unit)
                 } else {
                     logger.log(Log.ERROR, "Write to descriptor - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status))
+                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
                 mutex.unlock()
             }
@@ -147,6 +148,7 @@ class ClientBleGattDescriptor internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read(): DataByteArray {
         mutex.lock()
+        val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")
             pendingReadEvent = {
@@ -156,7 +158,7 @@ class ClientBleGattDescriptor internal constructor(
                     continuation.resume(it.value.copyOf())
                 } else {
                     logger.log(Log.ERROR, "Read from descriptor - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status))
+                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
                 mutex.unlock()
             }

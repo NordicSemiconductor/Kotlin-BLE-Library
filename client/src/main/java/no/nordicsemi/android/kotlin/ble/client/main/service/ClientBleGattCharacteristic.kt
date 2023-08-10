@@ -188,6 +188,7 @@ class ClientBleGattCharacteristic internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         mutex.lock()
+        val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: $value, type: $writeType")
             validateWriteProperties(writeType)
@@ -198,7 +199,7 @@ class ClientBleGattCharacteristic internal constructor(
                     continuation.resume(Unit)
                 } else {
                     logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status))
+                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
                 mutex.unlock()
             }
@@ -256,6 +257,7 @@ class ClientBleGattCharacteristic internal constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read(): DataByteArray {
         mutex.lock()
+        val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
@@ -270,7 +272,7 @@ class ClientBleGattCharacteristic internal constructor(
                     continuation.resume(it.value.copyOf())
                 } else {
                     logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status))
+                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
                 mutex.unlock()
             }

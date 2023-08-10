@@ -36,4 +36,7 @@ package no.nordicsemi.android.kotlin.ble.client.main.errors
  *
  * @property message Display message describing a problem
  */
-sealed class GattException(override val message: String) : Exception()
+sealed class GattException(
+    override val message: String,
+    override val cause: Throwable? = null
+) : Exception()
