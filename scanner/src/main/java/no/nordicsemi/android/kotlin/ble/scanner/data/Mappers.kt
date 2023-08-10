@@ -49,12 +49,12 @@ internal fun ScanRecord.toDomain(): BleScanRecord {
     return BleScanRecord(
         this.advertiseFlags,
         this.serviceUuids,
-        this.serviceData.mapValues { DataByteArray(it.value) },
+        this.serviceData?.mapValues { DataByteArray(it.value) } ?: emptyMap(),
         getSolicitationUuids(this),
         this.deviceName ?: "",
         this.txPowerLevel,
         DataByteArray(this.bytes),
-        this.manufacturerSpecificData.map { DataByteArray(it ?: byteArrayOf()) }
+        this.manufacturerSpecificData?.map { DataByteArray(it ?: byteArrayOf()) } ?: SparseArray()
     )
 }
 
