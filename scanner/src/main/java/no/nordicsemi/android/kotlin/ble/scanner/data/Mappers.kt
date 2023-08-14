@@ -48,7 +48,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 internal fun ScanRecord.toDomain(): BleScanRecord {
     return BleScanRecord(
         this.advertiseFlags,
-        this.serviceUuids,
+        this.serviceUuids ?: emptyList(),
         this.serviceData?.mapValues { DataByteArray(it.value) } ?: emptyMap(),
         getSolicitationUuids(this),
         this.deviceName ?: "",
