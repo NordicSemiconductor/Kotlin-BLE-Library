@@ -49,18 +49,18 @@ internal fun ScanRecord.toDomain(): BleScanRecord {
     return BleScanRecord(
         this.advertiseFlags,
         this.serviceUuids ?: emptyList(),
-        this.serviceData?.mapValues { DataByteArray(it.value) } ?: emptyMap(),
+        this.serviceData?.mapValues { DataByteArray(it.value ?: byteArrayOf()) } ?: emptyMap(),
         getSolicitationUuids(this),
         this.deviceName ?: "",
         this.txPowerLevel,
-        DataByteArray(this.bytes),
+        DataByteArray(this.bytes ?: byteArrayOf()),
         this.manufacturerSpecificData?.map { DataByteArray(it ?: byteArrayOf()) } ?: SparseArray()
     )
 }
 
 private fun getSolicitationUuids(scanRecord: ScanRecord): List<ParcelUuid> {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        scanRecord.serviceSolicitationUuids
+        scanRecord.serviceSolicitationUuids ?: emptyList() //Don't delete elvis operator.
     } else {
         emptyList()
     }
