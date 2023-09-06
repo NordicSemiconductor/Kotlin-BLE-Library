@@ -129,7 +129,7 @@ class ClientBleGattCharacteristic internal constructor(
         }
     }
 
-    private val descriptors = characteristic.descriptors.map { ClientBleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
+    val descriptors = characteristic.descriptors.map { ClientBleGattDescriptor(gatt, instanceId, it, logger, mutex, mtuProvider) }
 
     private var pendingReadEvent: ((CharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((CharacteristicWrite) -> Unit)? = null

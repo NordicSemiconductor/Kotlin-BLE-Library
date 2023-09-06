@@ -56,7 +56,7 @@ data class ClientBleGattServices internal constructor(
     private val mtuProvider: MtuProvider
 ) {
 
-    private val services = androidGattServices.map { ClientBleGattService(gatt, it, logger, mutex, mtuProvider) }
+    val services = androidGattServices.map { ClientBleGattService(gatt, it, logger, mutex, mtuProvider) }
 
     /**
      * Finds service based on [uuid].
