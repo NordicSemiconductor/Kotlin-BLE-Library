@@ -46,7 +46,7 @@ import java.util.UUID
 class ServerBleGattServices internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
-    private val services: List<ServerBleGattService>
+    val services: List<ServerBleGattService>
 ) {
 
     /**

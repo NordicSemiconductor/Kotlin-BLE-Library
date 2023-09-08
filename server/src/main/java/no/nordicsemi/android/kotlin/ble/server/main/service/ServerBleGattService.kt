@@ -61,7 +61,7 @@ data class ServerBleGattService internal constructor(
     /**
      * All characteristics of a service.
      */
-    private val characteristics = service.characteristics.map {
+    val characteristics = service.characteristics.map {
         ServerBleGattCharacteristic(server, device, it, mtuProvider)
     }
 

@@ -100,7 +100,7 @@ class ServerBleGattCharacteristic internal constructor(
     val properties: List<BleGattProperty>
         get() = BleGattProperty.createProperties(characteristic.properties)
 
-    private val descriptors = characteristic.descriptors.map {
+    val descriptors = characteristic.descriptors.map {
         ServerBleGattDescriptor(server, instanceId, it, mtuProvider)
     }
 
