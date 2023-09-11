@@ -36,12 +36,13 @@ import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
 import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
-import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import java.util.UUID
 
 /**
@@ -67,6 +68,12 @@ class ServerBleGattDescriptor internal constructor(
      * [UUID] of the descriptor.
      */
     val uuid = descriptor.uuid
+
+    /**
+     * Permissions of this descriptor.
+     */
+    val properties: List<BleGattPermission>
+        get() = BleGattPermission.createPermissions(descriptor.permissions)
 
     private var transactionalValue = DataByteArray()
     private val _value = ValueFlow.create()
