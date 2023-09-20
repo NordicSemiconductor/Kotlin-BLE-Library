@@ -5,6 +5,7 @@ native API and uses Kotlin Coroutines for asynchronous operations. The usage is 
 natural according to the BLE specification.
 
 ## BLE Scanner
+
 This module contains a scanner class which provides the list of available Bluetooth LE devices. Each 
 device is kept in an aggregator which keeps devices in map together with their scan records. Scanning
 works as long as a Flow has an attached consumer. After the Flow is closed the scanning stops.
@@ -16,6 +17,11 @@ works as long as a Flow has an attached consumer. After the Flow is closed the s
         .map { aggregator.aggregateDevices(it) } //Add new device and return an aggregated list
         .onEach { _devices.value = it } //Propagated state to UI
         .launchIn(viewModelScope) //Scanning will stop after we leave the screen
+```
+
+### Dependency
+```Groovy
+implementation 'no.nordicsemi.android.kotlin.ble:scanner:1.0.5'
 ```
 
 ## BLE Client
@@ -68,6 +74,11 @@ viewModelScope.launch {
 }
 ```
 
+### Dependency
+```Groovy
+implementation 'no.nordicsemi.android.kotlin.ble:client:1.0.5'
+```
+
 ## BLE Advertiser
 The library is used to advertise the server.
 
@@ -95,6 +106,11 @@ The library is used to advertise the server.
                 }
             }
     }
+```
+
+### Dependency
+```Groovy
+implementation 'no.nordicsemi.android.kotlin.ble:advertiser:1.0.5'
 ```
 
 ## BLE Server
@@ -161,4 +177,9 @@ The library is used to create a Bluetooth LE server.
         }
         buttonCharacteristic.setValue(value)
     }
+```
+
+### Dependency
+```Groovy
+implementation 'no.nordicsemi.android.kotlin.ble:server:1.0.5'
 ```
