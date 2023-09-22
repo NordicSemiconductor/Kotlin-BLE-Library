@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.client.scanner
 
+import androidx.bluetooth.ScanResult
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,28 +50,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.view.CircularIcon
 import no.nordicsemi.android.kotlin.ble.app.client.R
-import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
 fun LazyListScope.ScannerView(
-    devices: List<ServerDevice>,
-    onClick: (ServerDevice) -> Unit
+    devices: List<ScanResult>,
+    onClick: (ScanResult) -> Unit
 ) {
-    val bondedDevices = devices.filter { it.isBonded }
-    val discoveredDevices = devices.filter { !it.isBonded }
-
-    if (bondedDevices.isNotEmpty()) {
-        item {
-            Text(
-                text = stringResource(id = R.string.bonded_devices),
-                style = MaterialTheme.typography.titleSmall
-            )
-        }
-        bondedDevices.forEach {
-            item { BleDeviceView(device = it, onClick) }
-        }
-    }
-
-    if (discoveredDevices.isNotEmpty()) {
+    if (devices.isNotEmpty()) {
         item {
             Text(
                 text = stringResource(id = R.string.discovered_devices),
@@ -78,7 +63,7 @@ fun LazyListScope.ScannerView(
             )
         }
 
-        discoveredDevices.forEach {
+        devices.forEach {
             item { BleDeviceView(device = it, onClick) }
         }
     }
@@ -86,8 +71,8 @@ fun LazyListScope.ScannerView(
 
 @Composable
 private fun BleDeviceView(
-    device: ServerDevice,
-    onClick: (ServerDevice) -> Unit
+    device: ScanResult,
+    onClick: (ScanResult) -> Unit
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -103,12 +88,12 @@ private fun BleDeviceView(
                 .weight(1f)
         ) {
             Text(
-                text = device.name,
+                text = device.device.name ?: "No name",
                 style = MaterialTheme.typography.titleMedium
             )
 
             Text(
-                text = device.address,
+                text = device.deviceAddress.address,
                 style = MaterialTheme.typography.bodyMedium
             )
         }

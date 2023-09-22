@@ -1,5 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.client.details
 
+import androidx.bluetooth.BluetoothDevice
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -17,7 +18,7 @@ import no.nordicsemi.android.kotlin.ble.app.client.R
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
 @Composable
-fun DeviceView(device: ServerDevice) {
+fun DeviceView(device: BluetoothDevice) {
     OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle(
@@ -27,11 +28,11 @@ fun DeviceView(device: ServerDevice) {
 
             Spacer(modifier = Modifier.size(4.dp))
 
-            Text(text = stringResource(id = R.string.device_name, device.name))
+            Text(text = stringResource(id = R.string.device_name, device.name ?: ""))
 
             Spacer(modifier = Modifier.size(4.dp))
 
-            Text(text = stringResource(id = R.string.address, device.address))
+            Text(text = stringResource(id = R.string.address, "111"))
         }
     }
 }

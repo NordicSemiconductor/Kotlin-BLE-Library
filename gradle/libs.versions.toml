@@ -62,7 +62,7 @@ skydovesBallon = "1.5.4"
 moshiKotlin = "1.15.0"
 moshiAdapters = "1.15.0"
 
-nordic-blek = "1.0.3"
+nordic-blek = "1.0.5"
 nordic-ble = "2.6.1"
 nordic-dfu = "2.3.0"
 nordic-log = "2.3.0"

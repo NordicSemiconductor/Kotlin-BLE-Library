@@ -33,21 +33,21 @@ package no.nordicsemi.android.kotlin.ble.client.scanner
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.bluetooth.BluetoothLe
+import androidx.bluetooth.ScanResult
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.android.common.navigation.Navigator
+import no.nordicsemi.android.kotlin.ble.client.SharedObject
 import no.nordicsemi.android.kotlin.ble.client.details.BlinkyDestinationId
-import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.scanner.BleScanner
-import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import javax.inject.Inject
 
 @SuppressLint("MissingPermission")
@@ -60,19 +60,26 @@ class ScannerViewModel @Inject constructor(
 
     private val scanner = BleScanner(context)
 
-    private val _devices = MutableStateFlow<List<ServerDevice>>(emptyList())
+    private val _devices = MutableStateFlow<List<ScanResult>>(emptyList())
     val devices = _devices.asStateFlow()
 
     init {
+        val client = BluetoothLe(context)
+
         //Create aggregator which will concat scan records with a device
-        val aggregator = BleScanResultAggregator()
-        scanner.scan()
-            .map { aggregator.aggregateDevices(it) } //Add new device and return an aggregated list
-            .onEach { _devices.value = it } //Propagated state to UI
+        var result = listOf<ScanResult>()
+        client.scan()
+            .map {
+                result = result + it
+                result
+            } //Add new device and return an aggregated list
+            .onEach {
+                _devices.value = it } //Propagated state to UI
             .launchIn(viewModelScope) //Scanning will stop after we leave the screen
     }
 
-    fun onDeviceSelected(device: ServerDevice) {
-        navigator.navigateTo(BlinkyDestinationId, device)
+    fun onDeviceSelected(device: ScanResult) {
+        SharedObject.device = device.device
+        navigator.navigateTo(BlinkyDestinationId)
     }
 }

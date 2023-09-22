@@ -38,6 +38,10 @@ group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.app.client"
+
+    defaultConfig {
+        minSdk = 33
+    }
 }
 
 dependencies {
@@ -54,4 +58,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.compose.material.iconsExtended)
+
+    implementation("androidx.bluetooth:bluetooth:1.0.0-alpha01")
+    implementation("androidx.bluetooth:bluetooth-testing:1.0.0-alpha01")
 }

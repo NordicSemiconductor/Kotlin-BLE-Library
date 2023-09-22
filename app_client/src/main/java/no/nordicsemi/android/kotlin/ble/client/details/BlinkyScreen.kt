@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.client.details
 
+import androidx.bluetooth.BluetoothDevice
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -48,9 +49,8 @@ import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.defineDestination
 import no.nordicsemi.android.common.theme.view.NordicAppBar
 import no.nordicsemi.android.kotlin.ble.app.client.R
-import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 
-val BlinkyDestinationId = createDestination<ServerDevice, Unit>("blinky")
+val BlinkyDestinationId = createDestination<Unit, Unit>("blinky")
 
 val BlinkyDestination = defineDestination(BlinkyDestinationId) { BlinkyScreen() }
 
