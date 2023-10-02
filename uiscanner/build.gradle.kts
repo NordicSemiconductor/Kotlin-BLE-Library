@@ -57,6 +57,7 @@ android {
 }
 
 dependencies {
+    api(project(":core"))
     implementation(project(":scanner"))
 
     implementation(libs.nordic.theme)
