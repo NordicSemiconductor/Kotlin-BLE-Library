@@ -40,8 +40,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -49,8 +53,6 @@ import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.navigation.Navigator
 import no.nordicsemi.android.common.navigation.viewmodel.SimpleNavigationViewModel
 import no.nordicsemi.android.kotlin.ble.client.SharedObject
-import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
-import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
 import java.util.*
 import javax.inject.Inject
 
@@ -71,7 +73,7 @@ class BlinkyViewModel @Inject constructor(
     @ApplicationContext
     private val context: Context,
     private val navigator: Navigator,
-    private val savedStateHandle: SavedStateHandle
+    private val savedStateHandle: SavedStateHandle,
 ) : SimpleNavigationViewModel(navigator, savedStateHandle) {
 
     private val _device = MutableStateFlow<BluetoothDevice?>(null)
@@ -86,8 +88,10 @@ class BlinkyViewModel @Inject constructor(
     private val client = BluetoothLe(context)
     private val blinkyDevice = SharedObject.device!!
 
-    init {
+    private val ledState = MutableStateFlow(false)
+    private val disconnectState = MutableStateFlow(false)
 
+    init {
         _device.value = blinkyDevice
         startGattClient(blinkyDevice)
     }
@@ -100,31 +104,38 @@ class BlinkyViewModel @Inject constructor(
             ledCharacteristic = service.getCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
             buttonCharacteristic = service.getCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
-            subscribeToCharacteristic(buttonCharacteristic).onEach {
-                _state.value = _state.value.copy(isButtonPressed = BlinkyButtonParser.isButtonPressed(DataByteArray(it)))
-            }.launchIn(viewModelScope)
+            launch {
+                subscribeToCharacteristic(buttonCharacteristic).collect {
+                    _state.value = _state.value.copy(
+                        isButtonPressed = BlinkyButtonParser.isButtonPressed(DataByteArray(it))
+                    )
+                }
+            }
+
+            launch {
+                ledState.collect {
+                    writeCharacteristic(ledCharacteristic, it.toByteArray())
+                    _state.value = _state.value.copy(isLedOn = it)
+                }
+            }
 
             //Check the initial state of the Led.
             val result = readCharacteristic(ledCharacteristic)
             val isLedOn = BlinkyLedParser.isLedOn(DataByteArray(result.getOrThrow()))
             _state.value = _state.value.copy(isLedOn = isLedOn)
+
+            disconnectState.filter { it == true }.first()
         }
     }
 
-    @SuppressLint("NewApi")
-    fun turnLed() {
-        viewModelScope.launch {
-            if (state.value.isLedOn) {
-                client.connectGatt(blinkyDevice) {
-                    writeCharacteristic(ledCharacteristic, byteArrayOf(0x00))
-                }
-                _state.value = _state.value.copy(isLedOn = false)
-            } else {
-                client.connectGatt(blinkyDevice) {
-                    writeCharacteristic(ledCharacteristic, byteArrayOf(0x01))
-                }
-                _state.value = _state.value.copy(isLedOn = true)
-            }
+    private fun Boolean.toByteArray(): ByteArray {
+        return when (this) {
+            true -> byteArrayOf(0x01)
+            false -> byteArrayOf(0x00)
         }
+    }
+
+    fun turnLed() {
+        ledState.value = !ledState.value
     }
 }
