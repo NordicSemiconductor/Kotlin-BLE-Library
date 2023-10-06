@@ -47,7 +47,7 @@ sealed interface BleDevice : Parcelable {
     /**
      * Name of a device.
      */
-    val name: String
+    val name: String?
 
     /**
      * MAC address of a device.
@@ -75,7 +75,7 @@ sealed interface BleDevice : Parcelable {
      * Returns true if a device has not empty name.
      */
     val hasName
-        get() = name.isNotEmpty()
+        get() = name?.isNotEmpty() == true
 }
 
 /**
@@ -84,7 +84,7 @@ sealed interface BleDevice : Parcelable {
  */
 sealed interface ServerDevice : BleDevice {
 
-    override val name: String
+    override val name: String?
     override val address: String
 }
 
@@ -103,9 +103,9 @@ data class RealClientDevice(
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String
+    override val name: String?
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = device.name ?: ""
+        get() = device.name
 
     @IgnoredOnParcel
     override val address: String = device.address
@@ -125,9 +125,9 @@ data class RealServerDevice(
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String
+    override val name: String?
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = device.name ?: ""
+        get() = device.name
 
     @IgnoredOnParcel
     override val address: String = device.address
@@ -143,7 +143,7 @@ data class RealServerDevice(
  */
 @Parcelize
 data class MockClientDevice(
-    override val name: String = "CLIENT",
+    override val name: String? = "CLIENT",
     override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ClientDevice, Parcelable
@@ -154,7 +154,7 @@ data class MockClientDevice(
  */
 @Parcelize
 data class MockServerDevice(
-    override val name: String = "SERVER",
+    override val name: String? = "SERVER",
     override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ServerDevice, Parcelable
