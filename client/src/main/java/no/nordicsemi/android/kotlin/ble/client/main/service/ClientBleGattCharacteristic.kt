@@ -76,6 +76,8 @@ private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
  * @property mutex Mutex for synchronising requests.
  * @property mtuProvider For providing MTU value established per connection.
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+@SuppressLint("InlinedApi")
 class ClientBleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
     private val characteristic: IBluetoothGattCharacteristic,
@@ -124,8 +126,12 @@ class ClientBleGattCharacteristic internal constructor(
             return flow { throw e }
         }
 
-        return suspendCoroutine {
-            it.resume(_notifications.onEach { log(it) }.onCompletion { disableNotifications() })
+        return suspendCoroutine { continuation ->
+            continuation.resume(
+                _notifications
+                    .onEach { log(it) }
+                    .onCompletion { disableNotifications() }
+            )
         }
     }
 

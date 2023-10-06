@@ -35,11 +35,11 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothDevice.ACTION_BOND_STATE_CHANGED
 import android.bluetooth.BluetoothDevice.ERROR
 import android.bluetooth.BluetoothDevice.EXTRA_BOND_STATE
-import android.bluetooth.BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.BondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.real.ClientBleGattCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
@@ -54,13 +54,15 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent?.action ?: return
-        val device: BluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) ?: return
+        val device: BluetoothDevice = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java) ?: return
+        } else @Suppress("DEPRECATION") {
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) ?: return
+        }
         val address = device.address
 
         if (action == ACTION_BOND_STATE_CHANGED) {
             val bondState = intent.getIntExtra(EXTRA_BOND_STATE, ERROR)
-            val previousBondState = intent.getIntExtra(EXTRA_PREVIOUS_BOND_STATE, ERROR)
-
             callbacks[address]?.onEvent(BondStateChanged(BondState.create(bondState)))
         }
     }
@@ -99,7 +101,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
         fun unregisterReceiver(context: Context, address: String) {
             callbacks.remove(address)
             if (callbacks.isEmpty()) {
-                context.unregisterReceiver(instance)
+                context.applicationContext.unregisterReceiver(instance)
                 instance = null
             }
         }

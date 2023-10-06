@@ -41,4 +41,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 data class GattOperationException(
     val status: BleGattOperationStatus,
     override val cause: Throwable? = null
-) : GattException("Gatt operation failed with exception: $status")
+) : GattException(
+    message = "Gatt operation failed with exception: $status"
+)

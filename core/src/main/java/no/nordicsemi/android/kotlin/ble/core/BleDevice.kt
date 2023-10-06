@@ -80,7 +80,7 @@ sealed interface BleDevice : Parcelable {
 
 /**
  * Class representing BLE server device. It can be either mocked or native variant.
- * It can be connected to using [ClientBleGatt].
+ * It can be connected to using [ClientDevice].
  */
 sealed interface ServerDevice : BleDevice {
 
@@ -96,6 +96,7 @@ sealed interface ClientDevice : BleDevice
 /**
  * Class representing real BLE client device. It is a wrapper around native [BluetoothDevice].
  */
+@Suppress("InlinedApi")
 @Parcelize
 data class RealClientDevice(
     val device: BluetoothDevice,
@@ -117,6 +118,7 @@ data class RealClientDevice(
 /**
  * Class representing real BLE server device. It is a wrapper around native [BluetoothDevice].
  */
+@Suppress("InlinedApi")
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
@@ -142,7 +144,7 @@ data class RealServerDevice(
 @Parcelize
 data class MockClientDevice(
     override val name: String = "CLIENT",
-    override val address: String = "11:22:33:44:55",
+    override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ClientDevice, Parcelable
 
@@ -153,6 +155,6 @@ data class MockClientDevice(
 @Parcelize
 data class MockServerDevice(
     override val name: String = "SERVER",
-    override val address: String = "11:22:33:44:55",
+    override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ServerDevice, Parcelable

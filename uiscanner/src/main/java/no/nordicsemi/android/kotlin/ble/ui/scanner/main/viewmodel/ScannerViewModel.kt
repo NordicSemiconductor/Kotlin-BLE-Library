@@ -94,8 +94,8 @@ internal class ScannerViewModel @Inject constructor(
             .onEach {
                 _state.value = ScanningState.DevicesDiscovered(it)
             }
-            .catch {
-                _state.value = (it as? ScanningFailedException)?.let {
+            .catch { e ->
+                _state.value = (e as? ScanningFailedException)?.let {
                     ScanningState.Error(it.errorCode.value)
                 } ?: ScanningState.Error(ScanFailedError.UNKNOWN.value)
             }
@@ -107,8 +107,8 @@ internal class ScannerViewModel @Inject constructor(
     // .stateIn(viewModelScope, SharingStarted.Lazily, ScanningState.Loading)
     private fun List<BleScanResults>.applyFilters(config: DevicesScanFilter) =
             filter { !config.filterUuidRequired || it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true }
-            .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
-            .filter { !config.filterWithNames || it.device.name.isNotEmpty() }
+           .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
+           .filter { !config.filterWithNames || it.device.hasName }
 
     fun setFilterUuid(uuid: ParcelUuid?) {
         this.uuid = uuid

@@ -47,6 +47,7 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * Factory object responsible for creating an instance of [ServerBleGatt].
  */
+@Suppress("InlinedApi")
 internal object ServerBleGattFactory {
 
     /**
@@ -64,11 +65,9 @@ internal object ServerBleGattFactory {
         logger: BleLogger = DefaultConsoleLogger(context),
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
-    ): ServerBleGatt {
-        return mock?.let {
-            createMockServer(it, logger, *config)
-        } ?: createRealServer(context, logger, *config)
-    }
+    ): ServerBleGatt = mock?.let {
+        createMockServer(it, logger, *config)
+    } ?: createRealServer(context, logger, *config)
 
     /**
      * Creates mock variant of the server which will be used locally on a device without the
@@ -103,28 +102,26 @@ internal object ServerBleGattFactory {
         context: Context,
         logger: BleLogger,
         vararg config: ServerBleGattServiceConfig,
-    ): ServerBleGatt {
-        return suspendCoroutine {
-            val nativeServer = NativeServerBleAPI.create(context)
-            val server = ServerBleGatt(nativeServer, logger)
-            var index = 0
+    ): ServerBleGatt = suspendCoroutine {
+        val nativeServer = NativeServerBleAPI.create(context)
+        val server = ServerBleGatt(nativeServer, logger)
+        var index = 0
 
-            nativeServer.callback.onServiceAdded = {
-                if (index <= config.lastIndex) {
-                    val service = BluetoothGattServiceFactory.createNative(config[index++])
-                    nativeServer.server.addService(service.service)
-                } else {
-                    nativeServer.callback.onServiceAdded = null
-                    it.resume(server)
-                }
-            }
-
-            if (config.isNotEmpty()) {
+        nativeServer.callback.onServiceAdded = {
+            if (index <= config.lastIndex) {
                 val service = BluetoothGattServiceFactory.createNative(config[index++])
                 nativeServer.server.addService(service.service)
             } else {
+                nativeServer.callback.onServiceAdded = null
                 it.resume(server)
             }
+        }
+
+        if (config.isNotEmpty()) {
+            val service = BluetoothGattServiceFactory.createNative(config[index++])
+            nativeServer.server.addService(service.service)
+        } else {
+            it.resume(server)
         }
     }
 }

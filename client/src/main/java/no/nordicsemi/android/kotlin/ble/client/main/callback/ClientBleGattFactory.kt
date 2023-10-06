@@ -32,6 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.client.main.callback
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -54,6 +55,7 @@ import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 /**
  * Factory class responsible for creating [ClientBleGatt] instance.
  */
+@SuppressLint("InlinedApi")
 internal object ClientBleGattFactory {
 
     /**
@@ -121,9 +123,9 @@ internal object ClientBleGattFactory {
         options: BleGattConnectOptions,
         logger: BleLogger,
     ): ClientBleGatt {
-        return ClientBleGatt(device.createConnection(context, options), logger).also {
-            it.waitForConnection()
-        }
+        val gatt = device.createConnection(context, options)
+        return ClientBleGatt(gatt, logger)
+            .also { it.waitForConnection() }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

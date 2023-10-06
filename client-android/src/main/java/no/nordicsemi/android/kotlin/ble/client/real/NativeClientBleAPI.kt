@@ -35,6 +35,7 @@ import android.Manifest
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.os.Build
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
@@ -62,6 +63,7 @@ import java.lang.reflect.Method
  * @property callback Native wrapper around Android [BluetoothGattCallback].
  * @property autoConnect Boolean value passed during connection.
  */
+@Suppress("InlinedAPI")
 class NativeClientBleAPI(
     private val gatt: BluetoothGatt,
     private val callback: ClientBleGattCallback,
@@ -84,13 +86,13 @@ class NativeClientBleAPI(
         value: DataByteArray,
         writeType: BleWriteType
     ) {
-        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(characteristic, value.value, writeType.value)
-        } else {
-            characteristic.writeType = writeType.value
-            characteristic.value = value.value
-            gatt.writeCharacteristic(characteristic)
+            gatt.writeCharacteristic(c, value.value, writeType.value)
+        } else @Suppress("DEPRECATION") {
+            c.writeType = writeType.value
+            c.value = value.value
+            gatt.writeCharacteristic(c)
         }
     }
 
@@ -98,41 +100,41 @@ class NativeClientBleAPI(
     override fun readCharacteristic(
         characteristic: IBluetoothGattCharacteristic
     ) {
-        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.readCharacteristic(characteristic)
+        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.readCharacteristic(c)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(characteristic, true)
+        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.setCharacteristicNotification(c, true)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(characteristic, false)
+        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.setCharacteristicNotification(c, false)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
-        val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
+        val d = (descriptor as NativeBluetoothGattDescriptor).descriptor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeDescriptor(descriptor, value.value)
-        } else {
-            descriptor.value = value.value
-            gatt.writeDescriptor(descriptor)
+            gatt.writeDescriptor(d, value.value)
+        } else @Suppress("DEPRECATION") {
+            d.value = value.value
+            gatt.writeDescriptor(d)
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun readDescriptor(descriptor: IBluetoothGattDescriptor) {
-        val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
-        gatt.readDescriptor(descriptor)
+        val d = (descriptor as NativeBluetoothGattDescriptor).descriptor
+        gatt.readDescriptor(d)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun requestMtu(mtu: Int) {
+    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int) {
         gatt.requestMtu(mtu)
     }
 

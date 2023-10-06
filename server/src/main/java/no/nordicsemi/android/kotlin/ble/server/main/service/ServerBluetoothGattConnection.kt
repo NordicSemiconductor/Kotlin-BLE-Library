@@ -47,6 +47,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
  * @property txPhy Transmitter PHY value.
  * @property rxPhy Receiver PHY value.
  */
+@Suppress("unused")
 data class ServerBluetoothGattConnection internal constructor(
     private val device: ClientDevice,
     private val server: GattServerAPI,

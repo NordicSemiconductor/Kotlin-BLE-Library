@@ -58,7 +58,5 @@ data class ServerBleGattCharacteristicConfig(
      * Helper property telling if the characteristic will have indication/notification feature.
      */
     val hasNotifications: Boolean
-        get() {
-            return properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
-        }
+        get() = properties.contains(BleGattProperty.PROPERTY_NOTIFY) or properties.contains(BleGattProperty.PROPERTY_INDICATE)
 }

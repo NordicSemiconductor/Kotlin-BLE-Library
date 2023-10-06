@@ -35,5 +35,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.errors
  * Exception thrown during enabling/disabling notification/indications when no CCCD descriptor
  * found.
  */
-class NotificationDescriptorNotFoundException :
-    GattException("Notification descriptor has not been found.")
+class NotificationDescriptorNotFoundException : GattException(
+    message = "Client Characteristic Configuration descriptor not found"
+)

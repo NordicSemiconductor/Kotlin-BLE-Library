@@ -73,6 +73,8 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
  * @property server [GattServerAPI] for communication with a client devices.
  * @property logger Logger instance for displaying logs.
  */
+@Suppress("unused")
+@SuppressLint("InlinedApi")
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
