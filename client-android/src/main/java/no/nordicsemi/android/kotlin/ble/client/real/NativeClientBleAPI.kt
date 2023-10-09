@@ -86,13 +86,13 @@ class NativeClientBleAPI(
         value: DataByteArray,
         writeType: BleWriteType
     ) {
-        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(c, value.value, writeType.value)
+            gatt.writeCharacteristic(characteristic, value.value, writeType.value)
         } else @Suppress("DEPRECATION") {
-            c.writeType = writeType.value
-            c.value = value.value
-            gatt.writeCharacteristic(c)
+            characteristic.writeType = writeType.value
+            characteristic.value = value.value
+            gatt.writeCharacteristic(characteristic)
         }
     }
 
@@ -100,37 +100,37 @@ class NativeClientBleAPI(
     override fun readCharacteristic(
         characteristic: IBluetoothGattCharacteristic
     ) {
-        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.readCharacteristic(c)
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(c, true)
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.setCharacteristicNotification(characteristic, true)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(c, false)
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        gatt.setCharacteristicNotification(characteristic, false)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
-        val d = (descriptor as NativeBluetoothGattDescriptor).descriptor
+        val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeDescriptor(d, value.value)
+            gatt.writeDescriptor(descriptor, value.value)
         } else @Suppress("DEPRECATION") {
-            d.value = value.value
-            gatt.writeDescriptor(d)
+            descriptor.value = value.value
+            gatt.writeDescriptor(descriptor)
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun readDescriptor(descriptor: IBluetoothGattDescriptor) {
-        val d = (descriptor as NativeBluetoothGattDescriptor).descriptor
-        gatt.readDescriptor(d)
+        val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
+        gatt.readDescriptor(descriptor)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

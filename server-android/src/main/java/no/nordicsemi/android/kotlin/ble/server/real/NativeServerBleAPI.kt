@@ -96,14 +96,14 @@ class NativeServerBleAPI(
         confirm: Boolean,
         value: DataByteArray
     ) {
-        val c = (characteristic as NativeBluetoothGattCharacteristic).characteristic
+        val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         val bleDevice = (device as RealClientDevice).device
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            server.notifyCharacteristicChanged(bleDevice, c, confirm, value.value)
+            server.notifyCharacteristicChanged(bleDevice, characteristic, confirm, value.value)
         } else @Suppress("DEPRECATION") {
-            c.value = value.value
-            server.notifyCharacteristicChanged(bleDevice, c, confirm)
+            characteristic.value = value.value
+            server.notifyCharacteristicChanged(bleDevice, characteristic, confirm)
         }
     }
 
