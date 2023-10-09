@@ -80,7 +80,7 @@ sealed interface BleDevice : Parcelable {
 
 /**
  * Class representing BLE server device. It can be either mocked or native variant.
- * It can be connected to using [ClientDevice].
+ * It can be connected to using [ClientBleGatt`].
  */
 sealed interface ServerDevice : BleDevice {
 
