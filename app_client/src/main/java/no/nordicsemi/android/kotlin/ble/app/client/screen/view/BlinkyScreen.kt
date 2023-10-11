@@ -41,11 +41,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.permissions.ble.RequireLocation
 import no.nordicsemi.android.common.theme.view.NordicAppBar
@@ -77,8 +78,8 @@ fun BlinkyScreen() {
             RequireBluetooth {
                 RequireLocation {
                     Column {
-                        val state = viewModel.state.collectAsState().value
-                        val device = viewModel.device.collectAsState().value
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val device by viewModel.device.collectAsStateWithLifecycle()
 
                         device?.let { DeviceView(it) }
 
