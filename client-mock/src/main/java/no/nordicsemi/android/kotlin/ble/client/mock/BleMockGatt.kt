@@ -42,6 +42,7 @@ import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -145,5 +146,9 @@ class BleMockGatt(
 
     override fun executeReliableWrite() {
         mockEngine.executeReliableWrite(serverDevice, clientDevice)
+    }
+
+    override fun requestConnectionPriority(priority: BleGattConnectionPriority) {
+        mockEngine.requestConnectionPriority(clientDevice, priority)
     }
 }

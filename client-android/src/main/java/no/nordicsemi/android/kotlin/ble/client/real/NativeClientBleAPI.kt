@@ -45,6 +45,7 @@ import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
@@ -203,5 +204,10 @@ class NativeClientBleAPI(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun executeReliableWrite() {
         gatt.executeReliableWrite()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun requestConnectionPriority(priority: BleGattConnectionPriority) {
+        gatt.requestConnectionPriority(priority.value)
     }
 }

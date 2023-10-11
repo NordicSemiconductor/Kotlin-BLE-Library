@@ -56,6 +56,7 @@ import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescrip
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -193,7 +194,7 @@ class ClientBleGatt(
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock()
         return suspendCoroutine { continuation ->
-            logger.log(Log.VERBOSE, "Requesting new mtu - start, mtu: $mtu")
+            logger.log(Log.DEBUG, "Requesting new mtu - start, mtu: $mtu")
             mtuCallback = { (mtu, status) ->
                 if (status.isSuccess) {
                     logger.log(Log.INFO, "MTU: $mtu")
@@ -264,6 +265,16 @@ class ClientBleGatt(
             }
             gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
         }
+    }
+
+    /**
+     * Requests connection priority. It will influence latency and power consumption.
+     *
+     * @param priority Requested [BleGattConnectionPriority].
+     */
+    fun requestConnectionPriority(priority: BleGattConnectionPriority) {
+        logger.log(Log.DEBUG, "Requested new connection priority: $priority")
+        gatt.requestConnectionPriority(priority)
     }
 
     /**

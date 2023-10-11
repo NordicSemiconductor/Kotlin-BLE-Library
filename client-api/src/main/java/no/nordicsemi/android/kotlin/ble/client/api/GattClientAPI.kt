@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -188,4 +189,11 @@ interface GattClientAPI {
      * executed and new values will be set permanently.
      */
     fun executeReliableWrite()
+
+    /**
+     * Requests connection priority. It will influence latency and power consumption.
+     *
+     * @param priority Requested [BleGattConnectionPriority].
+     */
+    fun requestConnectionPriority(priority: BleGattConnectionPriority)
 }

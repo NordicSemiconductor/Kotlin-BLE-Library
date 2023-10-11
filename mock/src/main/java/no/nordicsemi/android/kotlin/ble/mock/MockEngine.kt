@@ -43,6 +43,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -251,7 +252,8 @@ object MockEngine {
         value: DataByteArray,
         writeType: BleWriteType,
     ) {
-        val connection = clientConnections[clientDevice]!!
+        val connection = clientConnections[clientDevice]
+            ?: return //Client disconnected.
         val isResponseNeeded = when (writeType) {
             BleWriteType.NO_RESPONSE -> false
             BleWriteType.DEFAULT,
@@ -308,7 +310,8 @@ object MockEngine {
         descriptor: IBluetoothGattDescriptor,
         value: DataByteArray,
     ) {
-        val connection = clientConnections[clientDevice]!!
+        val connection = clientConnections[clientDevice]
+            ?: return //Client disconnected.
         val request = requests.newWriteRequest(descriptor)
         servers[device]?.serverApi?.onEvent(
             DescriptorWriteRequest(
@@ -389,6 +392,17 @@ object MockEngine {
         connection.serverApi.onEvent(
             ServerMtuChanged(connection.client, mtu)
         )
+    }
+
+    fun requestConnectionPriority(
+        clientDevice: ClientDevice,
+        priority: BleGattConnectionPriority,
+    ) {
+        val connection = clientConnections[clientDevice]!!
+        val newConnection = connection.copy(
+            params = connection.params.copy(priority = priority)
+        )
+        clientConnections[clientDevice] = newConnection
     }
 
     fun close(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
