@@ -56,6 +56,7 @@ import java.util.UUID
  * @property descriptor Identifier of a descriptor.
  * @property mtuProvider For providing mtu value established per connection.
  */
+@Suppress("unused")
 @SuppressLint("MissingPermission")
 class ServerBleGattDescriptor internal constructor(
     private val server: GattServerAPI,
@@ -109,7 +110,8 @@ class ServerBleGattDescriptor internal constructor(
     /**
      * Verifies if the target of the event is this descriptor.
      *
-     * @param c A characteristic id from the event.
+     * @param eventDescriptor A gatt request.
+     * @param block A block of code to execute if the target is this descriptor.
      */
     private fun onLocalEvent(eventDescriptor: IBluetoothGattDescriptor, block: () -> Unit) {
         if (eventDescriptor.uuid == descriptor.uuid && eventDescriptor.characteristic.instanceId == characteristicInstanceId) {

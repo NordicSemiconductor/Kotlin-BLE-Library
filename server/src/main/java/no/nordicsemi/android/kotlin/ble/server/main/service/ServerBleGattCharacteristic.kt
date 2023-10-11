@@ -58,6 +58,7 @@ import java.util.*
  * @property characteristic Identifier of a characteristic.
  * @property mtuProvider For providing mtu value established per connection.
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
 @SuppressLint("MissingPermission")
 class ServerBleGattCharacteristic internal constructor(
     private val server: GattServerAPI,

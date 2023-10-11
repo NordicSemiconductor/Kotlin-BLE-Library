@@ -71,7 +71,7 @@ class NativeServerBleAPI(
 
     companion object {
         fun create(context: Context): NativeServerBleAPI {
-            val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
             val callback = ServerBleGattCallback()
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
@@ -86,7 +86,7 @@ class NativeServerBleAPI(
         offset: Int,
         value: DataByteArray?
     ) {
-        val bleDevice = (device as? RealClientDevice)?.device!!
+        val bleDevice = (device as RealClientDevice).device
         server.sendResponse(bleDevice, requestId, status, offset, value?.value)
     }
 
@@ -97,10 +97,11 @@ class NativeServerBleAPI(
         value: DataByteArray
     ) {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        val bleDevice = (device as? RealClientDevice)?.device!!
+        val bleDevice = (device as RealClientDevice).device
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             server.notifyCharacteristicChanged(bleDevice, characteristic, confirm, value.value)
-        } else {
+        } else @Suppress("DEPRECATION") {
             characteristic.value = value.value
             server.notifyCharacteristicChanged(bleDevice, characteristic, confirm)
         }
@@ -112,17 +113,17 @@ class NativeServerBleAPI(
     }
 
     override fun cancelConnection(device: ClientDevice) {
-        val bleDevice = (device as? RealClientDevice)?.device!!
+        val bleDevice = (device as RealClientDevice).device
         server.cancelConnection(bleDevice)
     }
 
     override fun connect(device: ClientDevice, autoConnect: Boolean) {
-        val bleDevice = (device as? RealClientDevice)?.device!!
+        val bleDevice = (device as RealClientDevice).device
         server.connect(bleDevice, autoConnect)
     }
 
     override fun readPhy(device: ClientDevice) {
-        val bleDevice = (device as? RealClientDevice)?.device!!
+        val bleDevice = (device as RealClientDevice).device
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             server.readPhy(bleDevice)
         } else {

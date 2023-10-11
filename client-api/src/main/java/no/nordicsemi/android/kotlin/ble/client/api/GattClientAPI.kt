@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.client.api
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import androidx.annotation.IntRange
 import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
@@ -129,7 +130,7 @@ interface GattClientAPI {
      *
      * @param mtu A mtu value.
      */
-    fun requestMtu(mtu: Int)
+    fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int)
 
     /**
      * Reads rssi of a remote server device.

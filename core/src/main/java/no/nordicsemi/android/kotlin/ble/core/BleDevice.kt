@@ -47,7 +47,7 @@ sealed interface BleDevice : Parcelable {
     /**
      * Name of a device.
      */
-    val name: String
+    val name: String?
 
     /**
      * MAC address of a device.
@@ -75,16 +75,16 @@ sealed interface BleDevice : Parcelable {
      * Returns true if a device has not empty name.
      */
     val hasName
-        get() = name.isNotEmpty()
+        get() = name?.isNotEmpty() == true
 }
 
 /**
  * Class representing BLE server device. It can be either mocked or native variant.
- * It can be connected to using [ClientBleGatt].
+ * It can be connected to using [ClientBleGatt`].
  */
 sealed interface ServerDevice : BleDevice {
 
-    override val name: String
+    override val name: String?
     override val address: String
 }
 
@@ -96,15 +96,16 @@ sealed interface ClientDevice : BleDevice
 /**
  * Class representing real BLE client device. It is a wrapper around native [BluetoothDevice].
  */
+@Suppress("InlinedApi")
 @Parcelize
 data class RealClientDevice(
     val device: BluetoothDevice,
 ) : ClientDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String
+    override val name: String?
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = device.name ?: ""
+        get() = device.name
 
     @IgnoredOnParcel
     override val address: String = device.address
@@ -117,15 +118,16 @@ data class RealClientDevice(
 /**
  * Class representing real BLE server device. It is a wrapper around native [BluetoothDevice].
  */
+@Suppress("InlinedApi")
 @Parcelize
 data class RealServerDevice(
     val device: BluetoothDevice,
 ) : ServerDevice, Parcelable {
 
     @IgnoredOnParcel
-    override val name: String
+    override val name: String?
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-        get() = device.name ?: ""
+        get() = device.name
 
     @IgnoredOnParcel
     override val address: String = device.address
@@ -141,8 +143,8 @@ data class RealServerDevice(
  */
 @Parcelize
 data class MockClientDevice(
-    override val name: String = "CLIENT",
-    override val address: String = "11:22:33:44:55",
+    override val name: String? = "CLIENT",
+    override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ClientDevice, Parcelable
 
@@ -152,7 +154,7 @@ data class MockClientDevice(
  */
 @Parcelize
 data class MockServerDevice(
-    override val name: String = "SERVER",
-    override val address: String = "11:22:33:44:55",
+    override val name: String? = "SERVER",
+    override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
 ) : ServerDevice, Parcelable

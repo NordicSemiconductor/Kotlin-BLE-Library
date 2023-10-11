@@ -35,6 +35,7 @@ import android.Manifest
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.os.Build
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
@@ -62,6 +63,7 @@ import java.lang.reflect.Method
  * @property callback Native wrapper around Android [BluetoothGattCallback].
  * @property autoConnect Boolean value passed during connection.
  */
+@Suppress("InlinedAPI")
 class NativeClientBleAPI(
     private val gatt: BluetoothGatt,
     private val callback: ClientBleGattCallback,
@@ -87,7 +89,7 @@ class NativeClientBleAPI(
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             gatt.writeCharacteristic(characteristic, value.value, writeType.value)
-        } else {
+        } else @Suppress("DEPRECATION") {
             characteristic.writeType = writeType.value
             characteristic.value = value.value
             gatt.writeCharacteristic(characteristic)
@@ -119,7 +121,7 @@ class NativeClientBleAPI(
         val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             gatt.writeDescriptor(descriptor, value.value)
-        } else {
+        } else @Suppress("DEPRECATION") {
             descriptor.value = value.value
             gatt.writeDescriptor(descriptor)
         }
@@ -132,7 +134,7 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun requestMtu(mtu: Int) {
+    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int) {
         gatt.requestMtu(mtu)
     }
 

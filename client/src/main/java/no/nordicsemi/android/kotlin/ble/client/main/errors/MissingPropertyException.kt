@@ -43,5 +43,5 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
  * @param property A missing property which causes exception.
  */
 class MissingPropertyException(property: BleGattProperty) : GattException(
-    "Operation cannot be performed because of the missing property: $property"
+    message = "Operation cannot be performed because of the missing property: $property"
 )

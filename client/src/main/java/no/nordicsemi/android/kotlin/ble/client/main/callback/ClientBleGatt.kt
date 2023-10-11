@@ -35,6 +35,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -78,6 +79,8 @@ import kotlin.coroutines.suspendCoroutine
  * Despite that it's responsible for exposing connection parameters like mtu, phy, connection state
  * and request their changes.
  */
+@Suppress("MemberVisibilityCanBePrivate", "unused")
+@SuppressLint("InlinedApi")
 class ClientBleGatt(
     private val gatt: GattClientAPI,
     private val logger: BleLogger,
@@ -103,6 +106,7 @@ class ClientBleGatt(
      * Established MTU size. There are incoming changes on Android 14 where this value is gonna to
      * be always max value - 517 and wouldn't be able to change.
      */
+    @IntRange(from = 23, to = 517)
     val mtu = mtuProvider.mtu
 
     /**
@@ -134,20 +138,22 @@ class ClientBleGatt(
     private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
 
     init {
-        gatt.event.onEach {
-            logger.log(Log.VERBOSE, "On gatt event: $it")
-            when (it) {
-                is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                is PhyRead -> onEvent(it)
-                is PhyUpdate -> onEvent(it)
-                is ReadRemoteRssi -> onEvent(it)
-                is ServiceChanged -> onEvent(it)
-                is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
-                is MtuChanged -> onEvent(it)
-                is BondStateChanged -> onBondStateChanged(it.bondState)
+        gatt.event
+            .onEach {
+                logger.log(Log.VERBOSE, "On gatt event: $it")
+                when (it) {
+                    is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
+                    is PhyRead -> onEvent(it)
+                    is PhyUpdate -> onEvent(it)
+                    is ReadRemoteRssi -> onEvent(it)
+                    is ServiceChanged -> onEvent(it)
+                    is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
+                    is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
+                    is MtuChanged -> onEvent(it)
+                    is BondStateChanged -> onBondStateChanged(it.bondState)
+                }
             }
-        }.launchIn(ApplicationScope)
+            .launchIn(ApplicationScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -171,8 +177,9 @@ class ClientBleGatt(
                     logger.log(Log.INFO, "Device disconnected")
                     continuation.resume(GattConnectionState.STATE_DISCONNECTED)
                 }
-                mutex.unlock()
+
                 onConnectionStateChangedCallback = null
+                mutex.unlock()
             }
         }
     }
@@ -400,7 +407,6 @@ class ClientBleGatt(
         rssiCallback?.invoke(event)
     }
 
-    @SuppressLint("MissingPermission")
     private fun onEvent(event: ServiceChanged) {
         mutex.tryLock()
         gatt.discoverServices()

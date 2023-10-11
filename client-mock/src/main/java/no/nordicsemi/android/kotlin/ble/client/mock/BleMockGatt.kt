@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.client.mock
 
+import androidx.annotation.IntRange
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -102,7 +103,7 @@ class BleMockGatt(
         mockEngine.readDescriptor(serverDevice, clientDevice, descriptor)
     }
 
-    override fun requestMtu(mtu: Int) {
+    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int) {
         mockEngine.requestMtu(clientDevice, serverDevice, mtu)
     }
 

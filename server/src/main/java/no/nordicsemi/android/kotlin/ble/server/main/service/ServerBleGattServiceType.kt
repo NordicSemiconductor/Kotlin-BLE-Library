@@ -38,6 +38,7 @@ import android.bluetooth.BluetoothGattService
  *
  * @property value Native Android value.
  */
+@Suppress("unused")
 enum class ServerBleGattServiceType(val value: Int) {
 
     /**

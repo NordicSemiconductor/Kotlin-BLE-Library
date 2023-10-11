@@ -46,6 +46,7 @@ import java.util.UUID
  * @property service Identifier of a service.
  * @property mtuProvider For providing mtu value established per connection.
  */
+@Suppress("MemberVisibilityCanBePrivate")
 data class ServerBleGattService internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
