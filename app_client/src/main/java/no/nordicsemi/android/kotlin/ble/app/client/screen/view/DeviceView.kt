@@ -27,9 +27,12 @@ fun DeviceView(device: ServerDevice) {
 
             Spacer(modifier = Modifier.size(8.dp))
 
-            Text(text = stringResource(id = R.string.device_name, device.name))
+            device.name?.let {
+                Text(text = stringResource(id = R.string.device_name, it))
 
-            Spacer(modifier = Modifier.size(4.dp))
+                Spacer(modifier = Modifier.size(4.dp))
+            }
+
 
             Text(text = stringResource(id = R.string.address, device.address))
         }
