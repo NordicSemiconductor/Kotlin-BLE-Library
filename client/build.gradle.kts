@@ -67,5 +67,6 @@ dependencies {
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.core.ktx)
     api(libs.nordic.core)
 }
