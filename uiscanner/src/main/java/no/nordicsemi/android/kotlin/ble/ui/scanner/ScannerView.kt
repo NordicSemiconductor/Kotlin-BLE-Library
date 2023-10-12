@@ -66,7 +66,8 @@ fun ScannerView(
     onResult: (BleScanResults) -> Unit,
     deviceItem: @Composable (BleScanResults) -> Unit = {
         DeviceListItem(it.device.name, it.device.address)
-    }
+    },
+    showFilter: Boolean = true
 ) {
     RequireBluetooth(
         onChanged = { onScanningStateChanged(it) }
@@ -90,21 +91,26 @@ fun ScannerView(
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                FilterView(
-                    config = config,
-                    onChanged = { viewModel.setFilter(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(colorResource(id = R.color.appBarColor))
-                        .padding(horizontal = 16.dp),
-                )
+                if (showFilter)
+                    FilterView(
+                        config = config,
+                        onChanged = { viewModel.setFilter(it) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(colorResource(id = R.color.appBarColor))
+                            .padding(horizontal = 16.dp),
+                    )
 
-                val pullRefreshState  = rememberPullRefreshState(
+                val pullRefreshState = rememberPullRefreshState(
                     refreshing = refreshing,
                     onRefresh = { refresh() },
                 )
 
-                Box(modifier = Modifier.pullRefresh(pullRefreshState).clipToBounds()) {
+                Box(
+                    modifier = Modifier
+                        .pullRefresh(pullRefreshState)
+                        .clipToBounds()
+                ) {
                     DevicesListView(
                         isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
                         state = state,
