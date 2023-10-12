@@ -40,6 +40,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import androidx.core.content.ContextCompat
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.BondStateChanged
 import no.nordicsemi.android.kotlin.ble.client.real.ClientBleGattCallback
 import no.nordicsemi.android.kotlin.ble.core.BleDevice
@@ -55,7 +56,8 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         val action = intent?.action ?: return
         val device: BluetoothDevice = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java) ?: return
+            intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+                ?: return
         } else @Suppress("DEPRECATION") {
             intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE) ?: return
         }
@@ -87,7 +89,12 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
 
             if (instance == null) {
                 instance = BondingBroadcastReceiver()
-                context.applicationContext.registerReceiver(instance, IntentFilter(ACTION_BOND_STATE_CHANGED))
+                ContextCompat.registerReceiver(
+                    context.applicationContext,
+                    instance,
+                    IntentFilter(ACTION_BOND_STATE_CHANGED),
+                    ContextCompat.RECEIVER_NOT_EXPORTED
+                )
             }
         }
 
