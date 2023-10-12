@@ -56,6 +56,7 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
+import no.nordicsemi.android.kotlin.ble.server.main.ServerConnectionEvent.*
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattDescriptor
@@ -101,13 +102,13 @@ class ServerBleGatt internal constructor(
         }
     }
 
-    private val _onNewConnection = simpleSharedFlow<ServerBluetoothGattConnection>()
+    private val _connectionEvents = simpleSharedFlow<ServerConnectionEvent>()
 
     /**
-     * [Flow] which emits each time a new connection is established.
+     * [Flow] which emits each time a new connection is established or lost.
      * It can be used to set up new connection's services behaviour.
      */
-    val onNewConnection = _onNewConnection.asSharedFlow()
+    val connectionEvents = _connectionEvents.asSharedFlow()
 
     private val _connections =
         MutableStateFlow(mapOf<ClientDevice, ServerBluetoothGattConnection>())
@@ -186,8 +187,10 @@ class ServerBleGatt internal constructor(
      */
     private fun removeDevice(device: ClientDevice) {
         val mutableMap = connections.value.toMutableMap()
-        mutableMap.remove(device)
-        _connections.value = mutableMap.toMap()
+        mutableMap.remove(device)?.let {
+            _connections.value = mutableMap.toMap()
+        }
+        _connectionEvents.tryEmit(DeviceDisconnected(device))
     }
 
     /**
@@ -209,7 +212,7 @@ class ServerBleGatt internal constructor(
             device, server, ServerBleGattServices(server, device, copiedServices)
         )
         mutableMap[device] = connection
-        _onNewConnection.tryEmit(connection)
+        _connectionEvents.tryEmit(DeviceConnected(connection))
         _connections.value = mutableMap.toMap()
 
         server.connect(device, true)
