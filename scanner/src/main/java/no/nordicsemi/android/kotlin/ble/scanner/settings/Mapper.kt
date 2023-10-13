@@ -31,8 +31,10 @@
 
 package no.nordicsemi.android.kotlin.ble.scanner.settings
 
+import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanSettings
 import android.os.Build
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 
 /**
@@ -54,4 +56,64 @@ internal fun BleScannerSettings.toNative(): ScanSettings {
         setReportDelay(reportDelay)
         setScanMode(scanMode.value)
     }.build()
+}
+
+
+internal fun List<BleScanFilter>.toNative(): List<ScanFilter> {
+    return this.map {
+        val builder = ScanFilter.Builder()
+
+        it.deviceName?.let { builder.setDeviceName(it) }
+        it.deviceAddress?.let { builder.setDeviceAddress(it) }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            it.type?.let { builder.setAdvertisingDataType(it.value) }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            it.typeWithData?.let {
+                builder.setAdvertisingDataTypeWithData(
+                    it.type.value,
+                    it.advertisingData.value,
+                    it.mask.value
+                )
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            it.serviceSolicitationUuid?.let {
+                if (it.mask != null) {
+                    builder.setServiceSolicitationUuid(it.uuid, it.mask)
+                } else {
+                    builder.setServiceSolicitationUuid(it.uuid)
+                }
+            }
+        }
+
+        it.manufacturerData?.let {
+            if (it.mask != null) {
+                builder.setManufacturerData(it.id, it.data.value, it.mask!!.value)
+            } else {
+                builder.setManufacturerData(it.id, it.data.value)
+            }
+        }
+
+        it.serviceData?.let {
+            if (it.mask != null) {
+                builder.setServiceData(it.uuid, it.data.value, it.mask!!.value)
+            } else {
+                builder.setServiceData(it.uuid, it.data.value)
+            }
+        }
+
+        it.serviceUuid?.let {
+            if (it.mask != null) {
+                builder.setServiceUuid(it.uuid, it.mask)
+            } else {
+                builder.setServiceUuid(it.uuid)
+            }
+        }
+
+        builder.build()
+    }
 }

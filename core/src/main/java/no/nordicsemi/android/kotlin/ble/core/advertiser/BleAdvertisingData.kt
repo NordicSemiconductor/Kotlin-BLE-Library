@@ -35,7 +35,6 @@ import android.bluetooth.le.AdvertiseData
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
-import no.nordicsemi.android.common.core.DataByteArray
 
 /**
  * Advertise data packet container for Bluetooth LE advertising. This represents the data to be
@@ -60,26 +59,4 @@ data class BleAdvertisingData(
 
     @RequiresApi(Build.VERSION_CODES.M)
     val serviceSolicitationUuid: ParcelUuid? = null,
-)
-
-/**
- * A helper class which groups manufacturer id and it's data.
- *
- * @property id Manufacturer id.
- * @property data Manufacturer data.
- */
-data class ManufacturerData(
-    val id: Int,
-    val data: DataByteArray
-)
-
-/**
- * A helper class which groups service id and it's data.
- *
- * @property uuid Service id.
- * @property data Service data.
- */
-data class ServiceData(
-    val uuid: ParcelUuid,
-    val data: DataByteArray
 )
