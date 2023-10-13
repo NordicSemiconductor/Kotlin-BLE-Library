@@ -113,12 +113,12 @@ object ScanRecordSerializer {
     ): ByteArray {
         var result = byteArrayOf()
 
-        result += byteArrayOf(0x02, DATA_TYPE_FLAGS.toByte(), advertiseFlag.toByte())
+        result += byteArrayOf(0x02, DATA_TYPE_FLAGS.value.toByte(), advertiseFlag.toByte())
 
         serviceUuids?.forEach {
             val data = it.toByteArray()
             result += (data.size+1).toByte()
-            result += DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE.toByte()
+            result += DATA_TYPE_SERVICE_UUIDS_128_BIT_COMPLETE.value.toByte()
             result += data
         }
 
@@ -126,28 +126,28 @@ object ScanRecordSerializer {
             val data = serviceData[key]!!
             val serializedUuid = key.toByteArray()
             result += (data.value.size+serializedUuid.size+1).toByte()
-            result += DATA_TYPE_SERVICE_DATA_128_BIT.toByte()
+            result += DATA_TYPE_SERVICE_DATA_128_BIT.value.toByte()
             result += serializedUuid
             result += data.value
         }
 
         txPowerLevel?.let {
             result += 2.toByte()
-            result += DATA_TYPE_TX_POWER_LEVEL.toByte()
+            result += DATA_TYPE_TX_POWER_LEVEL.value.toByte()
             result += it.toByte()
         }
 
         if (!deviceName.isNullOrBlank()) {
             val data = deviceName.toByteArray()
             result += (data.size+1).toByte()
-            result += DATA_TYPE_LOCAL_NAME_SHORT.toByte()
+            result += DATA_TYPE_LOCAL_NAME_SHORT.value.toByte()
             result += data
         }
 
         serviceSolicitationUuids.forEach {
             val data = it.toByteArray()
             result += (data.size+1).toByte()
-            result += DATA_TYPE_SERVICE_SOLICITATION_UUIDS_128_BIT.toByte()
+            result += DATA_TYPE_SERVICE_SOLICITATION_UUIDS_128_BIT.value.toByte()
             result += data
         }
 
@@ -156,7 +156,7 @@ object ScanRecordSerializer {
             // get the object by the key.
             val data = manufacturerSpecificData.get(key)
             result += (data.value.size+3).toByte()
-            result += DATA_TYPE_MANUFACTURER_SPECIFIC_DATA.toByte()
+            result += DATA_TYPE_MANUFACTURER_SPECIFIC_DATA.value.toByte()
             result += byteArrayOf((key and 0xFF).toByte(), ((key shr 8) and 0xFF).toByte())
             result += data.value
         }
@@ -198,10 +198,10 @@ object ScanRecordSerializer {
                 // Note the length includes the length of the field type itself.
                 val dataLength = length - 1
                 // fieldType is unsigned int.
-                val fieldType = scanRecord[currentPos++].toInt() and 0xFF
+                val fieldTypeValue = scanRecord[currentPos++].toInt() and 0xFF
                 val advertisingData = extractBytes(scanRecord, currentPos, dataLength)
-                advertisingDataMap[fieldType] = DataByteArray(advertisingData)
-                when (fieldType) {
+                advertisingDataMap[fieldTypeValue] = DataByteArray(advertisingData)
+                when (val fieldType = BleType.createOrNull(fieldTypeValue)) {
                     DATA_TYPE_FLAGS -> advertiseFlag = scanRecord[currentPos].toInt() and 0xFF
                     DATA_TYPE_SERVICE_UUIDS_16_BIT_PARTIAL,
                     DATA_TYPE_SERVICE_UUIDS_16_BIT_COMPLETE,

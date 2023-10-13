@@ -298,5 +298,18 @@ enum class BleType(val value: Int) {
      * Data type is Manufacturer Specific Data, see the Bluetooth Generic Access Profile for more
      * details.
      */
-    DATA_TYPE_MANUFACTURER_SPECIFIC_DATA(0xFF)
+    DATA_TYPE_MANUFACTURER_SPECIFIC_DATA(0xFF);
+
+    companion object {
+
+        /**
+         * Creates [BleType] based on [Int] value.
+         *
+         * @param value [Int] value.
+         * @return [BleType] or null if not found.
+         */
+        fun createOrNull(value: Int): BleType? {
+            return values().firstOrNull { it.value == value }
+        }
+    }
 }

@@ -70,7 +70,6 @@ object RSCSDataParser {
 
         var totalDistance: Long? = null
         if (totalDistancePresent) {
-            val dupa = 1;
             totalDistance = bytes.getLongValue(LongFormat.FORMAT_UINT32_LE, offset)
             // offset += 4;
         }
