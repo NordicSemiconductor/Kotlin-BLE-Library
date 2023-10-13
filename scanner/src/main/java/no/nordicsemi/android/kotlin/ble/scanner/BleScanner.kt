@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
@@ -85,7 +86,10 @@ class BleScanner(
      * @return [Flow] which emits scan findings ([BleScanResult]) in chronological order
      */
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
-    fun scan(settings: BleScannerSettings = BleScannerSettings()): Flow<BleScanResult> = callbackFlow {
+    fun scan(
+        filters: List<BleScanFilter> = emptyList(),
+        settings: BleScannerSettings = BleScannerSettings()
+    ): Flow<BleScanResult> = callbackFlow {
         launch {
             MockDevices.devices.collect { it.forEach {
                 trySend(BleScanResult(it.key, it.value))
@@ -109,7 +113,7 @@ class BleScanner(
             }
         }
 
-        bluetoothLeScanner.startScan(null, settings.toNative(), scanCallback)
+        bluetoothLeScanner.startScan(filters.toNative(), settings.toNative(), scanCallback)
 
         awaitClose {
             bluetoothLeScanner.stopScan(scanCallback)
