@@ -21,7 +21,7 @@ works as long as a Flow has an attached consumer. After the Flow is closed the s
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:scanner:1.0.5'
+implementation 'no.nordicsemi.android.kotlin.ble:scanner:1.0.6'
 ```
 
 ## BLE Client
@@ -76,7 +76,7 @@ viewModelScope.launch {
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:client:1.0.5'
+implementation 'no.nordicsemi.android.kotlin.ble:client:1.0.6'
 ```
 
 ## BLE Advertiser
@@ -110,7 +110,7 @@ The library is used to advertise the server.
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:advertiser:1.0.5'
+implementation 'no.nordicsemi.android.kotlin.ble:advertiser:1.0.6'
 ```
 
 ## BLE Server
@@ -181,5 +181,5 @@ The library is used to create a Bluetooth LE server.
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:server:1.0.5'
+implementation 'no.nordicsemi.android.kotlin.ble:server:1.0.6'
 ```
