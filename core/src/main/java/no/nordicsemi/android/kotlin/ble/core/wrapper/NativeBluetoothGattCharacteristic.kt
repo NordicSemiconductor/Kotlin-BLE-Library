@@ -65,14 +65,14 @@ data class NativeBluetoothGattCharacteristic(
 
     override fun toString(): String {
         return StringBuilder()
-            .append("{")
-            .append(" uuid : $uuid, ")
-            .append(" instanceId : $instanceId,")
-            .append(" permissions : $permissions,")
-            .append(" properties : $properties,")
-            .append(" writeType : $writeType,")
-            .append(" value : ${value.toDisplayString()},")
-            .append(" descriptors : $descriptors")
+            .append(" { ")
+            .append("uuid : $uuid, ")
+            .append("instanceId : $instanceId, ")
+            .append("permissions : $permissions, ")
+            .append("properties : $properties, ")
+            .append("writeType : $writeType, ")
+            .append("value : ${value.toDisplayString()}, ")
+            .append("descriptors : $descriptors ")
             .append("}")
             .toString()
     }

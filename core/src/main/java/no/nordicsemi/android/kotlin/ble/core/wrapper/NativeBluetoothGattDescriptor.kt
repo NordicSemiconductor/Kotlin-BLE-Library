@@ -33,7 +33,6 @@ package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.android.common.core.toDisplayString
-import java.util.StringJoiner
 import java.util.UUID
 
 /**
@@ -60,10 +59,10 @@ data class NativeBluetoothGattDescriptor(
 
     override fun toString(): String {
         return StringBuilder()
-            .append("{")
-            .append("uuid : $uuid ")
-            .append("permissions : $permissions ")
-            .append("value : ${value.toDisplayString()} ")
+            .append("{ ")
+            .append("uuid : $uuid, ")
+            .append("permissions : $permissions, ")
+            .append("value : ${value.toDisplayString()}, ")
             .append("}")
             .toString()
     }

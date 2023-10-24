@@ -50,10 +50,10 @@ data class NativeBluetoothGattService(
 
     override fun toString(): String {
         return StringBuilder()
-            .append("{")
-            .append("uuid: $uuid")
-            .append("type: $type")
-            .append("characteristics: $characteristics")
+            .append("{ ")
+            .append("uuid: $uuid, ")
+            .append("type: $type, ")
+            .append("characteristics: $characteristics ")
             .append("}")
             .toString()
     }
