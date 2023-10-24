@@ -61,7 +61,7 @@ data class ClientBleGattService internal constructor(
      */
     val uuid = service.uuid
 
-    val characteristics = service.characteristics.map {
+    private val characteristics = service.characteristics.map {
         ClientBleGattCharacteristic(gatt, it, logger, mutex, mtuProvider)
     }
 
