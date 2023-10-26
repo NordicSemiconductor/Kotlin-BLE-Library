@@ -63,7 +63,8 @@ class BleMockGatt(
     private val mockEngine: MockEngine,
     private val serverDevice: MockServerDevice,
     private val clientDevice: ClientDevice,
-    override val autoConnect: Boolean
+    override val autoConnect: Boolean,
+    override val closeOnDisconnect: Boolean
 ) : GattClientAPI {
 
     private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -126,6 +127,10 @@ class BleMockGatt(
 
     override fun disconnect() {
         mockEngine.cancelConnection(serverDevice, clientDevice)
+    }
+
+    override fun reconnect() {
+        mockEngine.connect(clientDevice)
     }
 
     override fun clearServicesCache() {

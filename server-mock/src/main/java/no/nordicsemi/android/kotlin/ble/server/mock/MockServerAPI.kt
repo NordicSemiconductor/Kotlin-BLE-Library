@@ -87,7 +87,7 @@ class MockServerAPI(
     }
 
     override fun connect(device: ClientDevice, autoConnect: Boolean) {
-        mockEngine.connect(device, autoConnect)
+        mockEngine.connect(device)
     }
 
     override fun readPhy(device: ClientDevice) {

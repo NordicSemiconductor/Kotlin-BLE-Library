@@ -70,6 +70,11 @@ interface GattClientAPI {
     val autoConnect: Boolean
 
     /**
+     * Parameter indicating that Gatt should be closed on first disconnected event.
+     */
+    val closeOnDisconnect: Boolean
+
+    /**
      * Internal function for propagating events to [event] shared flow. For internal usage only.
      *
      * @param event equivalent of a callback method from [BluetoothGattCallback]
@@ -158,9 +163,14 @@ interface GattClientAPI {
     fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption)
 
     /**
-     * Disconnect remote server.
+     * Disconnects from a peripheral.
      */
     fun disconnect()
+
+    /**
+     * Connects to a peripheral after disconnection. Works only if [BleGattConnectOptions.closeOnDisconnect] is set to false.
+     */
+    fun reconnect()
 
     /**
      * Clears services cache. It should invoke [BluetoothGattCallback.onServiceChanged] callback.
