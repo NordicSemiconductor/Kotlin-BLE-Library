@@ -68,7 +68,8 @@ import java.lang.reflect.Method
 class NativeClientBleAPI(
     private val gatt: BluetoothGatt,
     private val callback: ClientBleGattCallback,
-    override val autoConnect: Boolean
+    override val autoConnect: Boolean,
+    override val closeOnDisconnect: Boolean
 ) : GattClientAPI {
 
     override val event: SharedFlow<ClientGattEvent> = callback.event
@@ -174,6 +175,11 @@ class NativeClientBleAPI(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun disconnect() {
         gatt.disconnect()
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun reconnect() {
+        gatt.connect()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)

@@ -110,7 +110,7 @@ internal object ClientBleGattFactory {
         logger: BleLogger,
     ): ClientBleGatt {
         val clientDevice = MockClientDevice()
-        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect)
+        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect)
         return ClientBleGatt(gatt, logger)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
@@ -149,6 +149,6 @@ internal object ClientBleGattFactory {
             device.connectGatt(context, options.autoConnect, gattCallback)
         }
 
-        return NativeClientBleAPI(gatt, gattCallback, options.autoConnect)
+        return NativeClientBleAPI(gatt, gattCallback, options.autoConnect, options.closeOnDisconnect)
     }
 }

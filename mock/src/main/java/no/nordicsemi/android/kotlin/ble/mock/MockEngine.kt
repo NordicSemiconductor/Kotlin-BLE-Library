@@ -200,7 +200,7 @@ object MockEngine {
         }
     }
 
-    fun connect(device: ClientDevice, autoConnect: Boolean) {
+    fun connect(device: ClientDevice) {
         clientConnections[device]?.clientApi?.onEvent(
             ConnectionStateChanged(
                 BleGattConnectionStatus.SUCCESS,

@@ -278,6 +278,19 @@ class ClientBleGatt(
     }
 
     /**
+     * Reconnects to the device if disconnected. Works only if [BleGattConnectOptions.closeOnDisconnect] is set to false.
+     */
+    fun reconnect() {
+        if (_connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED) {
+            return
+        }
+        if (gatt.closeOnDisconnect) {
+            return
+        }
+        gatt.reconnect()
+    }
+
+    /**
      * Disconnects current device.
      */
     fun disconnect() {
@@ -310,7 +323,9 @@ class ClientBleGatt(
 
         if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {
-                gatt.close()
+                if (gatt.closeOnDisconnect) {
+                    gatt.close()
+                }
             }
         }
     }
