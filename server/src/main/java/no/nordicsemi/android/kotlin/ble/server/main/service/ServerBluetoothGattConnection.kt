@@ -52,7 +52,7 @@ data class ServerBluetoothGattConnection internal constructor(
     private val device: ClientDevice,
     private val server: GattServerAPI,
     val services: ServerBleGattServices,
-    val mtuProvider: MtuProvider = MtuProvider(),
+    val mtuProvider: MtuProvider,
     val txPhy: BleGattPhy? = null,
     val rxPhy: BleGattPhy? = null
 ) {
