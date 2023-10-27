@@ -39,10 +39,11 @@ import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import java.util.UUID
 import kotlin.coroutines.resume
@@ -60,7 +61,7 @@ import kotlin.coroutines.suspendCoroutine
  * @property characteristicInstanceId Instance id of a parent characteristic.
  * @property logger Logger class for displaying logs.
  * @property mutex Mutex for synchronising requests.
- * @property mtuProvider For providing MTU value established per connection.
+ * @property connectionProvider For providing MTU value established per connection.
  */
 class ClientBleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,
@@ -68,7 +69,7 @@ class ClientBleGattDescriptor internal constructor(
     private val descriptor: IBluetoothGattDescriptor,
     private val logger: BleLogger,
     private val mutex: MutexWrapper,
-    private val mtuProvider: MtuProvider
+    private val connectionProvider: ConnectionProvider
 ) {
 
     /**
@@ -113,11 +114,15 @@ class ClientBleGattDescriptor internal constructor(
      * Writes value to a descriptor.
      *
      * @throws GattOperationException on GATT communication failure.
+     * @throws DeviceDisconnectedException when a BLE device is disconnected.
      *
      * @param value A bytes to write.
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun write(value: DataByteArray) {
+        if (!connectionProvider.isConnected) {
+            throw DeviceDisconnectedException()
+        }
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         suspendCoroutine { continuation ->
@@ -142,11 +147,15 @@ class ClientBleGattDescriptor internal constructor(
      * Reads value from a descriptor and suspends for the result.
      *
      * @throws GattOperationException on GATT communication failure.
+     * @throws DeviceDisconnectedException when a BLE device is disconnected.
      *
      * @return Read value.
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun read(): DataByteArray {
+        if (!connectionProvider.isConnected) {
+            throw DeviceDisconnectedException()
+        }
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->

@@ -33,20 +33,39 @@ package no.nordicsemi.android.kotlin.ble.core.provider
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.mapNotNull
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.Mtu
 
 /**
- * Provides an MTU value.
+ * Provides a connection parameters.
  *
- * MTU value is shared between many components. To avoid propagating MTU value changed event to
- * all of the components, the [MtuProvider] is shared instead in constructor and value is updated
- * using it's field.
+ * MTU and connection state is shared between many components. To avoid propagating those values changes to
+ * all of the components, the [ConnectionProvider] is shared in a constructor.
  *
  */
-class MtuProvider {
+class ConnectionProvider {
 
     private val _mtu = MutableStateFlow(Mtu.min)
+
+    /**
+     * Returns last observed [GattConnectionState] with it's corresponding status [BleGattConnectionStatus].
+     */
+    val connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
+
+    /**
+     * Returns last [GattConnectionState] without it's status.
+     */
+    val connectionState = connectionStateWithStatus.mapNotNull { it?.state }
+
+    /**
+     * Returns whether a device is connected.
+     */
+    val isConnected
+        get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
 
     /**
      * Most recent MTU value.

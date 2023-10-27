@@ -39,7 +39,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
@@ -54,7 +54,7 @@ import java.util.UUID
  * @property server [GattServerAPI] for communication with the client device.
  * @property characteristicInstanceId Instance id of a parent characteristic.
  * @property descriptor Identifier of a descriptor.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property connectionProvider For providing mtu value established per connection.
  */
 @Suppress("unused")
 @SuppressLint("MissingPermission")
@@ -62,7 +62,7 @@ class ServerBleGattDescriptor internal constructor(
     private val server: GattServerAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: IBluetoothGattDescriptor,
-    private val mtuProvider: MtuProvider
+    private val connectionProvider: ConnectionProvider
 ) {
 
     /**
@@ -166,7 +166,7 @@ class ServerBleGattDescriptor internal constructor(
 
     /**
      * Handles read request. It gets value stored in [_value] field and tries to send it. If the
-     * size of [DataByteArray] is bigger than mtu value provided by [mtuProvider] then byte array
+     * size of [DataByteArray] is bigger than mtu value provided by [connectionProvider] then byte array
      * is send in consecutive chunks.
      *
      * @param event A read request event.
@@ -174,7 +174,7 @@ class ServerBleGattDescriptor internal constructor(
     private fun onDescriptorReadRequest(event: DescriptorReadRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
-        val data = _value.value.getChunk(offset, mtuProvider.mtu.value)
+        val data = _value.value.getChunk(offset, connectionProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

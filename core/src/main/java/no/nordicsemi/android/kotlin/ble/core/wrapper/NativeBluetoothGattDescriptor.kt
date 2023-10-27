@@ -32,7 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.android.common.core.toDisplayString
+import no.nordicsemi.android.common.core.DataByteArray
 import java.util.UUID
 
 /**
@@ -48,10 +48,10 @@ data class NativeBluetoothGattDescriptor(
     override val permissions: Int
         get() = descriptor.permissions
 
-    override var value: ByteArray
-        get() = descriptor.value ?: byteArrayOf()
+    override var value: DataByteArray
+        get() = DataByteArray(descriptor.value ?: byteArrayOf())
         set(value) {
-            descriptor.value = value
+            descriptor.value = value.value
         }
 
     override val characteristic: IBluetoothGattCharacteristic =
@@ -62,7 +62,7 @@ data class NativeBluetoothGattDescriptor(
             .append("{ ")
             .append("uuid : $uuid, ")
             .append("permissions : $permissions, ")
-            .append("value : ${value.toDisplayString()}, ")
+            .append("value : $value, ")
             .append("}")
             .toString()
     }

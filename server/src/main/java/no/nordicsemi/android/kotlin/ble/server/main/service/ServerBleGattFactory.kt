@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -42,7 +43,6 @@ import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.server.real.NativeServerBleAPI
 import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * Factory object responsible for creating an instance of [ServerBleGatt].
@@ -102,26 +102,37 @@ internal object ServerBleGattFactory {
         context: Context,
         logger: BleLogger,
         vararg config: ServerBleGattServiceConfig,
-    ): ServerBleGatt = suspendCoroutine {
-        val nativeServer = NativeServerBleAPI.create(context)
-        val server = ServerBleGatt(nativeServer, logger)
-        var index = 0
+    ): ServerBleGatt {
 
-        nativeServer.callback.onServiceAdded = {
-            if (index <= config.lastIndex) {
+        /*
+            When using PERMISSION_READ_ENCRYPTED_MITM on some hardware then onServiceAdded is not
+            invoked. Coroutine needs to be cancellable then.
+         */
+        return suspendCancellableCoroutine {
+            val nativeServer = NativeServerBleAPI.create(context)
+            val server = ServerBleGatt(nativeServer, logger)
+            var index = 0
+
+            nativeServer.callback.onServiceAdded = {
+                if (index <= config.lastIndex) {
+                    val service = BluetoothGattServiceFactory.createNative(config[index++])
+                    nativeServer.server.addService(service.service)
+                } else {
+                    nativeServer.callback.onServiceAdded = null
+                    it.resume(server)
+                }
+            }
+
+            if (config.isNotEmpty()) {
                 val service = BluetoothGattServiceFactory.createNative(config[index++])
                 nativeServer.server.addService(service.service)
             } else {
-                nativeServer.callback.onServiceAdded = null
                 it.resume(server)
             }
-        }
 
-        if (config.isNotEmpty()) {
-            val service = BluetoothGattServiceFactory.createNative(config[index++])
-            nativeServer.server.addService(service.service)
-        } else {
-            it.resume(server)
+            it.invokeOnCancellation {
+                nativeServer.callback.onServiceAdded = null
+            }
         }
     }
 }

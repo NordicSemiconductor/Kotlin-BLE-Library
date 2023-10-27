@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
+import no.nordicsemi.android.common.core.DataByteArray
 import java.util.UUID
 
 /**
@@ -44,7 +45,7 @@ data class MockBluetoothGattDescriptor(
     override val uuid: UUID,
     override val permissions: Int,
     override val characteristic: IBluetoothGattCharacteristic,
-    override var value: ByteArray = byteArrayOf()
+    override var value: DataByteArray = DataByteArray()
 ) : IBluetoothGattDescriptor {
 
     override fun equals(other: Any?): Boolean {
@@ -56,7 +57,7 @@ data class MockBluetoothGattDescriptor(
         if (uuid != other.uuid) return false
         if (permissions != other.permissions) return false
         if (characteristic != other.characteristic) return false
-        if (!value.contentEquals(other.value)) return false
+        if (value != other.value) return false
 
         return true
     }
@@ -64,7 +65,7 @@ data class MockBluetoothGattDescriptor(
     override fun hashCode(): Int {
         var result = uuid.hashCode()
         result = 31 * result + permissions
-        result = 31 * result + value.contentHashCode()
+        result = 31 * result + value.hashCode()
         return result
     }
 

@@ -32,7 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
@@ -44,14 +44,14 @@ import java.util.UUID
  * @property server [GattServerAPI] for communication with a client devices.
  * @property device A client device.
  * @property service Identifier of a service.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property connectionProvider For providing mtu value established per connection.
  */
 @Suppress("MemberVisibilityCanBePrivate")
 data class ServerBleGattService internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
     private val service: IBluetoothGattService,
-    private val mtuProvider: MtuProvider
+    private val connectionProvider: ConnectionProvider
 ) {
 
     /**
@@ -63,7 +63,7 @@ data class ServerBleGattService internal constructor(
      * All characteristics of a service.
      */
     val characteristics = service.characteristics.map {
-        ServerBleGattCharacteristic(server, device, it, mtuProvider)
+        ServerBleGattCharacteristic(server, device, it, connectionProvider)
     }
 
     /**

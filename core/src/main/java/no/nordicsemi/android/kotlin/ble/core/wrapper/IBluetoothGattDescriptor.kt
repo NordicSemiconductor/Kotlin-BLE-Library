@@ -32,6 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattDescriptor
+import no.nordicsemi.android.common.core.DataByteArray
 import java.util.UUID
 
 /**
@@ -56,7 +57,7 @@ interface IBluetoothGattDescriptor {
     /**
      * [ByteArray] value of this descriptor.
      */
-    var value: ByteArray
+    var value: DataByteArray
 
     /**
      * Parent characteristic of this descriptor. There is a circular dependency between

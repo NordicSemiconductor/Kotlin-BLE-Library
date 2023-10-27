@@ -37,20 +37,19 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
-import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
-import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
@@ -66,7 +65,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -85,35 +85,34 @@ import kotlin.coroutines.suspendCoroutine
 class ClientBleGatt(
     private val gatt: GattClientAPI,
     private val logger: BleLogger,
-    private val mutex: MutexWrapper = MutexWrapper(),
+    private val scope: CoroutineScope,
+    private val mutex: MutexWrapper = SharedMutexWrapper,
 ) {
 
-    private val _connectionStateWithStatus = MutableStateFlow<GattConnectionStateWithStatus?>(null)
+    private val connectionProvider = ConnectionProvider()
 
     /**
      * Returns last observed [GattConnectionState] with it's corresponding status [BleGattConnectionStatus].
      */
-    val connectionStateWithStatus = _connectionStateWithStatus.asStateFlow()
+    val connectionStateWithStatus = connectionProvider.connectionStateWithStatus.asStateFlow()
 
     /**
      * Returns whether a device is connected.
      */
     val isConnected
-        get() = connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED
-
-    private val mtuProvider = MtuProvider()
+        get() = connectionProvider.isConnected
 
     /**
      * Established MTU size. There are incoming changes on Android 14 where this value is gonna to
      * be always max value - 517 and wouldn't be able to change.
      */
     @IntRange(from = 23, to = 517)
-    val mtu = mtuProvider.mtu
+    val mtu = connectionProvider.mtu
 
     /**
      * Returns last [GattConnectionState] without it's status.
      */
-    val connectionState = _connectionStateWithStatus.mapNotNull { it?.state }
+    val connectionState = connectionProvider.connectionState
 
     private val _services = MutableStateFlow<ClientBleGattServices?>(null)
 
@@ -154,16 +153,16 @@ class ClientBleGatt(
                     is BondStateChanged -> onBondStateChanged(it.bondState)
                 }
             }
-            .launchIn(ApplicationScope)
+            .launchIn(scope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     internal suspend fun waitForConnection(): GattConnectionState {
-        if (_connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED) {
+        if (connectionProvider.isConnected) {
             return GattConnectionState.STATE_CONNECTED
         }
         //emulate connecting state as it is not emitted by Android
-        _connectionStateWithStatus.value = GattConnectionStateWithStatus(
+        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus(
             GattConnectionState.STATE_CONNECTING,
             BleGattConnectionStatus.SUCCESS
         )
@@ -281,7 +280,7 @@ class ClientBleGatt(
      * Reconnects to the device if disconnected. Works only if [BleGattConnectOptions.closeOnDisconnect] is set to false.
      */
     fun reconnect() {
-        if (_connectionStateWithStatus.value?.state == GattConnectionState.STATE_CONNECTED) {
+        if (connectionProvider.isConnected) {
             return
         }
         if (gatt.closeOnDisconnect) {
@@ -295,7 +294,7 @@ class ClientBleGatt(
      */
     fun disconnect() {
         //emulate disconnecting state as it is not emitted by Android
-        _connectionStateWithStatus.value = GattConnectionStateWithStatus(
+        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus(
             GattConnectionState.STATE_DISCONNECTING,
             BleGattConnectionStatus.SUCCESS
         )
@@ -318,7 +317,7 @@ class ClientBleGatt(
     ) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
 
-        _connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
+        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
@@ -406,7 +405,7 @@ class ClientBleGatt(
             Log.DEBUG,
             "Discovered services: ${gattServices.map { it.uuid }}, status: $status"
         )
-        val services = gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, mtuProvider) }
+        val services = gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
         _services.value = services
         onServicesDiscovered?.invoke(services)
     }
@@ -417,7 +416,7 @@ class ClientBleGatt(
     }
 
     private fun onEvent(event: MtuChanged) {
-        mtuProvider.updateMtu(event.mtu)
+        connectionProvider.updateMtu(event.mtu)
         mtuCallback?.invoke(event)
     }
 
@@ -455,9 +454,10 @@ class ClientBleGatt(
             macAddress: String,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
+            scope: CoroutineScope? = null
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
-            return ClientBleGattFactory.connect(context, macAddress, options, logger)
+            return ClientBleGattFactory.connect(context, macAddress, options, logger, scope)
         }
 
         /**
@@ -475,9 +475,10 @@ class ClientBleGatt(
             device: ServerDevice,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
+            scope: CoroutineScope? = null
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
-            return ClientBleGattFactory.connect(context, device, options, logger)
+            return ClientBleGattFactory.connect(context, device, options, logger, scope)
         }
     }
 }

@@ -41,7 +41,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import io.mockk.mockkObject
-import io.mockk.mockkStatic
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -49,7 +48,6 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.DefaultBleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
@@ -97,6 +95,8 @@ class ReliableWriteTest {
     @Inject
     lateinit var server: ReliableWriteServer
 
+    val scope = CoroutineScope(UnconfinedTestDispatcher())
+
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -111,9 +111,6 @@ class ReliableWriteTest {
     @Before
     fun before() {
         runBlocking {
-            mockkStatic("no.nordicsemi.android.common.core.ApplicationScopeKt")
-            every { ApplicationScope } returns CoroutineScope(UnconfinedTestDispatcher())
-
             server.start(context, serverDevice)
         }
     }
@@ -130,7 +127,7 @@ class ReliableWriteTest {
             GattConnectionState.STATE_CONNECTED,
             BleGattConnectionStatus.SUCCESS
         )
-        val client = ClientBleGatt.connect(context, serverDevice)
+        val client = ClientBleGatt.connect(context, serverDevice, scope = scope)
 
         assertEquals(connectedState, client.connectionStateWithStatus.value)
     }
@@ -141,7 +138,7 @@ class ReliableWriteTest {
             GattConnectionState.STATE_DISCONNECTED,
             BleGattConnectionStatus.SUCCESS
         )
-        val client = ClientBleGatt.connect(context, serverDevice)
+        val client = ClientBleGatt.connect(context, serverDevice, scope = scope)
 
         server.stopServer()
 
@@ -150,7 +147,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable aborted should return previous value`() = runTest {
-        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice)
+        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice, scope = scope)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -170,7 +167,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable aborted should return previous value on each characteristic`() = runTest {
-        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice)
+        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice, scope = scope)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -194,7 +191,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable executed should return new value`() = runTest {
-        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice)
+        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice, scope = scope)
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!
         val firstCharacteristic = theService.findCharacteristic(FIRST_CHARACTERISTIC)!!
@@ -215,7 +212,7 @@ class ReliableWriteTest {
 
     @Test
     fun `when reliable executed should return new value on each characteristic`() = runTest {
-        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice)
+        val client: ClientBleGatt = ClientBleGatt.connect(context, serverDevice, scope = scope)
 
         val services = client.discoverServices()
         val theService = services.findService(RELIABLE_WRITE_SERVICE)!!

@@ -35,7 +35,7 @@ import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import java.util.UUID
 
@@ -46,14 +46,14 @@ import java.util.UUID
  * @property service Identifier of a service.
  * @property logger Logger class for displaying logs.
  * @property mutex Mutex for synchronising requests.
- * @property mtuProvider For providing MTU value established per connection.
+ * @property connectionProvider For providing MTU value established per connection.
  */
 data class ClientBleGattService internal constructor(
     private val gatt: GattClientAPI,
     private val service: IBluetoothGattService,
     private val logger: BleLogger,
     private val mutex: MutexWrapper,
-    private val mtuProvider: MtuProvider
+    private val connectionProvider: ConnectionProvider
 ) {
 
     /**
@@ -63,7 +63,7 @@ data class ClientBleGattService internal constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     val characteristics = service.characteristics.map {
-        ClientBleGattCharacteristic(gatt, it, logger, mutex, mtuProvider)
+        ClientBleGattCharacteristic(gatt, it, logger, mutex, connectionProvider)
     }
 
     /**

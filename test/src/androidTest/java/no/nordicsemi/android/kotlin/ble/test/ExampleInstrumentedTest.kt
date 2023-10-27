@@ -33,6 +33,9 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import org.junit.Assert
@@ -41,14 +44,14 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
 
-
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
 
     // Change values before using
     private val service: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
     private val char: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-    private val address = "00:00:00:00:00:00"
+    private val address = "F6:1B:1A:66:27:57"
+    private val address2 = "CA:CC:95:E9:72:2B"
 
     @JvmField
     @Rule
@@ -65,4 +68,35 @@ class ExampleInstrumentedTest {
             .let { Assert.assertTrue(it.size >= 0) }
     }
 
+    @Test
+    fun testRssi() = runTest {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val gatt = ClientBleGatt.connect(context, address)
+        val gatt2 = ClientBleGatt.connect(context, address2)
+        val mutex = Mutex()
+
+        println("AAA")
+
+        // This one passes when using a mutex
+        repeat(10) {
+            val jobs = listOf(
+                launch { mutex.withLock { gatt.readRssi() } },
+                launch { mutex.withLock { gatt2.readRssi() } }
+            )
+            jobs.forEach { it.join() }
+        }
+
+        println("BBB")
+
+        // This one gets stuck when no mutex is used
+        repeat(10) {
+            val jobs = listOf(
+                launch { gatt.readRssi() },
+                launch { gatt2.readRssi() }
+            )
+            jobs.forEach { it.join() }
+        }
+
+        println("CCC")
+    }
 }

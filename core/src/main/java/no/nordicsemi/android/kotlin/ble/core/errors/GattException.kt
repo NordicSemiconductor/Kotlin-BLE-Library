@@ -29,19 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.main.errors
-
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+package no.nordicsemi.android.kotlin.ble.core.errors
 
 /**
- * An exception indicating that the operation cannot be performed, because of a missing property
- * i.e. an attempt to read from a characteristic which doesn't have [BleGattProperty.PROPERTY_READ].
+ * Sealed class grouping GATT exceptions.
  *
- * @constructor
- * Creates exception instance.
- *
- * @param property A missing property which causes exception.
+ * @property message Display message describing a problem
  */
-class MissingPropertyException(property: BleGattProperty) : GattException(
-    message = "Operation cannot be performed because of the missing property: $property"
-)
+sealed class GattException(
+    override val message: String,
+    override val cause: Throwable? = null
+) : Exception()
