@@ -28,28 +28,41 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 package no.nordicsemi.android.kotlin.ble.test
 
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
+import kotlinx.coroutines.test.runTest
+import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import org.junit.Assert
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.UUID
 
-import org.junit.Assert.*
 
-/**
- * Instrumented test, which will execute on an Android device.
- *
- * See [testing documentation](http://d.android.com/tools/testing).
- */
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
+
+    // Change values before using
+    private val service: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+    private val char: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+    private val address = "00:00:00:00:00:00"
+
+    @JvmField
+    @Rule
+    val rules: GrantPermissionRule = GrantPermissionRule.grant("android.permission.BLUETOOTH_CONNECT")
+
     @Test
-    fun useAppContext() {
-        // Context of the app under test.
-        val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("no.nordicsemi.android.kotlin.ble.test", appContext.packageName)
+    fun testExample() = runTest {
+        ClientBleGatt
+            .connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+            .discoverServices()
+            .findService(service)!!
+            .findCharacteristic(char)!!
+            .read()
+            .let { Assert.assertTrue(it.size >= 0) }
     }
+
 }

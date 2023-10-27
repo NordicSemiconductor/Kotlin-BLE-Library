@@ -38,6 +38,9 @@ group = "no.nordicsemi.android.kotlin.ble"
 
 android {
     namespace = "no.nordicsemi.android.kotlin.ble.test"
+    defaultConfig {
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 }
 
 dependencies {
@@ -58,8 +61,9 @@ dependencies {
 
     implementation(libs.nordic.logger)
 
-    testImplementation(libs.hilt.android.testing)
     kaptTest(libs.hilt.compiler)
+
+    testImplementation(libs.hilt.android.testing)
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.junit4)
     testImplementation(libs.test.mockk)
@@ -68,4 +72,9 @@ dependencies {
     testImplementation(libs.test.slf4j.simple)
     testImplementation(libs.test.robolectric)
     testImplementation(libs.kotlin.junit)
+
+    androidTestImplementation(libs.junit4)
+    androidTestImplementation(libs.androidx.test.ext)
+    androidTestImplementation(libs.androidx.test.rules)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
 }
