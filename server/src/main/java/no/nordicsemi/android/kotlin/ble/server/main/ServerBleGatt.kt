@@ -211,7 +211,7 @@ class ServerBleGatt internal constructor(
         }
         val mutableMap = connections.value.toMutableMap()
         val connection = ServerBluetoothGattConnection(
-            device, server, ServerBleGattServices(server, device, copiedServices)
+            device, server, ServerBleGattServices(server, device, copiedServices), mtuProvider
         )
         mutableMap[device] = connection
         _connectionEvents.tryEmit(DeviceConnected(connection))
