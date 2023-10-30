@@ -42,6 +42,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -50,6 +52,7 @@ import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationExceptio
 import no.nordicsemi.android.kotlin.ble.client.main.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.client.main.errors.NotificationDescriptorNotFoundException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
@@ -285,6 +288,48 @@ class ClientBleGattCharacteristic internal constructor(
             gatt.readCharacteristic(characteristic)
         }
     }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun readWithTimeout(
+        isConnected: Boolean,   // There is no way to retrieve connection status here, so for now we pass it as parameter
+        timeout: Long = 5000
+    ): DataByteArray {
+        // Check for connection and throw if not connected
+        if (!isConnected) {
+            logger.log(Log.ERROR, "Read from characteristic - Not connected")
+            throw GattOperationException(BleGattOperationStatus.GATT_ERROR)
+        }
+        mutex.lock()
+        val stacktrace = Exception() //Helper exception to display valid stacktrace.
+        return withTimeout(timeout) {
+            suspendCancellableCoroutine { continuation ->
+                // Make sure we unlock the mutex on cancellation
+                continuation.invokeOnCancellation {
+                    logger.log(Log.ERROR, "Read from characteristic - Timed out - Releasing mutex")
+                    mutex.unlock()
+                }
+                logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
+                if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
+                    mutex.unlock()
+                    logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
+                    throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
+                }
+                pendingReadEvent = {
+                    pendingReadEvent = null
+                    if (it.status.isSuccess) {
+                        logger.log(Log.INFO, "Value read: ${it.value} from $uuid")
+                        continuation.resume(it.value.copyOf())
+                    } else {
+                        logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
+                        continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
+                    }
+                    mutex.unlock()
+                }
+                gatt.readCharacteristic(characteristic)
+            }
+        }
+    }
+
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun enableIndicationsOrNotifications() {

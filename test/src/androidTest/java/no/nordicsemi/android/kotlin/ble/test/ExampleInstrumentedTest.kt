@@ -33,8 +33,11 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import no.nordicsemi.android.kotlin.ble.client.main.errors.GattOperationException
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -63,6 +66,48 @@ class ExampleInstrumentedTest {
             .findCharacteristic(char)!!
             .read()
             .let { Assert.assertTrue(it.size >= 0) }
+    }
+
+    @Test
+    fun readDisconnectWillHang(): Unit = runTest {
+        val client = ClientBleGatt.connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+        val char = client.discoverServices().findService(service)!!.findCharacteristic(char)!!
+        client.disconnect()
+        char.read()
+    }
+
+    @Test
+    fun readDisconnectWillError() = runTest {
+        val client = ClientBleGatt.connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+        val char = client.discoverServices().findService(service)!!.findCharacteristic(char)!!
+        client.disconnect()
+
+        repeat(3) {
+            try {
+                char.readWithTimeout(client.isConnected, 5000)
+            } catch (e: GattOperationException) {
+                Assert.assertTrue(true)
+            } catch (e: Exception) {
+                Assert.assertTrue(false)
+            }
+        }
+    }
+
+    @Test
+    fun readDisconnectWillTimeout() = runBlocking {
+        val client = ClientBleGatt.connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+        val char = client.discoverServices().findService(service)!!.findCharacteristic(char)!!
+        client.disconnect()
+
+        repeat(3) {
+            try {
+                char.readWithTimeout(true, 5000)
+            } catch (e: TimeoutCancellationException) {
+                Assert.assertTrue(true)
+            } catch (e: Exception) {
+                Assert.assertTrue(false)
+            }
+        }
     }
 
 }
