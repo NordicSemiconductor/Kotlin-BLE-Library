@@ -114,7 +114,7 @@ class ClientBleGattCallback(
         value: ByteArray,
         status: Int
     ) {
-        mutexWrapper.unlock()
+        mutexWrapper.unlock() //HERE: we can safely unlock Mutex
         val native = NativeBluetoothGattCharacteristic(characteristic)
         _event.tryEmit(CharacteristicRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }

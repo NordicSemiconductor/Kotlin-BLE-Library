@@ -268,7 +268,7 @@ class ClientBleGattCharacteristic internal constructor(
         return suspendCancellableCoroutine { continuation ->
 
             continuation.invokeOnCancellation {
-                //Here we cannot unlock Mutex.
+                //Here we cannot safely unlock Mutex.
                 pendingReadEvent = null
             }
 
