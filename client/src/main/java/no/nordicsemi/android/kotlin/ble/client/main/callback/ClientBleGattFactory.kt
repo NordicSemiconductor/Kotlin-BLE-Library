@@ -50,6 +50,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 /**
@@ -123,8 +124,9 @@ internal object ClientBleGattFactory {
         options: BleGattConnectOptions,
         logger: BleLogger,
     ): ClientBleGatt {
-        val gatt = device.createConnection(context, options)
-        return ClientBleGatt(gatt, logger)
+        val mutexWrapper = MutexWrapper()
+        val gatt = device.createConnection(context, options, mutexWrapper)
+        return ClientBleGatt(gatt, logger, mutexWrapper)
             .also { it.waitForConnection() }
     }
 
@@ -132,8 +134,9 @@ internal object ClientBleGattFactory {
     private fun RealServerDevice.createConnection(
         context: Context,
         options: BleGattConnectOptions,
+        mutexWrapper: MutexWrapper
     ): GattClientAPI {
-        val gattCallback = ClientBleGattCallback()
+        val gattCallback = ClientBleGattCallback(mutexWrapper)
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 

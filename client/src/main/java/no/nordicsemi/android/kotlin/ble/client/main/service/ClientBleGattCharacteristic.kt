@@ -42,6 +42,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -264,7 +265,13 @@ class ClientBleGattCharacteristic internal constructor(
     suspend fun read(): DataByteArray {
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
+
+            continuation.invokeOnCancellation {
+                //Here we cannot unlock Mutex.
+                pendingReadEvent = null
+            }
+
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
                 mutex.unlock()
@@ -280,7 +287,7 @@ class ClientBleGattCharacteristic internal constructor(
                     logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
                     continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
-                mutex.unlock()
+//                mutex.unlock()
             }
             gatt.readCharacteristic(characteristic)
         }

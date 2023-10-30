@@ -46,6 +46,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
@@ -53,7 +54,9 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 /**
  * A class which maps [BluetoothGattCallback] methods into [ClientGattEvent] events.
  */
-class ClientBleGattCallback: BluetoothGattCallback() {
+class ClientBleGattCallback(
+    private val mutexWrapper: MutexWrapper
+): BluetoothGattCallback() {
 
     private val _event = MutableSharedFlow<ClientGattEvent>(
         extraBufferCapacity = 10, //Warning: because of this parameter we can miss notifications
@@ -111,6 +114,7 @@ class ClientBleGattCallback: BluetoothGattCallback() {
         value: ByteArray,
         status: Int
     ) {
+        mutexWrapper.unlock()
         val native = NativeBluetoothGattCharacteristic(characteristic)
         _event.tryEmit(CharacteristicRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }
