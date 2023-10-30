@@ -39,6 +39,7 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -136,7 +137,7 @@ class ClientBleGattCharacteristic internal constructor(
             continuation.resume(
                 _notifications
                     .onEach { log(it) }
-                    .onCompletion { disableNotifications() }
+                    .onCompletion { disableNotificationsIfConnected() }
             )
         }
     }
@@ -337,6 +338,13 @@ class ClientBleGattCharacteristic internal constructor(
         } ?: run {
             logger.log(Log.ERROR, "Enable notifications on characteristic - missing descriptor error, uuid: $uuid")
             throw NotificationDescriptorNotFoundException()
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    private suspend fun disableNotificationsIfConnected() {
+        if (connectionProvider.isConnected) {
+            disableNotifications()
         }
     }
 

@@ -77,7 +77,11 @@ class ServerBleGattDescriptor internal constructor(
         get() = BleGattPermission.createPermissions(descriptor.permissions)
 
     private var transactionalValue = DataByteArray()
-    private val _value = ValueFlow.create()
+    private val _value = ValueFlow.create().apply {
+        if (descriptor.value != DataByteArray()) { //Don't emit empty value
+            this.tryEmit(descriptor.value)
+        }
+    }
 
     /**
      * The last value stored on this descriptor.

@@ -89,7 +89,11 @@ class ServerBleGattCharacteristic internal constructor(
 
     private var onNotificationSent: ((NotificationSent) -> Unit)? = null
 
-    private val _value = ValueFlow.create()
+    private val _value = ValueFlow.create().apply {
+        if (characteristic.value != DataByteArray()) { //Don't emit empty value
+            this.tryEmit(characteristic.value)
+        }
+    }
 
     /**
      * The last value stored on this characteristic.
@@ -141,7 +145,7 @@ class ServerBleGattCharacteristic internal constructor(
      *
      * @param value Bytes to set.
      */
-    suspend fun setAndNotify(value: DataByteArray) {
+    suspend fun setValueAndNotifyClient(value: DataByteArray) {
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 

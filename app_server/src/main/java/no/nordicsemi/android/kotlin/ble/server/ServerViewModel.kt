@@ -104,7 +104,8 @@ class ServerViewModel @Inject constructor(
             val ledCharacteristic = ServerBleGattCharacteristicConfig(
                 BlinkySpecifications.UUID_LED_CHAR,
                 listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
+                initialValue = DataByteArray.from(0x00)
             )
 
             //Define button characteristic
@@ -180,12 +181,12 @@ class ServerViewModel @Inject constructor(
         this.buttonCharacteristic = buttonCharacteristic
     }
 
-    fun onButtonPressedChanged(isButtonPressed: Boolean) {
+    fun onButtonPressedChanged(isButtonPressed: Boolean) = viewModelScope.launch {
         val value = if (isButtonPressed) {
             DataByteArray.from(0x01)
         } else {
             DataByteArray.from(0x00)
         }
-        buttonCharacteristic?.setValue(value)
+        buttonCharacteristic?.setValueAndNotifyClient(value)
     }
 }
