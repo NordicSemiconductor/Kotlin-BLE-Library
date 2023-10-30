@@ -73,14 +73,14 @@ internal class BleAdvertisingSetCallback(
      * Callback responsible for emitting event [OnAdvertisingSetStarted].
      */
     override fun onAdvertisingSetStarted(advertisingSet: AdvertisingSet?, txPower: Int, status: Int) {
-        onEvent(OnAdvertisingSetStarted(advertisingSet!!, txPower, BleAdvertisingStatus.create(status)))
+        onEvent(OnAdvertisingSetStarted(advertisingSet, txPower, BleAdvertisingStatus.create(status)))
     }
 
     /**
      * Callback responsible for emitting event [OnAdvertisingSetStopped].
      */
     override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
-        onEvent(OnAdvertisingSetStopped(advertisingSet!!))
+        onEvent(OnAdvertisingSetStopped(advertisingSet))
     }
 
     /**

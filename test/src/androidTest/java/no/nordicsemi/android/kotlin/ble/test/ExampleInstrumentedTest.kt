@@ -38,6 +38,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
@@ -48,25 +49,12 @@ import java.util.UUID
 class ExampleInstrumentedTest {
 
     // Change values before using
-    private val service: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-    private val char: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-    private val address = "F6:1B:1A:66:27:57"
-    private val address2 = "CA:CC:95:E9:72:2B"
+    private val address = TestAddressProvider.address
+    private val address2 = TestAddressProvider.auxiliaryAddress
 
     @JvmField
     @Rule
     val rules: GrantPermissionRule = GrantPermissionRule.grant("android.permission.BLUETOOTH_CONNECT")
-
-    @Test
-    fun testExample() = runTest {
-        ClientBleGatt
-            .connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
-            .discoverServices()
-            .findService(service)!!
-            .findCharacteristic(char)!!
-            .read()
-            .let { Assert.assertTrue(it.size >= 0) }
-    }
 
     @Test
     fun testRssi() = runTest {
@@ -74,8 +62,6 @@ class ExampleInstrumentedTest {
         val gatt = ClientBleGatt.connect(context, address)
         val gatt2 = ClientBleGatt.connect(context, address2)
         val mutex = Mutex()
-
-        println("AAA")
 
         // This one passes when using a mutex
         repeat(10) {
@@ -86,8 +72,6 @@ class ExampleInstrumentedTest {
             jobs.forEach { it.join() }
         }
 
-        println("BBB")
-
         // This one gets stuck when no mutex is used
         repeat(10) {
             val jobs = listOf(
@@ -96,7 +80,5 @@ class ExampleInstrumentedTest {
             )
             jobs.forEach { it.join() }
         }
-
-        println("CCC")
     }
 }

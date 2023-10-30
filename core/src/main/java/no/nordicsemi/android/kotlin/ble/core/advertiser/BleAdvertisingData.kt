@@ -51,9 +51,9 @@ import androidx.annotation.RequiresApi
  * @see [AdvertiseData](https://developer.android.com/reference/android/bluetooth/le/AdvertiseData)
  */
 data class BleAdvertisingData(
-    val serviceUuid: ParcelUuid,
-    val includeDeviceName: Boolean = true,
-    val includeTxPowerLever: Boolean = false,
+    val serviceUuid: ParcelUuid? = null,
+    val includeDeviceName: Boolean? = null,
+    val includeTxPowerLever: Boolean? = null,
     val manufacturerData: List<ManufacturerData> = emptyList(),
     val serviceData: List<ServiceData> = emptyList(),
 

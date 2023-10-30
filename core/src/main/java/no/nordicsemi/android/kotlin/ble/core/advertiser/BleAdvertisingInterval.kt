@@ -48,17 +48,17 @@ import androidx.annotation.RestrictTo
 enum class BleAdvertisingInterval {
 
     /**
-     * Perform Bluetooth LE advertising in low power mode.
+     * Perform high frequency, low latency advertising, around every 100ms.
      */
     INTERVAL_LOW,
 
     /**
-     * Perform Bluetooth LE advertising in balanced power mode.
+     * Advertise on medium frequency, around every 250ms.
      */
     INTERVAL_MEDIUM,
 
     /**
-     * Perform Bluetooth LE advertising in low latency, high power mode.
+     * Advertise on low frequency, around every 1000ms.
      */
     INTERVAL_HIGH;
 
