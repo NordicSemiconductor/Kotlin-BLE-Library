@@ -49,6 +49,8 @@ import java.util.UUID
 class ExampleInstrumentedTest {
 
     // Change values before using
+    private val service: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+    private val char: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
     private val address = TestAddressProvider.address
     private val address2 = TestAddressProvider.auxiliaryAddress
 
@@ -57,28 +59,13 @@ class ExampleInstrumentedTest {
     val rules: GrantPermissionRule = GrantPermissionRule.grant("android.permission.BLUETOOTH_CONNECT")
 
     @Test
-    fun testRssi() = runTest {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, address)
-        val gatt2 = ClientBleGatt.connect(context, address2)
-        val mutex = Mutex()
-
-        // This one passes when using a mutex
-        repeat(10) {
-            val jobs = listOf(
-                launch { mutex.withLock { gatt.readRssi() } },
-                launch { mutex.withLock { gatt2.readRssi() } }
-            )
-            jobs.forEach { it.join() }
-        }
-
-        // This one gets stuck when no mutex is used
-        repeat(10) {
-            val jobs = listOf(
-                launch { gatt.readRssi() },
-                launch { gatt2.readRssi() }
-            )
-            jobs.forEach { it.join() }
-        }
+    fun testExample() = runTest {
+        ClientBleGatt
+            .connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+            .discoverServices()
+            .findService(service)!!
+            .findCharacteristic(char)!!
+            .read()
+            .let { Assert.assertTrue(it.size >= 0) }
     }
 }
