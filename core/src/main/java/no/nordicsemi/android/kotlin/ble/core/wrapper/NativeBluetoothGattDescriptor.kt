@@ -59,10 +59,10 @@ data class NativeBluetoothGattDescriptor(
 
     override fun toString(): String {
         return StringBuilder()
-            .append("{")
-            .append("uuid: $uuid")
-            .append("permissions: $permissions")
-            .append("value: ${value.toDisplayString()}")
+            .append("{ ")
+            .append("uuid : $uuid, ")
+            .append("permissions : $permissions, ")
+            .append("value : ${value.toDisplayString()}, ")
             .append("}")
             .toString()
     }

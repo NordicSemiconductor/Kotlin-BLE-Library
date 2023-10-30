@@ -61,6 +61,7 @@ data class ClientBleGattService internal constructor(
      */
     val uuid = service.uuid
 
+    @Suppress("MemberVisibilityCanBePrivate")
     val characteristics = service.characteristics.map {
         ClientBleGattCharacteristic(gatt, it, logger, mutex, mtuProvider)
     }
