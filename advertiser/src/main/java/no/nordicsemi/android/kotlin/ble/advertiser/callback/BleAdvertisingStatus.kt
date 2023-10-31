@@ -43,6 +43,12 @@ import android.bluetooth.le.AdvertisingSetCallback
 enum class BleAdvertisingStatus(internal val value: Int) {
 
     /**
+     * Some manufactures adds their custom codes. This value means that status code couldn't be
+     * parsed using standard values.
+     */
+    UNKNOWN(99),
+
+    /**
      * Failed to start advertising as the advertising is already started.
      *
      * @see [AdvertisingSetCallback.ADVERTISE_FAILED_ALREADY_STARTED]
@@ -86,8 +92,7 @@ enum class BleAdvertisingStatus(internal val value: Int) {
 
     companion object {
         fun create(value: Int): BleAdvertisingStatus {
-            return values().firstOrNull { it.value == value }
-                ?: throw IllegalStateException("Can't create status for value: $value")
+            return values().firstOrNull { it.value == value } ?: UNKNOWN
         }
     }
 }

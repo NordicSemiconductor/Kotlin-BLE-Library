@@ -40,12 +40,17 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.core.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.event.ValueFlow
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import java.util.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /**
  * A helper class which handles operation which can happen on a GATT characteristic on a server
@@ -56,7 +61,7 @@ import java.util.*
  * @property server [GattServerAPI] for communication with the client device.
  * @property device A client device to which this characteristic belongs.
  * @property characteristic Identifier of a characteristic.
- * @property mtuProvider For providing mtu value established per connection.
+ * @property connectionProvider For providing mtu value established per connection.
  */
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 @SuppressLint("MissingPermission")
@@ -64,7 +69,7 @@ class ServerBleGattCharacteristic internal constructor(
     private val server: GattServerAPI,
     private val device: ClientDevice,
     private val characteristic: IBluetoothGattCharacteristic,
-    private val mtuProvider: MtuProvider
+    private val connectionProvider: ConnectionProvider
 ) {
 
     /**
@@ -82,7 +87,13 @@ class ServerBleGattCharacteristic internal constructor(
      */
     private var transactionalValue = DataByteArray()
 
-    private val _value = ValueFlow.create()
+    private var onNotificationSent: ((NotificationSent) -> Unit)? = null
+
+    private val _value = ValueFlow.create().apply {
+        if (characteristic.value != DataByteArray()) { //Don't emit empty value
+            this.tryEmit(characteristic.value)
+        }
+    }
 
     /**
      * The last value stored on this characteristic.
@@ -102,7 +113,7 @@ class ServerBleGattCharacteristic internal constructor(
         get() = BleGattProperty.createProperties(characteristic.properties)
 
     val descriptors = characteristic.descriptors.map {
-        ServerBleGattDescriptor(server, instanceId, it, mtuProvider)
+        ServerBleGattDescriptor(server, instanceId, it, connectionProvider)
     }
 
     /**
@@ -122,17 +133,40 @@ class ServerBleGattCharacteristic internal constructor(
      * @param value Bytes to set.
      */
     fun setValue(value: DataByteArray) {
-        // only notify once when the value changes
-        //todo think about improving this
-//        if (value.contentEquals(_value.value)) return
         _value.tryEmit(value)
-        characteristic.value = value.value
+        characteristic.value = value
+    }
 
+    /**
+     * Sets value for this characteristic and notify the client.
+     *
+     * @throws MissingPropertyException If a notification property is not set for this characteristic.
+     * @throws GattOperationException If sending notification fails.
+     *
+     * @param value Bytes to set.
+     */
+    suspend fun setValueAndNotifyClient(value: DataByteArray) {
         val isNotification = properties.contains(BleGattProperty.PROPERTY_NOTIFY)
         val isIndication = properties.contains(BleGattProperty.PROPERTY_INDICATE)
 
         if (isNotification || isIndication) {
-            server.notifyCharacteristicChanged(device, characteristic, isIndication, value)
+            val stacktrace = Exception() //Helper exception to display valid stacktrace.
+            return suspendCoroutine { continuation ->
+                onNotificationSent = {
+                    onNotificationSent = null
+                    if (it.status.isSuccess) {
+                        setValue(value)
+                        continuation.resume(Unit)
+                    } else {
+                        continuation.resumeWithException(GattOperationException(it.status, stacktrace))
+                    }
+                }
+
+                server.notifyCharacteristicChanged(device, characteristic, isIndication, value)
+            }
+
+        } else {
+            throw MissingPropertyException(BleGattProperty.PROPERTY_NOTIFY)
         }
     }
 
@@ -206,6 +240,7 @@ class ServerBleGattCharacteristic internal constructor(
     }
 
     private fun onNotificationSent(event: NotificationSent) {
+        onNotificationSent?.invoke(event)
     }
 
     /**
@@ -238,7 +273,7 @@ class ServerBleGattCharacteristic internal constructor(
 
     /**
      * Handles read request. It gets value stored in [_value] field and tries to send it. If the
-     * size of [DataByteArray] is bigger than mtu value provided by [mtuProvider] then byte array
+     * size of [DataByteArray] is bigger than mtu value provided by [connectionProvider] then byte array
      * is send in consecutive chunks.
      *
      * @param event A read request event.
@@ -247,7 +282,7 @@ class ServerBleGattCharacteristic internal constructor(
         val status = BleGattOperationStatus.GATT_SUCCESS
         val offset = event.offset
         val value = _value.value
-        val data = value.getChunk(offset, mtuProvider.mtu.value)
+        val data = value.getChunk(offset, connectionProvider.mtu.value)
         server.sendResponse(event.device, event.requestId, status.value, event.offset, data)
     }
 }

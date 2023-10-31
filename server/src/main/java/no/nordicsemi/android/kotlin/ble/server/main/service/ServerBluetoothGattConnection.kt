@@ -34,7 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 
 /**
@@ -43,16 +43,16 @@ import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
  * @property device A client device
  * @property server A server API instance unique per server. It is shared between all connected devices.
  * @property services Cloned services separate for this connection.
- * @property mtuProvider MTU provider for this connection.
+ * @property connectionProvider MTU provider for this connection.
  * @property txPhy Transmitter PHY value.
  * @property rxPhy Receiver PHY value.
  */
 @Suppress("unused")
 data class ServerBluetoothGattConnection internal constructor(
-    private val device: ClientDevice,
+    val device: ClientDevice,
     private val server: GattServerAPI,
     val services: ServerBleGattServices,
-    val mtuProvider: MtuProvider,
+    val connectionProvider: ConnectionProvider,
     val txPhy: BleGattPhy? = null,
     val rxPhy: BleGattPhy? = null
 ) {

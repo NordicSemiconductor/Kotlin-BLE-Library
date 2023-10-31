@@ -42,8 +42,8 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toLegacy
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative

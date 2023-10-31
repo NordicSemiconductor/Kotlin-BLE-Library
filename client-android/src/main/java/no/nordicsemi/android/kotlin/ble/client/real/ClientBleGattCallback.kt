@@ -98,7 +98,7 @@ class ClientBleGattCallback: BluetoothGattCallback() {
     ) {
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(it)
-            _event.tryEmit(CharacteristicChanged(native, DataByteArray(native.value)))
+            _event.tryEmit(CharacteristicChanged(native, native.value))
         }
     }
 
@@ -126,7 +126,7 @@ class ClientBleGattCallback: BluetoothGattCallback() {
     ) {
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(characteristic)
-            _event.tryEmit(CharacteristicRead(native, DataByteArray(native.value), BleGattOperationStatus.create(status)))
+            _event.tryEmit(CharacteristicRead(native, native.value, BleGattOperationStatus.create(status)))
         }
     }
 
@@ -168,7 +168,7 @@ class ClientBleGattCallback: BluetoothGattCallback() {
     ) {
         descriptor?.let {
             val native = NativeBluetoothGattDescriptor(descriptor)
-            _event.tryEmit(DescriptorRead(native, DataByteArray(native.value), BleGattOperationStatus.create(status)))
+            _event.tryEmit(DescriptorRead(native, native.value, BleGattOperationStatus.create(status)))
         }
     }
 

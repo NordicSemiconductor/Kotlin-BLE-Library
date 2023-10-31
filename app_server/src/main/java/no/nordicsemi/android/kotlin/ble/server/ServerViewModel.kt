@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -54,7 +55,9 @@ import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStar
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingInterval
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
+import no.nordicsemi.android.kotlin.ble.core.advertiser.BleTxPowerLevel
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
@@ -104,7 +107,8 @@ class ServerViewModel @Inject constructor(
             val ledCharacteristic = ServerBleGattCharacteristicConfig(
                 BlinkySpecifications.UUID_LED_CHAR,
                 listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
+                initialValue = DataByteArray.from(0x01)
             )
 
             //Define button characteristic
@@ -126,10 +130,13 @@ class ServerViewModel @Inject constructor(
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertisingConfig(
                 settings = BleAdvertisingSettings(
-                    deviceName = "My Server" // Advertise a device name
+                    deviceName = "a", // Advertise a device name,
+                    legacyMode = true,
+                    scannable = true
                 ),
                 advertiseData = BleAdvertisingData(
-                    ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE) //Advertise main service uuid.
+                    ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE), //Advertise main service uuid.
+                    includeDeviceName = true,
                 )
             )
 
@@ -137,6 +144,7 @@ class ServerViewModel @Inject constructor(
                 advertiser.advertise(advertiserConfig) //Start advertising
                     .cancellable()
                     .catch { it.printStackTrace() }
+                    .onEach { Log.d("ADVERTISER", "New event: $it") }
                     .collect { //Observe advertiser lifecycle events
                         if (it is OnAdvertisingSetStarted) { //Handle advertising start event
                             _state.value = _state.value.copy(isAdvertising = true)
@@ -180,12 +188,12 @@ class ServerViewModel @Inject constructor(
         this.buttonCharacteristic = buttonCharacteristic
     }
 
-    fun onButtonPressedChanged(isButtonPressed: Boolean) {
+    fun onButtonPressedChanged(isButtonPressed: Boolean) = viewModelScope.launch {
         val value = if (isButtonPressed) {
             DataByteArray.from(0x01)
         } else {
             DataByteArray.from(0x00)
         }
-        buttonCharacteristic?.setValue(value)
+        buttonCharacteristic?.setValueAndNotifyClient(value)
     }
 }

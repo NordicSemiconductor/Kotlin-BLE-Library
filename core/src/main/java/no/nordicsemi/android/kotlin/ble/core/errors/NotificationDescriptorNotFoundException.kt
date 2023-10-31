@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.client.main.errors
+package no.nordicsemi.android.kotlin.ble.core.errors
 
 /**
  * Exception thrown during enabling/disabling notification/indications when no CCCD descriptor

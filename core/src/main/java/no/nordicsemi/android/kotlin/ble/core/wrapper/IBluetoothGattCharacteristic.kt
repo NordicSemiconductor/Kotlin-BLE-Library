@@ -32,6 +32,7 @@
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
 import android.bluetooth.BluetoothGattCharacteristic
+import no.nordicsemi.android.common.core.DataByteArray
 import java.util.UUID
 
 /**
@@ -71,7 +72,7 @@ interface IBluetoothGattCharacteristic {
     /**
      * [ByteArray] value of this characteristic.
      */
-    var value: ByteArray
+    var value: DataByteArray
 
     /**
      * List of descriptors of this characteristic.

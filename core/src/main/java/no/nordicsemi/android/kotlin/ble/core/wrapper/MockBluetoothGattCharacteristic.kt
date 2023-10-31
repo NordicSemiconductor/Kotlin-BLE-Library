@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.core.wrapper
 
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import java.util.UUID
 
@@ -46,17 +47,17 @@ data class MockBluetoothGattCharacteristic private constructor(
     override val permissions: Int,
     override val properties: Int,
     override val instanceId: Int, //TODO check if instance id should change during copy()
-    override var value: ByteArray,
+    override var value: DataByteArray,
     private var _descriptors: List<IBluetoothGattDescriptor>,
     override var writeType: Int,
 ) : IBluetoothGattCharacteristic {
 
-    constructor(uuid: UUID, permissions: Int, properties: Int) : this(
+    constructor(uuid: UUID, permissions: Int, properties: Int, value: DataByteArray) : this(
         uuid,
         permissions,
         properties,
         InstanceIdGenerator.nextValue(),
-        byteArrayOf(),
+        value,
         emptyList(),
         BleWriteType.DEFAULT.value
     )
@@ -84,7 +85,7 @@ data class MockBluetoothGattCharacteristic private constructor(
         if (permissions != other.permissions) return false
         if (properties != other.properties) return false
         if (instanceId != other.instanceId) return false
-        if (!value.contentEquals(other.value)) return false
+        if (value != other.value) return false
         if (_descriptors != other._descriptors) return false
         if (descriptors != other.descriptors) return false
 
@@ -96,7 +97,7 @@ data class MockBluetoothGattCharacteristic private constructor(
         result = 31 * result + permissions
         result = 31 * result + properties
         result = 31 * result + instanceId
-        result = 31 * result + value.contentHashCode()
+        result = 31 * result + value.hashCode()
         result = 31 * result + _descriptors.hashCode()
         result = 31 * result + descriptors.hashCode()
         return result

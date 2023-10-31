@@ -33,14 +33,17 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
 import org.junit.Assert
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.UUID
-
 
 @RunWith(AndroidJUnit4::class)
 class ExampleInstrumentedTest {
@@ -48,7 +51,8 @@ class ExampleInstrumentedTest {
     // Change values before using
     private val service: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
     private val char: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
-    private val address = "00:00:00:00:00:00"
+    private val address = TestAddressProvider.address
+    private val address2 = TestAddressProvider.auxiliaryAddress
 
     @JvmField
     @Rule
@@ -64,5 +68,4 @@ class ExampleInstrumentedTest {
             .read()
             .let { Assert.assertTrue(it.size >= 0) }
     }
-
 }

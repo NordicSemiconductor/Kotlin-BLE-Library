@@ -36,6 +36,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -50,7 +51,8 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
-import no.nordicsemi.android.kotlin.ble.core.provider.MtuProvider
+import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
+import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.utils.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
@@ -79,6 +81,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
+    private val scope: CoroutineScope = ApplicationScope,
 ) {
 
     companion object {
@@ -136,7 +139,7 @@ class ServerBleGatt internal constructor(
                 is ServerPhyUpdate -> onPhyUpdate(it)
                 is ServerMtuChanged -> onMtuChanged(it)
             }
-        }.launchIn(ApplicationScope)
+        }.launchIn(scope)
     }
 
     /**
@@ -190,6 +193,7 @@ class ServerBleGatt internal constructor(
     private fun removeDevice(device: ClientDevice) {
         val mutableMap = connections.value.toMutableMap()
         mutableMap.remove(device)?.let {
+            it.connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.DISCONNECTED
             _connections.value = mutableMap.toMap()
         }
         _connectionEvents.tryEmit(DeviceDisconnected(device))
@@ -203,17 +207,18 @@ class ServerBleGatt internal constructor(
      */
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: ClientDevice) {
-        val mtuProvider = MtuProvider()
+        val connectionProvider = ConnectionProvider()
         val copiedServices = services.map {
             ServerBleGattService(
-                server, device, BluetoothGattServiceFactory.copy(it), mtuProvider
+                server, device, BluetoothGattServiceFactory.copy(it), connectionProvider
             )
         }
         val mutableMap = connections.value.toMutableMap()
         val connection = ServerBluetoothGattConnection(
-            device, server, ServerBleGattServices(server, device, copiedServices), mtuProvider
+            device, server, ServerBleGattServices(server, device, copiedServices), connectionProvider
         )
         mutableMap[device] = connection
+        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.CONNECTED
         _connectionEvents.tryEmit(DeviceConnected(connection))
         _connections.value = mutableMap.toMap()
 
@@ -278,6 +283,6 @@ class ServerBleGatt internal constructor(
      */
     private fun onMtuChanged(event: ServerMtuChanged) {
         logger.log(Log.DEBUG, "New mtu - device: ${event.device.address}, mtu: ${event.mtu}")
-        _connections.value[event.device]?.mtuProvider?.updateMtu(event.mtu)
+        _connections.value[event.device]?.connectionProvider?.updateMtu(event.mtu)
     }
 }

@@ -39,5 +39,19 @@ package no.nordicsemi.android.kotlin.ble.core.data
  */
 data class GattConnectionStateWithStatus(
     val state: GattConnectionState,
-    val status: BleGattConnectionStatus
-)
+    val status: BleGattConnectionStatus,
+) {
+
+    companion object {
+
+        val CONNECTED = GattConnectionStateWithStatus(
+            GattConnectionState.STATE_CONNECTED,
+            BleGattConnectionStatus.SUCCESS
+        )
+
+        val DISCONNECTED = GattConnectionStateWithStatus(
+            GattConnectionState.STATE_DISCONNECTED,
+            BleGattConnectionStatus.SUCCESS
+        )
+    }
+}

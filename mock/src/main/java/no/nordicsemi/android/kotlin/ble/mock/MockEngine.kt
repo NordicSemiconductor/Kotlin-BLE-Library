@@ -198,6 +198,7 @@ object MockEngine {
         if (connection.enabledNotification[characteristic.uuid] == true) {
             connection.clientApi.onEvent(CharacteristicChanged(characteristic, value))
         }
+        connection.serverApi.onEvent(NotificationSent(device, BleGattOperationStatus.GATT_SUCCESS))
     }
 
     fun connect(device: ClientDevice) {

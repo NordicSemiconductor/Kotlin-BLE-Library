@@ -36,6 +36,7 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.os.Build
+import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
@@ -120,6 +121,7 @@ internal object BluetoothGattServiceFactory {
             // handler is used in connectGatt().
             clone = characteristic
         }
+        clone.value = characteristic.value
         return clone
     }
 
@@ -134,14 +136,15 @@ internal object BluetoothGattServiceFactory {
             val characteristic = MockBluetoothGattCharacteristic(
                 it.uuid,
                 BleGattPermission.toInt(it.permissions),
-                BleGattProperty.toInt(it.properties)
+                BleGattProperty.toInt(it.properties),
+                it.initialValue ?: DataByteArray()
             )
 
             it.descriptorConfigs.forEach {
                 val descriptor = MockBluetoothGattDescriptor(
                     it.uuid,
                     BleGattPermission.toInt(it.permissions),
-                    characteristic
+                    characteristic,
                 )
                 characteristic.addDescriptor(descriptor)
             }

@@ -43,7 +43,8 @@ class BlinkyServer @Inject constructor(
         val ledCharacteristic = ServerBleGattCharacteristicConfig(
             BlinkySpecifications.UUID_LED_CHAR,
             listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
+            initialValue = DataByteArray.from(0x01)
         )
 
         val buttonCharacteristic = ServerBleGattCharacteristicConfig(
@@ -107,7 +108,7 @@ class BlinkyServer @Inject constructor(
                         service.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
                     buttonState.onEach {
-                        buttonCharacteristic.setValue(it)
+                        buttonCharacteristic.setValueAndNotifyClient(it)
                     }.launchIn(this)
                 }
         }

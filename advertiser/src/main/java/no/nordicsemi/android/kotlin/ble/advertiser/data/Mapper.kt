@@ -65,9 +65,9 @@ internal fun BleAdvertisingSettings.toLegacy(): AdvertiseSettings {
 
 internal fun BleAdvertisingData.toNative(): AdvertiseData {
     val builder = AdvertiseData.Builder()
-    builder.setIncludeTxPowerLevel(includeTxPowerLever)
-    builder.setIncludeDeviceName(includeDeviceName)
-    builder.addServiceUuid(serviceUuid)
+    serviceUuid?.let { builder.addServiceUuid(it) }
+    includeDeviceName?.let { builder.setIncludeDeviceName(it) }
+    includeTxPowerLever?.let { builder.setIncludeTxPowerLevel(it) }
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
         serviceSolicitationUuid?.let { builder.addServiceSolicitationUuid(it) }
     }
