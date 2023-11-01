@@ -34,7 +34,9 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -65,9 +67,10 @@ internal object ServerBleGattFactory {
         logger: BleLogger = DefaultConsoleLogger(context),
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
+        scope: CoroutineScope?
     ): ServerBleGatt = mock?.let {
         createMockServer(it, logger, *config)
-    } ?: createRealServer(context, logger, *config)
+    } ?: createRealServer(context, logger, *config, scope = scope)
 
     /**
      * Creates mock variant of the server which will be used locally on a device without the
@@ -86,7 +89,7 @@ internal object ServerBleGattFactory {
         val api = MockServerAPI(MockEngine, device)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return ServerBleGatt(api, logger).also { MockEngine.registerServer(api, device, services) }
+        return ServerBleGatt(api, logger, ApplicationScope).also { MockEngine.registerServer(api, device, services) }
     }
 
     /**
@@ -102,6 +105,7 @@ internal object ServerBleGattFactory {
         context: Context,
         logger: BleLogger,
         vararg config: ServerBleGattServiceConfig,
+        scope: CoroutineScope?
     ): ServerBleGatt {
 
         /*
@@ -110,7 +114,7 @@ internal object ServerBleGattFactory {
          */
         return suspendCancellableCoroutine {
             val nativeServer = NativeServerBleAPI.create(context)
-            val server = ServerBleGatt(nativeServer, logger)
+            val server = ServerBleGatt(nativeServer, logger, scope ?: ApplicationScope)
             var index = 0
 
             nativeServer.callback.onServiceAdded = {

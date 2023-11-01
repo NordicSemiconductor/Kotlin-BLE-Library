@@ -38,6 +38,7 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -47,7 +48,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
-import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -85,7 +85,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
-    private val scope: CoroutineScope = ApplicationScope,
+    private val scope: CoroutineScope,
 ) {
 
     companion object {
@@ -106,8 +106,9 @@ class ServerBleGatt internal constructor(
             vararg config: ServerBleGattServiceConfig,
             logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
+            scope: CoroutineScope? = null
         ): ServerBleGatt {
-            return ServerBleGattFactory.create(context, logger, *config, mock = mock)
+            return ServerBleGattFactory.create(context, logger, *config, mock = mock, scope = scope)
         }
     }
 
@@ -129,8 +130,10 @@ class ServerBleGatt internal constructor(
 
     private var services: List<IBluetoothGattService> = emptyList()
 
+    private val eventTask: Job
+
     init {
-        server.event.onEach {
+        eventTask = server.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
                 is ServiceAdded -> onServiceAdded(it.service, it.status)
@@ -153,6 +156,7 @@ class ServerBleGatt internal constructor(
     fun stopServer() {
         logger.log(Log.INFO, "Stopping server")
         server.close()
+        eventTask.cancel()
     }
 
     /**

@@ -38,6 +38,7 @@ import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -137,23 +138,23 @@ class ClientBleGatt(
     private var bondStateCallback: ((BondState) -> Unit)? = null
     private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
 
+    private val eventTask: Job
+
     init {
-        gatt.event
-            .onEach {
-                logger.log(Log.VERBOSE, "On gatt event: $it")
-                when (it) {
-                    is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                    is PhyRead -> onEvent(it)
-                    is PhyUpdate -> onEvent(it)
-                    is ReadRemoteRssi -> onEvent(it)
-                    is ServiceChanged -> onEvent(it)
-                    is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                    is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
-                    is MtuChanged -> onEvent(it)
-                    is BondStateChanged -> onBondStateChanged(it.bondState)
-                }
+        eventTask = gatt.event.onEach {
+            logger.log(Log.VERBOSE, "On gatt event: $it")
+            when (it) {
+                is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
+                is PhyRead -> onEvent(it)
+                is PhyUpdate -> onEvent(it)
+                is ReadRemoteRssi -> onEvent(it)
+                is ServiceChanged -> onEvent(it)
+                is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
+                is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
+                is MtuChanged -> onEvent(it)
+                is BondStateChanged -> onBondStateChanged(it.bondState)
             }
-            .launchIn(scope)
+        }.launchIn(scope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -303,6 +304,14 @@ class ClientBleGatt(
     }
 
     /**
+     * Closes GATT instance and releases resources. After that [ClientBleGatt] cannot be used.
+     */
+    fun close() {
+        gatt.close()
+        eventTask.cancel()
+    }
+
+    /**
      * Clears service cache.
      */
     fun clearServicesCache() {
@@ -317,13 +326,14 @@ class ClientBleGatt(
     ) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
 
-        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
+        connectionProvider.connectionStateWithStatus.value =
+            GattConnectionStateWithStatus(connectionState, status)
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {
                 if (gatt.closeOnDisconnect) {
-                    gatt.close()
+                    close()
                 }
             }
         }
@@ -405,7 +415,8 @@ class ClientBleGatt(
             Log.DEBUG,
             "Discovered services: ${gattServices.map { it.uuid }}, status: $status"
         )
-        val services = gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
+        val services =
+            gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
         _services.value = services
         onServicesDiscovered?.invoke(services)
     }
@@ -454,7 +465,7 @@ class ClientBleGatt(
             macAddress: String,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null
+            scope: CoroutineScope? = null,
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
             return ClientBleGattFactory.connect(context, macAddress, options, logger, scope)
@@ -475,7 +486,7 @@ class ClientBleGatt(
             device: ServerDevice,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null
+            scope: CoroutineScope? = null,
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
             return ClientBleGattFactory.connect(context, device, options, logger, scope)
