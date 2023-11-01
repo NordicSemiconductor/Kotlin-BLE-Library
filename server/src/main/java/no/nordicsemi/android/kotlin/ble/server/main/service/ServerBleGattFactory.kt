@@ -69,7 +69,7 @@ internal object ServerBleGattFactory {
         mock: MockServerDevice? = null,
         scope: CoroutineScope?
     ): ServerBleGatt = mock?.let {
-        createMockServer(it, logger, *config)
+        createMockServer(it, logger, *config, scope = scope)
     } ?: createRealServer(context, logger, *config, scope = scope)
 
     /**
@@ -85,11 +85,13 @@ internal object ServerBleGattFactory {
         device: MockServerDevice,
         logger: BleLogger,
         vararg config: ServerBleGattServiceConfig,
+        scope: CoroutineScope?
     ): ServerBleGatt {
         val api = MockServerAPI(MockEngine, device)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return ServerBleGatt(api, logger, ApplicationScope).also { MockEngine.registerServer(api, device, services) }
+        return ServerBleGatt(api, logger, scope ?: ApplicationScope)
+            .also { MockEngine.registerServer(api, device, services) }
     }
 
     /**
