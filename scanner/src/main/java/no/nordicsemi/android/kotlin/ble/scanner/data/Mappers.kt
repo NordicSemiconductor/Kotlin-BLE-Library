@@ -73,7 +73,7 @@ internal fun ScanResult.toDomain(): BleScanResultData {
             this.timestampNanos,
             this.scanRecord?.toDomain(),
             getAdvertisingSid(this),
-            BleGattPrimaryPhy.create(this.primaryPhy),
+            BleGattPrimaryPhy.createOrNull(this.primaryPhy),
             getSecondaryPhy(this),
             getTxPower(this),
             getPeriodicAdvertisingInterval(this),
