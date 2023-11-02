@@ -57,9 +57,8 @@ enum class BleGattPrimaryPhy(val value: Int) {
     PHY_LE_CODED(BluetoothDevice.PHY_LE_CODED);
 
     companion object {
-        fun create(value: Int): BleGattPrimaryPhy {
+        fun createOrNull(value: Int): BleGattPrimaryPhy? {
             return values().firstOrNull { it.value == value }
-                ?: throw IllegalArgumentException("Cannot create BleGattPrimaryPhy for value: $value")
         }
     }
 }
