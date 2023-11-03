@@ -221,7 +221,7 @@ class ServerBleGatt internal constructor(
             )
         }
         val mutableMap = connections.value.toMutableMap()
-        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
+        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(serverScope.coroutineContext.job))
         val connection = ServerBluetoothGattConnection(
             device, server, connectionScope, ServerBleGattServices(server, device, copiedServices), connectionProvider
         )
