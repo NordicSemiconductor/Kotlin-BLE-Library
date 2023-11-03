@@ -38,19 +38,21 @@ import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.job
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
@@ -65,6 +67,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
@@ -138,10 +141,10 @@ class ClientBleGatt(
     private var bondStateCallback: ((BondState) -> Unit)? = null
     private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
 
-    private val eventTask: Job
+    private val clientScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
 
     init {
-        eventTask = gatt.event.onEach {
+        gatt.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
                 is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
@@ -154,7 +157,7 @@ class ClientBleGatt(
                 is MtuChanged -> onEvent(it)
                 is BondStateChanged -> onBondStateChanged(it.bondState)
             }
-        }.launchIn(scope)
+        }.launchIn(clientScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -308,7 +311,7 @@ class ClientBleGatt(
      */
     fun close() {
         gatt.close()
-        eventTask.cancel()
+        clientScope.cancel()
     }
 
     /**

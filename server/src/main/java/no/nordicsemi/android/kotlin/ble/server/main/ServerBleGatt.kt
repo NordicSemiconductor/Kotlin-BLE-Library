@@ -38,7 +38,6 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
@@ -130,23 +129,22 @@ class ServerBleGatt internal constructor(
 
     private var services: List<IBluetoothGattService> = emptyList()
 
-    private val eventTask: Job
+    private val serverScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
 
     init {
-        eventTask = server.event.onEach {
+        server.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
                 is ServiceAdded -> onServiceAdded(it.service, it.status)
                 is ClientConnectionStateChanged -> onConnectionStateChanged(
                     it.device, it.status, it.newState
                 )
-
                 is ServiceEvent -> connections.value[it.device]?.services?.onEvent(it)
                 is ServerPhyRead -> onPhyRead(it)
                 is ServerPhyUpdate -> onPhyUpdate(it)
                 is ServerMtuChanged -> onMtuChanged(it)
             }
-        }.launchIn(scope)
+        }.launchIn(serverScope)
     }
 
     /**
@@ -156,7 +154,7 @@ class ServerBleGatt internal constructor(
     fun stopServer() {
         logger.log(Log.INFO, "Stopping server")
         server.close()
-        eventTask.cancel()
+        serverScope.cancel()
     }
 
     /**
