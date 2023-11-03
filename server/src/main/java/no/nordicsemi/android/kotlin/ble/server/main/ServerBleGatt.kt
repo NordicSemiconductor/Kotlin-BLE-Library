@@ -102,12 +102,12 @@ class ServerBleGatt internal constructor(
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun create(
             context: Context,
+            scope: CoroutineScope,
             vararg config: ServerBleGattServiceConfig,
             logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
-            scope: CoroutineScope? = null
         ): ServerBleGatt {
-            return ServerBleGattFactory.create(context, logger, *config, mock = mock, scope = scope)
+            return ServerBleGattFactory.create(context, logger, scope, *config, mock = mock)
         }
     }
 

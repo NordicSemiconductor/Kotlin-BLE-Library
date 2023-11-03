@@ -86,6 +86,7 @@ class BlinkyServer @Inject constructor(
         val server = ServerBleGatt.create(
             context = context,
             config = arrayOf(serviceConfig),
+            scope = scope,
             mock = mockDevice
         )
 

@@ -55,9 +55,7 @@ import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStar
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingInterval
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
-import no.nordicsemi.android.kotlin.ble.core.advertiser.BleTxPowerLevel
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
@@ -125,7 +123,7 @@ class ServerViewModel @Inject constructor(
                 listOf(ledCharacteristic, buttonCharacteristic)
             )
 
-            val server = ServerBleGatt.create(context, serviceConfig)
+            val server = ServerBleGatt.create(context, viewModelScope, serviceConfig)
 
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertisingConfig(

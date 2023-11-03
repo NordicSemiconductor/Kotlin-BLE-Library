@@ -466,9 +466,9 @@ class ClientBleGatt(
         suspend fun connect(
             context: Context,
             macAddress: String,
+            scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null,
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
             return ClientBleGattFactory.connect(context, macAddress, options, logger, scope)
@@ -487,9 +487,9 @@ class ClientBleGatt(
         suspend fun connect(
             context: Context,
             device: ServerDevice,
+            scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null,
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
             return ClientBleGattFactory.connect(context, device, options, logger, scope)

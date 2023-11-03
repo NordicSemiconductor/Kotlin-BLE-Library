@@ -53,7 +53,7 @@ class BlinkyViewModel @Inject constructor(
 
     private fun startGattClient(blinkyDevice: ServerDevice) = viewModelScope.launch {
         //Connect a Bluetooth LE device.
-        val client = ClientBleGatt.connect(context, blinkyDevice).also {
+        val client = ClientBleGatt.connect(context, blinkyDevice, viewModelScope).also {
             this@BlinkyViewModel.client = it
         }
 
