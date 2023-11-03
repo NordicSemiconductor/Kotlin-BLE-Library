@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
+import kotlinx.coroutines.CoroutineScope
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -51,6 +52,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 data class ServerBluetoothGattConnection internal constructor(
     val device: ClientDevice,
     private val server: GattServerAPI,
+    val connectionScope: CoroutineScope,
     val services: ServerBleGattServices,
     val connectionProvider: ConnectionProvider,
     val txPhy: BleGattPhy? = null,

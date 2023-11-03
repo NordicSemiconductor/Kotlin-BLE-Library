@@ -37,12 +37,16 @@ import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.job
 import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
@@ -194,6 +198,7 @@ class ServerBleGatt internal constructor(
         val mutableMap = connections.value.toMutableMap()
         mutableMap.remove(device)?.let {
             it.connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.DISCONNECTED
+            it.connectionScope.cancel("Device $device disconnected")
             _connections.value = mutableMap.toMap()
         }
         _connectionEvents.tryEmit(DeviceDisconnected(device))
@@ -214,8 +219,9 @@ class ServerBleGatt internal constructor(
             )
         }
         val mutableMap = connections.value.toMutableMap()
+        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
         val connection = ServerBluetoothGattConnection(
-            device, server, ServerBleGattServices(server, device, copiedServices), connectionProvider
+            device, server, connectionScope, ServerBleGattServices(server, device, copiedServices), connectionProvider
         )
         mutableMap[device] = connection
         connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.CONNECTED
