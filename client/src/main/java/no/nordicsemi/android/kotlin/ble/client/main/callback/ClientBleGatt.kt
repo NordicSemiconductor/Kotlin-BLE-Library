@@ -38,18 +38,21 @@ import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.job
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattDescriptor
 import no.nordicsemi.android.kotlin.ble.client.main.service.ClientBleGattServices
@@ -64,6 +67,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
@@ -137,23 +141,23 @@ class ClientBleGatt(
     private var bondStateCallback: ((BondState) -> Unit)? = null
     private var onServicesDiscovered: ((ClientBleGattServices) -> Unit)? = null
 
+    private val clientScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
+
     init {
-        gatt.event
-            .onEach {
-                logger.log(Log.VERBOSE, "On gatt event: $it")
-                when (it) {
-                    is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
-                    is PhyRead -> onEvent(it)
-                    is PhyUpdate -> onEvent(it)
-                    is ReadRemoteRssi -> onEvent(it)
-                    is ServiceChanged -> onEvent(it)
-                    is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
-                    is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
-                    is MtuChanged -> onEvent(it)
-                    is BondStateChanged -> onBondStateChanged(it.bondState)
-                }
+        gatt.event.onEach {
+            logger.log(Log.VERBOSE, "On gatt event: $it")
+            when (it) {
+                is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
+                is PhyRead -> onEvent(it)
+                is PhyUpdate -> onEvent(it)
+                is ReadRemoteRssi -> onEvent(it)
+                is ServiceChanged -> onEvent(it)
+                is ServicesDiscovered -> onServicesDiscovered(it.services, it.status)
+                is ServiceEvent -> _services.value?.apply { onCharacteristicEvent(it) }
+                is MtuChanged -> onEvent(it)
+                is BondStateChanged -> onBondStateChanged(it.bondState)
             }
-            .launchIn(scope)
+        }.launchIn(clientScope)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -303,6 +307,14 @@ class ClientBleGatt(
     }
 
     /**
+     * Closes GATT instance and releases resources. After that [ClientBleGatt] cannot be used.
+     */
+    fun close() {
+        gatt.close()
+        clientScope.cancel()
+    }
+
+    /**
      * Clears service cache.
      */
     fun clearServicesCache() {
@@ -317,13 +329,14 @@ class ClientBleGatt(
     ) {
         logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
 
-        connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus(connectionState, status)
+        connectionProvider.connectionStateWithStatus.value =
+            GattConnectionStateWithStatus(connectionState, status)
         onConnectionStateChangedCallback?.invoke(connectionState, status)
 
         if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
             if (!status.isLinkLoss || !gatt.autoConnect) {
                 if (gatt.closeOnDisconnect) {
-                    gatt.close()
+                    close()
                 }
             }
         }
@@ -405,7 +418,8 @@ class ClientBleGatt(
             Log.DEBUG,
             "Discovered services: ${gattServices.map { it.uuid }}, status: $status"
         )
-        val services = gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
+        val services =
+            gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
         _services.value = services
         onServicesDiscovered?.invoke(services)
     }
@@ -452,9 +466,9 @@ class ClientBleGatt(
         suspend fun connect(
             context: Context,
             macAddress: String,
+            scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to $macAddress")
             return ClientBleGattFactory.connect(context, macAddress, options, logger, scope)
@@ -473,9 +487,9 @@ class ClientBleGatt(
         suspend fun connect(
             context: Context,
             device: ServerDevice,
+            scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
             logger: BleLogger = DefaultConsoleLogger(context),
-            scope: CoroutineScope? = null
         ): ClientBleGatt {
             logger.log(Log.INFO, "Connecting to ${device.address}")
             return ClientBleGattFactory.connect(context, device, options, logger, scope)

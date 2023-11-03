@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.Manifest
 import android.content.Context
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
@@ -63,11 +64,12 @@ internal object ServerBleGattFactory {
     suspend fun create(
         context: Context,
         logger: BleLogger = DefaultConsoleLogger(context),
+        scope: CoroutineScope,
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
     ): ServerBleGatt = mock?.let {
-        createMockServer(it, logger, *config)
-    } ?: createRealServer(context, logger, *config)
+        createMockServer(it, logger, scope, *config)
+    } ?: createRealServer(context, logger, scope, *config)
 
     /**
      * Creates mock variant of the server which will be used locally on a device without the
@@ -81,12 +83,14 @@ internal object ServerBleGattFactory {
     private fun createMockServer(
         device: MockServerDevice,
         logger: BleLogger,
+        scope: CoroutineScope,
         vararg config: ServerBleGattServiceConfig,
     ): ServerBleGatt {
         val api = MockServerAPI(MockEngine, device)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return ServerBleGatt(api, logger).also { MockEngine.registerServer(api, device, services) }
+        return ServerBleGatt(api, logger, scope)
+            .also { MockEngine.registerServer(api, device, services) }
     }
 
     /**
@@ -101,6 +105,7 @@ internal object ServerBleGattFactory {
     private suspend fun createRealServer(
         context: Context,
         logger: BleLogger,
+        scope: CoroutineScope,
         vararg config: ServerBleGattServiceConfig,
     ): ServerBleGatt {
 
@@ -110,7 +115,7 @@ internal object ServerBleGattFactory {
          */
         return suspendCancellableCoroutine {
             val nativeServer = NativeServerBleAPI.create(context)
-            val server = ServerBleGatt(nativeServer, logger)
+            val server = ServerBleGatt(nativeServer, logger, scope)
             var index = 0
 
             nativeServer.callback.onServiceAdded = {

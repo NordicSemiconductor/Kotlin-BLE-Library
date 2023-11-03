@@ -39,7 +39,6 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
-import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
@@ -75,13 +74,13 @@ internal object ClientBleGattFactory {
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope? = null
+        scope: CoroutineScope
     ): ClientBleGatt {
         val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(macAddress)
         val realDevice = RealServerDevice(device)
-        return connectDevice(realDevice, context, options, logger, scope ?: ApplicationScope)
+        return connectDevice(realDevice, context, options, logger, scope)
     }
 
     /**
@@ -99,9 +98,9 @@ internal object ClientBleGattFactory {
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope?
+        scope: CoroutineScope
     ): ClientBleGatt {
-        val scopeOrDefault = scope ?: ApplicationScope
+        val scopeOrDefault = scope
         return when (device) {
             is MockServerDevice -> connectDevice(device, options, logger, scopeOrDefault)
             is RealServerDevice -> connectDevice(device, context, options, logger, scopeOrDefault)

@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
-import no.nordicsemi.android.common.core.ApplicationScope
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
@@ -85,7 +84,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
-    private val scope: CoroutineScope = ApplicationScope,
+    private val scope: CoroutineScope,
 ) {
 
     companion object {
@@ -103,11 +102,12 @@ class ServerBleGatt internal constructor(
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
         suspend fun create(
             context: Context,
+            scope: CoroutineScope,
             vararg config: ServerBleGattServiceConfig,
             logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
         ): ServerBleGatt {
-            return ServerBleGattFactory.create(context, logger, *config, mock = mock)
+            return ServerBleGattFactory.create(context, logger, scope, *config, mock = mock)
         }
     }
 
@@ -129,6 +129,8 @@ class ServerBleGatt internal constructor(
 
     private var services: List<IBluetoothGattService> = emptyList()
 
+    private val serverScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
+
     init {
         server.event.onEach {
             logger.log(Log.VERBOSE, "On gatt event: $it")
@@ -137,13 +139,12 @@ class ServerBleGatt internal constructor(
                 is ClientConnectionStateChanged -> onConnectionStateChanged(
                     it.device, it.status, it.newState
                 )
-
                 is ServiceEvent -> connections.value[it.device]?.services?.onEvent(it)
                 is ServerPhyRead -> onPhyRead(it)
                 is ServerPhyUpdate -> onPhyUpdate(it)
                 is ServerMtuChanged -> onMtuChanged(it)
             }
-        }.launchIn(scope)
+        }.launchIn(serverScope)
     }
 
     /**
@@ -153,6 +154,7 @@ class ServerBleGatt internal constructor(
     fun stopServer() {
         logger.log(Log.INFO, "Stopping server")
         server.close()
+        serverScope.cancel()
     }
 
     /**
@@ -219,7 +221,7 @@ class ServerBleGatt internal constructor(
             )
         }
         val mutableMap = connections.value.toMutableMap()
-        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
+        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(serverScope.coroutineContext.job))
         val connection = ServerBluetoothGattConnection(
             device, server, connectionScope, ServerBleGattServices(server, device, copiedServices), connectionProvider
         )
