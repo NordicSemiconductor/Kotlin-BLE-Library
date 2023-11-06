@@ -175,7 +175,7 @@ The library is used to create a Bluetooth LE server.
         } else {
             byteArrayOf(0x00)
         }
-        buttonCharacteristic.setValue(value)
+        buttonCharacteristic.setValueAndNotifyClient(value)
     }
 ```
 
