@@ -95,7 +95,7 @@ class ReliableWriteTest {
     @Inject
     lateinit var server: ReliableWriteServer
 
-    val scope = CoroutineScope(UnconfinedTestDispatcher())
+    private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
     @Before
     fun setUp() {

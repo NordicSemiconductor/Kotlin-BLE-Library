@@ -33,9 +33,11 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
@@ -54,6 +56,8 @@ class ExampleInstrumentedTest {
     private val address = TestAddressProvider.address
     private val address2 = TestAddressProvider.auxiliaryAddress
 
+    private val scope = CoroutineScope(UnconfinedTestDispatcher())
+
     @JvmField
     @Rule
     val rules: GrantPermissionRule = GrantPermissionRule.grant("android.permission.BLUETOOTH_CONNECT")
@@ -61,7 +65,7 @@ class ExampleInstrumentedTest {
     @Test
     fun testExample() = runTest {
         ClientBleGatt
-            .connect(InstrumentationRegistry.getInstrumentation().targetContext, address)
+            .connect(InstrumentationRegistry.getInstrumentation().targetContext, address, scope)
             .discoverServices()
             .findService(service)!!
             .findCharacteristic(char)!!

@@ -96,7 +96,8 @@ class ReliableWriteServer @Inject constructor(
         server = ServerBleGatt.create(
             context = context,
             config = arrayOf(serviceConfig),
-            mock = device
+            mock = device,
+            scope = scope
         )
 
         val advertiser = BleAdvertiser.create(context)
