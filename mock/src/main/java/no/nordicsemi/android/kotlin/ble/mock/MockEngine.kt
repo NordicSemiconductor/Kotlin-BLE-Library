@@ -272,6 +272,10 @@ object MockEngine {
                 value
             )
         )
+        if (!isResponseNeeded) {
+            //Invoke client callback to unsuspend request. It seems that native API does the same.
+            connection.clientApi.onEvent(CharacteristicWrite(characteristic, BleGattOperationStatus.GATT_SUCCESS))
+        }
     }
 
     fun readCharacteristic(device: MockServerDevice, clientDevice: ClientDevice, characteristic: IBluetoothGattCharacteristic) {
