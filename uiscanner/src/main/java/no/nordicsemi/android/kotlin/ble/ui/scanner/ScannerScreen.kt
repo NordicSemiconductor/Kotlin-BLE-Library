@@ -49,7 +49,7 @@ fun ScannerScreen(
     cancellable: Boolean = true,
     onResult: (ScannerScreenResult) -> Unit,
     deviceItem: @Composable (BleScanResults) -> Unit = {
-        DeviceListItem(it.device.name, it.device.address)
+        DeviceListItem(it.advertisedName, it.device.address)
     }
 ) {
     var isScanning by rememberSaveable { mutableStateOf(false) }

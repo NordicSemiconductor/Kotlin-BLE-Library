@@ -108,7 +108,7 @@ internal class ScannerViewModel @Inject constructor(
     private fun List<BleScanResults>.applyFilters(config: DevicesScanFilter) =
             filter { !config.filterUuidRequired || it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true }
            .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
-           .filter { !config.filterWithNames || it.device.hasName }
+           .filter { !config.filterWithNames || it.advertisedName?.isNotEmpty() == true }
 
     fun setFilterUuid(uuid: ParcelUuid?) {
         this.uuid = uuid
