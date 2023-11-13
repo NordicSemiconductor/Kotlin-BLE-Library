@@ -54,10 +54,12 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 /**
  * A class which maps [BluetoothGattServerCallback] methods into [ServerGattEvent] events.
  */
-class ServerBleGattCallback : BluetoothGattServerCallback() {
+class ServerBleGattCallback(
+    bufferSize: Int
+) : BluetoothGattServerCallback() {
 
     private val _event = MutableSharedFlow<ServerGattEvent>(
-        extraBufferCapacity = 10,
+        extraBufferCapacity = bufferSize,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val event = _event.asSharedFlow()

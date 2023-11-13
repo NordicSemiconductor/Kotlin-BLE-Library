@@ -31,15 +31,19 @@
 
 package no.nordicsemi.android.kotlin.ble.core.data
 
+import android.bluetooth.BluetoothGattCallback
+
 /**
  * Connection options for establishing BLE connection.
  *
  * @property autoConnect Whether to directly connect to the remote device (false) or to automatically connect as soon as the remote device becomes available (true).
  * @property phy Only takes effect if [autoConnect] is set to false.
  * @property closeOnDisconnect Closes GATT on first disconnect event. [ClientBleGatt] shouldn't be used after that.
+ * @property bufferSize Buffer size for events emitted by [BluetoothGattCallback].
  */
 data class BleGattConnectOptions(
     val autoConnect: Boolean = false,
     val phy: BleGattPhy? = null,
-    val closeOnDisconnect: Boolean = true
+    val closeOnDisconnect: Boolean = true,
+    val bufferSize: Int = 10
 )

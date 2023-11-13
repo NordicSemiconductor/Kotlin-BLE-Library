@@ -53,10 +53,12 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 /**
  * A class which maps [BluetoothGattCallback] methods into [ClientGattEvent] events.
  */
-class ClientBleGattCallback: BluetoothGattCallback() {
+class ClientBleGattCallback(
+    bufferSize: Int
+): BluetoothGattCallback() {
 
     private val _event = MutableSharedFlow<ClientGattEvent>(
-        extraBufferCapacity = 10, //Warning: because of this parameter we can miss notifications
+        extraBufferCapacity = bufferSize, //Warning: because of this parameter we can miss notifications
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val event = _event.asSharedFlow()

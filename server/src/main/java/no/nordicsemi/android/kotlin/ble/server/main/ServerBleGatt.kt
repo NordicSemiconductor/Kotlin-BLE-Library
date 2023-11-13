@@ -40,7 +40,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -56,12 +58,12 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
-import no.nordicsemi.android.kotlin.ble.core.utils.simpleSharedFlow
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.GattServerAPI
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import no.nordicsemi.android.kotlin.ble.server.main.ServerConnectionEvent.*
+import no.nordicsemi.android.kotlin.ble.server.main.data.ServerConnectionOption
 import no.nordicsemi.android.kotlin.ble.server.main.service.BluetoothGattServiceFactory
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattDescriptor
@@ -85,6 +87,7 @@ class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
     private val scope: CoroutineScope,
+    bufferSize: Int,
 ) {
 
     companion object {
@@ -97,6 +100,7 @@ class ServerBleGatt internal constructor(
          * @param config Service config which is used later to create services per each connection.
          * @param logger Logger instance for displaying logs.
          * @param mock A mock device if run as a mocked variant.
+         * @param options An additional options to configure a server behaviour.
          * @return An instance of [ServerBleGatt]
          */
         @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -106,12 +110,23 @@ class ServerBleGatt internal constructor(
             vararg config: ServerBleGattServiceConfig,
             logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
+            options: ServerConnectionOption = ServerConnectionOption(),
         ): ServerBleGatt {
-            return ServerBleGattFactory.create(context, logger, scope, *config, mock = mock)
+            return ServerBleGattFactory.create(
+                context,
+                logger,
+                scope,
+                *config,
+                mock = mock,
+                options = options
+            )
         }
     }
 
-    private val _connectionEvents = simpleSharedFlow<ServerConnectionEvent>()
+    private val _connectionEvents = MutableSharedFlow<ServerConnectionEvent>(
+        extraBufferCapacity = bufferSize,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     /**
      * [Flow] which emits each time a new connection is established or lost.
@@ -129,7 +144,8 @@ class ServerBleGatt internal constructor(
 
     private var services: List<IBluetoothGattService> = emptyList()
 
-    private val serverScope = CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
+    private val serverScope =
+        CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
 
     init {
         server.event.onEach {
@@ -199,7 +215,8 @@ class ServerBleGatt internal constructor(
     private fun removeDevice(device: ClientDevice) {
         val mutableMap = connections.value.toMutableMap()
         mutableMap.remove(device)?.let {
-            it.connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.DISCONNECTED
+            it.connectionProvider.connectionStateWithStatus.value =
+                GattConnectionStateWithStatus.DISCONNECTED
             it.connectionScope.cancel("Device $device disconnected")
             _connections.value = mutableMap.toMap()
         }
@@ -221,9 +238,14 @@ class ServerBleGatt internal constructor(
             )
         }
         val mutableMap = connections.value.toMutableMap()
-        val connectionScope = CoroutineScope(Dispatchers.Default + SupervisorJob(serverScope.coroutineContext.job))
+        val connectionScope =
+            CoroutineScope(Dispatchers.Default + SupervisorJob(serverScope.coroutineContext.job))
         val connection = ServerBluetoothGattConnection(
-            device, server, connectionScope, ServerBleGattServices(server, device, copiedServices), connectionProvider
+            device,
+            server,
+            connectionScope,
+            ServerBleGattServices(server, device, copiedServices),
+            connectionProvider
         )
         mutableMap[device] = connection
         connectionProvider.connectionStateWithStatus.value = GattConnectionStateWithStatus.CONNECTED
@@ -256,7 +278,10 @@ class ServerBleGatt internal constructor(
      * @param event PHY read event data.
      */
     private fun onPhyRead(event: ServerPhyRead) {
-        logger.log(Log.DEBUG, "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
+        logger.log(
+            Log.DEBUG,
+            "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
+        )
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
                 txPhy = event.txPhy, rxPhy = event.rxPhy
@@ -273,7 +298,10 @@ class ServerBleGatt internal constructor(
      * @param event PHY update event data.
      */
     private fun onPhyUpdate(event: ServerPhyUpdate) {
-        logger.log(Log.DEBUG, "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}")
+        logger.log(
+            Log.DEBUG,
+            "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
+        )
         _connections.value = _connections.value.toMutableMap().also {
             val connection = it.getValue(event.device).copy(
                 txPhy = event.txPhy, rxPhy = event.rxPhy
