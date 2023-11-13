@@ -53,7 +53,7 @@ turbine = "1.0.0"
 markdown = "0.3.6"
 wirePlugin = "4.9.1"
 timber = "5.0.1"
-chart = "3.1.0"
+chart = "v3.1.0"
 leakcanary = "2.12"
 mockk = "1.13.8"
 slf4j = "2.0.9"
@@ -61,6 +61,9 @@ robolectric = "4.11.1"
 skydovesBallon = "1.6.2"
 moshiKotlin = "1.15.0"
 moshiAdapters = "1.15.0"
+moshiConverter = "2.9.0"
+moshi = "1.15.0"
+moshiKotlinCodegen = "1.15.0"
 
 nordic-blek = "1.0.8"
 nordic-ble = "2.7.2"
@@ -103,6 +106,7 @@ androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-t
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
+androidx-compose-animation = {group = "androidx.compose.animation", name = "animation"}
 androidx-core = { group = "androidx.core", name = "core", version.ref = "androidxCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
@@ -110,6 +114,7 @@ androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", ve
 androidx-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
+androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime = { group = "androidx.lifecycle", name = "lifecycle-runtime", version.ref = "androidxLifecycle" }
 androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidxLifecycle" }
@@ -174,6 +179,9 @@ test-robolectric = { group = "org.robolectric", name = "robolectric", version.re
 skydoves-ballon = {group = "com.github.skydoves", name = "balloon-compose", version.ref = "skydovesBallon"}
 moshi-kotlin = {group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin"}
 moshi-adapters = {group = "com.squareup.moshi", name = "moshi-adapters", version.ref = "moshiAdapters"}
+moshi-converter = {group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "moshiConverter"}
+moshi = {group = "com.squareup.moshi", name = "moshi", version.ref = "moshi"}
+moshi-kotlin-codegen = {group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen"}
 
 # Nordic
 nordic-ble-ktx = { group = "no.nordicsemi.android", name = "ble-ktx", version.ref = "nordic-ble" }
