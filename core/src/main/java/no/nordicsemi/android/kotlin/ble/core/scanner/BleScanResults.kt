@@ -53,4 +53,7 @@ data class BleScanResults(
 
     @IgnoredOnParcel
     val lastScanResult = scanResult.lastOrNull()
+
+    @IgnoredOnParcel
+    val advertisedName: String? = scanResult.firstNotNullOfOrNull { it.scanRecord?.deviceName }
 }
