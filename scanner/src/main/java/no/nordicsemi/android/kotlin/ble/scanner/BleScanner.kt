@@ -48,10 +48,10 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
 
 /**
