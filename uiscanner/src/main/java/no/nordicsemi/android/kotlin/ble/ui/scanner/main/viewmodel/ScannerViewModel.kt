@@ -106,14 +106,18 @@ internal class ScannerViewModel @Inject constructor(
     // scanner is not visible. Scanner state stops scanning when it is not observed.
     // .stateIn(viewModelScope, SharingStarted.Lazily, ScanningState.Loading)
     private fun List<BleScanResults>.applyFilters(config: DevicesScanFilter) =
-            filter { !config.filterUuidRequired || it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true }
+            filter {
+                uuid == null ||
+                config.filterUuidRequired == false ||
+                it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true
+            }
            .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
            .filter { !config.filterWithNames || it.device.hasName }
 
     fun setFilterUuid(uuid: ParcelUuid?) {
         this.uuid = uuid
         if (uuid == null) {
-            filterConfig.value = filterConfig.value.copy(filterUuidRequired = false)
+            filterConfig.value = filterConfig.value.copy(filterUuidRequired = null)
         }
     }
 
