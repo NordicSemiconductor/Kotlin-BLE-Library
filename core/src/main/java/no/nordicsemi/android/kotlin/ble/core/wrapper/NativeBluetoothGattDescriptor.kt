@@ -48,11 +48,7 @@ data class NativeBluetoothGattDescriptor(
     override val permissions: Int
         get() = descriptor.permissions
 
-    override var value: DataByteArray
-        get() = DataByteArray(descriptor.value ?: byteArrayOf())
-        set(value) {
-            descriptor.value = value.value
-        }
+    override var value: DataByteArray = DataByteArray(descriptor.value ?: byteArrayOf())
 
     override val characteristic: IBluetoothGattCharacteristic =
         NativeBluetoothGattCharacteristic(descriptor.characteristic)
