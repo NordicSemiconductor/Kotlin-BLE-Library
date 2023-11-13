@@ -52,7 +52,7 @@ import java.util.*
 /**
  * Factory class responsible for creating a new instance, a copy of [IBluetoothGattService].
  */
-internal object BluetoothGattServiceFactory {
+object BluetoothGattServiceFactory {
 
     /**
      * Copies a service. New instance is needed to separate containing values per connected
@@ -81,12 +81,17 @@ internal object BluetoothGattServiceFactory {
      * exact copy.
      *
      * @param characteristic Native Android [BluetoothGattCharacteristic]
-     * @return Copied characteristic.
+     * @return Copied characteristic or the same reference if copying not needed.
      */
     @SuppressLint("DiscouragedPrivateApi")
-    private fun cloneCharacteristic(characteristic: BluetoothGattCharacteristic): BluetoothGattCharacteristic {
+    fun cloneCharacteristic(characteristic: BluetoothGattCharacteristic): BluetoothGattCharacteristic {
         var clone: BluetoothGattCharacteristic
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
+
+        /**
+         * There is a new API for writing since Tiramisu and there is no risk of overwriting
+         * characteristic's fields by different clients.
+         */
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             // On older versions of android we have to use reflection in order
             // to set the instance ID and the service.
             clone = BluetoothGattCharacteristic(
@@ -113,6 +118,10 @@ internal object BluetoothGattServiceFactory {
                     characteristic.properties,
                     characteristic.permissions
                 )
+                characteristic.descriptors.onEach {
+                    val descriptor = cloneDescriptor(it)
+                    clone.addDescriptor(descriptor)
+                }
             } catch (e: Exception) {
                 clone = characteristic
             }
@@ -122,6 +131,55 @@ internal object BluetoothGattServiceFactory {
             clone = characteristic
         }
         clone.value = characteristic.value
+        return clone
+    }
+
+    /**
+     * Clones descriptors and it's properties using reflection. Reflection is needed to make an
+     * exact copy.
+     *
+     * @param descriptor Native Android [BluetoothGattDescriptor]
+     * @return Copied descriptor or the same reference if copying not needed.
+     */
+    @SuppressLint("DiscouragedPrivateApi")
+    fun cloneDescriptor(descriptor: BluetoothGattDescriptor): BluetoothGattDescriptor {
+        var clone: BluetoothGattDescriptor
+
+        /**
+         * There is a new API for writing since Tiramisu and there is no risk of overwriting
+         * descriptor's fields by different clients.
+         */
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            clone = BluetoothGattDescriptor(
+                descriptor.uuid,
+                descriptor.permissions
+            )
+            try {
+                val initCharacteristic: Method = descriptor.javaClass
+                    .getDeclaredMethod(
+                        "initDescriptor",
+                        BluetoothGattCharacteristic::class.java,
+                        UUID::class.java,
+                        Int::class.javaPrimitiveType,
+                        Int::class.javaPrimitiveType
+                    )
+                initCharacteristic.isAccessible = true
+                initCharacteristic.invoke(
+                    clone,
+                    descriptor.characteristic,
+                    descriptor.uuid,
+                    descriptor.characteristic.instanceId,
+                    descriptor.permissions
+                )
+            } catch (e: Exception) {
+                clone = descriptor
+            }
+        } else {
+            // Newer versions of android have this bug fixed as long as a
+            // handler is used in connectGatt().
+            clone = descriptor
+        }
+        clone.value = descriptor.value
         return clone
     }
 
