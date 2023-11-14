@@ -112,7 +112,7 @@ internal class ScannerViewModel @Inject constructor(
                 it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true
             }
            .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
-           .filter { !config.filterWithNames || it.advertisedName?.isNotEmpty() == true }
+           .filter { !config.filterWithNames || it.device.hasName || it.advertisedName?.isNotEmpty() == true }
 
     fun setFilterUuid(uuid: ParcelUuid?) {
         this.uuid = uuid
