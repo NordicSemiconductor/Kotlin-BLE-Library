@@ -91,9 +91,10 @@ class ClientBleGatt(
     private val logger: BleLogger,
     private val scope: CoroutineScope,
     private val mutex: MutexWrapper = SharedMutexWrapper,
+    private val bufferSize: Int
 ) {
 
-    private val connectionProvider = ConnectionProvider()
+    private val connectionProvider = ConnectionProvider(bufferSize)
 
     /**
      * Returns last observed [GattConnectionState] with it's corresponding status [BleGattConnectionStatus].

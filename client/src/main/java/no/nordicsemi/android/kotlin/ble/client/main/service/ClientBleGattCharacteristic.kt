@@ -108,7 +108,10 @@ class ClientBleGattCharacteristic internal constructor(
      */
     val properties = BleGattProperty.createProperties(characteristic.properties)
 
-    private val _notifications = MutableSharedFlow<DataByteArray>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _notifications = MutableSharedFlow<DataByteArray>(
+        extraBufferCapacity = connectionProvider.bufferSize,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     /**
      * Enables and observes notifications/indications of the characteristic. After subscriber is
@@ -142,7 +145,16 @@ class ClientBleGattCharacteristic internal constructor(
         }
     }
 
-    val descriptors = characteristic.descriptors.map { ClientBleGattDescriptor(gatt, instanceId, it, logger, mutex, connectionProvider) }
+    val descriptors = characteristic.descriptors.map {
+        ClientBleGattDescriptor(
+            gatt,
+            instanceId,
+            it,
+            logger,
+            mutex,
+            connectionProvider
+        )
+    }
 
     private var pendingReadEvent: ((CharacteristicRead) -> Unit)? = null
     private var pendingWriteEvent: ((CharacteristicWrite) -> Unit)? = null
@@ -167,7 +179,7 @@ class ClientBleGattCharacteristic internal constructor(
         when (event) {
             is CharacteristicEvent -> onEvent(event)
             is DescriptorEvent -> descriptors.forEach { it.onEvent(event) }
-            is ReliableWriteCompleted -> { }
+            is ReliableWriteCompleted -> {}
         }
     }
 
@@ -177,9 +189,23 @@ class ClientBleGattCharacteristic internal constructor(
 
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
-            is CharacteristicChanged -> onLocalEvent(event.characteristic) { _notifications.tryEmit(event.value) }
-            is CharacteristicRead -> onLocalEvent(event.characteristic) { pendingReadEvent?.invoke(event) }
-            is CharacteristicWrite -> onLocalEvent(event.characteristic) { pendingWriteEvent?.invoke(event) }
+            is CharacteristicChanged -> onLocalEvent(event.characteristic) {
+                _notifications.tryEmit(
+                    event.value
+                )
+            }
+
+            is CharacteristicRead -> onLocalEvent(event.characteristic) {
+                pendingReadEvent?.invoke(
+                    event
+                )
+            }
+
+            is CharacteristicWrite -> onLocalEvent(event.characteristic) {
+                pendingWriteEvent?.invoke(
+                    event
+                )
+            }
         }
     }
 
@@ -207,7 +233,10 @@ class ClientBleGattCharacteristic internal constructor(
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Write to characteristic - start, uuid: $uuid, value: $value, type: $writeType")
+            logger.log(
+                Log.DEBUG,
+                "Write to characteristic - start, uuid: $uuid, value: $value, type: $writeType"
+            )
             validateWriteProperties(writeType)
             pendingWriteEvent = {
                 pendingWriteEvent = null
@@ -215,8 +244,16 @@ class ClientBleGattCharacteristic internal constructor(
                     logger.log(Log.INFO, "Value written: $value to $uuid")
                     continuation.resume(Unit)
                 } else {
-                    logger.log(Log.ERROR, "Write to characteristic - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
+                    logger.log(
+                        Log.ERROR,
+                        "Write to characteristic - error, uuid: $uuid, result: ${it.status}"
+                    )
+                    continuation.resumeWithException(
+                        GattOperationException(
+                            it.status,
+                            cause = stacktrace
+                        )
+                    )
                 }
                 mutex.unlock()
             }
@@ -237,7 +274,10 @@ class ClientBleGattCharacteristic internal constructor(
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun splitWrite(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
-        logger.log(Log.DEBUG, "Split write to characteristic - start, uuid: $uuid, value: ${value}, type: $writeType")
+        logger.log(
+            Log.DEBUG,
+            "Split write to characteristic - start, uuid: $uuid, value: ${value}, type: $writeType"
+        )
         value.split(connectionProvider.availableMtu(writeType)).forEach {
             write(it, writeType)
         }
@@ -248,17 +288,28 @@ class ClientBleGattCharacteristic internal constructor(
         when (writeType) {
             BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
                 mutex.unlock()
-                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
+                logger.log(
+                    Log.ERROR,
+                    "Write to characteristic - missing property error, uuid: $uuid"
+                )
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE)
             }
+
             BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
                 mutex.unlock()
-                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
+                logger.log(
+                    Log.ERROR,
+                    "Write to characteristic - missing property error, uuid: $uuid"
+                )
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)
             }
+
             BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
                 mutex.unlock()
-                logger.log(Log.ERROR, "Write to characteristic - missing property error, uuid: $uuid")
+                logger.log(
+                    Log.ERROR,
+                    "Write to characteristic - missing property error, uuid: $uuid"
+                )
                 throw MissingPropertyException(BleGattProperty.PROPERTY_SIGNED_WRITE)
             }
         }
@@ -284,7 +335,10 @@ class ClientBleGattCharacteristic internal constructor(
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
                 mutex.unlock()
-                logger.log(Log.ERROR, "Read from characteristic - missing property error, uuid: $uuid")
+                logger.log(
+                    Log.ERROR,
+                    "Read from characteristic - missing property error, uuid: $uuid"
+                )
                 throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
             }
             pendingReadEvent = {
@@ -293,8 +347,16 @@ class ClientBleGattCharacteristic internal constructor(
                     logger.log(Log.INFO, "Value read: ${it.value} from $uuid")
                     continuation.resume(it.value.copyOf())
                 } else {
-                    logger.log(Log.ERROR, "Read from characteristic - error, uuid: $uuid, result: ${it.status}")
-                    continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
+                    logger.log(
+                        Log.ERROR,
+                        "Read from characteristic - error, uuid: $uuid, result: ${it.status}"
+                    )
+                    continuation.resumeWithException(
+                        GattOperationException(
+                            it.status,
+                            cause = stacktrace
+                        )
+                    )
                 }
                 mutex.unlock()
             }
@@ -322,7 +384,10 @@ class ClientBleGattCharacteristic internal constructor(
                 logger.log(Log.INFO, "Indications enabled: $uuid")
             }
         } ?: run {
-            logger.log(Log.ERROR, "Enable indications on characteristic - missing descriptor error, uuid: $uuid")
+            logger.log(
+                Log.ERROR,
+                "Enable indications on characteristic - missing descriptor error, uuid: $uuid"
+            )
             throw NotificationDescriptorNotFoundException()
         }
     }
@@ -336,7 +401,10 @@ class ClientBleGattCharacteristic internal constructor(
                 logger.log(Log.INFO, "Notifications enabled: $uuid")
             }
         } ?: run {
-            logger.log(Log.ERROR, "Enable notifications on characteristic - missing descriptor error, uuid: $uuid")
+            logger.log(
+                Log.ERROR,
+                "Enable notifications on characteristic - missing descriptor error, uuid: $uuid"
+            )
             throw NotificationDescriptorNotFoundException()
         }
     }
@@ -360,7 +428,10 @@ class ClientBleGattCharacteristic internal constructor(
                 logger.log(Log.INFO, "Notifications disabled: $uuid")
             }
         } ?: run {
-            logger.log(Log.ERROR, "Disable notifications on characteristic - missing descriptor error, uuid: $uuid")
+            logger.log(
+                Log.ERROR,
+                "Disable notifications on characteristic - missing descriptor error, uuid: $uuid"
+            )
             throw NotificationDescriptorNotFoundException()
         }
     }

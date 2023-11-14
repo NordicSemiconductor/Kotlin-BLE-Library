@@ -58,13 +58,14 @@ class ValueFlow private constructor(
         /**
          * Creates an instance of [ValueFlow] with predefined parameters.
          *
+         * @param bufferSize A buffer size for incoming values.
          * @return An instance of [ValueFlow].
          */
-        fun create(): ValueFlow {
+        fun create(bufferSize: Int): ValueFlow {
             return ValueFlow(
                 MutableSharedFlow(
                     replay = 1,
-                    extraBufferCapacity = 10,
+                    extraBufferCapacity = bufferSize,
                     onBufferOverflow = BufferOverflow.DROP_OLDEST
                 )
             )

@@ -89,7 +89,7 @@ class ServerBleGattCharacteristic internal constructor(
 
     private var onNotificationSent: ((NotificationSent) -> Unit)? = null
 
-    private val _value = ValueFlow.create().apply {
+    private val _value = ValueFlow.create(connectionProvider.bufferSize).apply {
         if (characteristic.value != DataByteArray()) { //Don't emit empty value
             this.tryEmit(characteristic.value)
         }

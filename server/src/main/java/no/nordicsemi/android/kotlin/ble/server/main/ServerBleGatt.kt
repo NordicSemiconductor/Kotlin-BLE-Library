@@ -82,7 +82,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
  * @property server [GattServerAPI] for communication with a client devices.
  * @property logger Logger instance for displaying logs.
  * @property scope [CoroutineScope] used for observing GATT events.
- * @param bufferSize A buffer size for events emitted by [BluetoothGattServerCallback].
+ * @property bufferSize A buffer size for events emitted by [BluetoothGattServerCallback].
  */
 @Suppress("unused")
 @SuppressLint("InlinedApi")
@@ -90,7 +90,7 @@ class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
     private val logger: BleLogger,
     private val scope: CoroutineScope,
-    bufferSize: Int,
+    private val bufferSize: Int,
 ) {
 
     companion object {
@@ -234,7 +234,7 @@ class ServerBleGatt internal constructor(
      */
     @SuppressLint("MissingPermission")
     private fun connectDevice(device: ClientDevice) {
-        val connectionProvider = ConnectionProvider()
+        val connectionProvider = ConnectionProvider(bufferSize)
         val copiedServices = services.map {
             ServerBleGattService(
                 server, device, BluetoothGattServiceFactory.copy(it), connectionProvider
