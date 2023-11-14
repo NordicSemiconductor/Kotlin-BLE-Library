@@ -52,6 +52,8 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 
 /**
  * A class which maps [BluetoothGattCallback] methods into [ClientGattEvent] events.
+ *
+ * @param bufferSize A buffer size for events emitted by [BluetoothGattCallback].
  */
 class ClientBleGattCallback(
     bufferSize: Int

@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.mock
 
+import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -51,6 +52,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
  *
  * @property mockEngine An instance of a [MockEngine].
  * @property serverDevice A server device.
+ * @param bufferSize A buffer size for events.
  */
 class MockServerAPI(
     private val mockEngine: MockEngine,

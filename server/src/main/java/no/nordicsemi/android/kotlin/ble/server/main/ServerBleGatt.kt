@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.server.main
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothGattServerCallback
 import android.content.Context
 import android.util.Log
 import androidx.annotation.RequiresPermission
@@ -80,6 +81,8 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
  *
  * @property server [GattServerAPI] for communication with a client devices.
  * @property logger Logger instance for displaying logs.
+ * @property scope [CoroutineScope] used for observing GATT events.
+ * @param bufferSize A buffer size for events emitted by [BluetoothGattServerCallback].
  */
 @Suppress("unused")
 @SuppressLint("InlinedApi")
