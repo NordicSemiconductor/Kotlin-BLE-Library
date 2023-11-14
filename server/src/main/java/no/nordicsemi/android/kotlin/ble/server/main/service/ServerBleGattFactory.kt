@@ -41,6 +41,7 @@ import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
+import no.nordicsemi.android.kotlin.ble.server.main.data.ServerConnectionOption
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.server.real.NativeServerBleAPI
 import kotlin.coroutines.resume
@@ -58,6 +59,7 @@ internal object ServerBleGattFactory {
      * @param logger An object responsible for displaying logs.
      * @param config Prescription for future BLE services creation.
      * @param mock Mock server device if a server should be run locally.
+     * @param options An additional options to configure a server behaviour.
      * @return New instance of [ServerBleGatt].
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -67,9 +69,10 @@ internal object ServerBleGattFactory {
         scope: CoroutineScope,
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
+        options: ServerConnectionOption,
     ): ServerBleGatt = mock?.let {
-        createMockServer(it, logger, scope, *config)
-    } ?: createRealServer(context, logger, scope, *config)
+        createMockServer(it, logger, scope, options, *config)
+    } ?: createRealServer(context, logger, scope, options, *config)
 
     /**
      * Creates mock variant of the server which will be used locally on a device without the
@@ -84,12 +87,13 @@ internal object ServerBleGattFactory {
         device: MockServerDevice,
         logger: BleLogger,
         scope: CoroutineScope,
+        options: ServerConnectionOption,
         vararg config: ServerBleGattServiceConfig,
     ): ServerBleGatt {
-        val api = MockServerAPI(MockEngine, device)
+        val api = MockServerAPI(MockEngine, device, options.bufferSize)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return ServerBleGatt(api, logger, scope)
+        return ServerBleGatt(api, logger, scope, options.bufferSize)
             .also { MockEngine.registerServer(api, device, services) }
     }
 
@@ -106,6 +110,7 @@ internal object ServerBleGattFactory {
         context: Context,
         logger: BleLogger,
         scope: CoroutineScope,
+        options: ServerConnectionOption,
         vararg config: ServerBleGattServiceConfig,
     ): ServerBleGatt {
 
@@ -114,8 +119,8 @@ internal object ServerBleGattFactory {
             invoked. Coroutine needs to be cancellable then.
          */
         return suspendCancellableCoroutine {
-            val nativeServer = NativeServerBleAPI.create(context)
-            val server = ServerBleGatt(nativeServer, logger, scope)
+            val nativeServer = NativeServerBleAPI.create(context, options.bufferSize)
+            val server = ServerBleGatt(nativeServer, logger, scope, options.bufferSize)
             var index = 0
 
             nativeServer.callback.onServiceAdded = {

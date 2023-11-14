@@ -49,15 +49,29 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacte
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
-import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.CharacteristicReadRequest
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.CharacteristicWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ClientConnectionStateChanged
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.DescriptorReadRequest
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.DescriptorWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.NotificationSent
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerMtuChanged
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerPhyRead
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerPhyUpdate
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServiceAdded
 
 /**
  * A class which maps [BluetoothGattServerCallback] methods into [ServerGattEvent] events.
+ *
+ * @param bufferSize A buffer size for events emitted by [BluetoothGattServerCallback].
  */
-class ServerBleGattCallback : BluetoothGattServerCallback() {
+class ServerBleGattCallback(
+    bufferSize: Int
+) : BluetoothGattServerCallback() {
 
     private val _event = MutableSharedFlow<ServerGattEvent>(
-        extraBufferCapacity = 10,
+        extraBufferCapacity = bufferSize,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val event = _event.asSharedFlow()

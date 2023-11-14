@@ -115,8 +115,8 @@ internal object ClientBleGattFactory {
         scope: CoroutineScope
     ): ClientBleGatt {
         val clientDevice = MockClientDevice()
-        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect)
-        return ClientBleGatt(gatt, logger, scope = scope)
+        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect, options.bufferSize)
+        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
     }
@@ -130,7 +130,7 @@ internal object ClientBleGattFactory {
         scope: CoroutineScope
     ): ClientBleGatt {
         val gatt = device.createConnection(context, options)
-        return ClientBleGatt(gatt, logger, scope = scope)
+        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
             .also { it.waitForConnection() }
     }
 
@@ -139,7 +139,7 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
     ): GattClientAPI {
-        val gattCallback = ClientBleGattCallback()
+        val gattCallback = ClientBleGattCallback(options.bufferSize)
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 

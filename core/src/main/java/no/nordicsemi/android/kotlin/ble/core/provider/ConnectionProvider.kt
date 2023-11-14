@@ -47,7 +47,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.Mtu
  * all of the components, the [ConnectionProvider] is shared in a constructor.
  *
  */
-class ConnectionProvider {
+class ConnectionProvider(val bufferSize: Int) {
 
     private val _mtu = MutableStateFlow(Mtu.min)
 

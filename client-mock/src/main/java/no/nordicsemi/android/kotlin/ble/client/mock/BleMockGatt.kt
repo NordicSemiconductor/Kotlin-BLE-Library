@@ -64,10 +64,11 @@ class BleMockGatt(
     private val serverDevice: MockServerDevice,
     private val clientDevice: ClientDevice,
     override val autoConnect: Boolean,
-    override val closeOnDisconnect: Boolean
+    override val closeOnDisconnect: Boolean,
+    bufferSize: Int,
 ) : GattClientAPI {
 
-    private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = bufferSize, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val event: SharedFlow<ClientGattEvent> = _event.asSharedFlow()
 
     override val device: ServerDevice

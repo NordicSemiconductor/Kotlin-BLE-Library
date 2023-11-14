@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.mock
 
+import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -51,14 +52,16 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
  *
  * @property mockEngine An instance of a [MockEngine].
  * @property serverDevice A server device.
+ * @param bufferSize A buffer size for events.
  */
 class MockServerAPI(
     private val mockEngine: MockEngine,
-    private val serverDevice: MockServerDevice
+    private val serverDevice: MockServerDevice,
+    bufferSize: Int,
 ) : GattServerAPI {
 
     //todo verify reply side-effects
-    private val _event = MutableSharedFlow<ServerGattEvent>(replay = 10, extraBufferCapacity = 10, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+    private val _event = MutableSharedFlow<ServerGattEvent>(replay = bufferSize, extraBufferCapacity = bufferSize, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     override val event: SharedFlow<ServerGattEvent> = _event.asSharedFlow()
 
     override fun onEvent(event: ServerGattEvent) {

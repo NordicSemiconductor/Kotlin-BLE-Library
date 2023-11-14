@@ -70,10 +70,10 @@ class NativeServerBleAPI(
     }
 
     companion object {
-        fun create(context: Context): NativeServerBleAPI {
+        fun create(context: Context, bufferSize: Int): NativeServerBleAPI {
             val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
 
-            val callback = ServerBleGattCallback()
+            val callback = ServerBleGattCallback(bufferSize)
             val bluetoothGattServer = bluetoothManager.openGattServer(context, callback)
             return NativeServerBleAPI(bluetoothGattServer, callback)
         }
