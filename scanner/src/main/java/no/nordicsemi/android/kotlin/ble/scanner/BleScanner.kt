@@ -46,6 +46,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
+import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
@@ -63,7 +64,7 @@ import no.nordicsemi.android.kotlin.ble.scanner.settings.toNative
  * @param context Android context required to initialize native Android API
  */
 class BleScanner(
-    context: Context
+    context: Context,
 ) {
 
     private val bluetoothManager: BluetoothManager
@@ -88,16 +89,21 @@ class BleScanner(
     @RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT])
     fun scan(
         filters: List<BleScanFilter> = emptyList(),
-        settings: BleScannerSettings = BleScannerSettings()
+        settings: BleScannerSettings = BleScannerSettings(),
     ): Flow<BleScanResult> = callbackFlow {
         launch {
-            MockDevices.devices.collect { it.forEach {
-                trySend(BleScanResult(it.key, it.value))
-            } }
+            MockDevices.devices.collect {
+                it.filterKeys { it.isIncluded(filters) }
+                    .forEach { trySend(BleScanResult(it.key, it.value)) }
+            }
         }
 
-        val bonded = bluetoothAdapter.bondedDevices.map { RealServerDevice(it) }
-        bonded.forEach { trySend(BleScanResult(it)) }
+        if (settings.includeStoredBondedDevices) {
+            bluetoothAdapter.bondedDevices
+                .map { RealServerDevice(it) }
+                .applyFilters(filters)
+                .forEach { trySend(BleScanResult(it)) }
+        }
 
         val scanCallback = object : ScanCallback() {
             override fun onScanResult(callbackType: Int, result: ScanResult?) {
@@ -118,5 +124,22 @@ class BleScanner(
         awaitClose {
             bluetoothLeScanner.stopScan(scanCallback)
         }
+    }
+
+    private fun List<ServerDevice>.applyFilters(filters: List<BleScanFilter>): List<ServerDevice> {
+        return filter { it.isIncluded(filters) }
+    }
+
+    private fun ServerDevice.isIncluded(filters: List<BleScanFilter>): Boolean {
+        val deviceName = name
+        val isNameIncluded = filters.isEmpty() || deviceName == null || filters.any {
+            it.deviceName?.let {
+                deviceName.contains(it)
+            } ?: false
+        }
+        val isAddressIncluded = filters.isEmpty() || filters.any {
+            it.deviceAddress?.let { address.contains(it) } ?: false
+        }
+        return isNameIncluded || isAddressIncluded
     }
 }

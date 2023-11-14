@@ -39,6 +39,7 @@ import androidx.annotation.RequiresApi
  *
  * @property scanMode Set scan mode ([BleScanMode]) for Bluetooth LE scan.
  * @property reportDelay Set report delay timestamp for Bluetooth LE scan.
+ * @property includeStoredBondedDevices Flag indicating weather to include stored bonded devices in scan result.
  * @property callbackType Set callback type ([BleScannerCallbackType]) for Bluetooth LE scan.
  * @property numOfMatches Set the number of matches ([BleNumOfMatches]) for Bluetooth LE scan filters hardware match.
  * @property matchMode Set match mode ([BleScannerMatchMode]) for Bluetooth LE scan filters hardware match.
@@ -50,6 +51,8 @@ data class BleScannerSettings(
     val scanMode: BleScanMode = BleScanMode.SCAN_MODE_LOW_POWER,
 
     val reportDelay: Long = 0L,
+
+    val includeStoredBondedDevices: Boolean = true,
 
     @RequiresApi(Build.VERSION_CODES.M)
     val callbackType: BleScannerCallbackType = BleScannerCallbackType.CALLBACK_TYPE_ALL_MATCHES,
