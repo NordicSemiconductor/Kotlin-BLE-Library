@@ -276,7 +276,7 @@ class ClientBleGattCharacteristic internal constructor(
     suspend fun splitWrite(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
         logger.log(
             Log.DEBUG,
-            "Split write to characteristic - start, uuid: $uuid, value: ${value}, type: $writeType"
+            "Split write to characteristic - start, uuid: $uuid, value: $value, type: $writeType"
         )
         value.split(connectionProvider.availableMtu(writeType)).forEach {
             write(it, writeType)
