@@ -65,7 +65,7 @@ fun ScannerView(
     onScanningStateChanged: (Boolean) -> Unit = {},
     onResult: (BleScanResults) -> Unit,
     deviceItem: @Composable (BleScanResults) -> Unit = {
-        DeviceListItem(it.device.name, it.device.address)
+        DeviceListItem(it.advertisedName, it.device.address)
     },
     showFilter: Boolean = true
 ) {
