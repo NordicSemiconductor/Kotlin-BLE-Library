@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -127,7 +128,7 @@ class ClientBleGattCharacteristic internal constructor(
     @SuppressLint("MissingPermission")
     suspend fun getNotifications(): Flow<DataByteArray> {
         if (!connectionProvider.isConnected) {
-            throw DeviceDisconnectedException()
+            return flow { throw DeviceDisconnectedException() }
         }
         try {
             enableIndicationsOrNotifications()
@@ -136,13 +137,9 @@ class ClientBleGattCharacteristic internal constructor(
             return flow { throw e }
         }
 
-        return suspendCoroutine { continuation ->
-            continuation.resume(
-                _notifications
-                    .onEach { log(it) }
-                    .onCompletion { disableNotificationsIfConnected() }
-            )
-        }
+        return _notifications
+            .onEach { log(it) }
+            .onCompletion { disableNotificationsIfConnected() }
     }
 
     val descriptors = characteristic.descriptors.map {
@@ -255,7 +252,6 @@ class ClientBleGattCharacteristic internal constructor(
                         )
                     )
                 }
-                mutex.unlock()
             }
             gatt.writeCharacteristic(characteristic, value, writeType)
         }
@@ -331,7 +327,7 @@ class ClientBleGattCharacteristic internal constructor(
         }
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
                 mutex.unlock()
@@ -358,7 +354,6 @@ class ClientBleGattCharacteristic internal constructor(
                         )
                     )
                 }
-                mutex.unlock()
             }
             gatt.readCharacteristic(characteristic)
         }

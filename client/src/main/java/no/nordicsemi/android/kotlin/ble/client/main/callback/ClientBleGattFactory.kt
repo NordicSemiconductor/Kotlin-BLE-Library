@@ -51,6 +51,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 /**
@@ -116,7 +117,7 @@ internal object ClientBleGattFactory {
     ): ClientBleGatt {
         val clientDevice = MockClientDevice()
         val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect, options.bufferSize)
-        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
+        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
     }
@@ -130,7 +131,7 @@ internal object ClientBleGattFactory {
         scope: CoroutineScope
     ): ClientBleGatt {
         val gatt = device.createConnection(context, options)
-        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
+        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
             .also { it.waitForConnection() }
     }
 
@@ -139,7 +140,7 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
     ): GattClientAPI {
-        val gattCallback = ClientBleGattCallback(options.bufferSize)
+        val gattCallback = ClientBleGattCallback(options.bufferSize, SharedMutexWrapper)
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 

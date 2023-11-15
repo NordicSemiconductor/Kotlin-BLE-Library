@@ -46,6 +46,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
@@ -56,7 +57,8 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
  * @param bufferSize A buffer size for events emitted by [BluetoothGattCallback].
  */
 class ClientBleGattCallback(
-    bufferSize: Int
+    bufferSize: Int,
+    private val mutexWrapper: MutexWrapper
 ): BluetoothGattCallback() {
 
     private val _event = MutableSharedFlow<ClientGattEvent>(
@@ -69,6 +71,7 @@ class ClientBleGattCallback(
      * Callback responsible for emitting an event [ServicesDiscovered].
      */
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
+        mutexWrapper.unlock()
         val services = gatt.services.map { NativeBluetoothGattService(it) }
         _event.tryEmit(ServicesDiscovered(services, BleGattOperationStatus.create(status)))
     }
@@ -115,6 +118,7 @@ class ClientBleGattCallback(
         value: ByteArray,
         status: Int
     ) {
+        mutexWrapper.unlock()
         val native = NativeBluetoothGattCharacteristic(characteristic)
         _event.tryEmit(CharacteristicRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }
@@ -128,6 +132,7 @@ class ClientBleGattCallback(
         characteristic: BluetoothGattCharacteristic?,
         status: Int
     ) {
+        mutexWrapper.unlock()
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(characteristic)
             _event.tryEmit(CharacteristicRead(native, native.value, BleGattOperationStatus.create(status)))
@@ -142,6 +147,7 @@ class ClientBleGattCallback(
         characteristic: BluetoothGattCharacteristic?,
         status: Int
     ) {
+        mutexWrapper.unlock()
         characteristic?.let {
             val native = NativeBluetoothGattCharacteristic(characteristic)
             _event.tryEmit(CharacteristicWrite(native, BleGattOperationStatus.create(status)))
@@ -157,6 +163,7 @@ class ClientBleGattCallback(
         status: Int,
         value: ByteArray
     ) {
+        mutexWrapper.unlock()
         val native = NativeBluetoothGattDescriptor(descriptor)
         _event.tryEmit(DescriptorRead(native, DataByteArray(value), BleGattOperationStatus.create(status)))
     }
@@ -170,6 +177,7 @@ class ClientBleGattCallback(
         descriptor: BluetoothGattDescriptor?,
         status: Int
     ) {
+        mutexWrapper.unlock()
         descriptor?.let {
             val native = NativeBluetoothGattDescriptor(descriptor)
             _event.tryEmit(DescriptorRead(native, native.value, BleGattOperationStatus.create(status)))
@@ -184,6 +192,7 @@ class ClientBleGattCallback(
         descriptor: BluetoothGattDescriptor?,
         status: Int
     ) {
+        mutexWrapper.unlock()
         descriptor?.let {
             val native = NativeBluetoothGattDescriptor(descriptor)
             _event.tryEmit(DescriptorWrite(native, BleGattOperationStatus.create(status)))
@@ -194,6 +203,7 @@ class ClientBleGattCallback(
      * Callback responsible for emitting an event [MtuChanged].
      */
     override fun onMtuChanged(gatt: BluetoothGatt?, mtu: Int, status: Int) {
+        mutexWrapper.unlock()
         _event.tryEmit(MtuChanged(mtu, BleGattOperationStatus.create(status)))
     }
 
@@ -201,6 +211,7 @@ class ClientBleGattCallback(
      * Callback responsible for emitting an event [PhyRead].
      */
     override fun onPhyRead(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
+        mutexWrapper.unlock()
         _event.tryEmit(
             PhyRead(
                 BleGattPhy.create(txPhy),
@@ -214,6 +225,7 @@ class ClientBleGattCallback(
      * Callback responsible for emitting an event [PhyUpdate].
      */
     override fun onPhyUpdate(gatt: BluetoothGatt?, txPhy: Int, rxPhy: Int, status: Int) {
+        mutexWrapper.unlock()
         _event.tryEmit(
             PhyUpdate(
                 BleGattPhy.create(txPhy),
@@ -227,6 +239,7 @@ class ClientBleGattCallback(
      * Callback responsible for emitting an event [ReadRemoteRssi].
      */
     override fun onReadRemoteRssi(gatt: BluetoothGatt?, rssi: Int, status: Int) {
+        mutexWrapper.unlock()
         _event.tryEmit(ReadRemoteRssi(rssi, BleGattOperationStatus.create(status)))
     }
 

@@ -48,6 +48,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
@@ -90,7 +91,7 @@ class ClientBleGatt(
     private val gatt: GattClientAPI,
     private val logger: BleLogger,
     private val scope: CoroutineScope,
-    private val mutex: MutexWrapper = SharedMutexWrapper,
+    private val mutex: MutexWrapper,
     private val bufferSize: Int
 ) {
 
@@ -197,7 +198,7 @@ class ClientBleGatt(
      */
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock()
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Requesting new mtu - start, mtu: $mtu")
             mtuCallback = { (mtu, status) ->
                 if (status.isSuccess) {
@@ -209,7 +210,6 @@ class ClientBleGatt(
                 }
 
                 mtuCallback = null
-                mutex.unlock()
             }
             gatt.requestMtu(mtu)
         }
@@ -222,7 +222,7 @@ class ClientBleGatt(
      */
     suspend fun readRssi(): Int {
         mutex.lock()
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Reading rssi - start")
             rssiCallback = { (rssi, status) ->
                 if (status.isSuccess) {
@@ -234,7 +234,6 @@ class ClientBleGatt(
                 }
 
                 rssiCallback = null
-                mutex.unlock()
             }
             gatt.readRemoteRssi()
         }
@@ -250,7 +249,7 @@ class ClientBleGatt(
      */
     suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {
         mutex.lock()
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             logger.log(
                 Log.DEBUG,
                 "Setting phy - start, txPhy: $txPhy, rxPhy: $rxPhy, phyOption: $phyOption"
@@ -265,7 +264,6 @@ class ClientBleGatt(
                 }
 
                 phyCallback = null
-                mutex.unlock()
             }
             gatt.setPreferredPhy(txPhy, rxPhy, phyOption)
         }
@@ -355,11 +353,15 @@ class ClientBleGatt(
     suspend fun waitForBonding(timeInMillis: Long = 2000) {
         mutex.lock()
         delay(timeInMillis)
-        suspendCoroutine { continuation ->
+        suspendCancellableCoroutine { continuation ->
+            continuation.invokeOnCancellation {
+                mutex.unlock()
+            }
+
             if (bondState.value != BondState.BONDING) {
                 mutex.unlock()
                 continuation.resume(Unit)
-                return@suspendCoroutine
+                return@suspendCancellableCoroutine
             } else {
                 bondStateCallback = {
                     mutex.unlock()
@@ -400,9 +402,8 @@ class ClientBleGatt(
         }
 
         mutex.lock()
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             onServicesDiscovered = {
-                mutex.unlock()
                 continuation.resume(it)
                 onServicesDiscovered = null
             }

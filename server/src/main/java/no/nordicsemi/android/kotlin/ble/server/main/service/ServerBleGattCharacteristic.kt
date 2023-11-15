@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
@@ -151,7 +152,8 @@ class ServerBleGattCharacteristic internal constructor(
 
         if (isNotification || isIndication) {
             val stacktrace = Exception() //Helper exception to display valid stacktrace.
-            return suspendCoroutine { continuation ->
+            return suspendCancellableCoroutine { continuation ->
+                //TODO: Check if this needs Mutex
                 onNotificationSent = {
                     onNotificationSent = null
                     if (it.status.isSuccess) {
