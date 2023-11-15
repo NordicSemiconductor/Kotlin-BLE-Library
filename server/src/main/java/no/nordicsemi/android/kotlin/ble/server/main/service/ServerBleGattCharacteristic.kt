@@ -132,7 +132,18 @@ class ServerBleGattCharacteristic internal constructor(
      *
      * @param value Bytes to set.
      */
+    @Deprecated("Use setLocalValue() instead.")
     fun setValue(value: DataByteArray) {
+        _value.tryEmit(value)
+        characteristic.value = value
+    }
+
+    /**
+     * Sets a local value for this characteristic. A notification/indication won't be send.
+     *
+     * @param value Bytes to set.
+     */
+    fun setLocalValue(value: DataByteArray) {
         _value.tryEmit(value)
         characteristic.value = value
     }
@@ -155,7 +166,7 @@ class ServerBleGattCharacteristic internal constructor(
                 onNotificationSent = {
                     onNotificationSent = null
                     if (it.status.isSuccess) {
-                        setValue(value)
+                        setLocalValue(value)
                         continuation.resume(Unit)
                     } else {
                         continuation.resumeWithException(GattOperationException(it.status, stacktrace))
