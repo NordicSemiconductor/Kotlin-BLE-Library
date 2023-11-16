@@ -20,6 +20,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultBleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -44,7 +45,7 @@ class LocalMutexTest {
     private val buttonCharacteristic = BlinkySpecifications.UUID_BUTTON_CHAR
     private val cccd = BlinkySpecifications.NOTIFICATION_DESCRIPTOR
 
-    private val testCount = 1
+    private val testCount = 10
 
     @get:Rule
     val mockkRule = MockKRule(this)
@@ -61,13 +62,17 @@ class LocalMutexTest {
     @Inject
     lateinit var serverDevice: MockServerDevice
 
-    @Inject
-    lateinit var serverDevice2: MockServerDevice
+    private val serverDevice2: MockServerDevice = MockServerDevice(
+        name = "GLS Server",
+        address = "11:22:33:44:55:66"
+    )
 
     @Inject
-    lateinit var server: ReliableWriteServerProvider
+    lateinit var server: BlinkyServerProvider
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
+
+    private val logger = BleLogger { _, log -> println(log) }
 
     @Before
     fun setUp() {
@@ -97,8 +102,8 @@ class LocalMutexTest {
     @Test
     fun whenReadRssiMultipleTimesShouldSucceed() = runTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, serverDevice, scope)
-        val gatt2 = ClientBleGatt.connect(context, serverDevice2, scope)
+        val gatt = ClientBleGatt.connect(context, serverDevice, scope, logger = logger)
+        val gatt2 = ClientBleGatt.connect(context, serverDevice2, scope, logger = logger)
 
         repeat(testCount) {
             val jobs = listOf(

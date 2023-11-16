@@ -146,7 +146,18 @@ data class MockClientDevice(
     override val name: String? = "CLIENT",
     override val address: String = "11:22:33:44:55:66",
     override val bondState: BondState = BondState.NONE,
-) : ClientDevice, Parcelable
+) : ClientDevice, Parcelable {
+
+    companion object {
+        private var counter = 0
+
+        fun nextDevice(): MockClientDevice {
+            counter = ++counter % 100
+            val lastDigit = String.format("%02d", counter)
+            return MockClientDevice(address = "11:22:33:44:55:$lastDigit")
+        }
+    }
+}
 
 /**
  * Class representing mocked BLE server device. It is independent from native Android API.

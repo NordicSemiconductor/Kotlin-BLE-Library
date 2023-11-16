@@ -115,7 +115,7 @@ internal object ClientBleGattFactory {
         logger: BleLogger,
         scope: CoroutineScope,
     ): ClientBleGatt {
-        val clientDevice = MockClientDevice()
+        val clientDevice = MockClientDevice.nextDevice()
         val gatt = BleMockGatt(
             MockEngine,
             device,
