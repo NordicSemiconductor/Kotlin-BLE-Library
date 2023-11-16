@@ -1,4 +1,4 @@
-package no.nordicsemi.android.kotlin.ble.test.utils
+package no.nordicsemi.android.kotlin.ble.test
 
 import java.util.UUID
 

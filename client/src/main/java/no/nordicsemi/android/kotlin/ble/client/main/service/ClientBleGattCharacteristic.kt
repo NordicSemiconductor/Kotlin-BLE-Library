@@ -39,7 +39,6 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
@@ -48,14 +47,14 @@ import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
-import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
-import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
-import no.nordicsemi.android.kotlin.ble.core.errors.MissingPropertyException
-import no.nordicsemi.android.kotlin.ble.core.errors.NotificationDescriptorNotFoundException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
+import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.core.errors.MissingPropertyException
+import no.nordicsemi.android.kotlin.ble.core.errors.NotificationDescriptorNotFoundException
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic

@@ -70,7 +70,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
-import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import kotlin.coroutines.resume
@@ -236,6 +235,30 @@ class ClientBleGatt(
                 rssiCallback = null
             }
             gatt.readRemoteRssi()
+        }
+    }
+
+    /**
+     * Reads preferred PHY for the connection.
+     *
+     * @return PHY values for this connection.
+     */
+    suspend fun readPhy(): PhyInfo {
+        mutex.lock()
+        return suspendCancellableCoroutine { continuation ->
+            logger.log(Log.DEBUG, "Reading phy - start")
+            phyCallback = { phy, status ->
+                if (status.isSuccess) {
+                    logger.log(Log.INFO, "Tx phy: ${phy.txPhy}, rx phy: ${phy.rxPhy}")
+                    continuation.resume(phy)
+                } else {
+                    logger.log(Log.ERROR, "Reading phy - error: $status")
+                    continuation.resumeWithException(GattOperationException(status))
+                }
+
+                phyCallback = null
+            }
+            gatt.readPhy()
         }
     }
 

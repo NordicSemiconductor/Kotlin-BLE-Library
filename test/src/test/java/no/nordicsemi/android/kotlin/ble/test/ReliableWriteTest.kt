@@ -93,7 +93,7 @@ class ReliableWriteTest {
     lateinit var clientDevice: MockClientDevice
 
     @Inject
-    lateinit var server: ReliableWriteServer
+    lateinit var server: ReliableWriteServerProvider
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
