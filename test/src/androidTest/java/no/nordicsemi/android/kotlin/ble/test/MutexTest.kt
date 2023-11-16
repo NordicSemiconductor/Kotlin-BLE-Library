@@ -15,6 +15,7 @@ import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
 import org.junit.Test
 import org.junit.runner.RunWith
 
+//FIXME: Tests don't work when run simultaneously.
 @RunWith(AndroidJUnit4::class)
 class MutexTest {
 
