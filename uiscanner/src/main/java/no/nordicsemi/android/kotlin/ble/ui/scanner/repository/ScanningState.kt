@@ -35,7 +35,7 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 
 sealed class ScanningState {
 
-    object Loading : ScanningState()
+    data object Loading : ScanningState()
 
     data class Error(val errorCode: Int) : ScanningState()
 

@@ -35,6 +35,6 @@ import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 
 sealed interface ScannerScreenResult
 
-object ScanningCancelled : ScannerScreenResult
+data object ScanningCancelled : ScannerScreenResult
 
 data class DeviceSelected(val scanResults: BleScanResults) : ScannerScreenResult
