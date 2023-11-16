@@ -29,7 +29,7 @@ class MutexTest {
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
-    private val testCount = 2
+    private val testCount = 10
 
     @Test
     fun whenReadRssiMultipleTimesShouldSucceed() = runTest {
