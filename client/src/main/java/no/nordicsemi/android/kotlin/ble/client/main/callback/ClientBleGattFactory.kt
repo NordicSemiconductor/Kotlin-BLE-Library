@@ -75,9 +75,10 @@ internal object ClientBleGattFactory {
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(macAddress)
         val realDevice = RealServerDevice(device)
@@ -99,12 +100,11 @@ internal object ClientBleGattFactory {
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
-        val scopeOrDefault = scope
         return when (device) {
-            is MockServerDevice -> connectDevice(device, options, logger, scopeOrDefault)
-            is RealServerDevice -> connectDevice(device, context, options, logger, scopeOrDefault)
+            is MockServerDevice -> connectDevice(device, options, logger, scope)
+            is RealServerDevice -> connectDevice(device, context, options, logger, scope)
         }
     }
 
@@ -113,10 +113,18 @@ internal object ClientBleGattFactory {
         device: MockServerDevice,
         options: BleGattConnectOptions,
         logger: BleLogger,
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
         val clientDevice = MockClientDevice()
-        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect, options.bufferSize)
+        val gatt = BleMockGatt(
+            MockEngine,
+            device,
+            clientDevice,
+            options.autoConnect,
+            options.closeOnDisconnect,
+            options.bufferSize,
+            SharedMutexWrapper
+        )
         return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
@@ -128,7 +136,7 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
         logger: BleLogger,
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
         val gatt = device.createConnection(context, options)
         return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
@@ -156,6 +164,11 @@ internal object ClientBleGattFactory {
             device.connectGatt(context, options.autoConnect, gattCallback)
         }
 
-        return NativeClientBleAPI(gatt, gattCallback, options.autoConnect, options.closeOnDisconnect)
+        return NativeClientBleAPI(
+            gatt,
+            gattCallback,
+            options.autoConnect,
+            options.closeOnDisconnect
+        )
     }
 }

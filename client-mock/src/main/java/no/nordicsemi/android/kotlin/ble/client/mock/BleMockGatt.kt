@@ -32,13 +32,11 @@
 package no.nordicsemi.android.kotlin.ble.client.mock
 
 import androidx.annotation.IntRange
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientMutexHandleCallback
+import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
@@ -46,6 +44,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
@@ -66,10 +65,11 @@ class BleMockGatt(
     override val autoConnect: Boolean,
     override val closeOnDisconnect: Boolean,
     bufferSize: Int,
+    mutexWrapper: MutexWrapper
 ) : GattClientAPI {
 
-    private val _event = MutableSharedFlow<ClientGattEvent>(extraBufferCapacity = bufferSize, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    override val event: SharedFlow<ClientGattEvent> = _event.asSharedFlow()
+    private val _event = ClientMutexHandleCallback(bufferSize, mutexWrapper)
+    override val event: SharedFlow<ClientGattEvent> = _event.event
 
     override val device: ServerDevice
         get() = serverDevice
