@@ -72,7 +72,7 @@ fun DeviceListItem(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            name?.let { name ->
+            name?.takeIf { it.isNotEmpty() }?.let { name ->
                 Text(
                     text = name,
                     style = MaterialTheme.typography.titleMedium
