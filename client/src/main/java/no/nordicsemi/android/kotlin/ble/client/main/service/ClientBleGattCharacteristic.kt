@@ -39,9 +39,11 @@ import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
@@ -125,18 +127,17 @@ class ClientBleGattCharacteristic internal constructor(
      * @return [Flow] which emits new bytes on notification.
      */
     @SuppressLint("MissingPermission")
-    suspend fun getNotifications(): Flow<DataByteArray> {
+    suspend fun getNotifications(
+        bufferSize: Int = 0,
+        bufferOverflow: BufferOverflow = BufferOverflow.DROP_OLDEST,
+    ): Flow<DataByteArray> {
         if (!connectionProvider.isConnected) {
             return flow { throw DeviceDisconnectedException() }
         }
-        try {
-            enableIndicationsOrNotifications()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            return flow { throw e }
-        }
 
         return _notifications
+            .apply { if (bufferSize > 0) buffer(bufferSize, bufferOverflow) }
+            .onStart { enableIndicationsOrNotifications() }
             .onEach { log(it) }
             .onCompletion { disableNotificationsIfConnected() }
     }
@@ -186,21 +187,15 @@ class ClientBleGattCharacteristic internal constructor(
     private fun onEvent(event: CharacteristicEvent) {
         when (event) {
             is CharacteristicChanged -> onLocalEvent(event.characteristic) {
-                _notifications.tryEmit(
-                    event.value
-                )
+                _notifications.tryEmit(event.value)
             }
 
             is CharacteristicRead -> onLocalEvent(event.characteristic) {
-                pendingReadEvent?.invoke(
-                    event
-                )
+                pendingReadEvent?.invoke(event)
             }
 
             is CharacteristicWrite -> onLocalEvent(event.characteristic) {
-                pendingWriteEvent?.invoke(
-                    event
-                )
+                pendingWriteEvent?.invoke(event)
             }
         }
     }
