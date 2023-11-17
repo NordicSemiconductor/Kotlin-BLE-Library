@@ -34,7 +34,7 @@ package no.nordicsemi.android.kotlin.ble.ui.scanner.view
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -49,7 +49,7 @@ import no.nordicsemi.android.common.theme.view.NordicAppBar
 fun ScannerAppBar(
     text: String,
     showProgress: Boolean = false,
-    backButtonIcon: ImageVector = Icons.Default.ArrowBack,
+    backButtonIcon: ImageVector = Icons.AutoMirrored.Filled.ArrowBack,
     onNavigationButtonClick: (() -> Unit)? = null,
 ) {
     NordicAppBar(

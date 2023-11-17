@@ -34,31 +34,29 @@ package no.nordicsemi.android.kotlin.ble.ui.scanner
 import android.os.ParcelUuid
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.permissions.ble.RequireLocation
 import no.nordicsemi.android.common.theme.R
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 import no.nordicsemi.android.kotlin.ble.ui.scanner.main.DeviceListItem
 import no.nordicsemi.android.kotlin.ble.ui.scanner.main.DevicesListView
 import no.nordicsemi.android.kotlin.ble.ui.scanner.main.viewmodel.ScannerViewModel
 import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScanningState
 import no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal.FilterView
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScannerView(
     uuid: ParcelUuid?,
@@ -80,15 +78,6 @@ fun ScannerView(
 
             val state by viewModel.state.collectAsStateWithLifecycle(ScanningState.Loading)
             val config by viewModel.filterConfig.collectAsStateWithLifecycle()
-            var refreshing by remember { mutableStateOf(false) }
-
-            val scope = rememberCoroutineScope()
-            fun refresh() = scope.launch {
-                refreshing = true
-                viewModel.refresh()
-                delay(400) // TODO remove this delay and refreshing variable after updating material dependency
-                refreshing = false
-            }
 
             Column(modifier = Modifier.fillMaxSize()) {
                 if (showFilter)
@@ -101,28 +90,32 @@ fun ScannerView(
                             .padding(horizontal = 16.dp),
                     )
 
-                val pullRefreshState = rememberPullRefreshState(
-                    refreshing = refreshing,
-                    onRefresh = { refresh() },
-                )
+                val pullRefreshState = rememberPullToRefreshState()
+                if (pullRefreshState.isRefreshing) {
+                    LaunchedEffect(true) {
+                        viewModel.refresh()
+                        pullRefreshState.endRefresh()
+                    }
+                }
 
                 Box(
                     modifier = Modifier
-                        .pullRefresh(pullRefreshState)
+                        .nestedScroll(pullRefreshState.nestedScrollConnection)
                         .clipToBounds()
                 ) {
-                    DevicesListView(
-                        isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
-                        state = state,
-                        modifier = Modifier.fillMaxSize(),
-                        onClick = { onResult(it) },
-                        deviceItem = deviceItem,
-                    )
+                    if (!pullRefreshState.isRefreshing) {
+                        DevicesListView(
+                            isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
+                            state = state,
+                            modifier = Modifier.fillMaxSize(),
+                            onClick = { onResult(it) },
+                            deviceItem = deviceItem,
+                        )
+                    }
 
-                    PullRefreshIndicator(
-                        refreshing = refreshing,
+                    PullToRefreshContainer(
+                        modifier = Modifier.align(Alignment.TopCenter),
                         state = pullRefreshState,
-                        Modifier.align(Alignment.TopCenter)
                     )
                 }
             }

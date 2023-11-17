@@ -37,7 +37,7 @@ import android.provider.Settings
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BluetoothSearching
+import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -61,7 +61,7 @@ internal fun ScanEmptyView(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        imageVector = Icons.Default.BluetoothSearching,
+        imageVector = Icons.AutoMirrored.Filled.BluetoothSearching,
         title = stringResource(id = R.string.no_device_guide_title),
         hint = stringResource(id = R.string.no_device_guide_info) + if (requireLocation) {
             "\n\n" + stringResource(id = R.string.no_device_guide_location_info)
