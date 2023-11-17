@@ -43,7 +43,7 @@ slf4j = "2.0.9"
 robolectric = "4.11.1"
 
 nordic-log = "2.3.0"
-nordic-common = "1.8.5"
+nordic-common = "1.9.0"
 nordicPlugins = "1.9.13"
 dokkaPlugin = "1.9.10"
 
