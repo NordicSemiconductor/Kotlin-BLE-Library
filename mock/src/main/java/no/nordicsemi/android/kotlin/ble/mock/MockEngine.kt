@@ -87,6 +87,9 @@ object MockEngine {
         device: MockServerDevice,
         services: List<IBluetoothGattService>,
     ) {
+        if (servers.containsKey(device)) {
+            throw IllegalArgumentException("Cannot register again the same server.")
+        }
         servers[device] = OpenedServer(server, services)
         services.forEach {
             server.onEvent(ServiceAdded(it, BleGattOperationStatus.GATT_SUCCESS))
@@ -126,6 +129,9 @@ object MockEngine {
         client: GattClientAPI,
         options: BleGattConnectOptions,
     ) {
+        if(clientConnections.containsKey(clientDevice)) {
+            throw IllegalArgumentException("Cannot connect again to the same device.")
+        }
         val server = servers[serverDevice]!!
         val phy = options.phy ?: BleGattPhy.PHY_LE_1M
         val connection = ServerConnection(
@@ -348,7 +354,7 @@ object MockEngine {
     fun readPhy(clientDevice: ClientDevice, device: MockServerDevice) {
         val connection = clientConnections[clientDevice]!!
         connection.clientApi.onEvent(
-            PhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_ERROR)
+            PhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_SUCCESS)
         )
     }
 

@@ -51,6 +51,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
+import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 /**
@@ -74,9 +75,10 @@ internal object ClientBleGattFactory {
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
-        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothManager =
+            context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(macAddress)
         val realDevice = RealServerDevice(device)
@@ -98,12 +100,11 @@ internal object ClientBleGattFactory {
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
         logger: BleLogger = DefaultConsoleLogger(context),
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
-        val scopeOrDefault = scope
         return when (device) {
-            is MockServerDevice -> connectDevice(device, options, logger, scopeOrDefault)
-            is RealServerDevice -> connectDevice(device, context, options, logger, scopeOrDefault)
+            is MockServerDevice -> connectDevice(device, options, logger, scope)
+            is RealServerDevice -> connectDevice(device, context, options, logger, scope)
         }
     }
 
@@ -112,11 +113,19 @@ internal object ClientBleGattFactory {
         device: MockServerDevice,
         options: BleGattConnectOptions,
         logger: BleLogger,
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
-        val clientDevice = MockClientDevice()
-        val gatt = BleMockGatt(MockEngine, device, clientDevice, options.autoConnect, options.closeOnDisconnect, options.bufferSize)
-        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
+        val clientDevice = MockClientDevice.nextDevice()
+        val gatt = BleMockGatt(
+            MockEngine,
+            device,
+            clientDevice,
+            options.autoConnect,
+            options.closeOnDisconnect,
+            options.bufferSize,
+            SharedMutexWrapper
+        )
+        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
     }
@@ -127,10 +136,10 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
         logger: BleLogger,
-        scope: CoroutineScope
+        scope: CoroutineScope,
     ): ClientBleGatt {
         val gatt = device.createConnection(context, options)
-        return ClientBleGatt(gatt, logger, scope = scope, bufferSize = options.bufferSize)
+        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
             .also { it.waitForConnection() }
     }
 
@@ -139,7 +148,7 @@ internal object ClientBleGattFactory {
         context: Context,
         options: BleGattConnectOptions,
     ): GattClientAPI {
-        val gattCallback = ClientBleGattCallback(options.bufferSize)
+        val gattCallback = ClientBleGattCallback(options.bufferSize, SharedMutexWrapper)
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 
@@ -155,6 +164,11 @@ internal object ClientBleGattFactory {
             device.connectGatt(context, options.autoConnect, gattCallback)
         }
 
-        return NativeClientBleAPI(gatt, gattCallback, options.autoConnect, options.closeOnDisconnect)
+        return NativeClientBleAPI(
+            gatt,
+            gattCallback,
+            options.autoConnect,
+            options.closeOnDisconnect
+        )
     }
 }

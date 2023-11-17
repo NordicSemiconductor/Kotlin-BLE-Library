@@ -36,16 +36,15 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.RestrictTo
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
+import no.nordicsemi.android.kotlin.ble.client.api.ClientMutexHandleCallback
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
@@ -56,14 +55,12 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
  * @param bufferSize A buffer size for events emitted by [BluetoothGattCallback].
  */
 class ClientBleGattCallback(
-    bufferSize: Int
+    bufferSize: Int,
+    private val mutexWrapper: MutexWrapper
 ): BluetoothGattCallback() {
 
-    private val _event = MutableSharedFlow<ClientGattEvent>(
-        extraBufferCapacity = bufferSize, //Warning: because of this parameter we can miss notifications
-        onBufferOverflow = BufferOverflow.DROP_OLDEST
-    )
-    val event = _event.asSharedFlow()
+    private val _event = ClientMutexHandleCallback(bufferSize, mutexWrapper)
+    val event = _event.event
 
     /**
      * Callback responsible for emitting an event [ServicesDiscovered].

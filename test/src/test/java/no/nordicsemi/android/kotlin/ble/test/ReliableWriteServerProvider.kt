@@ -57,7 +57,7 @@ val FIRST_CHARACTERISTIC = UUID.fromString("00001802-0000-1000-8000-00805f9b34fb
 val SECOND_CHARACTERISTIC = UUID.fromString("00001803-0000-1000-8000-00805f9b34fb")
 
 @SuppressLint("MissingPermission")
-class ReliableWriteServer @Inject constructor(
+class ReliableWriteServerProvider @Inject constructor(
     private val scope: CoroutineScope
 ) {
 

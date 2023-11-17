@@ -35,6 +35,7 @@ import android.Manifest
 import android.bluetooth.BluetoothGattCallback
 import android.util.Log
 import androidx.annotation.RequiresPermission
+import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -125,7 +126,7 @@ class ClientBleGattDescriptor internal constructor(
         }
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
-        suspendCoroutine { continuation ->
+        suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: $value")
             pendingWriteEvent = {
                 pendingWriteEvent = null
@@ -136,7 +137,6 @@ class ClientBleGattDescriptor internal constructor(
                     logger.log(Log.ERROR, "Write to descriptor - error, uuid: $uuid, result: ${it.status}")
                     continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
-                mutex.unlock()
             }
 
             gatt.writeDescriptor(descriptor, value)
@@ -158,7 +158,7 @@ class ClientBleGattDescriptor internal constructor(
         }
         mutex.lock()
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")
             pendingReadEvent = {
                 pendingReadEvent = null
@@ -169,7 +169,6 @@ class ClientBleGattDescriptor internal constructor(
                     logger.log(Log.ERROR, "Read from descriptor - error, uuid: $uuid, result: ${it.status}")
                     continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
-                mutex.unlock()
             }
             gatt.readDescriptor(descriptor)
         }
