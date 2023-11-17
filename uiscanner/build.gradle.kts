@@ -63,7 +63,6 @@ dependencies {
     implementation(libs.nordic.theme)
     implementation(libs.nordic.core)
     implementation(libs.nordic.permissions.ble)
-    implementation(libs.accompanist.flowlayout)
 
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material.iconsExtended)
