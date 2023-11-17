@@ -41,6 +41,8 @@ leakcanary = "2.12"
 mockk = "1.13.8"
 slf4j = "2.0.9"
 robolectric = "4.11.1"
+material3 = "1.2.0-alpha11"
+material = "1.6.0-beta01"
 
 nordic-log = "2.3.0"
 nordic-common = "1.9.0"
@@ -56,9 +58,9 @@ androidx-benchmark-macro = { group = "androidx.benchmark", name = "benchmark-mac
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
 androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material" }
+androidx-compose-material = { group = "androidx.compose.material", name = "material", version.ref = "material"  }
+androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3"  }
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material3-windowSizeClass = {group = "androidx.compose.material3", name = "material3-window-size-class" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
 androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
