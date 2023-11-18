@@ -51,7 +51,6 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.*
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * A helper class which handles operation which can happen on a GATT characteristic on a server
