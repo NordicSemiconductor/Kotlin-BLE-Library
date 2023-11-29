@@ -43,13 +43,13 @@ import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * A helper class which provides operations which can happen on a GATT descriptor. It main
@@ -124,7 +124,7 @@ class ClientBleGattDescriptor internal constructor(
         if (!connectionProvider.isConnected) {
             throw DeviceDisconnectedException()
         }
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.DESCRIPTOR_WRITE)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: $value")
@@ -156,7 +156,7 @@ class ClientBleGattDescriptor internal constructor(
         if (!connectionProvider.isConnected) {
             throw DeviceDisconnectedException()
         }
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.DESCRIPTOR_READ)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")

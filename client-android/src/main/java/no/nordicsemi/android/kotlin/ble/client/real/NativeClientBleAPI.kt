@@ -34,6 +34,7 @@ package no.nordicsemi.android.kotlin.ble.client.real
 import android.Manifest
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothStatusCodes
 import android.os.Build
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
@@ -87,10 +88,10 @@ class NativeClientBleAPI(
         characteristic: IBluetoothGattCharacteristic,
         value: DataByteArray,
         writeType: BleWriteType
-    ) {
+    ): Boolean {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeCharacteristic(characteristic, value.value, writeType.value)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            gatt.writeCharacteristic(characteristic, value.value, writeType.value) == BluetoothStatusCodes.SUCCESS
         } else @Suppress("DEPRECATION") {
             characteristic.writeType = writeType.value
             characteristic.value = value.value
@@ -101,28 +102,28 @@ class NativeClientBleAPI(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun readCharacteristic(
         characteristic: IBluetoothGattCharacteristic
-    ) {
+    ): Boolean {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.readCharacteristic(characteristic)
+        return gatt.readCharacteristic(characteristic)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
+    override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(characteristic, true)
+        return gatt.setCharacteristicNotification(characteristic, true)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
+    override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean {
         val characteristic = (characteristic as NativeBluetoothGattCharacteristic).characteristic
-        gatt.setCharacteristicNotification(characteristic, false)
+        return gatt.setCharacteristicNotification(characteristic, false)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
+    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray): Boolean {
         val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            gatt.writeDescriptor(descriptor, value.value)
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            gatt.writeDescriptor(descriptor, value.value) == BluetoothStatusCodes.SUCCESS
         } else @Suppress("DEPRECATION") {
             descriptor.value = value.value
             gatt.writeDescriptor(descriptor)
@@ -130,19 +131,19 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun readDescriptor(descriptor: IBluetoothGattDescriptor) {
+    override fun readDescriptor(descriptor: IBluetoothGattDescriptor): Boolean {
         val descriptor = (descriptor as NativeBluetoothGattDescriptor).descriptor
-        gatt.readDescriptor(descriptor)
+        return gatt.readDescriptor(descriptor)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int) {
-        gatt.requestMtu(mtu)
+    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int): Boolean {
+        return gatt.requestMtu(mtu)
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun readRemoteRssi() {
-        gatt.readRemoteRssi()
+    override fun readRemoteRssi(): Boolean {
+        return gatt.readRemoteRssi()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -157,8 +158,8 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun discoverServices() {
-        gatt.discoverServices()
+    override fun discoverServices(): Boolean {
+        return gatt.discoverServices()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -178,8 +179,8 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun reconnect() {
-        gatt.connect()
+    override fun reconnect(): Boolean {
+        return gatt.connect()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -198,8 +199,8 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun beginReliableWrite() {
-        gatt.beginReliableWrite()
+    override fun beginReliableWrite(): Boolean {
+        return gatt.beginReliableWrite()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -208,12 +209,12 @@ class NativeClientBleAPI(
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun executeReliableWrite() {
-        gatt.executeReliableWrite()
+    override fun executeReliableWrite(): Boolean {
+        return gatt.executeReliableWrite()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    override fun requestConnectionPriority(priority: BleGattConnectionPriority) {
-        gatt.requestConnectionPriority(priority.value)
+    override fun requestConnectionPriority(priority: BleGattConnectionPriority): Boolean {
+        return gatt.requestConnectionPriority(priority.value)
     }
 }

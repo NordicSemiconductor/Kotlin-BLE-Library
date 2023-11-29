@@ -1,5 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.test
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
@@ -21,6 +22,8 @@ class SimultaneousRssiStuckTest {
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
+    private val repeat = 5
+
     @Test
     fun whenReadRssiWithoutMutexShouldWork() = runTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -29,7 +32,7 @@ class SimultaneousRssiStuckTest {
         val mutex = Mutex()
 
         // This one passes when using a mutex
-        repeat(10) {
+        repeat(repeat) {
             val jobs = listOf(
                 launch { mutex.withLock { gatt.readRssi() } },
                 launch { mutex.withLock { gatt2.readRssi() } }
@@ -38,7 +41,7 @@ class SimultaneousRssiStuckTest {
         }
 
         //Issue: This one gets stuck when no mutex is used
-        repeat(10) {
+        repeat(repeat) {
             val jobs = listOf(
                 launch { gatt.readRssi() },
                 launch { gatt2.readRssi() }

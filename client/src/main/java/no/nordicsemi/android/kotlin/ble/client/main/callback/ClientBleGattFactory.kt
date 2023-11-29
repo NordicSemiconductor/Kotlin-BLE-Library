@@ -51,7 +51,7 @@ import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
-import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 
 /**
@@ -116,6 +116,7 @@ internal object ClientBleGattFactory {
         scope: CoroutineScope,
     ): ClientBleGatt {
         val clientDevice = MockClientDevice.nextDevice()
+        val mutexWrapper = MutexWrapper()
         val gatt = BleMockGatt(
             MockEngine,
             device,
@@ -123,9 +124,9 @@ internal object ClientBleGattFactory {
             options.autoConnect,
             options.closeOnDisconnect,
             options.bufferSize,
-            SharedMutexWrapper
+            mutexWrapper
         )
-        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
+        return ClientBleGatt(gatt, logger, scope, mutexWrapper, options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
     }
@@ -138,8 +139,9 @@ internal object ClientBleGattFactory {
         logger: BleLogger,
         scope: CoroutineScope,
     ): ClientBleGatt {
-        val gatt = device.createConnection(context, options)
-        return ClientBleGatt(gatt, logger, scope, SharedMutexWrapper, options.bufferSize)
+        val mutex = MutexWrapper()
+        val gatt = device.createConnection(context, options, mutex)
+        return ClientBleGatt(gatt, logger, scope, mutex, options.bufferSize)
             .also { it.waitForConnection() }
     }
 
@@ -147,8 +149,9 @@ internal object ClientBleGattFactory {
     private fun RealServerDevice.createConnection(
         context: Context,
         options: BleGattConnectOptions,
+        mutexWrapper: MutexWrapper
     ): GattClientAPI {
-        val gattCallback = ClientBleGattCallback(options.bufferSize, SharedMutexWrapper)
+        val gattCallback = ClientBleGattCallback(options.bufferSize, mutexWrapper)
 
         BondingBroadcastReceiver.register(context, this, gattCallback)
 

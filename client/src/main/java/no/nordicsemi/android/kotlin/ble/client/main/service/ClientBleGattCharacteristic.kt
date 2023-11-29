@@ -57,6 +57,7 @@ import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.errors.NotificationDescriptorNotFoundException
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
@@ -221,7 +222,7 @@ class ClientBleGattCharacteristic internal constructor(
         if (!connectionProvider.isConnected) {
             throw DeviceDisconnectedException()
         }
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
             logger.log(
@@ -277,7 +278,7 @@ class ClientBleGattCharacteristic internal constructor(
     private fun validateWriteProperties(writeType: BleWriteType) {
         when (writeType) {
             BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
                 logger.log(
                     Log.ERROR,
                     "Write to characteristic - missing property error, uuid: $uuid"
@@ -286,7 +287,7 @@ class ClientBleGattCharacteristic internal constructor(
             }
 
             BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
                 logger.log(
                     Log.ERROR,
                     "Write to characteristic - missing property error, uuid: $uuid"
@@ -295,7 +296,7 @@ class ClientBleGattCharacteristic internal constructor(
             }
 
             BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
                 logger.log(
                     Log.ERROR,
                     "Write to characteristic - missing property error, uuid: $uuid"
@@ -319,12 +320,12 @@ class ClientBleGattCharacteristic internal constructor(
         if (!connectionProvider.isConnected) {
             throw DeviceDisconnectedException()
         }
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.CHARACTERISTIC_READ)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_READ)
                 logger.log(
                     Log.ERROR,
                     "Read from characteristic - missing property error, uuid: $uuid"
