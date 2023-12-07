@@ -93,28 +93,28 @@ interface GattClientAPI {
         characteristic: IBluetoothGattCharacteristic,
         value: DataByteArray,
         writeType: BleWriteType
-    )
+    ): Boolean
 
     /**
      * Reads value from a characteristic.
      *
      * @param characteristic A characteristic from which the value will be read.
      */
-    fun readCharacteristic(characteristic: IBluetoothGattCharacteristic)
+    fun readCharacteristic(characteristic: IBluetoothGattCharacteristic): Boolean
 
     /**
      * Enables notifications on a characteristic.
      *
      * @param characteristic A characteristic on which notifications will be enabled.
      */
-    fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
+    fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean
 
     /**
      * Disables notifications on a characteristic.
      *
      * @param characteristic A characteristic on which notifications will be disabled.
      */
-    fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic)
+    fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean
 
     /**
      * Writes value to a descriptor.
@@ -122,26 +122,26 @@ interface GattClientAPI {
      * @param descriptor A descriptor to which the value will be written.
      * @param value A value as [DataByteArray].
      */
-    fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray)
+    fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray): Boolean
 
     /**
      * Reads value from a descriptor.
      *
      * @param descriptor A descriptor from which the value will be read.
      */
-    fun readDescriptor(descriptor: IBluetoothGattDescriptor)
+    fun readDescriptor(descriptor: IBluetoothGattDescriptor): Boolean
 
     /**
      * Requests mtu. Max value is 517, min 23.
      *
      * @param mtu A mtu value.
      */
-    fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int)
+    fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int): Boolean
 
     /**
      * Reads rssi of a remote server device.
      */
-    fun readRemoteRssi()
+    fun readRemoteRssi(): Boolean
 
     /**
      * Reads phy properties of the connection
@@ -151,7 +151,7 @@ interface GattClientAPI {
     /**
      * Discover services available on a remote server device.
      */
-    fun discoverServices()
+    fun discoverServices(): Boolean
 
     /**
      * Sets preferred phy for the connection.
@@ -170,7 +170,7 @@ interface GattClientAPI {
     /**
      * Connects to a peripheral after disconnection. Works only if [BleGattConnectOptions.closeOnDisconnect] is set to false.
      */
-    fun reconnect()
+    fun reconnect(): Boolean
 
     /**
      * Clears services cache. It should invoke [BluetoothGattCallback.onServiceChanged] callback.
@@ -186,7 +186,7 @@ interface GattClientAPI {
      * Begins reliable write. All writes to a characteristics which supports this feature will be
      * transactional which means that they can be reverted in case of data inconsistency.
      */
-    fun beginReliableWrite()
+    fun beginReliableWrite(): Boolean
 
     /**
      * Aborts reliable write. All writes to a characteristics which supports reliable writes will be
@@ -198,12 +198,12 @@ interface GattClientAPI {
      * Executes reliable write. All writes to a characteristics which supports reliable write will be
      * executed and new values will be set permanently.
      */
-    fun executeReliableWrite()
+    fun executeReliableWrite(): Boolean
 
     /**
      * Requests connection priority. It will influence latency and power consumption.
      *
      * @param priority Requested [BleGattConnectionPriority].
      */
-    fun requestConnectionPriority(priority: BleGattConnectionPriority)
+    fun requestConnectionPriority(priority: BleGattConnectionPriority): Boolean
 }

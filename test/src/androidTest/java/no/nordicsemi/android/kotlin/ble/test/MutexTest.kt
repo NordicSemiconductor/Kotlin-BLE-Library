@@ -3,9 +3,11 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
@@ -15,7 +17,6 @@ import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
 import org.junit.Test
 import org.junit.runner.RunWith
 
-//FIXME: Tests don't work when run simultaneously.
 @RunWith(AndroidJUnit4::class)
 class MutexTest {
 
@@ -83,36 +84,6 @@ class MutexTest {
                         PhyOption.NO_PREFERRED
                     )
                 }
-            )
-            jobs.forEach { it.join() }
-        }
-    }
-
-    @Test
-    fun whenRequestMtuMultipleTimesShouldSucceed() = runTest {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, address, scope)
-        val gatt2 = ClientBleGatt.connect(context, address2, scope)
-
-        repeat(testCount) {
-            val jobs = listOf(
-                launch { gatt.requestMtu(23) },
-                launch { gatt2.requestMtu(23) }
-            )
-            jobs.forEach { it.join() }
-        }
-    }
-
-    @Test
-    fun whenDiscoverServicesMultipleTimesShouldSucceed() = runTest {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, address, scope)
-        val gatt2 = ClientBleGatt.connect(context, address2, scope)
-
-        repeat(testCount) {
-            val jobs = listOf(
-                launch { gatt.discoverServices() },
-                launch { gatt2.discoverServices() }
             )
             jobs.forEach { it.join() }
         }

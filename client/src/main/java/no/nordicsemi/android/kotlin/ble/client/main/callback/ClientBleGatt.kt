@@ -69,7 +69,9 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import kotlin.coroutines.resume
@@ -171,8 +173,7 @@ class ClientBleGatt(
             GattConnectionState.STATE_CONNECTING,
             BleGattConnectionStatus.SUCCESS
         )
-
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.CONNECTION)
         return suspendCoroutine { continuation ->
             onConnectionStateChangedCallback = { connectionState, _ ->
                 if (connectionState == GattConnectionState.STATE_CONNECTED) {
@@ -184,7 +185,7 @@ class ClientBleGatt(
                 }
 
                 onConnectionStateChangedCallback = null
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.CONNECTION)
             }
         }
     }
@@ -196,7 +197,7 @@ class ClientBleGatt(
      * @return mtu Size after the request. It can be different than requested MTU.
      */
     suspend fun requestMtu(mtu: Int): Int {
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.MTU)
         return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Requesting new mtu - start, mtu: $mtu")
             mtuCallback = { (mtu, status) ->
@@ -210,7 +211,10 @@ class ClientBleGatt(
 
                 mtuCallback = null
             }
-            gatt.requestMtu(mtu)
+            if (!gatt.requestMtu(mtu)) {
+                mtuCallback = null
+                mutex.unlock(RequestedLockedFeature.MTU)
+            }
         }
     }
 
@@ -220,7 +224,7 @@ class ClientBleGatt(
      * @return RSSI of the device.
      */
     suspend fun readRssi(): Int {
-        mutex.lock()
+        SharedMutexWrapper.lock(RequestedLockedFeature.READ_REMOTE_RSSI)
         return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Reading rssi - start")
             rssiCallback = { (rssi, status) ->
@@ -234,7 +238,10 @@ class ClientBleGatt(
 
                 rssiCallback = null
             }
-            gatt.readRemoteRssi()
+             if (!gatt.readRemoteRssi()) {
+                 rssiCallback = null
+                 SharedMutexWrapper.unlock(RequestedLockedFeature.READ_REMOTE_RSSI)
+             }
         }
     }
 
@@ -244,7 +251,7 @@ class ClientBleGatt(
      * @return PHY values for this connection.
      */
     suspend fun readPhy(): PhyInfo {
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.PHY_READ)
         return suspendCancellableCoroutine { continuation ->
             logger.log(Log.DEBUG, "Reading phy - start")
             phyCallback = { phy, status ->
@@ -271,7 +278,7 @@ class ClientBleGatt(
      * @return PHY values set after the request. They may differ from requested values.
      */
     suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.PHY_UPDATE)
         return suspendCancellableCoroutine { continuation ->
             logger.log(
                 Log.DEBUG,
@@ -374,20 +381,20 @@ class ClientBleGatt(
      * @param timeInMillis Initial delay before bond state changes are started to be observed.
      */
     suspend fun waitForBonding(timeInMillis: Long = 2000) {
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.BONDING)
         delay(timeInMillis)
         suspendCancellableCoroutine { continuation ->
             continuation.invokeOnCancellation {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.BONDING)
             }
 
             if (bondState.value != BondState.BONDING) {
-                mutex.unlock()
+                mutex.unlock(RequestedLockedFeature.BONDING)
                 continuation.resume(Unit)
                 return@suspendCancellableCoroutine
             } else {
                 bondStateCallback = {
-                    mutex.unlock()
+                    mutex.unlock(RequestedLockedFeature.BONDING)
                     bondStateCallback = null
                     continuation.resume(Unit)
                 }
@@ -424,7 +431,7 @@ class ClientBleGatt(
             throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
         }
 
-        mutex.lock()
+        mutex.lock(RequestedLockedFeature.SERVICES_DISCOVERED)
         return suspendCancellableCoroutine { continuation ->
             onServicesDiscovered = {
                 continuation.resume(it)

@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.core.mutex
 
+import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 
 /**
@@ -44,7 +45,11 @@ import kotlinx.coroutines.sync.Mutex
  */
 class MutexWrapper(private val mutex: Mutex = Mutex()) {
 
-    suspend fun lock() {
+    private val requestMap = mutableMapOf<RequestedLockedFeature, Int>()
+
+    suspend fun lock(feature: RequestedLockedFeature) {
+        val pendingRequests = requestMap[feature] ?: 0
+        requestMap[feature] = pendingRequests+1
         mutex.lock()
     }
 
@@ -52,7 +57,11 @@ class MutexWrapper(private val mutex: Mutex = Mutex()) {
         mutex.tryLock()
     }
 
-    fun unlock() {
-        mutex.unlock()
+    fun unlock(feature: RequestedLockedFeature) {
+        val pendingRequests = requestMap[feature] ?: 0
+        if (pendingRequests > 0) {
+            requestMap[feature] = pendingRequests-1
+            mutex.unlock()
+        }
     }
 }

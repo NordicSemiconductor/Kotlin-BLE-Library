@@ -82,44 +82,44 @@ class BleMockGatt(
         characteristic: IBluetoothGattCharacteristic,
         value: DataByteArray,
         writeType: BleWriteType
-    ) {
-        mockEngine.writeCharacteristic(serverDevice, clientDevice, characteristic, value, writeType)
+    ): Boolean {
+        return mockEngine.writeCharacteristic(serverDevice, clientDevice, characteristic, value, writeType)
     }
 
-    override fun readCharacteristic(characteristic: IBluetoothGattCharacteristic) {
-        mockEngine.readCharacteristic(serverDevice, clientDevice, characteristic)
+    override fun readCharacteristic(characteristic: IBluetoothGattCharacteristic): Boolean {
+        return mockEngine.readCharacteristic(serverDevice, clientDevice, characteristic)
     }
 
-    override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        mockEngine.enableCharacteristicNotification(clientDevice, serverDevice, characteristic)
+    override fun enableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean {
+        return mockEngine.enableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
-    override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic) {
-        mockEngine.disableCharacteristicNotification(clientDevice, serverDevice, characteristic)
+    override fun disableCharacteristicNotification(characteristic: IBluetoothGattCharacteristic): Boolean {
+        return mockEngine.disableCharacteristicNotification(clientDevice, serverDevice, characteristic)
     }
 
-    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray) {
-        mockEngine.writeDescriptor(serverDevice, clientDevice, descriptor, value)
+    override fun writeDescriptor(descriptor: IBluetoothGattDescriptor, value: DataByteArray): Boolean {
+        return mockEngine.writeDescriptor(serverDevice, clientDevice, descriptor, value)
     }
 
-    override fun readDescriptor(descriptor: IBluetoothGattDescriptor) {
-        mockEngine.readDescriptor(serverDevice, clientDevice, descriptor)
+    override fun readDescriptor(descriptor: IBluetoothGattDescriptor): Boolean {
+        return mockEngine.readDescriptor(serverDevice, clientDevice, descriptor)
     }
 
-    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int) {
-        mockEngine.requestMtu(clientDevice, serverDevice, mtu)
+    override fun requestMtu(@IntRange(from = 23, to = 517) mtu: Int): Boolean {
+        return mockEngine.requestMtu(clientDevice, serverDevice, mtu)
     }
 
-    override fun readRemoteRssi() {
-        mockEngine.readRemoteRssi(clientDevice, serverDevice)
+    override fun readRemoteRssi(): Boolean {
+        return mockEngine.readRemoteRssi(clientDevice, serverDevice)
     }
 
     override fun readPhy() {
         mockEngine.readPhy(clientDevice, serverDevice)
     }
 
-    override fun discoverServices() {
-        mockEngine.discoverServices(clientDevice, serverDevice)
+    override fun discoverServices(): Boolean {
+        return mockEngine.discoverServices(clientDevice, serverDevice)
     }
 
     override fun setPreferredPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption) {
@@ -130,8 +130,8 @@ class BleMockGatt(
         mockEngine.cancelConnection(serverDevice, clientDevice)
     }
 
-    override fun reconnect() {
-        mockEngine.connect(clientDevice)
+    override fun reconnect(): Boolean {
+        return mockEngine.connect(clientDevice)
     }
 
     override fun clearServicesCache() {
@@ -142,19 +142,19 @@ class BleMockGatt(
         mockEngine.close(serverDevice, clientDevice)
     }
 
-    override fun beginReliableWrite() {
-        mockEngine.beginReliableWrite(serverDevice, clientDevice)
+    override fun beginReliableWrite(): Boolean {
+        return mockEngine.beginReliableWrite(serverDevice, clientDevice)
     }
 
     override fun abortReliableWrite() {
         mockEngine.abortReliableWrite(serverDevice, clientDevice)
     }
 
-    override fun executeReliableWrite() {
-        mockEngine.executeReliableWrite(serverDevice, clientDevice)
+    override fun executeReliableWrite(): Boolean {
+        return mockEngine.executeReliableWrite(serverDevice, clientDevice)
     }
 
-    override fun requestConnectionPriority(priority: BleGattConnectionPriority) {
-        mockEngine.requestConnectionPriority(clientDevice, priority)
+    override fun requestConnectionPriority(priority: BleGattConnectionPriority): Boolean {
+        return mockEngine.requestConnectionPriority(clientDevice, priority)
     }
 }

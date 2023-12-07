@@ -38,6 +38,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -140,6 +141,6 @@ class BleScanner(
         val isAddressIncluded = filters.isEmpty() || filters.any {
             it.deviceAddress?.let { address.contains(it) } ?: false
         }
-        return isNameIncluded || isAddressIncluded
+        return filters.isEmpty() || isNameIncluded || isAddressIncluded
     }
 }

@@ -3,6 +3,8 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -33,7 +35,7 @@ class GetNotificationsStuckTest {
         gatt.disconnect()           // Simulate a device disconnection
         Assert.assertThrows(DeviceDisconnectedException::class.java) {
             runBlocking {
-                not.getNotifications()     //Issue: stuck here forever
+                not.getNotifications().first()     //Issue: stuck here forever
             }
         }
     }

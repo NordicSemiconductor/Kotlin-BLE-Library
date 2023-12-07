@@ -111,16 +111,20 @@ object MockEngine {
     fun cancelConnection(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
         val connection = clientConnections[clientDevice]!!
 
-        connection.serverApi.onEvent(ClientConnectionStateChanged(
-            clientDevice,
-            BleGattConnectionStatus.SUCCESS,
-            GattConnectionState.STATE_DISCONNECTED
-        ))
+        connection.serverApi.onEvent(
+            ClientConnectionStateChanged(
+                clientDevice,
+                BleGattConnectionStatus.SUCCESS,
+                GattConnectionState.STATE_DISCONNECTED
+            )
+        )
 
-        connection.clientApi.onEvent(ConnectionStateChanged(
-            BleGattConnectionStatus.SUCCESS,
-            GattConnectionState.STATE_DISCONNECTED
-        ))
+        connection.clientApi.onEvent(
+            ConnectionStateChanged(
+                BleGattConnectionStatus.SUCCESS,
+                GattConnectionState.STATE_DISCONNECTED
+            )
+        )
     }
 
     fun connectToServer(
@@ -129,7 +133,7 @@ object MockEngine {
         client: GattClientAPI,
         options: BleGattConnectOptions,
     ) {
-        if(clientConnections.containsKey(clientDevice)) {
+        if (clientConnections.containsKey(clientDevice)) {
             throw IllegalArgumentException("Cannot connect again to the same device.")
         }
         val server = servers[serverDevice]!!
@@ -142,7 +146,8 @@ object MockEngine {
             server.services,
             ConnectionParams(txPhy = phy, rxPhy = phy),
         )
-        serverConnections[serverDevice] = (serverConnections[serverDevice] ?: emptyList()) + clientDevice
+        serverConnections[serverDevice] =
+            (serverConnections[serverDevice] ?: emptyList()) + clientDevice
         clientConnections[clientDevice] = connection
 
         server.serverApi.onEvent(
@@ -207,13 +212,15 @@ object MockEngine {
         connection.serverApi.onEvent(NotificationSent(device, BleGattOperationStatus.GATT_SUCCESS))
     }
 
-    fun connect(device: ClientDevice) {
-        clientConnections[device]?.clientApi?.onEvent(
+    fun connect(device: ClientDevice): Boolean {
+        val connection = clientConnections[device] ?: return false
+        connection.clientApi.onEvent(
             ConnectionStateChanged(
                 BleGattConnectionStatus.SUCCESS,
                 GattConnectionState.STATE_CONNECTED
             )
         )
+        return true
     }
 
     fun readPhy(device: ClientDevice) {
@@ -258,16 +265,17 @@ object MockEngine {
         characteristic: IBluetoothGattCharacteristic,
         value: DataByteArray,
         writeType: BleWriteType,
-    ) {
-        val connection = clientConnections[clientDevice]
-            ?: return //Client disconnected.
+    ): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val isResponseNeeded = when (writeType) {
             BleWriteType.NO_RESPONSE -> false
             BleWriteType.DEFAULT,
-            BleWriteType.SIGNED -> true
+            BleWriteType.SIGNED,
+            -> true
         }
         val request = requests.newWriteRequest(characteristic)
-        servers[serverDevice]?.serverApi?.onEvent(
+        val server = servers[serverDevice] ?: return false
+        server.serverApi.onEvent(
             CharacteristicWriteRequest(
                 clientDevice,
                 request.requestId,
@@ -280,39 +288,53 @@ object MockEngine {
         )
         if (!isResponseNeeded) {
             //Invoke client callback to unsuspend request. It seems that native API does the same.
-            connection.clientApi.onEvent(CharacteristicWrite(characteristic, BleGattOperationStatus.GATT_SUCCESS))
+            connection.clientApi.onEvent(
+                CharacteristicWrite(
+                    characteristic,
+                    BleGattOperationStatus.GATT_SUCCESS
+                )
+            )
         }
+        return true
     }
 
-    fun readCharacteristic(device: MockServerDevice, clientDevice: ClientDevice, characteristic: IBluetoothGattCharacteristic) {
+    fun readCharacteristic(
+        device: MockServerDevice,
+        clientDevice: ClientDevice,
+        characteristic: IBluetoothGattCharacteristic,
+    ): Boolean {
         val request = requests.newReadRequest(characteristic)
-        servers[device]?.serverApi?.onEvent(
+        val server = servers[device] ?: return false
+        server.serverApi.onEvent(
             CharacteristicReadRequest(clientDevice, request.requestId, 0, characteristic)
         )
+        return true
     }
 
     fun enableCharacteristicNotification(
         clientDevice: ClientDevice,
         device: MockServerDevice,
         characteristic: IBluetoothGattCharacteristic,
-    ) {
-        val connection = clientConnections[clientDevice]!!
+    ): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newNotifications = connection.enabledNotification.toMutableMap()
         newNotifications[characteristic.uuid] = true
         val newConnection = connection.copy(enabledNotification = newNotifications)
         clientConnections[clientDevice] = newConnection
+        return true
     }
 
     fun disableCharacteristicNotification(
         clientDevice: ClientDevice,
         device: MockServerDevice,
         characteristic: IBluetoothGattCharacteristic,
-    ) {
-        val connection = clientConnections[clientDevice] ?: return
+    ): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newNotifications = connection.enabledNotification.toMutableMap()
         newNotifications[characteristic.uuid] = false
         val newConnection = connection.copy(enabledNotification = newNotifications)
         clientConnections[clientDevice] = newConnection
+        return true
     }
 
     fun writeDescriptor(
@@ -320,11 +342,11 @@ object MockEngine {
         clientDevice: ClientDevice,
         descriptor: IBluetoothGattDescriptor,
         value: DataByteArray,
-    ) {
-        val connection = clientConnections[clientDevice]
-            ?: return //Client disconnected.
+    ): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val request = requests.newWriteRequest(descriptor)
-        servers[device]?.serverApi?.onEvent(
+        val server = servers[device] ?: return false
+        server.serverApi.onEvent(
             DescriptorWriteRequest(
                 device = clientDevice,
                 requestId = request.requestId,
@@ -335,36 +357,49 @@ object MockEngine {
                 value = value
             )
         )
+        return true
     }
 
-    fun readDescriptor(device: MockServerDevice, clientDevice: ClientDevice, descriptor: IBluetoothGattDescriptor) {
+    fun readDescriptor(
+        device: MockServerDevice,
+        clientDevice: ClientDevice,
+        descriptor: IBluetoothGattDescriptor,
+    ): Boolean {
         val request = requests.newReadRequest(descriptor)
-        servers[device]?.serverApi?.onEvent(
+        val server = servers[device] ?: return false
+        server.serverApi.onEvent(
             DescriptorReadRequest(clientDevice, request.requestId, 0, descriptor)
         )
+        return true
     }
 
-    fun readRemoteRssi(clientDevice: ClientDevice, device: MockServerDevice) {
-        val connection = clientConnections[clientDevice]!!
+    fun readRemoteRssi(clientDevice: ClientDevice, device: MockServerDevice): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         connection.clientApi.onEvent(
             ReadRemoteRssi(connection.params.rssi, BleGattOperationStatus.GATT_SUCCESS)
         )
+        return true
     }
 
     fun readPhy(clientDevice: ClientDevice, device: MockServerDevice) {
         val connection = clientConnections[clientDevice]!!
         connection.clientApi.onEvent(
-            PhyRead(connection.params.txPhy, connection.params.rxPhy, BleGattOperationStatus.GATT_SUCCESS)
+            PhyRead(
+                connection.params.txPhy,
+                connection.params.rxPhy,
+                BleGattOperationStatus.GATT_SUCCESS
+            )
         )
     }
 
-    fun discoverServices(clientDevice: ClientDevice, device: MockServerDevice) {
-        val connection = clientConnections[clientDevice]!!
+    fun discoverServices(clientDevice: ClientDevice, device: MockServerDevice): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val services = connection.services
 
         val event = ServicesDiscovered(services, BleGattOperationStatus.GATT_SUCCESS)
 
         connection.clientApi.onEvent(event)
+        return true
     }
 
     fun setPreferredPhy(
@@ -389,8 +424,8 @@ object MockEngine {
         )
     }
 
-    fun requestMtu(clientDevice: ClientDevice, serverDevice: MockServerDevice, mtu: Int) {
-        val connection = clientConnections[clientDevice]!!
+    fun requestMtu(clientDevice: ClientDevice, serverDevice: MockServerDevice, mtu: Int): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newConnection = connection.copy(
             params = connection.params.copy(mtu = mtu)
         )
@@ -403,17 +438,19 @@ object MockEngine {
         connection.serverApi.onEvent(
             ServerMtuChanged(connection.client, mtu)
         )
+        return true
     }
 
     fun requestConnectionPriority(
         clientDevice: ClientDevice,
         priority: BleGattConnectionPriority,
-    ) {
-        val connection = clientConnections[clientDevice]!!
+    ): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newConnection = connection.copy(
             params = connection.params.copy(priority = priority)
         )
         clientConnections[clientDevice] = newConnection
+        return true
     }
 
     fun close(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
@@ -430,12 +467,13 @@ object MockEngine {
         connection.clientApi.onEvent(ServiceChanged())
     }
 
-    fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
-        val connection = clientConnections[clientDevice]!!
+    fun beginReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newConnection = connection.copy(
             isReliableWriteOn = true
         )
         clientConnections[clientDevice] = newConnection
+        return true
     }
 
     fun abortReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
@@ -451,8 +489,8 @@ object MockEngine {
         )
     }
 
-    fun executeReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
-        val connection = clientConnections[clientDevice]!!
+    fun executeReliableWrite(serverDevice: MockServerDevice, clientDevice: ClientDevice): Boolean {
+        val connection = clientConnections[clientDevice] ?: return false
         val newConnection = connection.copy(
             isReliableWriteOn = false
         )
@@ -462,5 +500,6 @@ object MockEngine {
         connection.serverApi.onEvent(
             ExecuteWrite(connection.client, request.requestId, true)
         )
+        return true
     }
 }
