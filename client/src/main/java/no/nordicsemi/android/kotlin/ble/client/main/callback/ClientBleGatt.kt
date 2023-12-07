@@ -148,7 +148,6 @@ class ClientBleGatt(
 
     init {
         gatt.event.onEach {
-            logger.log(Log.VERBOSE, "onConnectionStateChangedCallback: $onConnectionStateChangedCallback")
             logger.log(Log.VERBOSE, "On gatt event: $it")
             when (it) {
                 is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
