@@ -94,7 +94,6 @@ class BleScanner(
     ): Flow<BleScanResult> = callbackFlow {
         launch {
             MockDevices.devices.collect {
-                Log.d("AAATESTAAA", "Devices: $it")
                 it.filterKeys { it.isIncluded(filters) }
                     .forEach { trySend(BleScanResult(it.key, it.value)) }
             }
