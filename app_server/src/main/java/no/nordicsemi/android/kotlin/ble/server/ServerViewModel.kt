@@ -45,7 +45,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -59,6 +61,7 @@ import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
+import no.nordicsemi.android.kotlin.ble.server.main.ServerConnectionEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristicConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
@@ -138,30 +141,27 @@ class ServerViewModel @Inject constructor(
                 )
             )
 
-            viewModelScope.launch {
-                advertiser.advertise(advertiserConfig) //Start advertising
-                    .cancellable()
-                    .catch { it.printStackTrace() }
-                    .onEach { Log.d("ADVERTISER", "New event: $it") }
-                    .collect { //Observe advertiser lifecycle events
-                        if (it is OnAdvertisingSetStarted) { //Handle advertising start event
-                            _state.value = _state.value.copy(isAdvertising = true)
-                        }
-                        if (it is OnAdvertisingSetStopped) { //Handle advertising top event
-                            _state.value = _state.value.copy(isAdvertising = false)
-                        }
+            advertiser.advertise(advertiserConfig) //Start advertising
+                .cancellable()
+                .catch { it.printStackTrace() }
+                .onEach { Log.d("ADVERTISER", "New event: $it") }
+                .onEach { //Observe advertiser lifecycle events
+                    if (it is OnAdvertisingSetStarted) { //Handle advertising start event
+                        _state.value = _state.value.copy(isAdvertising = true)
                     }
-            }
+                    if (it is OnAdvertisingSetStopped) { //Handle advertising top event
+                        _state.value = _state.value.copy(isAdvertising = false)
+                    }
+                }.launchIn(viewModelScope)
 
-            launch {
-                server.connections
-                    .mapNotNull { it.values.firstOrNull() }
-                    .collect {
-                        it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
-                            setUpServices(it)
-                        }
+            server.connectionEvents
+                .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
+                .map { it.connection }
+                .onEach {
+                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                        setUpServices(it)
                     }
-            }
+                }.launchIn(viewModelScope)
         }
     }
 
