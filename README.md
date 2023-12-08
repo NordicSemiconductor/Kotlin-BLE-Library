@@ -62,12 +62,12 @@ Turning on/off a LED light can looks like that:
 viewModelScope.launch {
     if (state.value.isLedOn) {
         //Write is a suspend function which waits for the operation to finish.
-        ledCharacteristic.write(byteArrayOf(0x00))
+        ledCharacteristic.write(DataByteArray.from(0x00))
         //No exception means that writing was a success. We can update the UI.
         _state.value = _state.value.copy(isLedOn = false)
     } else {
         //Write is a suspend function which waits for the operation to finish.
-        ledCharacteristic.write(byteArrayOf(0x01))
+        ledCharacteristic.write(DataByteArray.from(0x01))
         //No exception means that writing was a success. We can update the UI.
         _state.value = _state.value.copy(isLedOn = true)
     }
@@ -140,14 +140,20 @@ The library is used to create a Bluetooth LE server.
             listOf(ledCharacteristic, buttonCharacteristic)
         )
 
-        val server = BleGattServer.create(context, serviceConfig)
+        val server = BleGattServer.create(context, viewModelScope, serviceConfig)
     }
 ```
 
 ### Observing server incoming connections
 ```kotlin
-    server.onNewConnection
-        .onEach { setUpServices(it) }
+    server.connectionEvents
+        .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
+        .map { it.connection }
+        .onEach {
+            it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                setUpServices(it)
+            }
+        }
         .launchIn(viewModelScope)
 ```
 
@@ -158,22 +164,22 @@ The library is used to create a Bluetooth LE server.
         val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
         ledCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isLedOn = !it.contentEquals(byteArrayOf(0x00)))
+            _state.value = _state.value.copy(isLedOn = it != DataByteArray.from(0x00))
         }.launchIn(viewModelScope)
 
         buttonCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isButtonPressed = !it.contentEquals(byteArrayOf(0x00)))
+            _state.value = _state.value.copy(isButtonPressed = it != DataByteArray.from(0x00))
         }.launchIn(viewModelScope)
 
         this.ledCharacteristic = ledCharacteristic
         this.buttonCharacteristic = buttonCharacteristic
     }
 
-    fun onButtonPressedChanged(isButtonPressed: Boolean) {
+    fun onButtonPressedChanged(isButtonPressed: Boolean) = viewModelScope.launch {
         val value = if (isButtonPressed) {
-            byteArrayOf(0x01)
+            DataByteArray.from(0x01)
         } else {
-            byteArrayOf(0x00)
+            DataByteArray.from(0x00)
         }
         buttonCharacteristic.setValueAndNotifyClient(value)
     }
