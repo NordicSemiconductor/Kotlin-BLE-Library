@@ -110,7 +110,7 @@ object MockEngine {
     }
 
     fun cancelConnection(serverDevice: MockServerDevice, clientDevice: ClientDevice) {
-        val connection = clientConnections[clientDevice]!!
+        val connection = clientConnections[clientDevice] ?: return //server has already stopped, nothing to do
 
         connection.serverApi.onEvent(
             ClientConnectionStateChanged(
