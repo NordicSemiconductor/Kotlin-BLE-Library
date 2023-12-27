@@ -38,7 +38,6 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.awaitClose
@@ -50,6 +49,7 @@ import no.nordicsemi.android.kotlin.ble.core.RealServerDevice
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanFilter
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResult
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResultData
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScannerSettings
 import no.nordicsemi.android.kotlin.ble.mock.MockDevices
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
@@ -95,6 +95,7 @@ class BleScanner(
         launch {
             MockDevices.devices.collect {
                 it.filterKeys { it.isIncluded(filters) }
+                    .filterValues { it.isIncluded(filters) }
                     .forEach { trySend(BleScanResult(it.key, it.value)) }
             }
         }
@@ -132,15 +133,25 @@ class BleScanner(
     }
 
     private fun ServerDevice.isIncluded(filters: List<BleScanFilter>): Boolean {
+        return filters.isEmpty() || filters.any { isIncluded(it) }
+    }
+
+    private fun ServerDevice.isIncluded(filter: BleScanFilter): Boolean {
         val deviceName = name
-        val isNameIncluded = filters.isEmpty() || deviceName == null || filters.any {
-            it.deviceName?.let {
-                deviceName.contains(it)
-            } ?: false
-        }
-        val isAddressIncluded = filters.isEmpty() || filters.any {
-            it.deviceAddress?.let { address.contains(it) } ?: false
-        }
-        return filters.isEmpty() || isNameIncluded || isAddressIncluded
+        val isNameIncluded =
+            deviceName == null || filter.deviceName?.let { deviceName.contains(it) } ?: true
+        val isAddressIncluded = filter.deviceAddress?.let { address.contains(it) } ?: true
+
+        return isNameIncluded || isAddressIncluded
+    }
+
+    private fun BleScanResultData.isIncluded(filters: List<BleScanFilter>): Boolean {
+        return filters.isEmpty() || filters.any { isIncluded(it) }
+    }
+
+    private fun BleScanResultData.isIncluded(filter: BleScanFilter): Boolean {
+        //TODO filter by remaining parameters
+        val uuid = filter.serviceUuid?.uuid ?: return true
+        return this.scanRecord?.serviceUuids?.contains(uuid) == true
     }
 }

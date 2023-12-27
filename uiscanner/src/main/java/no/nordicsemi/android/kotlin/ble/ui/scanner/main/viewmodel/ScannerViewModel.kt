@@ -46,13 +46,13 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
-import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.DevicesScanFilter
-import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScannerRepository
-import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScanningState
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
+import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.DevicesScanFilter
+import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScannerRepository
+import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScanningState
 import javax.inject.Inject
 
 private const val FILTER_RSSI = -50 // [dBm]
