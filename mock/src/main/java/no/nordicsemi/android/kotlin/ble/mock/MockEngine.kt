@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.mock
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
@@ -160,11 +161,11 @@ object MockEngine {
     }
 
     fun advertiseServer(device: MockServerDevice, config: BleAdvertisingConfig) {
-        _advertisedServers.value = _advertisedServers.value + (device to config.toScanResult())
+        _advertisedServers.update { it + (device to config.toScanResult()) }
     }
 
     fun stopAdvertising(device: MockServerDevice) {
-        _advertisedServers.value = _advertisedServers.value - device
+        _advertisedServers.update { it - device }
     }
 
     //Server side
