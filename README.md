@@ -84,11 +84,11 @@ The library is used to advertise the server.
 
 ```kotlin
     val advertiser = BleAdvertiser.create(context)
-    val advertiserConfig = BleAdvertiseConfig(
-        settings = BleAdvertiseSettings(
+    val advertiserConfig = BleAdvertisingConfig(
+        settings = BleAdvertisingSettings(
             deviceName = "My Server" // Advertise a device name
         ),
-        advertiseData = BleAdvertiseData(
+        advertiseData = BleAdvertisingData(
             ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE) //Advertise main service uuid.
         )
     )
