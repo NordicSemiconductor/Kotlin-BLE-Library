@@ -41,7 +41,7 @@ import android.bluetooth.BluetoothProfile
 enum class GattConnectionState(internal val value: Int) {
 
     /**
-     * Device is connected.
+     * Device is disconnected.
      */
     STATE_DISCONNECTED(BluetoothProfile.STATE_DISCONNECTED),
 
@@ -51,7 +51,7 @@ enum class GattConnectionState(internal val value: Int) {
     STATE_CONNECTING(BluetoothProfile.STATE_CONNECTING),
 
     /**
-     * Device is disconnected.
+     * Device is connected.
      */
     STATE_CONNECTED(BluetoothProfile.STATE_CONNECTED),
 
