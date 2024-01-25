@@ -284,11 +284,9 @@ class ServerBleGatt internal constructor(
             Log.DEBUG,
             "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
         )
+        val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
-            val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy, rxPhy = event.rxPhy
-            )
-            it[event.device] = connection
+            it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
         }.toMap()
     }
 
@@ -304,11 +302,9 @@ class ServerBleGatt internal constructor(
             Log.DEBUG,
             "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
         )
+        val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
-            val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy, rxPhy = event.rxPhy
-            )
-            it[event.device] = connection
+            it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
         }.toMap()
     }
 
