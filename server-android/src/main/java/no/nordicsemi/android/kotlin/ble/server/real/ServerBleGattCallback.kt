@@ -45,6 +45,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
@@ -76,7 +77,7 @@ class ServerBleGattCallback(
     )
     val event = _event.asSharedFlow()
 
-    var onServiceAdded: (() -> Unit)? = null
+    var onServiceAdded: ((IBluetoothGattService, BleGattOperationStatus) -> Unit)? = null
 
     override fun onCharacteristicReadRequest(
         device: BluetoothDevice?,
@@ -186,8 +187,9 @@ class ServerBleGattCallback(
 
     override fun onServiceAdded(status: Int, service: BluetoothGattService) {
         val native = NativeBluetoothGattService(service)
-        _event.tryEmit(ServiceAdded(native, BleGattOperationStatus.create(status)))
-        onServiceAdded?.invoke()
+        val opStatus = BleGattOperationStatus.create(status)
+        _event.tryEmit(ServiceAdded(native, opStatus))
+        onServiceAdded?.invoke(native, opStatus)
     }
 
     fun onEvent(event: ServerGattEvent) {

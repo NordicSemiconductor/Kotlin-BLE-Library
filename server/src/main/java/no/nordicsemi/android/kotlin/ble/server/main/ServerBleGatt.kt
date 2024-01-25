@@ -91,6 +91,7 @@ class ServerBleGatt internal constructor(
     private val logger: BleLogger,
     private val scope: CoroutineScope,
     private val bufferSize: Int,
+    private var services: List<IBluetoothGattService> = emptyList()
 ) {
 
     companion object {
@@ -144,8 +145,6 @@ class ServerBleGatt internal constructor(
      * [Flow] which emits collected connections as a [Map] each time a new connection is established.
      */
     val connections = _connections.asStateFlow()
-
-    private var services: List<IBluetoothGattService> = emptyList()
 
     private val serverScope =
         CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))

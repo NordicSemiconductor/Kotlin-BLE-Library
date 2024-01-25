@@ -33,12 +33,15 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.Manifest
 import android.content.Context
+import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.mock.MockEngine
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.main.data.ServerConnectionOption
@@ -120,16 +123,24 @@ internal object ServerBleGattFactory {
          */
         return suspendCancellableCoroutine {
             val nativeServer = NativeServerBleAPI.create(context, options.bufferSize)
-            val server = ServerBleGatt(nativeServer, logger, scope, options.bufferSize)
+            val services = ArrayList<IBluetoothGattService>(config.size)
             var index = 0
 
-            nativeServer.callback.onServiceAdded = {
+            nativeServer.callback.onServiceAdded = { service, status ->
+                logger.log(Log.DEBUG, "Service added: ${service.uuid}, status: $status")
+                if (status == BleGattOperationStatus.GATT_SUCCESS) {
+                    services += service
+                }
+
                 if (index <= config.lastIndex) {
-                    val service = BluetoothGattServiceFactory.createNative(config[index++])
-                    nativeServer.server.addService(service.service)
+                    val nativeService = BluetoothGattServiceFactory.createNative(config[index++])
+                    nativeServer.server.addService(nativeService.service)
                 } else {
+                    //https://github.com/NordicSemiconductor/Kotlin-BLE-Library/issues/112
+                    //we create ServerBleGatt when services add complete
+                    //so we can avoid the uncertainty subscription time
                     nativeServer.callback.onServiceAdded = null
-                    it.resume(server)
+                    it.resume(ServerBleGatt(nativeServer, logger, scope, options.bufferSize, services))
                 }
             }
 
@@ -137,7 +148,7 @@ internal object ServerBleGattFactory {
                 val service = BluetoothGattServiceFactory.createNative(config[index++])
                 nativeServer.server.addService(service.service)
             } else {
-                it.resume(server)
+                it.resume(ServerBleGatt(nativeServer, logger, scope, options.bufferSize, services))
             }
 
             it.invokeOnCancellation {
