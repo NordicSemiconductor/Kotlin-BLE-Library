@@ -91,6 +91,7 @@ class ServerBleGatt internal constructor(
     private val logger: BleLogger,
     private val scope: CoroutineScope,
     private val bufferSize: Int,
+    private var services: List<IBluetoothGattService> = emptyList()
 ) {
 
     companion object {
@@ -144,8 +145,6 @@ class ServerBleGatt internal constructor(
      * [Flow] which emits collected connections as a [Map] each time a new connection is established.
      */
     val connections = _connections.asStateFlow()
-
-    private var services: List<IBluetoothGattService> = emptyList()
 
     private val serverScope =
         CoroutineScope(Dispatchers.Default + SupervisorJob(scope.coroutineContext.job))
@@ -285,11 +284,9 @@ class ServerBleGatt internal constructor(
             Log.DEBUG,
             "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
         )
+        val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
-            val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy, rxPhy = event.rxPhy
-            )
-            it[event.device] = connection
+            it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
         }.toMap()
     }
 
@@ -305,11 +302,9 @@ class ServerBleGatt internal constructor(
             Log.DEBUG,
             "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
         )
+        val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
-            val connection = it.getValue(event.device).copy(
-                txPhy = event.txPhy, rxPhy = event.rxPhy
-            )
-            it[event.device] = connection
+            it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
         }.toMap()
     }
 

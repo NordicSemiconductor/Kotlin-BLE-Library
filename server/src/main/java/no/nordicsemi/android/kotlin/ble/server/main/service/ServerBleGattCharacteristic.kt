@@ -203,7 +203,8 @@ class ServerBleGattCharacteristic internal constructor(
      * @param event A descriptor event.
      */
     private fun onDescriptorEvent(event: DescriptorEvent) {
-        if (event.descriptor.characteristic == characteristic) {
+        val c = event.descriptor.characteristic
+        if (c.instanceId == characteristic.instanceId && c.uuid == characteristic.uuid) {
             descriptors.forEach { it.onEvent(event) }
         }
     }
