@@ -69,14 +69,13 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionStateWithStatus
 import no.nordicsemi.android.kotlin.ble.core.data.PhyInfo
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
-import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * A class for managing BLE connection. It propagates events ([ClientGattEvent]) to it's
@@ -174,7 +173,13 @@ class ClientBleGatt(
             BleGattConnectionStatus.SUCCESS
         )
         mutex.lock(RequestedLockedFeature.CONNECTION)
-        return suspendCoroutine { continuation ->
+        return suspendCancellableCoroutine { continuation ->
+            val onFinish = {
+                onConnectionStateChangedCallback = null
+                mutex.unlock(RequestedLockedFeature.CONNECTION)
+            }
+            continuation.invokeOnCancellation { onFinish() }
+
             onConnectionStateChangedCallback = { connectionState, _ ->
                 if (connectionState == GattConnectionState.STATE_CONNECTED) {
                     logger.log(Log.INFO, "Device connected")
@@ -184,8 +189,7 @@ class ClientBleGatt(
                     continuation.resume(GattConnectionState.STATE_DISCONNECTED)
                 }
 
-                onConnectionStateChangedCallback = null
-                mutex.unlock(RequestedLockedFeature.CONNECTION)
+                onFinish()
             }
         }
     }
