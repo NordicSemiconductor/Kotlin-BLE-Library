@@ -138,7 +138,7 @@ class ClientBleGattCharacteristic internal constructor(
 
         return _notifications
             .apply { if (bufferSize > 0) buffer(bufferSize, bufferOverflow) }
-            .onStart { enableIndicationsOrNotifications() }
+            .also { enableIndicationsOrNotifications() }
             .onEach { log(it) }
             .onCompletion { disableNotificationsIfConnected() }
     }
