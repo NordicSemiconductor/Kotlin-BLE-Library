@@ -266,12 +266,11 @@ class ServerBleGattCharacteristic internal constructor(
      * @param event A write request event.
      */
     private fun onCharacteristicWriteRequest(event: CharacteristicWriteRequest) {
-        val value = event.value.copyOf()
         val status = BleGattOperationStatus.GATT_SUCCESS
         if (event.preparedWrite) {
-            transactionalValue = value //todo maybe +=
+            transactionalValue = DataByteArray(transactionalValue.value + event.value.value)
         } else {
-            _value.tryEmit(value)
+            _value.tryEmit(event.value.copyOf())
         }
         if (event.responseNeeded) {
             server.sendResponse(
