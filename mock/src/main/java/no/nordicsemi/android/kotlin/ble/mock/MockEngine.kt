@@ -484,9 +484,10 @@ object MockEngine {
         )
         clientConnections[clientDevice] = newConnection
 
+        //todo: rework a real reliable write test
         val request = requests.newAbortReliableWriteRequest()
         connection.serverApi.onEvent(
-            ExecuteWrite(connection.client, request.requestId, false)
+            ExecuteWrite(connection.client, null, request.requestId, false)
         )
     }
 
@@ -497,9 +498,10 @@ object MockEngine {
         )
         clientConnections[clientDevice] = newConnection
 
+        //todo: rework a real reliable write test
         val request = requests.newExecuteReliableWriteRequest()
         connection.serverApi.onEvent(
-            ExecuteWrite(connection.client, request.requestId, true)
+            ExecuteWrite(connection.client, null, request.requestId, true)
         )
         return true
     }
