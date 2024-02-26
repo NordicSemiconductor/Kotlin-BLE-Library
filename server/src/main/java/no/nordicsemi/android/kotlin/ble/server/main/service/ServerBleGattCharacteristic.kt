@@ -243,6 +243,9 @@ class ServerBleGattCharacteristic internal constructor(
      */
     private fun onExecuteWrite(event: ExecuteWrite) {
         descriptors.onEach { it.onExecuteWrite(event) }
+        if (event.uuid != uuid) {
+            return
+        }
         if (!event.execute) {
             transactionalValue = DataByteArray()
             return

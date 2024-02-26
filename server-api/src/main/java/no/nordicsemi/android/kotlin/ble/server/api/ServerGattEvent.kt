@@ -41,6 +41,7 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import java.util.UUID
 
 /**
  * An event class which maps [BluetoothGattServerCallback] callbacks into data classes.
@@ -265,6 +266,7 @@ sealed interface ServerGattEvent {
      * An application must call [GattServerAPI.sendResponse] to complete the request.
      *
      * @property device The remote device that has requested the write operations.
+     * @property uuid The uuid which pending write operations on, may be a characteristic, a descriptor or null (that usually means an error)
      * @property requestId The Id of the request.
      * @property execute Whether the pending writes should be executed (true) or cancelled (false).
      *
@@ -272,6 +274,7 @@ sealed interface ServerGattEvent {
      */
     data class ExecuteWrite(
         override val device: ClientDevice,
+        val uuid: UUID? = null,
         val requestId: Int,
         val execute: Boolean
     ) : ServiceEvent

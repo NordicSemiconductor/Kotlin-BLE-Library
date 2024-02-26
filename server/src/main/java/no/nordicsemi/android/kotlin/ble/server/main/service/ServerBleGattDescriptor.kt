@@ -131,6 +131,9 @@ class ServerBleGattDescriptor internal constructor(
      * @param event An execute write event.
      */
     internal fun onExecuteWrite(event: ExecuteWrite) {
+        if (event.uuid != uuid) {
+            return
+        }
         if (!event.execute) {
             transactionalValue = DataByteArray()
             return
@@ -151,11 +154,10 @@ class ServerBleGattDescriptor internal constructor(
      */
     private fun onDescriptorWriteRequest(event: DescriptorWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
-        val value = event.value.copyOf()
         if (event.preparedWrite) {
-            transactionalValue = value
+            transactionalValue = DataByteArray(transactionalValue.value + event.value.value)
         } else {
-            _value.tryEmit(value)
+            _value.tryEmit(event.value.copyOf())
         }
         if (event.responseNeeded) {
             server.sendResponse(

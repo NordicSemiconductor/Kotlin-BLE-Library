@@ -61,6 +61,7 @@ import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerMtuChan
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerPhyRead
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerPhyUpdate
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServiceAdded
+import java.util.UUID
 
 /**
  * A class which maps [BluetoothGattServerCallback] methods into [ServerGattEvent] events.
@@ -78,6 +79,11 @@ class ServerBleGattCallback(
     val event = _event.asSharedFlow()
 
     var onServiceAdded: ((IBluetoothGattService, BleGattOperationStatus) -> Unit)? = null
+
+    /**
+     * from [onCharacteristicWriteRequest] or [onDescriptorWriteRequest]
+     */
+    private var preparedWriteUUID: UUID? = null
 
     override fun onCharacteristicReadRequest(
         device: BluetoothDevice?,
@@ -98,6 +104,8 @@ class ServerBleGattCallback(
         offset: Int,
         value: ByteArray?
     ) {
+        preparedWriteUUID = if (preparedWrite) characteristic.uuid else null
+
         val native = NativeBluetoothGattCharacteristic(characteristic)
         _event.tryEmit(
             CharacteristicWriteRequest(
@@ -137,6 +145,8 @@ class ServerBleGattCallback(
         offset: Int,
         value: ByteArray?
     ) {
+        preparedWriteUUID = if (preparedWrite) descriptor.uuid else null
+
         val native = NativeBluetoothGattDescriptor(descriptor)
         _event.tryEmit(
             DescriptorWriteRequest(
@@ -152,7 +162,7 @@ class ServerBleGattCallback(
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
-        _event.tryEmit(ExecuteWrite(RealClientDevice(device!!), requestId, execute))
+        _event.tryEmit(ExecuteWrite(RealClientDevice(device!!), preparedWriteUUID, requestId, execute))
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
