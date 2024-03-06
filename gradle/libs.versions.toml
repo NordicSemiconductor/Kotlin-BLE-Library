@@ -6,7 +6,7 @@ androidxActivity = "1.8.2"
 androidxAnnotation = "1.7.1"
 androidxAppCompat = "1.6.1"
 androidxComposeBom = "2024.02.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidxComposeCompiler = "1.5.8" # https://developer.android.com/jetpack/androidx/releases/compose-kotlin
+androidxComposeCompiler = "1.5.10" # https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 androidxComposeRuntimeTracing = "1.0.0-beta01"
 androidxCore = "1.12.0"
 androidxCoreSplashscreen = "1.0.1"
@@ -56,7 +56,7 @@ timber = "5.0.1"
 chart = "3.1.0"
 leakcanary = "2.13"
 mockk = "1.13.10"
-slf4j = "2.0.12"
+slf4j = "1.7.36" # don't update
 robolectric = "4.11.1"
 skydovesBallon = "1.6.4"
 moshiKotlin = "1.15.1"
@@ -67,15 +67,10 @@ moshiKotlinCodegen = "1.15.1"
 material3 = "1.2.0"
 material = "1.6.2"
 
-nordic-blek = "1.0.15"
-nordic-ble = "2.7.3"
-nordic-dfu = "2.4.2"
 nordic-log = "2.3.0"
-nordic-mcumgr = "1.9.2"
-nordic-scanner = "1.6.0"
-nordic-common = "1.9.4"
+nordic-common = "2.0.0"
 nordic-memfault = "1.0.2"
-nordicPlugins = "1.11.1"
+nordicPlugins = "2.0.0"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.1"
 firebaseCrashlyticsPlugins = "2.9.9"
@@ -198,14 +193,8 @@ moshi = {group = "com.squareup.moshi", name = "moshi", version.ref = "moshi"}
 moshi-kotlin-codegen = {group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen"}
 
 # Nordic
-nordic-ble-ktx = { group = "no.nordicsemi.android", name = "ble-ktx", version.ref = "nordic-ble" }
-nordic-ble-common = { group = "no.nordicsemi.android", name = "ble-common", version.ref = "nordic-ble" }
-nordic-dfu = { group = "no.nordicsemi.android", name = "dfu", version.ref = "nordic-dfu" }
-nordic-mcumgr-core = { group = "no.nordicsemi.android", name = "mcumgr-core", version.ref = "nordic-mcumgr" }
-nordic-mcumgr-ble = { group = "no.nordicsemi.android", name = "mcumgr-ble", version.ref = "nordic-mcumgr" }
 nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nordic-log" }
 nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
-nordic-scanner = { group = "no.nordicsemi.android.support.v18", name = "scanner", version.ref = "nordic-scanner" }
 nordic-core = { group = "no.nordicsemi.android.common", name = "core", version.ref = "nordic-common" }
 nordic-theme = { group = "no.nordicsemi.android.common", name = "theme", version.ref = "nordic-common" }
 nordic-analytics = { group = "no.nordicsemi.android.common", name = "analytics", version.ref = "nordic-common" }
@@ -215,16 +204,8 @@ nordic-logger = { group = "no.nordicsemi.android.common", name = "logger", versi
 nordic-permissions-nfc = { group = "no.nordicsemi.android.common", name = "permissions-nfc", version.ref = "nordic-common" }
 nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version.ref = "nordic-common" }
 nordic-permissions-internet = { group = "no.nordicsemi.android.common", name = "permissions-internet", version.ref = "nordic-common" }
+nordic-scanner = { group = "no.nordicsemi.android.common", name = "scanner", version.ref = "nordic-common" }
 nordic-memfault = { group = "no.nordicsemi.android", name = "memfault", version.ref = "nordic-memfault" }
-
-# BleK
-nordic-blek-client = { group = "no.nordicsemi.android.kotlin.ble", name = "client", version.ref = "nordic-blek" }
-nordic-blek-server = { group = "no.nordicsemi.android.kotlin.ble", name = "server", version.ref = "nordic-blek" }
-nordic-blek-profile = { group = "no.nordicsemi.android.kotlin.ble", name = "profile", version.ref = "nordic-blek" }
-nordic-blek-core = { group = "no.nordicsemi.android.kotlin.ble", name = "core", version.ref = "nordic-blek" }
-nordic-blek-scanner = { group = "no.nordicsemi.android.kotlin.ble", name = "scanner", version.ref = "nordic-blek" }
-nordic-blek-advertiser = { group = "no.nordicsemi.android.kotlin.ble", name = "advertiser", version.ref = "nordic-blek" }
-nordic-blek-uiscanner = { group = "no.nordicsemi.android.kotlin.ble", name = "uiscanner", version.ref = "nordic-blek" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -238,7 +219,8 @@ nordic-library-compose = { id = "no.nordicsemi.android.gradle.library.compose", 
 nordic-feature = { id = "no.nordicsemi.android.gradle.feature", version.ref = "nordicPlugins" }
 nordic-hilt = { id = "no.nordicsemi.android.gradle.hilt", version.ref = "nordicPlugins" }
 nordic-kotlin = { id = "no.nordicsemi.android.gradle.kotlin", version.ref = "nordicPlugins" }
-nordic-nexus = { id = "no.nordicsemi.android.gradle.nexus", version.ref = "nordicPlugins" }
+nordic-nexus-android = { id = "no.nordicsemi.android.gradle.nexus", version.ref = "nordicPlugins" }
+nordic-nexus-kotlin = { id = "no.nordicsemi.kotlin.gradle.nexus", version.ref = "nordicPlugins" }
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
