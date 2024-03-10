@@ -41,7 +41,6 @@ import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
-import java.util.UUID
 
 /**
  * An event class which maps [BluetoothGattServerCallback] callbacks into data classes.
@@ -194,25 +193,6 @@ sealed interface ServerGattEvent {
     ) : CharacteristicEvent
 
     /**
-     * Execute all pending write operations for this device on local descriptor
-     *
-     * An application must call [GattServerAPI.sendResponse] to complete the request.
-     *
-     * @property device The remote device that has requested the write operations.
-     * @property descriptor Descriptor to be written to.
-     * @property requestId The Id of the request.
-     * @property execute Whether the pending writes should be executed (true) or cancelled (false).
-     *
-     * @see [BluetoothGattServerCallback.onExecuteWrite](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onExecuteWrite(android.bluetooth.BluetoothDevice,%20int,%20boolean))
-     */
-    data class CharacteristicExecuteWrite(
-        override val device: ClientDevice,
-        val characteristic: IBluetoothGattCharacteristic,
-        val requestId: Int,
-        val execute: Boolean
-    ) : CharacteristicEvent
-
-    /**
      * Event emitted when a notification or indication has been sent to a remote device.
      *
      * When multiple notifications are to be sent, an application must wait for this callback to be
@@ -280,22 +260,20 @@ sealed interface ServerGattEvent {
     ) : DescriptorEvent
 
     /**
-     * Execute all pending write operations for this device on local descriptor
+     * Execute all pending write operations for this device.
      *
      * An application must call [GattServerAPI.sendResponse] to complete the request.
      *
      * @property device The remote device that has requested the write operations.
-     * @property descriptor Descriptor to be written to.
      * @property requestId The Id of the request.
      * @property execute Whether the pending writes should be executed (true) or cancelled (false).
      *
      * @see [BluetoothGattServerCallback.onExecuteWrite](https://developer.android.com/reference/android/bluetooth/BluetoothGattServerCallback#onExecuteWrite(android.bluetooth.BluetoothDevice,%20int,%20boolean))
      */
-    data class DescriptorExecuteWrite(
+    data class ExecuteWrite(
         override val device: ClientDevice,
-        override val descriptor: IBluetoothGattDescriptor,
         val requestId: Int,
         val execute: Boolean
-    ) : DescriptorEvent
+    ) : ServiceEvent
 
 }

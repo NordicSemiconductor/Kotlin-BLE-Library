@@ -98,7 +98,6 @@ class ServerBleGattDescriptor internal constructor(
         when (event) {
             is DescriptorReadRequest -> onLocalEvent(event.descriptor) { onDescriptorReadRequest(event) }
             is DescriptorWriteRequest -> onLocalEvent(event.descriptor) { onDescriptorWriteRequest(event) }
-            is DescriptorExecuteWrite -> onLocalEvent(event.descriptor) { onDescriptorExecuteWrite(event) }
         }
     }
 
@@ -131,12 +130,15 @@ class ServerBleGattDescriptor internal constructor(
      *
      * @param event An execute write event.
      */
-    private fun onDescriptorExecuteWrite(event: DescriptorExecuteWrite) {
+    internal fun onExecuteWrite(event: ExecuteWrite) {
         if (!event.execute) {
             transactionalValue = DataByteArray()
             return
         }
-        _value.tryEmit(transactionalValue)
+        if (transactionalValue.size != 0) {
+            //we don't send empty value which represent the reliable write does not on this descriptor.
+            _value.tryEmit(transactionalValue)
+        }
         transactionalValue = DataByteArray()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -144,7 +146,7 @@ class ServerBleGattDescriptor internal constructor(
     /**
      * Handles write request. It stores received value in [_value] field.
      * In case of reliable write then the value is stored in a temporary field until
-     * [DescriptorExecuteWrite] event received.
+     * [ExecuteWrite] event received.
      * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
      * about received value is sent to client.
      *

@@ -192,6 +192,7 @@ class ServerBleGattCharacteristic internal constructor(
         when (event) {
             is CharacteristicEvent -> onCharacteristicEvent(event)
             is DescriptorEvent -> onDescriptorEvent(event)
+            is ExecuteWrite -> onExecuteWrite(event)
         }
     }
 
@@ -219,7 +220,6 @@ class ServerBleGattCharacteristic internal constructor(
             is CharacteristicReadRequest -> onLocalEvent(event.characteristic) { onCharacteristicReadRequest(event) }
             is CharacteristicWriteRequest -> onLocalEvent(event.characteristic) { onCharacteristicWriteRequest(event) }
             is NotificationSent -> onNotificationSent(event)
-            is CharacteristicExecuteWrite -> onExecuteWrite(event)
         }
     }
 
@@ -241,12 +241,16 @@ class ServerBleGattCharacteristic internal constructor(
      *
      * @param event An execute write event.
      */
-    private fun onExecuteWrite(event: CharacteristicExecuteWrite) {
+    private fun onExecuteWrite(event: ExecuteWrite) {
+        descriptors.onEach { it.onExecuteWrite(event) }
         if (!event.execute) {
             transactionalValue = DataByteArray()
             return
         }
-        _value.tryEmit(transactionalValue)
+        if (transactionalValue.size != 0) {
+            //we don't send empty value which represent the reliable write does not on this characteristic.
+            _value.tryEmit(transactionalValue)
+        }
         transactionalValue = DataByteArray()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -258,7 +262,7 @@ class ServerBleGattCharacteristic internal constructor(
     /**
      * Handles write request. It stores received value in [_value] field.
      * In case of reliable write then the value is stored in a temporary field until
-     * [CharacteristicExecuteWrite] event received.
+     * [ExecuteWrite] event received.
      * If client used [BleWriteType.DEFAULT] or [BleWriteType.SIGNED] write type then confirmation
      * about received value is sent to client.
      *
