@@ -135,7 +135,10 @@ class ServerBleGattDescriptor internal constructor(
             transactionalValue = DataByteArray()
             return
         }
-        _value.tryEmit(transactionalValue)
+        if (transactionalValue.size != 0) {
+            //we don't send empty value which represent the reliable write does not on this descriptor.
+            _value.tryEmit(transactionalValue)
+        }
         transactionalValue = DataByteArray()
         server.sendResponse(event.device, event.requestId, BleGattOperationStatus.GATT_SUCCESS.value, 0, null)
     }
@@ -151,11 +154,10 @@ class ServerBleGattDescriptor internal constructor(
      */
     private fun onDescriptorWriteRequest(event: DescriptorWriteRequest) {
         val status = BleGattOperationStatus.GATT_SUCCESS
-        val value = event.value.copyOf()
         if (event.preparedWrite) {
-            transactionalValue = value
+            transactionalValue = DataByteArray(transactionalValue.value + event.value.value)
         } else {
-            _value.tryEmit(value)
+            _value.tryEmit(event.value.copyOf())
         }
         if (event.responseNeeded) {
             server.sendResponse(
