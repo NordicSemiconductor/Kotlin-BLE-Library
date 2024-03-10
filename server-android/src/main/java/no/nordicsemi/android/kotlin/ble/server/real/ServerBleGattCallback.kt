@@ -45,6 +45,8 @@ import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.GattConnectionState
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
+import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattCharacteristic
 import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattDescriptor
@@ -52,10 +54,11 @@ import no.nordicsemi.android.kotlin.ble.core.wrapper.NativeBluetoothGattService
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.CharacteristicReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.CharacteristicWriteRequest
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.CharacteristicExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ClientConnectionStateChanged
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.DescriptorReadRequest
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.DescriptorWriteRequest
-import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ExecuteWrite
+import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.DescriptorExecuteWrite
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.NotificationSent
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerMtuChanged
 import no.nordicsemi.android.kotlin.ble.server.api.ServerGattEvent.ServerPhyRead
@@ -83,7 +86,12 @@ class ServerBleGattCallback(
     /**
      * from [onCharacteristicWriteRequest] or [onDescriptorWriteRequest]
      */
-    private var preparedWriteUUID: UUID? = null
+    private var preparedWriteCharacteristic: IBluetoothGattCharacteristic? = null
+
+    /**
+     * from [onCharacteristicWriteRequest]
+     */
+    private var preparedWriteDescriptor: IBluetoothGattDescriptor? = null
 
     override fun onCharacteristicReadRequest(
         device: BluetoothDevice?,
@@ -104,9 +112,10 @@ class ServerBleGattCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        preparedWriteUUID = if (preparedWrite) characteristic.uuid else null
-
         val native = NativeBluetoothGattCharacteristic(characteristic)
+        preparedWriteCharacteristic = if (preparedWrite) native else null
+        preparedWriteDescriptor = null
+
         _event.tryEmit(
             CharacteristicWriteRequest(
                 RealClientDevice(device!!),
@@ -145,9 +154,10 @@ class ServerBleGattCallback(
         offset: Int,
         value: ByteArray?
     ) {
-        preparedWriteUUID = if (preparedWrite) descriptor.uuid else null
-
         val native = NativeBluetoothGattDescriptor(descriptor)
+        preparedWriteCharacteristic = if (preparedWrite) native.characteristic else null
+        preparedWriteDescriptor = if (preparedWrite) native else null
+
         _event.tryEmit(
             DescriptorWriteRequest(
                 RealClientDevice(device!!),
@@ -162,7 +172,27 @@ class ServerBleGattCallback(
     }
 
     override fun onExecuteWrite(device: BluetoothDevice?, requestId: Int, execute: Boolean) {
-        _event.tryEmit(ExecuteWrite(RealClientDevice(device!!), preparedWriteUUID, requestId, execute))
+        val preparedWriteCharacteristic = preparedWriteCharacteristic ?: return //maybe log
+        val preparedWriteDescriptor = preparedWriteDescriptor
+        if (preparedWriteDescriptor != null) {
+            _event.tryEmit(
+                DescriptorExecuteWrite(
+                    RealClientDevice(device!!),
+                    preparedWriteDescriptor,
+                    requestId,
+                    execute
+                )
+            )
+        } else {
+            _event.tryEmit(
+                CharacteristicExecuteWrite(
+                    RealClientDevice(device!!),
+                    preparedWriteCharacteristic,
+                    requestId,
+                    execute
+                )
+            )
+        }
     }
 
     override fun onMtuChanged(device: BluetoothDevice?, mtu: Int) {
