@@ -31,36 +31,36 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.bps
 
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.FloatFormat
-import no.nordicsemi.android.common.core.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BPMStatus
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BloodPressureMeasurementData
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BloodPressureType
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
+import no.nordicsemi.kotlin.data.FloatFormat
+import no.nordicsemi.kotlin.data.IntFormat
+import no.nordicsemi.kotlin.data.getFloat
+import no.nordicsemi.kotlin.data.getInt
+import no.nordicsemi.kotlin.data.getUShort
+import no.nordicsemi.kotlin.data.hasBitSet
+import java.nio.ByteOrder
 import java.util.Calendar
 
 object BloodPressureMeasurementParser {
 
-    fun parse(bytes: DataByteArray): BloodPressureMeasurementData? {
+    fun parse(bytes: ByteArray): BloodPressureMeasurementData? {
         if (bytes.size < 7) {
             return null
         }
 
         // First byte: flags
         var offset = 0
-        val flags: Int = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset++) ?: return null
+        val flags = bytes[offset++]
 
         // See UNIT_* for unit options
-        val unit: BloodPressureType = if (flags and 0x01 == BloodPressureType.UNIT_MMHG.value) {
-            BloodPressureType.UNIT_MMHG
-        } else {
-            BloodPressureType.UNIT_KPA
-        }
-        val timestampPresent = flags and 0x02 != 0
-        val pulseRatePresent = flags and 0x04 != 0
-        val userIdPresent = flags and 0x08 != 0
-        val measurementStatusPresent = flags and 0x10 != 0
+        val unit = if (flags hasBitSet 1) BloodPressureType.UNIT_MMHG else BloodPressureType.UNIT_KPA
+        val timestampPresent = flags hasBitSet 2
+        val pulseRatePresent = flags hasBitSet 3
+        val userIdPresent = flags hasBitSet 4
+        val measurementStatusPresent = flags hasBitSet 5
 
         if (bytes.size < (7
                     + (if (timestampPresent) 7 else 0) + (if (pulseRatePresent) 2 else 0)
@@ -70,9 +70,9 @@ object BloodPressureMeasurementParser {
         }
 
         // Following bytes - systolic, diastolic and mean arterial pressure
-        val systolic: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset) ?: return null
-        val diastolic: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 2) ?: return null
-        val meanArterialPressure: Float = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset + 4) ?: return null
+        val systolic = bytes.getFloat(offset, FloatFormat.IEEE_11073_16_BIT, ByteOrder.LITTLE_ENDIAN)
+        val diastolic = bytes.getFloat(offset + 2, FloatFormat.IEEE_11073_16_BIT, ByteOrder.LITTLE_ENDIAN)
+        val meanArterialPressure = bytes.getFloat(offset + 4, FloatFormat.IEEE_11073_16_BIT, ByteOrder.LITTLE_ENDIAN)
         offset += 6
 
         // Parse timestamp if present
@@ -85,21 +85,21 @@ object BloodPressureMeasurementParser {
         // Parse pulse rate if present
         var pulseRate: Float? = null
         if (pulseRatePresent) {
-            pulseRate = bytes.getFloatValue(FloatFormat.FORMAT_SFLOAT, offset)
+            pulseRate = bytes.getFloat(offset, FloatFormat.IEEE_11073_16_BIT, ByteOrder.LITTLE_ENDIAN)
             offset += 2
         }
 
         // Read user id if present
         var userId: Int? = null
         if (userIdPresent) {
-            userId = bytes.getIntValue(IntFormat.FORMAT_UINT8, offset)
+            userId = bytes.getInt(offset, IntFormat.UINT8)
             offset += 1
         }
 
         // Read measurement status if present
         var status: BPMStatus? = null
         if (measurementStatusPresent) {
-            val measurementStatus: Int = bytes.getIntValue(IntFormat.FORMAT_UINT16_LE, offset) ?: return null
+            val measurementStatus: Int = bytes.getInt(offset, IntFormat.INT16, ByteOrder.LITTLE_ENDIAN)
             // offset += 2;
             status = BPMStatus(measurementStatus)
         }

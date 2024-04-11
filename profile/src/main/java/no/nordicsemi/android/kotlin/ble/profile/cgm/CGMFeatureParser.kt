@@ -40,7 +40,7 @@ import no.nordicsemi.android.kotlin.ble.profile.common.CRC16
 
 object CGMFeatureParser {
 
-    fun parse(bytes: DataByteArray): CGMFeaturesEnvelope? {
+    fun parse(bytes: ByteArray): CGMFeaturesEnvelope? {
         if (bytes.size != 6) {
             return null
         }
@@ -51,7 +51,7 @@ object CGMFeatureParser {
 
         val features = CGMFeatures(featuresValue)
         if (features.e2eCrcSupported) {
-            val actualCrc: Int = CRC16.MCRF4XX(bytes.value, 0, 4)
+            val actualCrc: Int = CRC16.MCRF4XX(bytes, 0, 4)
             if (actualCrc != expectedCrc) {
                 return null
             }

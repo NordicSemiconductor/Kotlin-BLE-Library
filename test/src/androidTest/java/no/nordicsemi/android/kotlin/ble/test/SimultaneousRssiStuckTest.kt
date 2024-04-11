@@ -1,6 +1,5 @@
 package no.nordicsemi.android.kotlin.ble.test
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope

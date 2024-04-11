@@ -115,11 +115,11 @@ class BlinkyServer @Inject constructor(
         }
     }
 
-    private fun generateNewButtonValue(): DataByteArray {
-        return if (buttonState.value == DataByteArray.from(0x00)) {
-            DataByteArray.from(0x01)
+    private fun generateNewButtonValue(): ByteArray {
+        return if (buttonState.value == byteArrayOf(0x00)) {
+            byteArrayOf(0x01)
         } else {
-            DataByteArray.from(0x00)
+            byteArrayOf(0x00)
         }.also {
             buttonState.value = it
         }

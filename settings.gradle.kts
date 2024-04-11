@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2024, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -49,25 +49,32 @@ dependencyResolutionManagement {
 }
 rootProject.name = "Kotlin-BLE-Library"
 
-include(":app_server")
-include(":app_client")
-include(":advertiser")
-include(":scanner")
-include(":core")
-include(":profile")
-include(":server-api")
-include(":server-android")
-include(":server")
-include(":server-mock")
-include(":client-api")
-include(":client-mock")
-include(":client-android")
-include(":client")
-include(":mock")
-include(":test")
-include(":logger")
-include(":uiscanner")
+//include(":app_server")
+//include(":app_client")
 
-//if (file("../Android-Common-Libraries").exists()) {
-//    includeBuild("../Android-Common-Libraries")
-//}
+include(":core")
+include(":core-android")
+include(":core-mock")
+
+include(":advertiser-core")
+include(":advertiser-core-android")
+include(":advertiser-android")
+include(":advertiser-android-mock")
+
+include(":client-core")
+include(":client-core-android")
+include(":client-android")
+include(":client-android-mock")
+
+include(":server-core")
+include(":server-core-android")
+include(":server-android")
+include(":server-android-mock")
+
+//include(":profile")
+//include(":test")
+
+if (file("../Android-Common-Libraries").exists()) {
+    includeBuild("../Android-Common-Libraries")
+}
+include(":sample")

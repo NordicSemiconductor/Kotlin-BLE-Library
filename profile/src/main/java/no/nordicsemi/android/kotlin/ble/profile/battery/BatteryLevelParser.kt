@@ -31,14 +31,14 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.battery
 
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.IntFormat
+import no.nordicsemi.kotlin.data.IntFormat
+import no.nordicsemi.kotlin.data.getInt
 
 object BatteryLevelParser {
 
-    fun parse(bytes: DataByteArray): Int? {
+    fun parse(bytes: ByteArray): Int? {
         if (bytes.size == 1) {
-            return bytes.getIntValue(IntFormat.FORMAT_UINT8, 0)
+            return bytes.getInt(0, IntFormat.UINT8)
         }
         return null
     }

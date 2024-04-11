@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2024, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -30,8 +30,8 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.library)
+    alias(libs.plugins.nordic.kotlin)
 }
 
 group = "no.nordicsemi.android.kotlin.ble"
@@ -59,21 +59,12 @@ dependencies {
     implementation(project(":server-mock"))
     implementation(project(":server-api"))
 
-    implementation(libs.nordic.logger)
-
-    kaptTest(libs.hilt.compiler)
-
-    testImplementation(libs.test.mockk)
-    testImplementation(libs.junit4)
     testImplementation(libs.kotlin.junit)
     testImplementation(libs.androidx.test.ext)
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.test.slf4j.simple)
-    testImplementation(libs.test.robolectric)
     testImplementation(libs.hilt.android.testing)
 
-    androidTestImplementation(libs.junit4)
     androidTestImplementation(libs.kotlin.junit)
     androidTestImplementation(libs.androidx.test.ext)
     androidTestImplementation(libs.androidx.test.rules)

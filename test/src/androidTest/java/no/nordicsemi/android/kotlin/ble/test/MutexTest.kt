@@ -3,12 +3,9 @@ package no.nordicsemi.android.kotlin.ble.test
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
-import no.nordicsemi.android.common.core.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
@@ -124,8 +121,8 @@ class MutexTest {
 
         repeat(testCount) {
             val jobs = listOf(
-                launch { char.write(DataByteArray.from(0x01)) },
-                launch { char2.write(DataByteArray.from(0x01)) }
+                launch { char.write(byteArrayOf(0x01)) },
+                launch { char2.write(byteArrayOf(0x01)) }
             )
             jobs.forEach { it.join() }
         }
@@ -166,8 +163,8 @@ class MutexTest {
 
         repeat(testCount) {
             val jobs = listOf(
-                launch { desc.write(DataByteArray.from(0x01)) },
-                launch { desc2.write(DataByteArray.from(0x01)) }
+                launch { desc.write(byteArrayOf(0x01)) },
+                launch { desc2.write(byteArrayOf(0x01)) }
             )
             jobs.forEach { it.join() }
         }

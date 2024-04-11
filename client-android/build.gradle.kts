@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2024, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -32,35 +32,30 @@
 plugins {
     alias(libs.plugins.nordic.library)
     alias(libs.plugins.nordic.kotlin)
-    alias(libs.plugins.nordic.nexus)
+    alias(libs.plugins.nordic.nexus.android)
 }
 
-group = "no.nordicsemi.android.kotlin.ble"
+group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "client-android"
-    POM_NAME = "Nordic Kotlin library for BLE client side."
-
-    POM_DESCRIPTION = "Nordic Android Kotlin BLE library"
-    POM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-
-    POM_DEVELOPER_ID = "syzi"
-    POM_DEVELOPER_NAME = "Sylwester Zieliński"
-    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
+    POM_NAME = "Nordic Kotlin BLE library"
+    POM_DESCRIPTION = "Nordic Kotlin BLE library"
+    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
 }
 
 android {
-    namespace = "no.nordicsemi.android.kotlin.ble.client.real"
+    namespace = "no.nordicsemi.kotlin.ble.client.android"
 }
 
 dependencies {
-    implementation(project(":core"))
-    implementation(project(":client-api"))
+    api(project(":client-core-android"))
 
-    implementation(libs.androidx.annotation)
-    implementation(libs.kotlinx.coroutines.android)
-    api(libs.nordic.core)
+    api(libs.androidx.annotation)
+    api(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.slf4j)
 }

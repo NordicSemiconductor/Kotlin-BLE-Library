@@ -31,6 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.bps.data
 
+@Suppress("MemberVisibilityCanBePrivate")
 class BPMStatus(
     val bodyMovementDetected: Boolean,
     val cuffTooLose: Boolean,
