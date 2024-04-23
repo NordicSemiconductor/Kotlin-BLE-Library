@@ -8,7 +8,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
-import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.test.utils.BlinkySpecifications
 import no.nordicsemi.android.kotlin.ble.test.utils.TestAddressProvider
@@ -32,15 +31,11 @@ class WithTimeoutTest {
 
     private val testCount = 10
 
-    private val logger = BleLogger { _, log ->
-//        Log.d("AAATESTAAA", log)
-    }
-
     @Test
     fun whenReadCharacteristicMultipleTimesShouldSucceed() = runTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, address, scope, logger = logger)
-        val gatt2 = ClientBleGatt.connect(context, address2, scope, logger = logger)
+        val gatt = ClientBleGatt.connect(context, address, scope)
+        val gatt2 = ClientBleGatt.connect(context, address2, scope)
 
         val services = gatt.discoverServices()
         val services2 = gatt2.discoverServices()

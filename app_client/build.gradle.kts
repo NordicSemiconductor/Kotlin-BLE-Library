@@ -21,6 +21,9 @@ dependencies {
     implementation(libs.nordic.permissions.ble)
     implementation(libs.nordic.logger)
 
+    // New logging system is using SFL4J and Timber.
+    implementation(libs.slf4j.timber)
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.compose.material3)

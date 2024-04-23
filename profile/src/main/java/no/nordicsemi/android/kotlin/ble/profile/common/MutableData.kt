@@ -33,11 +33,11 @@ package no.nordicsemi.android.kotlin.ble.profile.common
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import androidx.annotation.IntRange
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.FloatFormat
-import no.nordicsemi.android.common.core.IntFormat
-import no.nordicsemi.android.common.core.LongFormat
-import no.nordicsemi.android.common.core.getTypeLen
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.FloatFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.IntFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.LongFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.getTypeLen
 
 class MutableData(  // private final static float FLOAT_EPSILON = 1e-128f;
     var value: ByteArray

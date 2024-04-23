@@ -33,12 +33,9 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 
 import android.Manifest
 import android.content.Context
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
@@ -47,6 +44,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.main.data.ServerConnectionOption
 import no.nordicsemi.android.kotlin.ble.server.mock.MockServerAPI
 import no.nordicsemi.android.kotlin.ble.server.real.NativeServerBleAPI
+import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 
 /**
@@ -54,6 +52,7 @@ import kotlin.coroutines.resume
  */
 @Suppress("InlinedApi")
 internal object ServerBleGattFactory {
+    private var logger = LoggerFactory.getLogger(ServerBleGattFactory::class.java)
 
     /**
      * Creates [ServerBleGatt] instance. It can be both mocked or real BLE variant.
@@ -68,14 +67,13 @@ internal object ServerBleGattFactory {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun create(
         context: Context,
-        logger: BleLogger = DefaultConsoleLogger(context),
         scope: CoroutineScope,
         vararg config: ServerBleGattServiceConfig,
         mock: MockServerDevice? = null,
         options: ServerConnectionOption,
     ): ServerBleGatt = mock?.let {
-        createMockServer(it, logger, scope, options, *config)
-    } ?: createRealServer(context, logger, scope, options, *config)
+        createMockServer(it, scope, options, *config)
+    } ?: createRealServer(context, scope, options, *config)
 
     /**
      * Creates mock variant of the server which will be used locally on a device without the
@@ -88,7 +86,6 @@ internal object ServerBleGattFactory {
      */
     private fun createMockServer(
         device: MockServerDevice,
-        logger: BleLogger,
         scope: CoroutineScope,
         options: ServerConnectionOption,
         vararg config: ServerBleGattServiceConfig,
@@ -96,7 +93,7 @@ internal object ServerBleGattFactory {
         val api = MockServerAPI(MockEngine, device, options.bufferSize)
         val services = config.map { BluetoothGattServiceFactory.createMock(it) }
 
-        return ServerBleGatt(api, logger, scope, options.bufferSize)
+        return ServerBleGatt(api, scope, options.bufferSize)
             .also { MockEngine.registerServer(api, device, services) }
     }
 
@@ -111,7 +108,6 @@ internal object ServerBleGattFactory {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun createRealServer(
         context: Context,
-        logger: BleLogger,
         scope: CoroutineScope,
         options: ServerConnectionOption,
         vararg config: ServerBleGattServiceConfig,
@@ -127,7 +123,7 @@ internal object ServerBleGattFactory {
             var index = 0
 
             nativeServer.callback.onServiceAdded = { service, status ->
-                logger.log(Log.DEBUG, "Service added: ${service.uuid}, status: $status")
+                logger.trace("Service added (uuid: {}), status: {}", service.uuid, status)
                 if (status == BleGattOperationStatus.GATT_SUCCESS) {
                     services += service
                 }
@@ -140,7 +136,7 @@ internal object ServerBleGattFactory {
                     //we create ServerBleGatt when services add complete
                     //so we can avoid the uncertainty subscription time
                     nativeServer.callback.onServiceAdded = null
-                    it.resume(ServerBleGatt(nativeServer, logger, scope, options.bufferSize, services))
+                    it.resume(ServerBleGatt(nativeServer, scope, options.bufferSize, services))
                 }
             }
 
@@ -148,7 +144,7 @@ internal object ServerBleGattFactory {
                 val service = BluetoothGattServiceFactory.createNative(config[index++])
                 nativeServer.server.addService(service.service)
             } else {
-                it.resume(ServerBleGatt(nativeServer, logger, scope, options.bufferSize, services))
+                it.resume(ServerBleGatt(nativeServer, scope, options.bufferSize, services))
             }
 
             it.invokeOnCancellation {

@@ -31,7 +31,7 @@
 
 package no.nordicsemi.android.kotlin.ble.server.main.service
 
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic

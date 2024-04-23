@@ -31,9 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.hts
 
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.FloatFormat
-import no.nordicsemi.android.common.core.IntFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.FloatFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.date.DateTimeParser
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.HTSData
 import no.nordicsemi.android.kotlin.ble.profile.hts.data.TemperatureUnit

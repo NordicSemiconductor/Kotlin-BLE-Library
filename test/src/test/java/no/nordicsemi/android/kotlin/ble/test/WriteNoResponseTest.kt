@@ -5,11 +5,8 @@ import androidx.test.rule.ServiceTestRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit4.MockKRule
-import io.mockk.mockk
-import io.mockk.mockkObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -17,12 +14,11 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.logger.DefaultBleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import org.junit.After
 import org.junit.Assert
 import org.junit.Before
@@ -49,9 +45,6 @@ class WriteNoResponseTest {
 
     @RelaxedMockK
     lateinit var context: Context
-
-    @RelaxedMockK
-    lateinit var logger: DefaultBleLogger
 
     @Inject
     lateinit var serverDevice: MockServerDevice
@@ -80,12 +73,6 @@ class WriteNoResponseTest {
         runBlocking {
             server.start(context, serverDevice)
         }
-    }
-
-    @Before
-    fun prepareLogger() {
-        mockkObject(DefaultBleLogger)
-        every { DefaultBleLogger.create(any(), any(), any(), any()) } returns mockk()
     }
 
     @Test

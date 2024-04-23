@@ -33,20 +33,21 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 
 import android.Manifest
 import android.bluetooth.BluetoothGattCallback
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.DescriptorRead
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.DescriptorWrite
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
+import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
-import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
-import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattDescriptor
+import org.slf4j.LoggerFactory
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -68,10 +69,10 @@ class ClientBleGattDescriptor internal constructor(
     private val gatt: GattClientAPI,
     private val characteristicInstanceId: Int,
     private val descriptor: IBluetoothGattDescriptor,
-    private val logger: BleLogger,
     private val mutex: MutexWrapper,
     private val connectionProvider: ConnectionProvider
 ) {
+    private val logger = LoggerFactory.getLogger(ClientBleGattDescriptor::class.java)
 
     /**
      * [UUID] of the descriptor.
@@ -127,14 +128,14 @@ class ClientBleGattDescriptor internal constructor(
         mutex.lock(RequestedLockedFeature.DESCRIPTOR_WRITE)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Write to descriptor - start, uuid: $uuid, value: $value")
+            logger.trace("Writing to descriptor (uuid: {}), value: {}", uuid, value)
             pendingWriteEvent = {
                 pendingWriteEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.DEBUG, "Write to descriptor - end, uuid: $uuid, value: ${it.status}")
+                    logger.info("Value written to descriptor (uuid: {}) complete", uuid)
                     continuation.resume(Unit)
                 } else {
-                    logger.log(Log.ERROR, "Write to descriptor - error, uuid: $uuid, result: ${it.status}")
+                    logger.error("Writing to descriptor failed (uuid: {}), status: {}", uuid, it.status)
                     continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
             }
@@ -159,14 +160,14 @@ class ClientBleGattDescriptor internal constructor(
         mutex.lock(RequestedLockedFeature.DESCRIPTOR_READ)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Read from descriptor - start, uuid: $uuid")
+            logger.trace("Reading from descriptor (uuid: {})", uuid)
             pendingReadEvent = {
                 pendingReadEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.DEBUG, "Read from descriptor - end, uuid: $uuid, value: ${it.value}")
+                    logger.info("Descriptor value read (uuid: {}), value: {}", uuid, it.value)
                     continuation.resume(it.value.copyOf())
                 } else {
-                    logger.log(Log.ERROR, "Read from descriptor - error, uuid: $uuid, result: ${it.status}")
+                    logger.error("Reading from descriptor failed (uuid: {}), status: {}", uuid, it.status)
                     continuation.resumeWithException(GattOperationException(it.status, cause = stacktrace))
                 }
             }

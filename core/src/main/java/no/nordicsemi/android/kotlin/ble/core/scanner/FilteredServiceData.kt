@@ -1,7 +1,7 @@
 package no.nordicsemi.android.kotlin.ble.core.scanner
 
 import android.os.ParcelUuid
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 
 /**
  * A helper class which groups service id, it's data and mask. Used as a scanning filter.

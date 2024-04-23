@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.service
 import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattCallback
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
@@ -43,25 +42,30 @@ import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.CharacteristicChanged
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.CharacteristicEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.CharacteristicRead
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.CharacteristicWrite
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.DescriptorEvent
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.ReliableWriteCompleted
+import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.ServiceEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConsts
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.errors.DeviceDisconnectedException
 import no.nordicsemi.android.kotlin.ble.core.errors.GattOperationException
 import no.nordicsemi.android.kotlin.ble.core.errors.MissingPropertyException
 import no.nordicsemi.android.kotlin.ble.core.errors.NotificationDescriptorNotFoundException
-import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
+import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattCharacteristic
-import java.util.*
+import org.slf4j.LoggerFactory
+import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -86,10 +90,10 @@ private val DISABLE_NOTIFICATION_VALUE = DataByteArray(byteArrayOf(0x00, 0x00))
 class ClientBleGattCharacteristic internal constructor(
     private val gatt: GattClientAPI,
     private val characteristic: IBluetoothGattCharacteristic,
-    private val logger: BleLogger,
     private val mutex: MutexWrapper,
     private val connectionProvider: ConnectionProvider,
 ) {
+    private val logger = LoggerFactory.getLogger(ClientBleGattCharacteristic::class.java)
 
     /**
      * [UUID] of the characteristic.
@@ -148,7 +152,6 @@ class ClientBleGattCharacteristic internal constructor(
             gatt,
             instanceId,
             it,
-            logger,
             mutex,
             connectionProvider
         )
@@ -182,7 +185,7 @@ class ClientBleGattCharacteristic internal constructor(
     }
 
     private fun log(data: DataByteArray) {
-        logger.log(Log.VERBOSE, "On notification received: $data")
+        logger.info("Notification received: {}", data)
     }
 
     private fun onEvent(event: CharacteristicEvent) {
@@ -225,21 +228,15 @@ class ClientBleGattCharacteristic internal constructor(
         mutex.lock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCoroutine { continuation ->
-            logger.log(
-                Log.DEBUG,
-                "Write to characteristic - start, uuid: $uuid, value: $value, type: $writeType"
-            )
+            logger.trace("Writing to characteristic (uuid: {}), value: {}, type: {}", uuid, value, writeType)
             validateWriteProperties(writeType)
             pendingWriteEvent = {
                 pendingWriteEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.INFO, "Value written: $value to $uuid")
+                    logger.info("Value written to characteristic (uuid: {}) complete", uuid)
                     continuation.resume(Unit)
                 } else {
-                    logger.log(
-                        Log.ERROR,
-                        "Write to characteristic - error, uuid: $uuid, result: ${it.status}"
-                    )
+                    logger.error("Writing to characteristic failed (uuid:{}), status: {}", uuid, it.status)
                     continuation.resumeWithException(
                         GattOperationException(
                             it.status,
@@ -265,42 +262,28 @@ class ClientBleGattCharacteristic internal constructor(
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     suspend fun splitWrite(value: DataByteArray, writeType: BleWriteType = BleWriteType.DEFAULT) {
-        logger.log(
-            Log.DEBUG,
-            "Split write to characteristic - start, uuid: $uuid, value: $value, type: $writeType"
-        )
         value.split(connectionProvider.availableMtu(writeType)).forEach {
             write(it, writeType)
         }
-        logger.log(Log.DEBUG, "Split write to characteristic - end, uuid: $uuid")
     }
 
     private fun validateWriteProperties(writeType: BleWriteType) {
         when (writeType) {
             BleWriteType.DEFAULT -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE)) {
                 mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
-                logger.log(
-                    Log.ERROR,
-                    "Write to characteristic - missing property error, uuid: $uuid"
-                )
+                logger.error("Writing to characteristic failed (uuid: {}), missing WRITE property", uuid)
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE)
             }
 
             BleWriteType.NO_RESPONSE -> if (!properties.contains(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)) {
                 mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
-                logger.log(
-                    Log.ERROR,
-                    "Write to characteristic - missing property error, uuid: $uuid"
-                )
+                logger.error("Writing to characteristic failed (uuid: {}), missing WRITE_NO_RESPONSE property", uuid)
                 throw MissingPropertyException(BleGattProperty.PROPERTY_WRITE_NO_RESPONSE)
             }
 
             BleWriteType.SIGNED -> if (!properties.contains(BleGattProperty.PROPERTY_SIGNED_WRITE)) {
                 mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_WRITE)
-                logger.log(
-                    Log.ERROR,
-                    "Write to characteristic - missing property error, uuid: $uuid"
-                )
+                logger.error("Writing to characteristic failed (uuid: {}), missing SIGNED_WRITE property", uuid)
                 throw MissingPropertyException(BleGattProperty.PROPERTY_SIGNED_WRITE)
             }
         }
@@ -323,25 +306,19 @@ class ClientBleGattCharacteristic internal constructor(
         mutex.lock(RequestedLockedFeature.CHARACTERISTIC_READ)
         val stacktrace = Exception() //Helper exception to display valid stacktrace.
         return suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Read from characteristic - start, uuid: $uuid")
+            logger.trace("Reading from characteristic (uuid: {})", uuid)
             if (!properties.contains(BleGattProperty.PROPERTY_READ)) {
                 mutex.unlock(RequestedLockedFeature.CHARACTERISTIC_READ)
-                logger.log(
-                    Log.ERROR,
-                    "Read from characteristic - missing property error, uuid: $uuid"
-                )
+                logger.error("Reading from characteristic failed (uuid: {}), missing READ property", uuid)
                 throw MissingPropertyException(BleGattProperty.PROPERTY_READ)
             }
             pendingReadEvent = {
                 pendingReadEvent = null
                 if (it.status.isSuccess) {
-                    logger.log(Log.INFO, "Value read: ${it.value} from $uuid")
+                    logger.info("Characteristic value read (uuid: {}), value: {}", uuid, it.value)
                     continuation.resume(it.value.copyOf())
                 } else {
-                    logger.log(
-                        Log.ERROR,
-                        "Read from characteristic - error, uuid: $uuid, result: ${it.status}"
-                    )
+                    logger.error("Reading from characteristic failed (uuid: {}), status: {}", uuid, it.status)
                     continuation.resumeWithException(
                         GattOperationException(
                             it.status,
@@ -367,34 +344,28 @@ class ClientBleGattCharacteristic internal constructor(
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun enableIndications() {
-        logger.log(Log.DEBUG, "Enable indications on characteristic - start, uuid: $uuid")
+        logger.trace("Enable indications (uuid: {})", uuid)
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(ENABLE_INDICATION_VALUE).also {
-                logger.log(Log.INFO, "Indications enabled: $uuid")
+                logger.info("Indications enabled (uuid: {})", uuid)
             }
         } ?: run {
-            logger.log(
-                Log.ERROR,
-                "Enable indications on characteristic - missing descriptor error, uuid: $uuid"
-            )
+            logger.error("Enabling indications failed (uuid: {}), missing CCCD descriptor", uuid)
             throw NotificationDescriptorNotFoundException()
         }
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private suspend fun enableNotifications() {
-        logger.log(Log.DEBUG, "Enable notifications on characteristic - start, uuid: $uuid")
+        logger.trace("Enabling notifications (uuid: {})", uuid)
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.enableCharacteristicNotification(characteristic)
             descriptor.write(ENABLE_NOTIFICATION_VALUE).also {
-                logger.log(Log.INFO, "Notifications enabled: $uuid")
+                logger.info("Notifications enabled (uuid: {})", uuid)
             }
         } ?: run {
-            logger.log(
-                Log.ERROR,
-                "Enable notifications on characteristic - missing descriptor error, uuid: $uuid"
-            )
+            logger.error("Enabling notifications failed (uuid: {}), missing CCCD descriptor", uuid)
             throw NotificationDescriptorNotFoundException()
         }
     }
@@ -411,17 +382,14 @@ class ClientBleGattCharacteristic internal constructor(
         if (!connectionProvider.isConnected) {
             throw DeviceDisconnectedException()
         }
-        logger.log(Log.DEBUG, "Disable notifications on characteristic - start, uuid: $uuid")
+        logger.trace("Disabling notifications (uuid: {})", uuid)
         return findDescriptor(BleGattConsts.NOTIFICATION_DESCRIPTOR)?.let { descriptor ->
             gatt.disableCharacteristicNotification(characteristic)
             descriptor.write(DISABLE_NOTIFICATION_VALUE).also {
-                logger.log(Log.INFO, "Notifications disabled: $uuid")
+                logger.info("Notifications disabled (uuid: {})", uuid)
             }
         } ?: run {
-            logger.log(
-                Log.ERROR,
-                "Disable notifications on characteristic - missing descriptor error, uuid: $uuid"
-            )
+            logger.error("Disabling notifications failed (uuid: {}), missing CCCD descriptor", uuid)
             throw NotificationDescriptorNotFoundException()
         }
     }

@@ -48,8 +48,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.logger.DefaultBleLogger
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.MockClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
@@ -83,9 +82,6 @@ class ReliableWriteTest {
     @RelaxedMockK
     lateinit var context: Context
 
-    @RelaxedMockK
-    lateinit var logger: DefaultBleLogger
-
     @Inject
     lateinit var serverDevice: MockServerDevice
 
@@ -113,12 +109,6 @@ class ReliableWriteTest {
         runBlocking {
             server.start(context, serverDevice)
         }
-    }
-
-    @Before
-    fun prepareLogger() {
-        mockkObject(DefaultBleLogger.Companion)
-        every { DefaultBleLogger.create(any(), any(), any(), any()) } returns mockk()
     }
 
     @Test

@@ -31,9 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.bps
 
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.FloatFormat
-import no.nordicsemi.android.common.core.IntFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.FloatFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BPMStatus
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.BloodPressureType
 import no.nordicsemi.android.kotlin.ble.profile.bps.data.IntermediateCuffPressureData

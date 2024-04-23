@@ -59,6 +59,6 @@ android {
 }
 
 dependencies {
+    implementation(project(":core"))
     implementation(libs.androidx.annotation)
-    implementation(libs.nordic.core)
 }

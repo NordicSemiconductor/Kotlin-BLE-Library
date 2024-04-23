@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.client.main.callback
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
 import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
@@ -49,8 +48,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
@@ -74,6 +71,7 @@ import no.nordicsemi.android.kotlin.ble.core.mutex.RequestedLockedFeature
 import no.nordicsemi.android.kotlin.ble.core.mutex.SharedMutexWrapper
 import no.nordicsemi.android.kotlin.ble.core.provider.ConnectionProvider
 import no.nordicsemi.android.kotlin.ble.core.wrapper.IBluetoothGattService
+import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -89,7 +87,6 @@ import kotlin.coroutines.resumeWithException
 @SuppressLint("InlinedApi")
 class ClientBleGatt(
     private val gatt: GattClientAPI,
-    private val logger: BleLogger,
     private val scope: CoroutineScope,
     private val mutex: MutexWrapper,
     private val bufferSize: Int
@@ -147,7 +144,7 @@ class ClientBleGatt(
 
     init {
         gatt.event.onEach {
-            logger.log(Log.VERBOSE, "On gatt event: $it")
+            logger.trace("GATT event: {}", it)
             when (it) {
                 is ConnectionStateChanged -> onConnectionStateChange(it.status, it.newState)
                 is PhyRead -> onEvent(it)
@@ -182,10 +179,10 @@ class ClientBleGatt(
 
             onConnectionStateChangedCallback = { connectionState, _ ->
                 if (connectionState == GattConnectionState.STATE_CONNECTED) {
-                    logger.log(Log.INFO, "Device connected")
+                    logger.info("Device connected")
                     continuation.resume(GattConnectionState.STATE_CONNECTED)
                 } else if (connectionState == GattConnectionState.STATE_DISCONNECTED) {
-                    logger.log(Log.INFO, "Device disconnected")
+                    logger.info("Device disconnected")
                     continuation.resume(GattConnectionState.STATE_DISCONNECTED)
                 }
 
@@ -203,13 +200,13 @@ class ClientBleGatt(
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock(RequestedLockedFeature.MTU)
         return suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Requesting new mtu - start, mtu: $mtu")
+            logger.trace("Requesting MTU, mtu: {}", mtu)
             mtuCallback = { (mtu, status) ->
                 if (status.isSuccess) {
-                    logger.log(Log.INFO, "MTU: $mtu")
+                    logger.info("MTU changed: {}", mtu)
                     continuation.resume(mtu)
                 } else {
-                    logger.log(Log.ERROR, "Requesting mtu - error: $status")
+                    logger.error("Requesting MTU failed, status: {}", status)
                     continuation.resumeWithException(GattOperationException(status))
                 }
 
@@ -230,13 +227,13 @@ class ClientBleGatt(
     suspend fun readRssi(): Int {
         SharedMutexWrapper.lock(RequestedLockedFeature.READ_REMOTE_RSSI)
         return suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Reading rssi - start")
+            logger.trace("Reading RSSI")
             rssiCallback = { (rssi, status) ->
                 if (status.isSuccess) {
-                    logger.log(Log.INFO, "RSSI: $rssi")
+                    logger.info("RSSI read: {} dBm", rssi)
                     continuation.resume(rssi)
                 } else {
-                    logger.log(Log.ERROR, "Reading rssi - error: $status")
+                    logger.error("Reading RSSI failed, status: {}", status)
                     continuation.resumeWithException(GattOperationException(status))
                 }
 
@@ -257,13 +254,13 @@ class ClientBleGatt(
     suspend fun readPhy(): PhyInfo {
         mutex.lock(RequestedLockedFeature.PHY_READ)
         return suspendCancellableCoroutine { continuation ->
-            logger.log(Log.DEBUG, "Reading phy - start")
+            logger.trace("Reading PHY")
             phyCallback = { phy, status ->
                 if (status.isSuccess) {
-                    logger.log(Log.INFO, "Tx phy: ${phy.txPhy}, rx phy: ${phy.rxPhy}")
+                    logger.info("PHY read: TX: {}, RX: {}", phy.txPhy, phy.rxPhy)
                     continuation.resume(phy)
                 } else {
-                    logger.log(Log.ERROR, "Reading phy - error: $status")
+                    logger.error("Reading PHY failed, status: {}", status)
                     continuation.resumeWithException(GattOperationException(status))
                 }
 
@@ -284,16 +281,13 @@ class ClientBleGatt(
     suspend fun setPhy(txPhy: BleGattPhy, rxPhy: BleGattPhy, phyOption: PhyOption): PhyInfo {
         mutex.lock(RequestedLockedFeature.PHY_UPDATE)
         return suspendCancellableCoroutine { continuation ->
-            logger.log(
-                Log.DEBUG,
-                "Setting phy - start, txPhy: $txPhy, rxPhy: $rxPhy, phyOption: $phyOption"
-            )
+            logger.trace("Setting PHY, TX: {}, RX: {}, option: {}", txPhy, rxPhy, phyOption)
             phyCallback = { phy, status ->
                 if (status.isSuccess) {
-                    logger.log(Log.INFO, "Tx phy: ${phy.txPhy}, rx phy: ${phy.rxPhy}")
+                    logger.info("PHY updated, TX: {}, RX: {}", phy.txPhy, phy.rxPhy)
                     continuation.resume(phy)
                 } else {
-                    logger.log(Log.ERROR, "Setting phy - error: $status")
+                    logger.error("Setting PHY failed, status: {}", status)
                     continuation.resumeWithException(GattOperationException(status))
                 }
 
@@ -309,7 +303,7 @@ class ClientBleGatt(
      * @param priority Requested [BleGattConnectionPriority].
      */
     fun requestConnectionPriority(priority: BleGattConnectionPriority) {
-        logger.log(Log.DEBUG, "Requested new connection priority: $priority")
+        logger.trace("Requesting new connection priority: {}", priority)
         gatt.requestConnectionPriority(priority)
     }
 
@@ -335,7 +329,7 @@ class ClientBleGatt(
             GattConnectionState.STATE_DISCONNECTING,
             BleGattConnectionStatus.SUCCESS
         )
-        logger.log(Log.INFO, "Disconnecting...")
+        logger.trace("Disconnecting...")
         gatt.disconnect()
     }
 
@@ -351,7 +345,7 @@ class ClientBleGatt(
      * Clears service cache.
      */
     fun clearServicesCache() {
-        logger.log(Log.INFO, "Clearing service cache...")
+        logger.trace("Clearing service cache...")
         gatt.clearServicesCache()
     }
 
@@ -360,7 +354,7 @@ class ClientBleGatt(
         status: BleGattConnectionStatus,
         connectionState: GattConnectionState,
     ) {
-        logger.log(Log.DEBUG, "On connection state changed: $connectionState, status: $status")
+        logger.trace("Connection state changed, new state: {}, status: {}", connectionState, status)
 
         connectionProvider.connectionStateWithStatus.value =
             GattConnectionStateWithStatus(connectionState, status)
@@ -432,7 +426,7 @@ class ClientBleGatt(
 
     suspend fun discoverServices(): ClientBleGattServices {
         if (connectionStateWithStatus.value?.state != GattConnectionState.STATE_CONNECTED) {
-            throw IllegalStateException("Device is not connected. Current state: ${connectionStateWithStatus.value?.state}")
+            throw IllegalStateException("Device is not connected (current state: ${connectionStateWithStatus.value?.state})")
         }
 
         mutex.lock(RequestedLockedFeature.SERVICES_DISCOVERED)
@@ -449,13 +443,9 @@ class ClientBleGatt(
         gattServices: List<IBluetoothGattService>,
         status: BleGattOperationStatus,
     ) {
-        logger.log(Log.INFO, "Services discovered")
-        logger.log(
-            Log.DEBUG,
-            "Discovered services: ${gattServices.map { it.uuid }}, status: $status"
-        )
-        val services =
-            gattServices.let { ClientBleGattServices(gatt, it, logger, mutex, connectionProvider) }
+        logger.info("Services discovered")
+        logger.trace("Discovered services: {}, status: {}", gattServices.map { it.uuid }, status)
+        val services = ClientBleGattServices(gatt, gattServices, mutex, connectionProvider)
         _services.value = services
         onServicesDiscovered?.invoke(services)
     }
@@ -488,6 +478,7 @@ class ClientBleGatt(
     }
 
     companion object {
+        private val logger = LoggerFactory.getLogger(ClientBleGatt::class.java)
 
         /**
          * Connects to the specified device. Device is provided using mac address.
@@ -504,10 +495,9 @@ class ClientBleGatt(
             macAddress: String,
             scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BleLogger = DefaultConsoleLogger(context),
         ): ClientBleGatt {
-            logger.log(Log.INFO, "Connecting to $macAddress")
-            return ClientBleGattFactory.connect(context, macAddress, options, logger, scope)
+            logger.trace("Connecting to {}...", macAddress)
+            return ClientBleGattFactory.connect(context, macAddress, options, scope)
         }
 
         /**
@@ -525,10 +515,9 @@ class ClientBleGatt(
             device: ServerDevice,
             scope: CoroutineScope,
             options: BleGattConnectOptions = BleGattConnectOptions(),
-            logger: BleLogger = DefaultConsoleLogger(context),
         ): ClientBleGatt {
-            logger.log(Log.INFO, "Connecting to ${device.address}")
-            return ClientBleGattFactory.connect(context, device, options, logger, scope)
+            logger.trace("Connecting to {}...", device.address)
+            return ClientBleGattFactory.connect(context, device, options, scope)
         }
     }
 }

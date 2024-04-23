@@ -38,7 +38,7 @@ import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.flow.SharedFlow
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.RealClientDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus

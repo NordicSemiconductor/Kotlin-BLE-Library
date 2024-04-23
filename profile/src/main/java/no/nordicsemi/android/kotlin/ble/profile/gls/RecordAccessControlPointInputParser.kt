@@ -31,9 +31,9 @@
 package no.nordicsemi.android.kotlin.ble.profile.gls
 
 import androidx.annotation.IntRange
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.DataByteArray.Companion.opCode
-import no.nordicsemi.android.common.core.IntFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray.Companion.opCode
+import no.nordicsemi.android.kotlin.ble.core.data.util.IntFormat
 import no.nordicsemi.android.kotlin.ble.profile.common.MutableData
 
 object RecordAccessControlPointInputParser {

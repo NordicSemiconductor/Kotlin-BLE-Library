@@ -59,8 +59,6 @@ dependencies {
     implementation(project(":server-mock"))
     implementation(project(":server-api"))
 
-    implementation(libs.nordic.logger)
-
     kaptTest(libs.hilt.compiler)
 
     testImplementation(libs.test.mockk)
@@ -69,7 +67,6 @@ dependencies {
     testImplementation(libs.androidx.test.ext)
     testImplementation(libs.androidx.test.rules)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.test.slf4j.simple)
     testImplementation(libs.test.robolectric)
     testImplementation(libs.hilt.android.testing)
 

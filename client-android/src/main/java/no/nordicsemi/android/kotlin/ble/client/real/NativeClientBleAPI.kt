@@ -40,7 +40,7 @@ import androidx.annotation.IntRange
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent.*

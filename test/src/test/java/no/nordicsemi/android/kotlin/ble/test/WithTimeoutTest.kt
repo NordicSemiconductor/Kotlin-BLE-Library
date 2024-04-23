@@ -20,8 +20,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import org.junit.After
@@ -70,8 +68,6 @@ class WithTimeoutTest {
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
-    private val logger = BleLogger { _, log -> println(log) }
-
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -89,12 +85,6 @@ class WithTimeoutTest {
             server.start(context, serverDevice)
             server.start(context, serverDevice2)
         }
-    }
-
-    @Before
-    fun prepareLogger() {
-        mockkObject(DefaultBleLogger)
-        every { DefaultBleLogger.create(any(), any(), any(), any()) } returns mockk()
     }
 
     @Test
