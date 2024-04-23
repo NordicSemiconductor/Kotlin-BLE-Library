@@ -39,8 +39,6 @@ import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.CoroutineScope
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.client.main.bonding.BondingBroadcastReceiver
 import no.nordicsemi.android.kotlin.ble.client.mock.BleMockGatt
@@ -74,7 +72,6 @@ internal object ClientBleGattFactory {
         context: Context,
         macAddress: String,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BleLogger = DefaultConsoleLogger(context),
         scope: CoroutineScope,
     ): ClientBleGatt {
         val bluetoothManager =
@@ -82,7 +79,7 @@ internal object ClientBleGattFactory {
         val bluetoothAdapter = bluetoothManager.adapter
         val device = bluetoothAdapter.getRemoteDevice(macAddress)
         val realDevice = RealServerDevice(device)
-        return connectDevice(realDevice, context, options, logger, scope)
+        return connectDevice(realDevice, context, options, scope)
     }
 
     /**
@@ -99,12 +96,11 @@ internal object ClientBleGattFactory {
         context: Context,
         device: ServerDevice,
         options: BleGattConnectOptions = BleGattConnectOptions(),
-        logger: BleLogger = DefaultConsoleLogger(context),
         scope: CoroutineScope,
     ): ClientBleGatt {
         return when (device) {
-            is MockServerDevice -> connectDevice(device, options, logger, scope)
-            is RealServerDevice -> connectDevice(device, context, options, logger, scope)
+            is MockServerDevice -> connectDevice(device, options, scope)
+            is RealServerDevice -> connectDevice(device, context, options, scope)
         }
     }
 
@@ -112,7 +108,6 @@ internal object ClientBleGattFactory {
     private suspend fun connectDevice(
         device: MockServerDevice,
         options: BleGattConnectOptions,
-        logger: BleLogger,
         scope: CoroutineScope,
     ): ClientBleGatt {
         val clientDevice = MockClientDevice.nextDevice()
@@ -126,7 +121,7 @@ internal object ClientBleGattFactory {
             options.bufferSize,
             mutexWrapper
         )
-        return ClientBleGatt(gatt, logger, scope, mutexWrapper, options.bufferSize)
+        return ClientBleGatt(gatt, scope, mutexWrapper, options.bufferSize)
             .also { MockEngine.connectToServer(device, clientDevice, gatt, options) }
             .also { it.waitForConnection() }
     }
@@ -136,12 +131,11 @@ internal object ClientBleGattFactory {
         device: RealServerDevice,
         context: Context,
         options: BleGattConnectOptions,
-        logger: BleLogger,
         scope: CoroutineScope,
     ): ClientBleGatt {
         val mutex = MutexWrapper()
         val gatt = device.createConnection(context, options, mutex)
-        return ClientBleGatt(gatt, logger, scope, mutex, options.bufferSize)
+        return ClientBleGatt(gatt, scope, mutex, options.bufferSize)
             .also { it.waitForConnection() }
     }
 

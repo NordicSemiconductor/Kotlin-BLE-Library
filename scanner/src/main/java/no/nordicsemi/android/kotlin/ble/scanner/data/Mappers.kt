@@ -37,8 +37,8 @@ import android.os.Build
 import android.os.ParcelUuid
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.map
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.map
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanDataStatus
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy

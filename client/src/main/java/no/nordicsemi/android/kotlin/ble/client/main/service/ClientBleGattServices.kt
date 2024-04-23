@@ -31,7 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.client.main.service
 
-import no.nordicsemi.android.common.logger.BleLogger
 import no.nordicsemi.android.kotlin.ble.client.api.ClientGattEvent
 import no.nordicsemi.android.kotlin.ble.client.api.GattClientAPI
 import no.nordicsemi.android.kotlin.ble.core.mutex.MutexWrapper
@@ -51,12 +50,11 @@ import java.util.UUID
 data class ClientBleGattServices internal constructor(
     private val gatt: GattClientAPI,
     private val androidGattServices: List<IBluetoothGattService>,
-    private val logger: BleLogger,
     private val mutex: MutexWrapper,
     private val connectionProvider: ConnectionProvider
 ) {
 
-    val services = androidGattServices.map { ClientBleGattService(gatt, it, logger, mutex, connectionProvider) }
+    val services = androidGattServices.map { ClientBleGattService(gatt, it, mutex, connectionProvider) }
 
     /**
      * Finds service based on [uuid].

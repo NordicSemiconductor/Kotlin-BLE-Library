@@ -35,7 +35,7 @@ import android.bluetooth.le.ScanResult
 import android.os.Build
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.mapper.ScanRecordSerializer
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleGattPrimaryPhy

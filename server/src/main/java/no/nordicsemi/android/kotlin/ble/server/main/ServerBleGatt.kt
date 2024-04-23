@@ -50,8 +50,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.job
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultConsoleLogger
 import no.nordicsemi.android.kotlin.ble.core.ClientDevice
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionStatus
@@ -73,6 +71,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServices
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattConnection
+import org.slf4j.LoggerFactory
 
 /**
  * A class for managing BLE connections. It propagates events ([ServerGattEvent]) to specified connection's
@@ -88,11 +87,11 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBluetoothGattC
 @SuppressLint("InlinedApi")
 class ServerBleGatt internal constructor(
     private val server: GattServerAPI,
-    private val logger: BleLogger,
     private val scope: CoroutineScope,
     private val bufferSize: Int,
     private var services: List<IBluetoothGattService> = emptyList()
 ) {
+    private val logger = LoggerFactory.getLogger(ServerBleGatt::class.java)
 
     companion object {
 
@@ -112,13 +111,11 @@ class ServerBleGatt internal constructor(
             context: Context,
             scope: CoroutineScope,
             vararg config: ServerBleGattServiceConfig,
-            logger: BleLogger = DefaultConsoleLogger(context),
             mock: MockServerDevice? = null,
             options: ServerConnectionOption = ServerConnectionOption(),
         ): ServerBleGatt {
             return ServerBleGattFactory.create(
                 context,
-                logger,
                 scope,
                 *config,
                 mock = mock,
@@ -151,7 +148,7 @@ class ServerBleGatt internal constructor(
 
     init {
         server.event.onEach {
-            logger.log(Log.VERBOSE, "On gatt event: $it")
+            logger.trace("GATT event: {}", it)
             when (it) {
                 is ServiceAdded -> onServiceAdded(it.service, it.status)
                 is ClientConnectionStateChanged -> onConnectionStateChanged(
@@ -170,7 +167,7 @@ class ServerBleGatt internal constructor(
      */
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun stopServer() {
-        logger.log(Log.INFO, "Stopping server")
+        logger.info("Stopping server")
         server.close()
         serverScope.cancel()
     }
@@ -181,7 +178,7 @@ class ServerBleGatt internal constructor(
      * @param device A client device.
      */
     fun cancelConnection(device: ClientDevice) {
-        logger.log(Log.INFO, "Cancelling connection with client: ${device.address}")
+        logger.info("Cancelling connection with client: {}", device.address)
         server.cancelConnection(device)
     }
 
@@ -197,10 +194,7 @@ class ServerBleGatt internal constructor(
         status: BleGattConnectionStatus,
         newState: GattConnectionState,
     ) {
-        logger.log(
-            Log.INFO,
-            "Connection changed, device: ${device.address}, state: $newState, status: $status"
-        )
+        logger.trace("Connection state changed, client: {}, new state: {}, status: {}", device.address, newState, status)
         when (newState) {
             GattConnectionState.STATE_CONNECTED -> connectDevice(device)
             GattConnectionState.STATE_DISCONNECTED,
@@ -266,7 +260,7 @@ class ServerBleGatt internal constructor(
      * @param status If service has been added successfully.
      */
     private fun onServiceAdded(service: IBluetoothGattService, status: BleGattOperationStatus) {
-        logger.log(Log.DEBUG, "Service added: ${service.uuid}, status: $status")
+        logger.trace("Service added (uuid: {}), status: {}", service.uuid, status)
         if (status == BleGattOperationStatus.GATT_SUCCESS) {
             services = services + service
         }
@@ -280,10 +274,7 @@ class ServerBleGatt internal constructor(
      * @param event PHY read event data.
      */
     private fun onPhyRead(event: ServerPhyRead) {
-        logger.log(
-            Log.DEBUG,
-            "Phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
-        )
+        logger.trace("PHY read, client: {}, TX: {}, RX: {}", event.device.address, event.txPhy, event.rxPhy)
         val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
             it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
@@ -298,10 +289,7 @@ class ServerBleGatt internal constructor(
      * @param event PHY update event data.
      */
     private fun onPhyUpdate(event: ServerPhyUpdate) {
-        logger.log(
-            Log.DEBUG,
-            "New phy - device: ${event.device.address}, tx: ${event.txPhy}, rx: ${event.rxPhy}"
-        )
+        logger.trace("PHY updated, client: {}, TX: {}, RX: {}", event.device.address, event.txPhy, event.rxPhy)
         val connection = _connections.value[event.device] ?: return
         _connections.value = _connections.value.toMutableMap().also {
             it[event.device] = connection.copy(txPhy = event.txPhy, rxPhy = event.rxPhy)
@@ -316,7 +304,7 @@ class ServerBleGatt internal constructor(
      * @param event MTU changed event data.
      */
     private fun onMtuChanged(event: ServerMtuChanged) {
-        logger.log(Log.DEBUG, "New mtu - device: ${event.device.address}, mtu: ${event.mtu}")
+        logger.trace("MTU changed, client: {}, MTU: {}", event.device.address, event.mtu)
         _connections.value[event.device]?.connectionProvider?.updateMtu(event.mtu)
     }
 }

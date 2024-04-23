@@ -58,17 +58,15 @@ android {
 
 dependencies {
     api(project(":core"))
-    api(libs.nordic.logger)
+    implementation(libs.slf4j)
 
     implementation(project(":server-api"))
     implementation(project(":mock"))
     implementation(project(":server-mock"))
     implementation(project(":server-android"))
 
-
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
-    api(libs.nordic.core)
 
     testImplementation(libs.junit4)
     testImplementation(libs.androidx.test.ext)

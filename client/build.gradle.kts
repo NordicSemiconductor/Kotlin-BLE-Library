@@ -58,7 +58,7 @@ android {
 
 dependencies {
     api(project(":core"))
-    api(libs.nordic.logger)
+    implementation(libs.slf4j)
 
     implementation(project(":client-api"))
     implementation(project(":mock"))
@@ -68,5 +68,4 @@ dependencies {
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.core.ktx)
-    api(libs.nordic.core)
 }

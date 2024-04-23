@@ -31,9 +31,9 @@
 
 package no.nordicsemi.android.kotlin.ble.profile.rscs
 
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.core.IntFormat
-import no.nordicsemi.android.common.core.LongFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.IntFormat
+import no.nordicsemi.android.kotlin.ble.core.data.util.LongFormat
 import no.nordicsemi.android.kotlin.ble.profile.rscs.data.RSCSData
 
 object RSCSDataParser {

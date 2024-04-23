@@ -35,7 +35,7 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 
 /**
  * Helper class which joins capability of setting up an extra buffer from [MutableSharedFlow] with

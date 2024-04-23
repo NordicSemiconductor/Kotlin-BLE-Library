@@ -93,7 +93,7 @@ class BondingBroadcastReceiver : BroadcastReceiver() {
                     context.applicationContext,
                     instance,
                     IntentFilter(ACTION_BOND_STATE_CHANGED),
-                    ContextCompat.RECEIVER_NOT_EXPORTED
+                    ContextCompat.RECEIVER_EXPORTED
                 )
             }
         }

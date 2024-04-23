@@ -1,6 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.core.scanner
 
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 
 /**
  * A helper class which groups manufacturer id and it's data.

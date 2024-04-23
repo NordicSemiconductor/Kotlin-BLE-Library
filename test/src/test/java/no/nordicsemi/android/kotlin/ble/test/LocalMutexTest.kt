@@ -6,11 +6,8 @@ import androidx.test.rule.ServiceTestRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.HiltTestApplication
-import io.mockk.every
 import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.junit4.MockKRule
-import io.mockk.mockk
-import io.mockk.mockkObject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,13 +16,11 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import no.nordicsemi.android.common.core.DataByteArray
-import no.nordicsemi.android.common.logger.BleLogger
-import no.nordicsemi.android.common.logger.DefaultBleLogger
 import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
 import no.nordicsemi.android.kotlin.ble.core.MockServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPhy
 import no.nordicsemi.android.kotlin.ble.core.data.PhyOption
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -73,8 +68,6 @@ class LocalMutexTest {
 
     private val scope = CoroutineScope(UnconfinedTestDispatcher())
 
-    private val logger = BleLogger { _, log -> println(log) }
-
     @Before
     fun setUp() {
         hiltRule.inject()
@@ -93,18 +86,11 @@ class LocalMutexTest {
             server.start(context, serverDevice2)
         }
     }
-
-    @Before
-    fun prepareLogger() {
-        mockkObject(DefaultBleLogger)
-        every { DefaultBleLogger.create(any(), any(), any(), any()) } returns mockk()
-    }
-
     @Test
     fun whenReadRssiMultipleTimesShouldSucceed() = runTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val gatt = ClientBleGatt.connect(context, serverDevice, scope, logger = logger)
-        val gatt2 = ClientBleGatt.connect(context, serverDevice2, scope, logger = logger)
+        val gatt = ClientBleGatt.connect(context, serverDevice, scope)
+        val gatt2 = ClientBleGatt.connect(context, serverDevice2, scope)
 
         repeat(testCount) {
             val jobs = listOf(

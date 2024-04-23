@@ -35,7 +35,7 @@ import android.annotation.SuppressLint
 import android.bluetooth.le.TransportDiscoveryData
 import android.os.ParcelUuid
 import android.util.SparseArray
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.mapper.BleType.DATA_TYPE_FLAGS
 import no.nordicsemi.android.kotlin.ble.core.mapper.BleType.DATA_TYPE_LOCAL_NAME_COMPLETE
 import no.nordicsemi.android.kotlin.ble.core.mapper.BleType.DATA_TYPE_LOCAL_NAME_SHORT

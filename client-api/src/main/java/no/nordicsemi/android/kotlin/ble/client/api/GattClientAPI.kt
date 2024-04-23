@@ -36,7 +36,7 @@ import android.bluetooth.BluetoothGattCallback
 import androidx.annotation.IntRange
 import androidx.annotation.RestrictTo
 import kotlinx.coroutines.flow.SharedFlow
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.ServerDevice
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectOptions
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattConnectionPriority

@@ -35,7 +35,7 @@ import android.os.ParcelUuid
 import android.os.Parcelable
 import android.util.SparseArray
 import kotlinx.parcelize.Parcelize
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 
 /**
  * Represents a scan record from Bluetooth LE scan.

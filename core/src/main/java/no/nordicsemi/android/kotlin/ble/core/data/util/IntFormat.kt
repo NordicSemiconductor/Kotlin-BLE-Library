@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, Nordic Semiconductor
+ * Copyright (c) 2024, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,48 +29,29 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.kotlin.ble.core.wrapper
+package no.nordicsemi.android.kotlin.ble.core.data.util;
+enum class IntFormat(valueFormat: ValueFormat) {
+    FORMAT_UINT8(ValueFormat.FORMAT_UINT8),
+    FORMAT_UINT16_LE(ValueFormat.FORMAT_UINT16_LE),
+    FORMAT_UINT16_BE(ValueFormat.FORMAT_UINT16_BE),
+    FORMAT_UINT24_LE(ValueFormat.FORMAT_UINT24_LE),
+    FORMAT_UINT24_BE(ValueFormat.FORMAT_UINT24_BE),
+    FORMAT_UINT32_LE(ValueFormat.FORMAT_UINT32_LE),
+    FORMAT_UINT32_BE(ValueFormat.FORMAT_UINT32_BE),
+    FORMAT_SINT8(ValueFormat.FORMAT_SINT8),
+    FORMAT_SINT16_LE(ValueFormat.FORMAT_SINT16_LE),
+    FORMAT_SINT16_BE(ValueFormat.FORMAT_SINT16_BE),
+    FORMAT_SINT24_LE(ValueFormat.FORMAT_SINT24_LE),
+    FORMAT_SINT24_BE(ValueFormat.FORMAT_SINT24_BE),
+    FORMAT_SINT32_LE(ValueFormat.FORMAT_SINT32_LE),
+    FORMAT_SINT32_BE(ValueFormat.FORMAT_SINT32_BE);
 
-import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
-import java.util.UUID
+    val value: Int = valueFormat.value
+}
 
 /**
- * Mock variant of the descriptor. It's special feature is that it is independent from
- * Android dependencies and can be used for unit testing.
- *
- * Circular dependency between characteristic and descriptor results in custom [equals],
- * [hashCode] and [toString] implementations.
+ * Returns the size of a give value type.
  */
-data class MockBluetoothGattDescriptor(
-    override val uuid: UUID,
-    override val permissions: Int,
-    override val characteristic: IBluetoothGattCharacteristic,
-    override var value: DataByteArray = DataByteArray()
-) : IBluetoothGattDescriptor {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MockBluetoothGattDescriptor
-
-        if (uuid != other.uuid) return false
-        if (permissions != other.permissions) return false
-        if (characteristic != other.characteristic) return false
-        if (value != other.value) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        var result = uuid.hashCode()
-        result = 31 * result + permissions
-        result = 31 * result + value.hashCode()
-        return result
-    }
-
-    override fun toString(): String {
-        //todo improve
-        return uuid.toString() + value + permissions + characteristic.uuid
-    }
+fun getTypeLen(formatType: IntFormat): Int {
+    return formatType.value and 0xF
 }

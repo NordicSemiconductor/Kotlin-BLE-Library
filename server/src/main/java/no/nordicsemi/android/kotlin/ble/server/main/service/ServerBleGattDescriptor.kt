@@ -34,7 +34,7 @@ package no.nordicsemi.android.kotlin.ble.server.main.service
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGattServerCallback
 import kotlinx.coroutines.flow.asSharedFlow
-import no.nordicsemi.android.common.core.DataByteArray
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattOperationStatus
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleWriteType

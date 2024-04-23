@@ -63,7 +63,6 @@ dependencies {
 
     implementation(libs.androidx.annotation)
     implementation(libs.kotlinx.coroutines.android)
-    api(libs.nordic.core)
 
     testImplementation(libs.hilt.android.testing)
     testImplementation(libs.androidx.test.rules)
@@ -71,7 +70,6 @@ dependencies {
     testImplementation(libs.test.mockk)
     testImplementation(libs.androidx.test.ext)
     testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.test.slf4j.simple)
     testImplementation(libs.test.robolectric)
     testImplementation(libs.kotlin.junit)
 }

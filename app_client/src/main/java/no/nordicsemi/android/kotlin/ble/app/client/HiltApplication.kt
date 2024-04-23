@@ -34,7 +34,10 @@ package no.nordicsemi.android.kotlin.ble.app.client
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 import no.nordicsemi.android.kotlin.ble.app.client.repository.BlinkyServer
+import timber.log.Timber
+import timber.log.Timber.DebugTree
 import javax.inject.Inject
+
 
 @HiltAndroidApp
 class HiltApplication : Application() {
@@ -44,6 +47,9 @@ class HiltApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+
+        // Plant a Timber DebugTree to collect logs from BLEK.
+        Timber.plant(DebugTree())
 
         server.start(this)
     }
