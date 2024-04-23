@@ -1,21 +1,21 @@
 [versions]
 accompanist = "0.34.0"
 androidDesugarJdkLibs = "2.0.4"
-androidGradlePlugin = "8.3.0"
-androidxActivity = "1.8.2"
+androidGradlePlugin = "8.3.2"
+androidxActivity = "1.9.0"
 androidxAnnotation = "1.7.1"
 androidxAppCompat = "1.6.1"
-androidxComposeBom = "2024.02.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidxComposeCompiler = "1.5.8" # https://developer.android.com/jetpack/androidx/releases/compose-kotlin
+androidxComposeBom = "2024.04.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
+androidxComposeCompiler = "1.5.12" # https://developer.android.com/jetpack/androidx/releases/compose-kotlin
 androidxComposeRuntimeTracing = "1.0.0-beta01"
-androidxCore = "1.12.0"
+androidxCore = "1.13.0"
 androidxCoreSplashscreen = "1.0.1"
-androidxDataStore = "1.0.0"
+androidxDataStore = "1.1.0"
 androidxEspresso = "3.5.1"
 androidxHiltNavigationCompose = "1.2.0"
 androidxLifecycle = "2.7.0"
 androidxLocalbroadcastmanager = "1.1.0"
-androidxMacroBenchmark = "1.2.3"
+androidxMacroBenchmark = "1.2.4"
 androidxNavigation = "2.7.7"
 androidxMetrics = "1.0.0-beta01"
 androidxProfileinstaller = "1.3.1"
@@ -29,23 +29,23 @@ androidxTracing = "1.2.0"
 androidxUiAutomator = "2.3.0"
 androidxWork = "2.9.0"
 coil = "2.6.0"
-firebaseBom = "32.7.3"
-hilt = "2.51"
+firebaseBom = "32.8.1"
+hilt = "2.51.1"
 hiltExt = "1.2.0"
 jacoco = "0.8.7"
 junit4 = "4.13.2"
-kotlin = "1.9.22"
+kotlin = "1.9.23"
 kotlinxCoroutines = "1.8.0"
 kotlinxDatetime = "0.5.0"
 kotlinxSerializationJson = "1.6.3"
-ksp = "1.9.22-1.0.18"
-lint = "31.3.0"
+ksp = "1.9.23-1.0.20"
+lint = "31.3.2"
 memfault-cloud = "2.0.5"
 okhttp = "4.12.0"
 protobuf = "3.25.3"
 protobufPlugin = "0.9.4"
 publishPlugin = "1.2.1"
-retrofit = "2.9.0"
+retrofit = "2.11.0"
 room = "2.6.1"
 paging = "3.2.1"
 secrets = "2.0.1"
@@ -56,25 +56,20 @@ timber = "5.0.1"
 chart = "3.1.0"
 leakcanary = "2.13"
 mockk = "1.13.10"
-slf4j = "2.0.12"
-robolectric = "4.11.1"
+slf4j = "1.7.36" # don't update to 2.x, unless the next one is also updated
+slf4j-timber = "3.1" # <- this one
+robolectric = "4.12.1"
 skydovesBallon = "1.6.4"
 moshiKotlin = "1.15.1"
 moshiAdapters = "1.15.1"
-moshiConverter = "2.9.0"
+moshiConverter = "2.11.0"
 moshi = "1.15.1"
 moshiKotlinCodegen = "1.15.1"
-material3 = "1.2.0"
-material = "1.6.2"
+material3 = "1.2.1"
+material = "1.6.6"
 
-nordic-blek = "1.0.15"
-nordic-ble = "2.7.3"
-nordic-dfu = "2.4.2"
 nordic-log = "2.3.0"
-nordic-mcumgr = "1.9.2"
-nordic-scanner = "1.6.0"
-nordic-common = "1.9.4"
-nordic-memfault = "1.0.2"
+nordic-common = "1.9.5"
 nordicPlugins = "1.11.1"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.1"
@@ -187,7 +182,8 @@ memfault-cloud = { group = "com.memfault.cloud", name = "cloud-android", version
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 chart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "chart" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
-test-slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+slf4j = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
+slf4j-timber = { group = "com.arcao", name = "slf4j-timber", version.ref = "slf4j-timber" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 test-robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 skydoves-ballon = {group = "com.github.skydoves", name = "balloon-compose", version.ref = "skydovesBallon"}
@@ -198,33 +194,16 @@ moshi = {group = "com.squareup.moshi", name = "moshi", version.ref = "moshi"}
 moshi-kotlin-codegen = {group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen"}
 
 # Nordic
-nordic-ble-ktx = { group = "no.nordicsemi.android", name = "ble-ktx", version.ref = "nordic-ble" }
-nordic-ble-common = { group = "no.nordicsemi.android", name = "ble-common", version.ref = "nordic-ble" }
-nordic-dfu = { group = "no.nordicsemi.android", name = "dfu", version.ref = "nordic-dfu" }
-nordic-mcumgr-core = { group = "no.nordicsemi.android", name = "mcumgr-core", version.ref = "nordic-mcumgr" }
-nordic-mcumgr-ble = { group = "no.nordicsemi.android", name = "mcumgr-ble", version.ref = "nordic-mcumgr" }
 nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nordic-log" }
 nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
-nordic-scanner = { group = "no.nordicsemi.android.support.v18", name = "scanner", version.ref = "nordic-scanner" }
 nordic-core = { group = "no.nordicsemi.android.common", name = "core", version.ref = "nordic-common" }
 nordic-theme = { group = "no.nordicsemi.android.common", name = "theme", version.ref = "nordic-common" }
 nordic-analytics = { group = "no.nordicsemi.android.common", name = "analytics", version.ref = "nordic-common" }
 nordic-navigation = { group = "no.nordicsemi.android.common", name = "navigation", version.ref = "nordic-common" }
-nordic-uilogger = { group = "no.nordicsemi.android.common", name = "uilogger", version.ref = "nordic-common" }
 nordic-logger = { group = "no.nordicsemi.android.common", name = "logger", version.ref = "nordic-common" }
 nordic-permissions-nfc = { group = "no.nordicsemi.android.common", name = "permissions-nfc", version.ref = "nordic-common" }
 nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version.ref = "nordic-common" }
 nordic-permissions-internet = { group = "no.nordicsemi.android.common", name = "permissions-internet", version.ref = "nordic-common" }
-nordic-memfault = { group = "no.nordicsemi.android", name = "memfault", version.ref = "nordic-memfault" }
-
-# BleK
-nordic-blek-client = { group = "no.nordicsemi.android.kotlin.ble", name = "client", version.ref = "nordic-blek" }
-nordic-blek-server = { group = "no.nordicsemi.android.kotlin.ble", name = "server", version.ref = "nordic-blek" }
-nordic-blek-profile = { group = "no.nordicsemi.android.kotlin.ble", name = "profile", version.ref = "nordic-blek" }
-nordic-blek-core = { group = "no.nordicsemi.android.kotlin.ble", name = "core", version.ref = "nordic-blek" }
-nordic-blek-scanner = { group = "no.nordicsemi.android.kotlin.ble", name = "scanner", version.ref = "nordic-blek" }
-nordic-blek-advertiser = { group = "no.nordicsemi.android.kotlin.ble", name = "advertiser", version.ref = "nordic-blek" }
-nordic-blek-uiscanner = { group = "no.nordicsemi.android.kotlin.ble", name = "uiscanner", version.ref = "nordic-blek" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
