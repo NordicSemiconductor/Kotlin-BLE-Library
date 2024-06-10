@@ -35,7 +35,7 @@ import android.os.ParcelUuid
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,6 +46,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.permissions.ble.RequireLocation
 import no.nordicsemi.android.common.theme.R
@@ -78,6 +79,8 @@ fun ScannerView(
 
             val state by viewModel.state.collectAsStateWithLifecycle(ScanningState.Loading)
             val config by viewModel.filterConfig.collectAsStateWithLifecycle()
+            val pullRefreshState = rememberPullToRefreshState()
+            val scope =  rememberCoroutineScope()
 
             Column(modifier = Modifier.fillMaxSize()) {
                 if (showFilter)
@@ -90,20 +93,16 @@ fun ScannerView(
                             .padding(horizontal = 16.dp),
                     )
 
-                val pullRefreshState = rememberPullToRefreshState()
-                if (pullRefreshState.isRefreshing) {
-                    LaunchedEffect(true) {
+                PullToRefreshBox(
+                    isRefreshing = state is ScanningState.Loading,
+                    onRefresh = {
                         viewModel.refresh()
-                        pullRefreshState.endRefresh()
-                    }
-                }
-
-                Box(
-                    modifier = Modifier
-                        .nestedScroll(pullRefreshState.nestedScrollConnection)
-                        .clipToBounds()
-                ) {
-                    if (!pullRefreshState.isRefreshing) {
+                        scope.launch {
+                            pullRefreshState.animateToHidden()
+                        }
+                    },
+                    state = pullRefreshState,
+                    content = {
                         DevicesListView(
                             isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
                             state = state,
@@ -112,12 +111,7 @@ fun ScannerView(
                             deviceItem = deviceItem,
                         )
                     }
-
-                    PullToRefreshContainer(
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        state = pullRefreshState,
-                    )
-                }
+                )
             }
         }
     }
