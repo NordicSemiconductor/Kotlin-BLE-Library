@@ -38,6 +38,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -53,13 +54,15 @@ fun ScannerAppBar(
     onNavigationButtonClick: (() -> Unit)? = null,
 ) {
     NordicAppBar(
-        text = text,
+        title = { Text(text = text) },
         backButtonIcon = backButtonIcon,
         onNavigationButtonClick = onNavigationButtonClick,
         actions = {
             if (showProgress) {
                 CircularProgressIndicator(
-                    modifier = Modifier.padding(horizontal = 16.dp).size(30.dp),
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .size(30.dp),
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
