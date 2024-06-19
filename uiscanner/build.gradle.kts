@@ -31,7 +31,7 @@
 
 plugins {
     alias(libs.plugins.nordic.feature)
-    alias(libs.plugins.nordic.nexus)
+    alias(libs.plugins.nordic.nexus.android)
     alias(libs.plugins.kotlin.parcelize)
 }
 
@@ -46,10 +46,6 @@ nordicNexusPublishing {
     POM_SCM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-
-    POM_DEVELOPER_ID = "syzi"
-    POM_DEVELOPER_NAME = "Sylwester Zieliński"
-    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
 }
 
 android {
@@ -60,7 +56,7 @@ dependencies {
     api(project(":core"))
     implementation(project(":scanner"))
 
-    implementation(libs.nordic.theme)
+    implementation(libs.nordic.ui)
     implementation(libs.nordic.core)
     implementation(libs.nordic.permissions.ble)
 

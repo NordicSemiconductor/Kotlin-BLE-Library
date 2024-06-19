@@ -39,6 +39,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.BluetoothSearching
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -49,8 +50,7 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.core.parseBold
-import no.nordicsemi.android.common.theme.NordicTheme
-import no.nordicsemi.android.common.theme.view.WarningView
+import no.nordicsemi.android.common.ui.view.WarningView
 import no.nordicsemi.android.kotlin.ble.ui.scanner.R
 
 @Composable
@@ -85,20 +85,20 @@ private fun openLocationSettings(context: Context) {
     context.startActivity(intent)
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun ScanEmptyViewPreview_RequiredLocation() {
-    NordicTheme {
+    MaterialTheme {
         ScanEmptyView(
             requireLocation = true,
         )
     }
 }
 
-@Preview(device = Devices.TABLET)
+@Preview(device = Devices.TABLET, showBackground = true)
 @Composable
 private fun ScanEmptyViewPreview() {
-    NordicTheme {
+    MaterialTheme {
         ScanEmptyView(
             requireLocation = false,
         )

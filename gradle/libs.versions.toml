@@ -62,15 +62,14 @@ robolectric = "4.12.1"
 skydovesBallon = "1.6.4"
 moshiKotlin = "1.15.1"
 moshiAdapters = "1.15.1"
-moshiConverter = "2.11.0"
 moshi = "1.15.1"
 moshiKotlinCodegen = "1.15.1"
 material3 = "1.3.0-beta03"
 material = "1.6.8"
 
 nordic-log = "2.3.0"
-nordic-common = "1.10.1"
-nordicPlugins = "1.11.1"
+nordicPlugins = "2.0.1"
+nordic-common = "2.0.0"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.2"
 firebaseCrashlyticsPlugins = "3.0.1"
@@ -190,7 +189,6 @@ test-robolectric = { group = "org.robolectric", name = "robolectric", version.re
 skydoves-ballon = {group = "com.github.skydoves", name = "balloon-compose", version.ref = "skydovesBallon"}
 moshi-kotlin = {group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiKotlin"}
 moshi-adapters = {group = "com.squareup.moshi", name = "moshi-adapters", version.ref = "moshiAdapters"}
-moshi-converter = {group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "moshiConverter"}
 moshi = {group = "com.squareup.moshi", name = "moshi", version.ref = "moshi"}
 moshi-kotlin-codegen = {group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshiKotlinCodegen"}
 
@@ -199,12 +197,14 @@ nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nor
 nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
 nordic-core = { group = "no.nordicsemi.android.common", name = "core", version.ref = "nordic-common" }
 nordic-theme = { group = "no.nordicsemi.android.common", name = "theme", version.ref = "nordic-common" }
+nordic-ui = { group = "no.nordicsemi.android.common", name = "ui", version.ref = "nordic-common" }
 nordic-analytics = { group = "no.nordicsemi.android.common", name = "analytics", version.ref = "nordic-common" }
 nordic-navigation = { group = "no.nordicsemi.android.common", name = "navigation", version.ref = "nordic-common" }
 nordic-logger = { group = "no.nordicsemi.android.common", name = "logger", version.ref = "nordic-common" }
 nordic-permissions-nfc = { group = "no.nordicsemi.android.common", name = "permissions-nfc", version.ref = "nordic-common" }
 nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version.ref = "nordic-common" }
 nordic-permissions-internet = { group = "no.nordicsemi.android.common", name = "permissions-internet", version.ref = "nordic-common" }
+nordic-permissions-wifi = { group = "no.nordicsemi.android.common", name = "permissions-wifi", version.ref = "nordic-common" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
@@ -218,7 +218,8 @@ nordic-library-compose = { id = "no.nordicsemi.android.gradle.library.compose", 
 nordic-feature = { id = "no.nordicsemi.android.gradle.feature", version.ref = "nordicPlugins" }
 nordic-hilt = { id = "no.nordicsemi.android.gradle.hilt", version.ref = "nordicPlugins" }
 nordic-kotlin = { id = "no.nordicsemi.android.gradle.kotlin", version.ref = "nordicPlugins" }
-nordic-nexus = { id = "no.nordicsemi.android.gradle.nexus", version.ref = "nordicPlugins" }
+nordic-nexus-android = { id = "no.nordicsemi.android.gradle.nexus", version.ref = "nordicPlugins" }
+nordic-nexus-kotlin = { id = "no.nordicsemi.kotlin.gradle.nexus", version.ref = "nordicPlugins" }
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }

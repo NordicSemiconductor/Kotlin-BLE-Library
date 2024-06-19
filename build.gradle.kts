@@ -41,7 +41,7 @@ plugins {
     alias(libs.plugins.nordic.library.compose) apply false
     alias(libs.plugins.nordic.hilt) apply false
     alias(libs.plugins.nordic.feature) apply false
-    alias(libs.plugins.nordic.nexus) apply false
+    alias(libs.plugins.nordic.nexus.android) apply false
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
     alias(libs.plugins.kotlin.android) apply false

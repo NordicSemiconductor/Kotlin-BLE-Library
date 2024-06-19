@@ -32,7 +32,7 @@
 plugins {
     alias(libs.plugins.nordic.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.nordic.nexus)
+    alias(libs.plugins.nordic.nexus.android)
     alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.kotlin.parcelize)
 }
@@ -48,10 +48,6 @@ nordicNexusPublishing {
     POM_SCM_URL = "https://github.com/NordicPlayground/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicPlayground/Kotlin-BLE-Library.git"
-
-    POM_DEVELOPER_ID = "syzi"
-    POM_DEVELOPER_NAME = "Sylwester Zieliński"
-    POM_DEVELOPER_EMAIL = "sylwester.zielinski@nordicsemi.no"
 }
 
 android {
