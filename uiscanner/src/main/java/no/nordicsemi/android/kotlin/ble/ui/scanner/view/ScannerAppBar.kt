@@ -43,7 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.view.NordicAppBar
+import no.nordicsemi.android.common.ui.view.NordicAppBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

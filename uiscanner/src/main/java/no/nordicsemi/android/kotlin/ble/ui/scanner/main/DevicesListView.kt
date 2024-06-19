@@ -33,11 +33,11 @@ package no.nordicsemi.android.kotlin.ble.ui.scanner.main
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScanningState
 import no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal.ScanEmptyView
 import no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal.ScanErrorView
@@ -74,7 +74,7 @@ fun DevicesListView(
 @Preview(name = "Location required")
 @Composable
 private fun DeviceListView_Preview_LocationRequired() {
-    NordicTheme {
+    MaterialTheme {
         DevicesListView(
             isLocationRequiredAndDisabled = true,
             state = ScanningState.Loading,
@@ -86,7 +86,7 @@ private fun DeviceListView_Preview_LocationRequired() {
 @Preview
 @Composable
 private fun DeviceListView_Preview_LocationNotRequired() {
-    NordicTheme {
+    MaterialTheme {
         DevicesListView(
             isLocationRequiredAndDisabled = false,
             state = ScanningState.Loading,
@@ -98,7 +98,7 @@ private fun DeviceListView_Preview_LocationNotRequired() {
 @Preview
 @Composable
 private fun DeviceListView_Preview_Error() {
-    NordicTheme {
+    MaterialTheme {
         DevicesListView(
             isLocationRequiredAndDisabled = true,
             state = ScanningState.Error(1),
@@ -110,7 +110,7 @@ private fun DeviceListView_Preview_Error() {
 @Preview
 @Composable
 private fun DeviceListView_Preview_Empty() {
-    NordicTheme {
+    MaterialTheme {
         DevicesListView(
             isLocationRequiredAndDisabled = true,
             state = ScanningState.DevicesDiscovered(emptyList()),

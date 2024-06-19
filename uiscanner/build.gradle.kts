@@ -60,7 +60,7 @@ dependencies {
     api(project(":core"))
     implementation(project(":scanner"))
 
-    implementation(libs.nordic.theme)
+    implementation(libs.nordic.ui)
     implementation(libs.nordic.core)
     implementation(libs.nordic.permissions.ble)
 
