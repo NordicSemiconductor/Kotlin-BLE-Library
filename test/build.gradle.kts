@@ -31,7 +31,7 @@
 
 plugins {
     alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.kotlin.android)
 }
 
 group = "no.nordicsemi.android.kotlin.ble"

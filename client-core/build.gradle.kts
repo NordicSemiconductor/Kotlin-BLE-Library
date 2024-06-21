@@ -30,8 +30,8 @@
  */
 
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.kotlin)
+    alias(libs.plugins.nordic.kotlin.jvm)
+    alias(libs.plugins.nordic.nexus.jvm)
 }
 
 group = "no.nordicsemi.kotlin.ble"
@@ -48,5 +48,5 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":core"))
-    api(libs.kotlinx.datetime.v060RC2)
+    api(libs.kotlinx.datetime)
 }

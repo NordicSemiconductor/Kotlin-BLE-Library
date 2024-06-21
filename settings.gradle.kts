@@ -44,7 +44,6 @@ dependencyResolutionManagement {
         mavenLocal()
         google()
         mavenCentral()
-        maven(url = "https://jitpack.io")
     }
 }
 rootProject.name = "Kotlin-BLE-Library"
@@ -74,7 +73,7 @@ include(":server-android-mock")
 //include(":profile")
 //include(":test")
 
-if (file("../Android-Common-Libraries").exists()) {
-    includeBuild("../Android-Common-Libraries")
-}
+//if (file("../Android-Common-Libraries").exists()) {
+//    includeBuild("../Android-Common-Libraries")
+//}
 include(":sample")
