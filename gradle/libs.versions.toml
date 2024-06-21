@@ -204,10 +204,6 @@ nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permi
 nordic-permissions-internet = { group = "no.nordicsemi.android.common", name = "permissions-internet", version.ref = "nordic-common" }
 nordic-permissions-wifi = { group = "no.nordicsemi.android.common", name = "permissions-wifi", version.ref = "nordic-common" }
 
-# Dependencies of the included build-logic
-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-
 [plugins]
 nordic-application = { id = "no.nordicsemi.android.plugin.application", version.ref = "nordicPlugins" }
 nordic-application-compose = { id = "no.nordicsemi.android.plugin.application.compose", version.ref = "nordicPlugins" }
