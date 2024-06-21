@@ -64,7 +64,6 @@ include(":client-android")
 include(":client")
 include(":mock")
 include(":test")
-include(":logger")
 include(":uiscanner")
 
 //if (file("../Android-Common-Libraries").exists()) {
