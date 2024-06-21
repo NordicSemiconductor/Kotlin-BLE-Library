@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":server"))
     implementation(project(":core"))
 
+    implementation(libs.nordic.ui)
     implementation(libs.nordic.theme)
     implementation(libs.nordic.navigation)
     implementation(libs.nordic.permissions.ble)
