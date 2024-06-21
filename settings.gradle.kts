@@ -44,7 +44,6 @@ dependencyResolutionManagement {
         mavenLocal()
         google()
         mavenCentral()
-        maven(url = "https://jitpack.io")
     }
 }
 rootProject.name = "Kotlin-BLE-Library"

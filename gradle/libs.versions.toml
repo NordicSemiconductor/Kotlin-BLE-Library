@@ -28,7 +28,7 @@ androidxTracing = "1.2.0"
 androidxUiAutomator = "2.3.0"
 androidxWork = "2.9.0"
 coil = "2.6.0"
-firebaseBom = "33.1.0"
+firebaseBom = "33.1.1"
 hilt = "2.51.1"
 hiltExt = "1.2.0"
 junit4 = "4.13.2"
@@ -70,7 +70,7 @@ nordicPlugins = "2.1"
 nordic-common = "2.0.0"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.2"
-firebaseCrashlyticsPlugins = "3.0.1"
+firebaseCrashlyticsPlugins = "3.0.2"
 
 [libraries]
 accompanist-flowlayout = { group = "com.google.accompanist", name = "accompanist-flowlayout", version.ref = "accompanist" }
