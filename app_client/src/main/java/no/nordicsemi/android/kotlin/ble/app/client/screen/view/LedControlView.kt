@@ -20,7 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.view.SectionTitle
+import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.android.kotlin.ble.app.client.R
 
 @Composable
@@ -37,7 +37,6 @@ internal fun LedControlView(
                 .clickable { onStateChanged(!isLedOn) }
                 .padding(16.dp)
         ) {
-
             val color = if (isLedOn) {
                 colorResource(id = no.nordicsemi.android.common.theme.R.color.nordicSun)
             } else {

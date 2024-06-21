@@ -13,7 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.view.SectionTitle
+import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.android.kotlin.ble.app.client.R
 
 @Composable

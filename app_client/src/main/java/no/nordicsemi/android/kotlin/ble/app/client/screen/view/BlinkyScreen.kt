@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -49,7 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.permissions.ble.RequireLocation
-import no.nordicsemi.android.common.theme.view.NordicAppBar
+import no.nordicsemi.android.common.ui.view.NordicAppBar
 import no.nordicsemi.android.kotlin.ble.app.client.R
 import no.nordicsemi.android.kotlin.ble.app.client.screen.viewmodel.BlinkyViewModel
 
@@ -64,9 +65,12 @@ fun BlinkyScreen() {
 
     Scaffold(
         topBar = {
-            NordicAppBar(stringResource(id = R.string.app_name), onNavigationButtonClick = {
-                viewModel.navigateBack()
-            })
+            NordicAppBar(
+                title = { Text(text = stringResource(id = R.string.app_name)) },
+                onNavigationButtonClick = {
+                    viewModel.navigateBack()
+                }
+            )
         },
         containerColor = MaterialTheme.colorScheme.surface,
     ) {

@@ -18,7 +18,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.view.SectionTitle
+import no.nordicsemi.android.common.ui.view.SectionTitle
 import no.nordicsemi.android.kotlin.ble.app.server.R
 
 @Composable
