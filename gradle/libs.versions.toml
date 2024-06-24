@@ -44,7 +44,7 @@ protobuf = "4.26.1"
 protobufPlugin = "0.9.4"
 publishPlugin = "1.2.1"
 retrofit = "2.11.0"
-room = "2.6.1"
+room = "2.7.0-alpha04"
 paging = "3.3.0"
 secrets = "2.0.1"
 turbine = "1.1.0"
@@ -53,11 +53,11 @@ wirePlugin = "4.9.9"
 timber = "5.0.1"
 chart = "3.1.0"
 leakcanary = "2.14"
-mockk = "1.13.10"
+mockk = "1.13.11"
 slf4j = "1.7.36" # don't update to 2.x, unless the next one is also updated
 slf4j-timber = "3.1" # <- this one
-robolectric = "4.12.1"
-skydovesBallon = "1.6.4"
+robolectric = "4.12.2"
+skydovesBallon = "1.6.5"
 moshiKotlin = "1.15.1"
 moshiAdapters = "1.15.1"
 moshi = "1.15.1"
@@ -66,8 +66,8 @@ material3 = "1.3.0-beta03"
 material = "1.6.8"
 
 nordic-log = "2.3.0"
-nordicPlugins = "2.1"
 nordic-common = "2.0.0"
+nordicPlugins = "2.2.4"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.2"
 firebaseCrashlyticsPlugins = "3.0.2"
@@ -180,6 +180,7 @@ timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "tim
 chart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "chart" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-timber = { group = "com.arcao", name = "slf4j-timber", version.ref = "slf4j-timber" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
