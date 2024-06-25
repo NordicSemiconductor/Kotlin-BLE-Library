@@ -31,83 +31,55 @@
 
 package no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Label
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Widgets
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.ElevatedFilterChip
-import androidx.compose.material3.Icon
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 import no.nordicsemi.android.kotlin.ble.ui.scanner.R
-import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.DevicesScanFilter
+
+internal data class ScanFilterState(
+    val title: String,
+    val selected: Boolean,
+    val predicate: (BleScanResults) -> Boolean,
+)
 
 @Composable
 internal fun FilterView(
-    config: DevicesScanFilter,
-    onChanged: (DevicesScanFilter) -> Unit,
+    state: List<ScanFilterState>,
+    onChanged: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    shape: Shape = MaterialTheme.shapes.small,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier,
     ) {
-        config.filterUuidRequired?.let {
-            ElevatedFilterChip(
-                selected = !it,
-                onClick = { onChanged(config.copy(filterUuidRequired = !it)) },
-                label = { Text(text = stringResource(id = R.string.filter_uuid),) },
-                modifier = Modifier.padding(end = 8.dp),
-                leadingIcon = {
-                    if (!it) {
-                        Icon(Icons.Default.Done, contentDescription = "")
-                    } else {
-                        Icon(Icons.Default.Widgets, contentDescription = "")
-                    }
-                },
-            )
-        }
-        config.filterNearbyOnly.let {
-            ElevatedFilterChip(
-                selected = it,
-                onClick = { onChanged(config.copy(filterNearbyOnly = !it)) },
-                label = { Text(text = stringResource(id = R.string.filter_nearby),) },
-                modifier = Modifier.padding(end = 8.dp),
-                leadingIcon = {
-                    if (it) {
-                        Icon(Icons.Default.Done, contentDescription = "")
-                    } else {
-                        Icon(Icons.Default.Wifi, contentDescription = "")
-                    }
-                },
-            )
-        }
-        config.filterWithNames.let {
-            ElevatedFilterChip(
-                selected = it,
-                onClick = { onChanged(config.copy(filterWithNames = !it)) },
-                label = { Text(text = stringResource(id = R.string.filter_name),) },
-                modifier = Modifier.padding(end = 8.dp),
-                leadingIcon = {
-                    if (it) {
-                        Icon(Icons.Default.Done, contentDescription = "")
-                    } else {
-                        Icon(Icons.AutoMirrored.Filled.Label, contentDescription = "")
-                    }
-                },
+        state.forEachIndexed { index, scanFilter ->
+            FilterChip(
+                selected = state[index].selected,
+                enabled = enabled,
+                shape = shape,
+                colors = FilterChipDefaults.filterChipColors().copy(
+                    labelColor = MaterialTheme.colorScheme.onPrimary
+                ),
+                border = BorderStroke(if (state[index].selected) 0.dp else 1.dp, MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.5f)),
+                onClick = { onChanged(index) },
+                label = { Text(text = scanFilter.title) },
             )
         }
     }
@@ -119,20 +91,22 @@ private fun FilterViewPreview() {
     MaterialTheme {
         Column {
             FilterView(
-                config = DevicesScanFilter(
-                    filterUuidRequired = true,
-                    filterNearbyOnly = true,
-                    filterWithNames = true,
-                ),
-                onChanged = {},
-                modifier = Modifier.fillMaxWidth(),
-            )
-
-            FilterView(
-                config = DevicesScanFilter(
-                    filterUuidRequired = false,
-                    filterNearbyOnly = false,
-                    filterWithNames = false,
+                state = listOf(
+                    ScanFilterState(
+                        title = stringResource(id = R.string.filter_uuid),
+                        selected = true,
+                        predicate = { true },
+                    ),
+                    ScanFilterState(
+                        title = stringResource(id = R.string.filter_nearby),
+                        selected = false,
+                        predicate = { true },
+                    ),
+                    ScanFilterState(
+                        title = stringResource(id = R.string.filter_name),
+                        selected = true,
+                        predicate = { true },
+                    ),
                 ),
                 onChanged = {},
                 modifier = Modifier.fillMaxWidth(),
