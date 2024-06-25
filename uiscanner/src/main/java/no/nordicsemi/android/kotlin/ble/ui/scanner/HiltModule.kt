@@ -45,8 +45,7 @@ internal class HiltModule {
 
     @Provides
     fun providesScanner(
-        @ApplicationContext
-        context: Context
+        @ApplicationContext context: Context
     ): BleScanner {
         return BleScanner(context)
     }
