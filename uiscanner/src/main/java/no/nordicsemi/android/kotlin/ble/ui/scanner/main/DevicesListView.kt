@@ -50,7 +50,7 @@ fun DevicesListView(
     onClick: (BleScanResults) -> Unit,
     modifier: Modifier = Modifier,
     deviceItem: @Composable (BleScanResults) -> Unit = {
-        DeviceListItem(it.device.name, it.device.address)
+        DeviceListItem(it.advertisedName ?: it.device.name, it.device.address)
     },
 ) {
     LazyColumn(
