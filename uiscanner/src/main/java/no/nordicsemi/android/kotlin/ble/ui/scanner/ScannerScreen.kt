@@ -32,25 +32,95 @@ package no.nordicsemi.android.kotlin.ble.ui.scanner
 
 import android.os.ParcelUuid
 import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.stringResource
+import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 import no.nordicsemi.android.kotlin.ble.ui.scanner.main.DeviceListItem
 import no.nordicsemi.android.kotlin.ble.ui.scanner.view.ScannerAppBar
-import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
+
+/**
+ * Based scanner filter class.
+ * @property title The title to be shown on the chip.
+ * @property initiallyEnabled Initial state of the filter.
+ * @property filter The predicate applied to scanned devices.
+ */
+sealed class Filter(
+    open val title: String,
+    open val initiallyEnabled: Boolean,
+    val filter: (BleScanResults) -> Boolean,
+)
+
+/**
+ * Filter by RSSI.
+ * The filter hides all devices with highest scanned RSSI lower than the given value.
+ * @property rssi The minimum RSSI value.
+ */
+data class OnlyNearby(
+    override val title: String = "Nearby",
+    val rssi: Int = -50, // dBm
+    override val initiallyEnabled: Boolean =  true,
+): Filter(
+    title = title,
+    initiallyEnabled = initiallyEnabled,
+    filter = { it.highestRssi >= rssi }
+)
+
+/**
+ * Filter by device name.
+ * The filter hides all devices that do not have a name.
+ */
+data class OnlyWithNames(
+    override val title: String = "Named",
+    override val initiallyEnabled: Boolean = true,
+) : Filter(
+    title = title,
+    initiallyEnabled = initiallyEnabled,
+    filter = { it.device.hasName || it.advertisedName?.isNotEmpty() == true }
+)
+
+/**
+ * Filter by service UUID.
+ * The filter hides all devices that do not have the given service UUID in the advertisement.
+ * @property uuid The service UUID to filter by.
+ */
+data class WithServiceUuid(
+    override val title: String,
+    val uuid: ParcelUuid,
+    override val initiallyEnabled: Boolean = true,
+): Filter(
+    title = title,
+    initiallyEnabled = initiallyEnabled,
+    filter = { it.device.isBonded || it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true }
+)
+
+/**
+ * Custom filter.
+ * The filter shows only devices that match the given predicate.
+ * @property predicate The predicate to be applied to scanned devices.
+ */
+data class CustomFilter(
+    override val title: String,
+    override val initiallyEnabled: Boolean,
+    val predicate: (BleScanResults) -> Boolean,
+): Filter(title, initiallyEnabled, predicate)
 
 @Composable
 fun ScannerScreen(
-    title: String = stringResource(id = R.string.scanner_screen),
-    uuid: ParcelUuid?,
+    title: @Composable () -> Unit = { Text(stringResource(id = R.string.scanner_screen)) },
+    filters: List<Filter> = emptyList(),
     cancellable: Boolean = true,
     onResult: (ScannerScreenResult) -> Unit,
+    filterShape: Shape = MaterialTheme.shapes.small,
     deviceItem: @Composable (BleScanResults) -> Unit = {
-        DeviceListItem(it.advertisedName ?: it.device.name, it.device.address)
-    }
+        DeviceListItem(it.device.name ?: it.advertisedName, it.device.address)
+    },
 ) {
     var isScanning by rememberSaveable { mutableStateOf(false) }
 
@@ -61,10 +131,46 @@ fun ScannerScreen(
             ScannerAppBar(title, isScanning)
         }
         ScannerView(
-            uuid = uuid,
+            filters = filters,
             onScanningStateChanged = { isScanning = it },
             onResult = { onResult(DeviceSelected(it)) },
             deviceItem = deviceItem,
+            filterShape = filterShape,
         )
     }
+}
+
+@Deprecated(
+    message = "Use filters with ScanFilter list instead."
+)
+@Composable
+fun ScannerScreen(
+    title: String = stringResource(id = R.string.scanner_screen),
+    uuid: ParcelUuid?,
+    cancellable: Boolean = true,
+    onResult: (ScannerScreenResult) -> Unit,
+    filterShape: Shape = MaterialTheme.shapes.small,
+    deviceItem: @Composable (BleScanResults) -> Unit = {
+        DeviceListItem(it.device.name ?: it.advertisedName, it.device.address)
+    },
+) {
+    // Show the "All" filter only when UUID was set.
+    val uuidFilter = if (uuid != null ) listOf(
+        WithServiceUuid("Service", uuid, true),
+    ) else emptyList()
+
+    // Nearby and Name filters were always visible.
+    val otherFilters = listOf(
+        OnlyNearby(rssi = -50 /* dBm */, initiallyEnabled = false),
+        OnlyWithNames(initiallyEnabled = true),
+    )
+
+    ScannerScreen(
+        title = {  Text(text = title) },
+        filters = uuidFilter + otherFilters,
+        cancellable = cancellable,
+        onResult = onResult,
+        deviceItem = deviceItem,
+        filterShape = filterShape,
+    )
 }

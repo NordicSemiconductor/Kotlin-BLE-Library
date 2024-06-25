@@ -31,7 +31,6 @@
 
 package no.nordicsemi.android.kotlin.ble.ui.scanner.main.viewmodel
 
-import android.os.ParcelUuid
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,30 +45,25 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.update
 import no.nordicsemi.android.kotlin.ble.core.scanner.BleScanResults
 import no.nordicsemi.android.kotlin.ble.scanner.aggregator.BleScanResultAggregator
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanFailedError
 import no.nordicsemi.android.kotlin.ble.scanner.errors.ScanningFailedException
-import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.DevicesScanFilter
+import no.nordicsemi.android.kotlin.ble.ui.scanner.Filter
 import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScannerRepository
 import no.nordicsemi.android.kotlin.ble.ui.scanner.repository.ScanningState
+import no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal.ScanFilterState
 import javax.inject.Inject
-
-private const val FILTER_RSSI = -50 // [dBm]
 
 @HiltViewModel
 internal class ScannerViewModel @Inject constructor(
     private val scannerRepository: ScannerRepository,
 ) : ViewModel() {
-    private var uuid: ParcelUuid? = null
+    private var filters: List<Filter> = emptyList()
 
-    val filterConfig = MutableStateFlow(
-        DevicesScanFilter(
-            filterUuidRequired = true,
-            filterNearbyOnly = false,
-            filterWithNames = true
-        )
-    )
+    private val _filterConfig = MutableStateFlow<List<ScanFilterState>>(emptyList())
+    val filterConfig = _filterConfig.asStateFlow()
 
     private var currentJob: Job? = null
 
@@ -92,7 +86,17 @@ internal class ScannerViewModel @Inject constructor(
             .onStart { _state.value = ScanningState.Loading }
             .cancellable()
             .onEach {
-                _state.value = ScanningState.DevicesDiscovered(it)
+                // To prevent lags on the device list only refresh the list when
+                // it has changed. This simple implementation just checks if
+                // any new device was found, which isn't the best, as devices may change
+                // advertising data and this won't be shown until some new device is found.
+                val shouldRefresh = when (val list = _state.value) {
+                    is ScanningState.DevicesDiscovered -> list.devices.size != it.size
+                    else -> true
+                }
+                if (shouldRefresh) {
+                    _state.value = ScanningState.DevicesDiscovered(it)
+                }
             }
             .catch { e ->
                 _state.value = (e as? ScanningFailedException)?.let {
@@ -105,24 +109,28 @@ internal class ScannerViewModel @Inject constructor(
     // This can't be observed in View Model Scope, as it can exist even when the
     // scanner is not visible. Scanner state stops scanning when it is not observed.
     // .stateIn(viewModelScope, SharingStarted.Lazily, ScanningState.Loading)
-    private fun List<BleScanResults>.applyFilters(config: DevicesScanFilter) =
-            filter {
-                uuid == null ||
-                config.filterUuidRequired == false ||
-                it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true
+    private fun List<BleScanResults>.applyFilters(config: List<ScanFilterState>) =
+            filter { result ->
+                config.all {
+                    !it.selected || it.predicate(result)
+                }
             }
-           .filter { !config.filterNearbyOnly || it.highestRssi >= FILTER_RSSI }
-           .filter { !config.filterWithNames || it.device.hasName || it.advertisedName?.isNotEmpty() == true }
 
-    fun setFilterUuid(uuid: ParcelUuid?) {
-        this.uuid = uuid
-        if (uuid == null) {
-            filterConfig.value = filterConfig.value.copy(filterUuidRequired = null)
+    fun setFilters(filters: List<Filter>) {
+        this.filters = filters
+        this._filterConfig.update {
+            filters.map {
+                ScanFilterState(it.title, it.initiallyEnabled, it.filter)
+            }
         }
     }
 
-    fun setFilter(config: DevicesScanFilter) {
-        this.filterConfig.value = config
+    fun toggleFilter(index: Int) {
+        this._filterConfig.value = mutableListOf<ScanFilterState>()
+                .apply { addAll(_filterConfig.value) }
+                .apply {
+                    this[index] = this[index].copy(selected = !this[index].selected)
+                }
     }
 
     fun refresh() {

@@ -10,21 +10,18 @@
   "packageRules": [
     {
       "matchPackagePatterns": [
-        "androidx.compose.compiler:compiler"
-      ],
-      "groupName": "kotlin"
-    },
-    {
-      "matchPackagePatterns": [
+        "com.google.devtools.ksp",
         "org.jetbrains.kotlin.*"
       ],
       "groupName": "kotlin"
     },
     {
-      "matchPackagePatterns": [
-        "com.google.devtools.ksp"
+      "matchPackageNames": [
+        "org.slf4j:slf4j-api",
+        "org.slf4j:slf4j-nop",
+        "org.slf4j:slf4j-simple"
       ],
-      "groupName": "kotlin"
+      "enabled": false
     }
   ]
 }

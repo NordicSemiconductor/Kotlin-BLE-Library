@@ -31,19 +31,21 @@
 
 package no.nordicsemi.android.kotlin.ble.ui.scanner
 
-import android.os.ParcelUuid
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -62,13 +64,13 @@ import no.nordicsemi.android.kotlin.ble.ui.scanner.view.internal.FilterView
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScannerView(
-    uuid: ParcelUuid?,
+    filters: List<Filter>,
     onScanningStateChanged: (Boolean) -> Unit = {},
     onResult: (BleScanResults) -> Unit,
+    filterShape: Shape = MaterialTheme.shapes.small,
     deviceItem: @Composable (BleScanResults) -> Unit = {
-        DeviceListItem(it.advertisedName ?: it.device.name, it.device.address)
+        DeviceListItem(it.device.name ?: it.advertisedName, it.device.address)
     },
-    showFilter: Boolean = true
 ) {
     RequireBluetooth(
         onChanged = { onScanningStateChanged(it) }
@@ -77,7 +79,9 @@ fun ScannerView(
             onChanged = { onScanningStateChanged(it) }
         ) { isLocationRequiredAndDisabled ->
             val viewModel = hiltViewModel<ScannerViewModel>()
-                .apply { setFilterUuid(uuid) }
+            LaunchedEffect(key1 = Unit) {
+                viewModel.setFilters(filters)
+            }
 
             val state by viewModel.state.collectAsStateWithLifecycle(ScanningState.Loading)
             val config by viewModel.filterConfig.collectAsStateWithLifecycle()
@@ -85,15 +89,17 @@ fun ScannerView(
             val scope =  rememberCoroutineScope()
 
             Column(modifier = Modifier.fillMaxSize()) {
-                if (showFilter)
+                if (filters.isNotEmpty()) {
                     FilterView(
-                        config = config,
-                        onChanged = { viewModel.setFilter(it) },
+                        state = config,
+                        onChanged = { viewModel.toggleFilter(it) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(colorResource(id = R.color.appBarColor))
                             .padding(horizontal = 16.dp),
+                        shape = filterShape,
                     )
+                }
 
                 PullToRefreshBox(
                     isRefreshing = state is ScanningState.Loading,
