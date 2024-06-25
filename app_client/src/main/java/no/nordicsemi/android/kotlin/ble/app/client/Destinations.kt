@@ -1,7 +1,6 @@
 package no.nordicsemi.android.kotlin.ble.app.client
 
 import android.os.ParcelUuid
-import androidx.compose.material3.MaterialTheme
 import androidx.hilt.navigation.compose.hiltViewModel
 import no.nordicsemi.android.common.navigation.createDestination
 import no.nordicsemi.android.common.navigation.createSimpleDestination
@@ -26,10 +25,10 @@ val ScannerDestination = defineDestination(ScannerDestinationId) {
     val uuid = ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE)
     val filters = listOf(
         WithServiceUuid("Blinky", uuid, true),
-        OnlyNearby(rssi = -50 /* dBm */, initiallyEnabled = false),
-        OnlyWithNames(initiallyEnabled = true),
-        CustomFilter("Nordic", false) {
-            it.device.name?.contains("nordic", ignoreCase = true) == true
+        OnlyNearby(rssi = -50 /* dBm */, initiallySelected = false),
+        OnlyWithNames(initiallySelected = true),
+        CustomFilter("Nordic", false) { isFilterSelected, result ->
+            !isFilterSelected || result.device.name?.contains("nordic", ignoreCase = true) == true
         }
     )
     ScannerScreen(

@@ -112,7 +112,7 @@ internal class ScannerViewModel @Inject constructor(
     private fun List<BleScanResults>.applyFilters(config: List<ScanFilterState>) =
             filter { result ->
                 config.all {
-                    !it.selected || it.predicate(result)
+                    it.predicate(it.selected, result)
                 }
             }
 
@@ -120,7 +120,7 @@ internal class ScannerViewModel @Inject constructor(
         this.filters = filters
         this._filterConfig.update {
             filters.map {
-                ScanFilterState(it.title, it.initiallyEnabled, it.filter)
+                ScanFilterState(it.title, it.initiallySelected, it.filter)
             }
         }
     }

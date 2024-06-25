@@ -53,7 +53,7 @@ import no.nordicsemi.android.kotlin.ble.ui.scanner.R
 internal data class ScanFilterState(
     val title: String,
     val selected: Boolean,
-    val predicate: (BleScanResults) -> Boolean,
+    val predicate: (isFilterSelected: Boolean, result: BleScanResults) -> Boolean,
 )
 
 @Composable
@@ -95,17 +95,17 @@ private fun FilterViewPreview() {
                     ScanFilterState(
                         title = stringResource(id = R.string.filter_uuid),
                         selected = true,
-                        predicate = { true },
+                        predicate = { selected,_ -> selected },
                     ),
                     ScanFilterState(
                         title = stringResource(id = R.string.filter_nearby),
                         selected = false,
-                        predicate = { true },
+                        predicate = { selected,_ -> selected },
                     ),
                     ScanFilterState(
                         title = stringResource(id = R.string.filter_name),
                         selected = true,
-                        predicate = { true },
+                        predicate = { selected,_ -> selected },
                     ),
                 ),
                 onChanged = {},
