@@ -1,40 +1,11 @@
-<!--
-  ~ Copyright (c) 2023, Nordic Semiconductor
-  ~ All rights reserved.
-  ~
-  ~ Redistribution and use in source and binary forms, with or without modification, are
-  ~ permitted provided that the following conditions are met:
-  ~
-  ~ 1. Redistributions of source code must retain the above copyright notice, this list of
-  ~ conditions and the following disclaimer.
-  ~
-  ~ 2. Redistributions in binary form must reproduce the above copyright notice, this list
-  ~ of conditions and the following disclaimer in the documentation and/or other materials
-  ~ provided with the distribution.
-  ~
-  ~ 3. Neither the name of the copyright holder nor the names of its contributors may be
-  ~ used to endorse or promote products derived from this software without specific prior
-  ~ written permission.
-  ~
-  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  ~ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-  ~ TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-  ~ PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  ~ HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-  ~ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  ~ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-  ~ OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-  ~ OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-  ~ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  ~ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  -->
-
 <!doctype html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>DescriptorRead</title>
-<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
@@ -47,12 +18,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
 <link href="../../../../styles/style.css" rel="Stylesheet">
-<link href="../../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../../styles/main.css" rel="Stylesheet">
 <link href="../../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
 <script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
@@ -60,48 +32,54 @@
 <script type="text/javascript" src="../../../../scripts/prism.js" async></script>
 <script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-<a href="../../../../index.html">
-<span>Kotlin-BLE-Library</span>            </a>    </div>
-    <div>
-    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../../index.html">
+                            Kotlin-BLE-Library
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":client-api:dokkaHtmlPartial/release">androidJvm</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageids="client-api::no.nordicsemi.android.kotlin.ble.client.api/ClientGattEvent.DescriptorRead///PointingToDeclaration//-928740869">
   <div class="breadcrumbs"><a href="../../../index.html">client-api</a><span class="delimiter">/</span><a href="../../index.html">no.nordicsemi.android.kotlin.ble.client.api</a><span class="delimiter">/</span><a href="../index.html">ClientGattEvent</a><span class="delimiter">/</span><span class="current">DescriptorRead</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Descriptor</span><wbr><span><span>Read</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">DescriptorRead</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>descriptor<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span> : <a href="../-descriptor-event/index.html">ClientGattEvent.DescriptorEvent</a></div><p class="paragraph">Event reporting the result of a descriptor read operation.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGattCallback.html#ondescriptorread"><span>Bluetooth</span><wbr><span>Gatt</span><wbr><span>Callback.</span><wbr><span>on</span><wbr><span>Descriptor</span><wbr><span><span>Read</span></span></a></div></span></div><div><div class="title"><p class="paragraph">(https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onDescriptorRead(android.bluetooth.BluetoothGatt,%20android.bluetooth.BluetoothGattDescriptor,%20int,%20byte[]))</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">DescriptorRead</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>descriptor<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span> : <a href="../-descriptor-event/index.html">ClientGattEvent.DescriptorEvent</a></div><p class="paragraph">Event reporting the result of a descriptor read operation.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="https://developer.android.com/reference/kotlin/android/bluetooth/BluetoothGattCallback.html#ondescriptorread"><span>Bluetooth</span><wbr><span>Gatt</span><wbr><span>Callback.</span><wbr><span>on</span><wbr><span>Descriptor</span><wbr><span><span>Read</span></span></a></div></span></div><div><div class="title"><p class="paragraph">(https://developer.android.com/reference/android/bluetooth/BluetoothGattCallback#onDescriptorRead(android.bluetooth.BluetoothGatt,%20android.bluetooth.BluetoothGattDescriptor,%20int,%20byte[]))</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="1114275779%2FConstructors%2F-928740869" anchor-label="DescriptorRead" id="1114275779%2FConstructors%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
+        <div class="table"><a data-name="1576192046%2FConstructors%2F-928740869" anchor-label="DescriptorRead" id="1576192046%2FConstructors%2F-928740869" data-filterable-set=":client-api:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":client-api:dokkaHtmlPartial/release" data-filterable-set=":client-api:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-descriptor-read.html"><span>Descriptor</span><wbr><span><span>Read</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1114275779%2FConstructors%2F-928740869"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1576192046%2FConstructors%2F-928740869"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -120,7 +98,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="descriptor.html">descriptor</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></div><div class="brief "><p class="paragraph">Descriptor that was read from the associated remote device.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="descriptor.html">descriptor</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></div><div class="brief "><p class="paragraph">Descriptor that was read from the associated remote device.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -135,7 +113,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="status.html">status</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></div><div class="brief "><p class="paragraph">Operation status (<a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a>).</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="status.html">status</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a></div><div class="brief "><p class="paragraph">Operation status (<a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-operation-status/index.html">BleGattOperationStatus</a>).</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -150,7 +128,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span></div><div class="brief "><p class="paragraph">The descriptor value at the time of the read operation</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-api:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><a href="../../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a></div><div class="brief "><p class="paragraph">The descriptor value at the time of the read operation</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -161,10 +139,11 @@
   </div>
 </div>
       <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
 

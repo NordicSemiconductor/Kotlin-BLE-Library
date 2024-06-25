@@ -1,40 +1,11 @@
-<!--
-  ~ Copyright (c) 2023, Nordic Semiconductor
-  ~ All rights reserved.
-  ~
-  ~ Redistribution and use in source and binary forms, with or without modification, are
-  ~ permitted provided that the following conditions are met:
-  ~
-  ~ 1. Redistributions of source code must retain the above copyright notice, this list of
-  ~ conditions and the following disclaimer.
-  ~
-  ~ 2. Redistributions in binary form must reproduce the above copyright notice, this list
-  ~ of conditions and the following disclaimer in the documentation and/or other materials
-  ~ provided with the distribution.
-  ~
-  ~ 3. Neither the name of the copyright holder nor the names of its contributors may be
-  ~ used to endorse or promote products derived from this software without specific prior
-  ~ written permission.
-  ~
-  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-  ~ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
-  ~ TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-  ~ PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-  ~ HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-  ~ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  ~ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-  ~ OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
-  ~ OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
-  ~ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  ~ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  -->
-
 <!doctype html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>MockEngine</title>
-<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
@@ -47,12 +18,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
-<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
@@ -60,26 +32,32 @@
 <script type="text/javascript" src="../../../scripts/prism.js" async></script>
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-<a href="../../../index.html">
-<span>Kotlin-BLE-Library</span>            </a>    </div>
-    <div>
-    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../index.html">
+                            Kotlin-BLE-Library
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":mock:dokkaHtmlPartial/release">androidJvm</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageids="mock::no.nordicsemi.android.kotlin.ble.mock/MockEngine///PointingToDeclaration//-1188145271">
   <div class="breadcrumbs"><a href="../../index.html">mock</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.android.kotlin.ble.mock</a><span class="delimiter">/</span><span class="current">MockEngine</span></div>
   <div class="cover ">
@@ -101,7 +79,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -116,7 +94,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="advertise-server.html"><span class="token function">advertiseServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.advertiser/-ble-advertising-config/index.html">BleAdvertisingConfig</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="advertise-server.html"><span class="token function">advertiseServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">config<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.advertiser/-ble-advertising-config/index.html">BleAdvertisingConfig</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -131,7 +109,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -146,7 +124,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="cancel-connection.html"><span class="token function">cancelConnection</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="cancel-connection.html"><span class="token function">cancelConnection</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -161,7 +139,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="clear-service-cache.html"><span class="token function">clearServiceCache</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="clear-service-cache.html"><span class="token function">clearServiceCache</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -176,22 +154,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="870397837%2FFunctions%2F-1188145271" anchor-label="connect" id="870397837%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+<a data-name="335735575%2FFunctions%2F-1188145271" anchor-label="connect" id="335735575%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="connect.html"><span><span>connect</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="870397837%2FFunctions%2F-1188145271"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="335735575%2FFunctions%2F-1188145271"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="connect.html"><span class="token function">connect</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">autoConnect<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="connect.html"><span class="token function">connect</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -206,7 +184,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="connect-to-server.html"><span class="token function">connectToServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-client-device/index.html">MockClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">client<span class="token operator">: </span><a href="../../../client-api/no.nordicsemi.android.kotlin.ble.client.api/-gatt-client-a-p-i/index.html">GattClientAPI</a><span class="token punctuation">, </span></span><span class="parameter ">options<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-connect-options/index.html">BleGattConnectOptions</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="connect-to-server.html"><span class="token function">connectToServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-client-device/index.html">MockClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">client<span class="token operator">: </span><a href="../../../client-api/no.nordicsemi.android.kotlin.ble.client.api/-gatt-client-a-p-i/index.html">GattClientAPI</a><span class="token punctuation">, </span></span><span class="parameter ">options<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-connect-options/index.html">BleGattConnectOptions</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -221,7 +199,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="disable-characteristic-notification.html"><span class="token function">disableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="disable-characteristic-notification.html"><span class="token function">disableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -236,7 +214,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="discover-services.html"><span class="token function">discoverServices</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="discover-services.html"><span class="token function">discoverServices</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -251,7 +229,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="enable-characteristic-notification.html"><span class="token function">enableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="enable-characteristic-notification.html"><span class="token function">enableCharacteristicNotification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -266,22 +244,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1653310196%2FFunctions%2F-1188145271" anchor-label="notifyCharacteristicChanged" id="-1653310196%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+<a data-name="-1155698121%2FFunctions%2F-1188145271" anchor-label="notifyCharacteristicChanged" id="-1155698121%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="notify-characteristic-changed.html"><span>notify</span><wbr><span>Characteristic</span><wbr><span><span>Changed</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1653310196%2FFunctions%2F-1188145271"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1155698121%2FFunctions%2F-1188145271"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="notify-characteristic-changed.html"><span class="token function">notifyCharacteristicChanged</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">confirm<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="notify-characteristic-changed.html"><span class="token function">notifyCharacteristicChanged</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">confirm<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -296,7 +274,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-characteristic.html"><span class="token function">readCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-characteristic.html"><span class="token function">readCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -311,7 +289,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-descriptor.html"><span class="token function">readDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-descriptor.html"><span class="token function">readDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -326,7 +304,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-phy.html"><span class="token function">readPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -341,7 +319,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="read-remote-rssi.html"><span class="token function">readRemoteRssi</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="read-remote-rssi.html"><span class="token function">readRemoteRssi</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -356,7 +334,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="register-server.html"><span class="token function">registerServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">server<span class="token operator">: </span><a href="../../../server-api/no.nordicsemi.android.kotlin.ble.server.api/-gatt-server-a-p-i/index.html">GattServerAPI</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">services<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-service/index.html">IBluetoothGattService</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="register-server.html"><span class="token function">registerServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">server<span class="token operator">: </span><a href="../../../server-api/no.nordicsemi.android.kotlin.ble.server.api/-gatt-server-a-p-i/index.html">GattServerAPI</a><span class="token punctuation">, </span></span><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">services<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-service/index.html">IBluetoothGattService</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1679842536%2FFunctions%2F-1188145271" anchor-label="requestConnectionPriority" id="1679842536%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="request-connection-priority.html"><span>request</span><wbr><span>Connection</span><wbr><span><span>Priority</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1679842536%2FFunctions%2F-1188145271"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="request-connection-priority.html"><span class="token function">requestConnectionPriority</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">priority<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-connection-priority/index.html">BleGattConnectionPriority</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -371,7 +364,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="request-mtu.html"><span class="token function">requestMtu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="request-mtu.html"><span class="token function">requestMtu</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -386,22 +379,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="request-phy.html"><span class="token function">requestPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="request-phy.html"><span class="token function">requestPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1491182687%2FFunctions%2F-1188145271" anchor-label="sendResponse" id="1491182687%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+<a data-name="-1895373164%2FFunctions%2F-1188145271" anchor-label="sendResponse" id="-1895373164%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="send-response.html"><span>send</span><wbr><span><span>Response</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1491182687%2FFunctions%2F-1188145271"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1895373164%2FFunctions%2F-1188145271"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="send-response.html"><span class="token function">sendResponse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">requestId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="send-response.html"><span class="token function">sendResponse</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">requestId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">status<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">offset<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -416,7 +409,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-preferred-phy.html"><span class="token function">setPreferredPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-preferred-phy.html"><span class="token function">setPreferredPhy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">txPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">rxPhy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-gatt-phy/index.html">BleGattPhy</a><span class="token punctuation">, </span></span><span class="parameter ">phyOption<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-phy-option/index.html">PhyOption</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -431,7 +424,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="stop-advertising.html"><span class="token function">stopAdvertising</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stop-advertising.html"><span class="token function">stopAdvertising</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -446,37 +439,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="unregister-server.html"><span class="token function">unregisterServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="unregister-server.html"><span class="token function">unregisterServer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-782276931%2FFunctions%2F-1188145271" anchor-label="writeCharacteristic" id="-782276931%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+<a data-name="698899944%2FFunctions%2F-1188145271" anchor-label="writeCharacteristic" id="698899944%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="write-characteristic.html"><span>write</span><wbr><span><span>Characteristic</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-782276931%2FFunctions%2F-1188145271"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="698899944%2FFunctions%2F-1188145271"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-characteristic.html"><span class="token function">writeCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span><span class="token punctuation">, </span></span><span class="parameter ">writeType<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-write-type/index.html">BleWriteType</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="write-characteristic.html"><span class="token function">writeCharacteristic</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">serverDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">characteristic<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-characteristic/index.html">IBluetoothGattCharacteristic</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">writeType<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data/-ble-write-type/index.html">BleWriteType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1419785110%2FFunctions%2F-1188145271" anchor-label="writeDescriptor" id="1419785110%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
+<a data-name="2027548481%2FFunctions%2F-1188145271" anchor-label="writeDescriptor" id="2027548481%2FFunctions%2F-1188145271" data-filterable-set=":mock:dokkaHtmlPartial/release"></a>
           <div class="table-row" data-filterable-current=":mock:dokkaHtmlPartial/release" data-filterable-set=":mock:dokkaHtmlPartial/release">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="write-descriptor.html"><span>write</span><wbr><span><span>Descriptor</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1419785110%2FFunctions%2F-1188145271"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2027548481%2FFunctions%2F-1188145271"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="write-descriptor.html"><span class="token function">writeDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.core/DataByteArray///PointingToDeclaration/">DataByteArray</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":mock:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="write-descriptor.html"><span class="token function">writeDescriptor</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">device<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-mock-server-device/index.html">MockServerDevice</a><span class="token punctuation">, </span></span><span class="parameter ">clientDevice<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-client-device/index.html">ClientDevice</a><span class="token punctuation">, </span></span><span class="parameter ">descriptor<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.wrapper/-i-bluetooth-gatt-descriptor/index.html">IBluetoothGattDescriptor</a><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core.data.util/-data-byte-array/index.html">DataByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -487,10 +480,11 @@
   </div>
 </div>
       <div class="footer">
-        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
 

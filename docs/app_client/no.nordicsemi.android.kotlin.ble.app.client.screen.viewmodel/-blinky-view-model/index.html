@@ -1,0 +1,333 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>BlinkyViewModel</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../index.html">
+                            Kotlin-BLE-Library
+                    </a>            </div>
+            <div class="library-version">
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":app_client:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="app_client::no.nordicsemi.android.kotlin.ble.app.client.screen.viewmodel/BlinkyViewModel///PointingToDeclaration//-964722486">
+  <div class="breadcrumbs"><a href="../../index.html">app_client</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.android.kotlin.ble.app.client.screen.viewmodel</a><span class="delimiter">/</span><span class="current">BlinkyViewModel</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Blinky</span><wbr><span>View</span><wbr><span><span>Model</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">BlinkyViewModel</a>&nbsp;<span><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">navigator<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/Navigator///PointingToDeclaration/">Navigator</span><span class="token punctuation">, </span></span><span class="parameter ">savedStateHandle<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/SavedStateHandle.html">SavedStateHandle</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel///PointingToDeclaration/">SimpleNavigationViewModel</span></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="1862053703%2FConstructors%2F-964722486" anchor-label="BlinkyViewModel" id="1862053703%2FConstructors%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-blinky-view-model.html"><span>Blinky</span><wbr><span>View</span><wbr><span><span>Model</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1862053703%2FConstructors%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="javax.inject/Inject///PointingToDeclaration/"><span class="token annotation builtin">Inject</span></span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/content/Context.html">Context</a><span class="token punctuation">, </span></span><span class="parameter ">navigator<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/Navigator///PointingToDeclaration/">Navigator</span><span class="token punctuation">, </span></span><span class="parameter ">savedStateHandle<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/lifecycle/SavedStateHandle.html">SavedStateHandle</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1229373011%2FProperties%2F-964722486" anchor-label="device" id="-1229373011%2FProperties%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device.html"><span><span>device</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1229373011%2FProperties%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="device.html">device</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../../../core/no.nordicsemi.android.kotlin.ble.core/-server-device/index.html">ServerDevice</a><span class="token operator">?</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1679383558%2FProperties%2F-964722486" anchor-label="state" id="1679383558%2FProperties%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="state.html"><span><span>state</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1679383558%2FProperties%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">val </span><a href="state.html">state</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../../no.nordicsemi.android.kotlin.ble.app.client.screen.view/-blinky-view-state/index.html">BlinkyViewState</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="978795377%2FFunctions%2F-964722486" anchor-label="addCloseable" id="978795377%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#383812252%2FFunctions%2F-964722486"><span>add</span><wbr><span><span>Closeable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="978795377%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#383812252%2FFunctions%2F-964722486"><span class="token function">addCloseable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">closeable<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/AutoCloseable.html">AutoCloseable</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#1722490497%2FFunctions%2F-964722486"><span class="token function">addCloseable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">closeable<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/lang/AutoCloseable.html">AutoCloseable</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2051901299%2FFunctions%2F-964722486" anchor-label="currentDestination" id="2051901299%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#2051901299%2FFunctions%2F-964722486"><span>current</span><wbr><span><span>Destination</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2051901299%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#2051901299%2FFunctions%2F-964722486"><span class="token function">currentDestination</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1102255800%2FFunctions%2F-964722486" anchor-label="getCloseable" id="1102255800%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1102255800%2FFunctions%2F-964722486"><span>get</span><wbr><span><span>Closeable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1102255800%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#1102255800%2FFunctions%2F-964722486">T</a><span class="token operator"> : </span><a href="https://developer.android.com/reference/kotlin/java/lang/AutoCloseable.html">AutoCloseable</a><span class="token operator">&gt; </span><a href="index.html#1102255800%2FFunctions%2F-964722486"><span class="token function">getCloseable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#1102255800%2FFunctions%2F-964722486">T</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="186872617%2FFunctions%2F-964722486" anchor-label="isInHierarchy" id="186872617%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#186872617%2FFunctions%2F-964722486"><span>is</span><wbr><span>In</span><wbr><span><span>Hierarchy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="186872617%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#186872617%2FFunctions%2F-964722486"><span class="token function">isInHierarchy</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destination<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-236142645%2FFunctions%2F-964722486" anchor-label="navigateBack" id="-236142645%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="navigate-back.html"><span>navigate</span><wbr><span><span>Back</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-236142645%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="navigate-back.html"><span class="token function">navigateBack</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1852532558%2FFunctions%2F-964722486" anchor-label="navigateTo" id="-1852532558%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1961095980%2FFunctions%2F-964722486"><span>navigate</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1852532558%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1961095980%2FFunctions%2F-964722486"><span class="token function">navigateTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">to<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">navOptions<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation/NavOptions.html">NavOptions</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1691991193%2FFunctions%2F-964722486"><span class="token function">navigateTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">to<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">builder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation/NavOptionsBuilder.html">NavOptionsBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#androidx.navigation.NavOptions?/PointingToDeclaration/">A</span><span class="token operator">&gt; </span><a href="index.html#-712745082%2FFunctions%2F-964722486"><span class="token function">navigateTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">to<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#androidx.navigation.NavOptions?/PointingToGenericParameters(0)/">A</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">args<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#androidx.navigation.NavOptions?/PointingToGenericParameters(0)/">A</span><span class="token punctuation">, </span></span><span class="parameter ">navOptions<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation/NavOptions.html">NavOptions</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#kotlin.Function1[androidx.navigation.NavOptionsBuilder,kotlin.Unit]/PointingToDeclaration/">A</span><span class="token operator">&gt; </span><a href="index.html#1040098585%2FFunctions%2F-964722486"><span class="token function">navigateTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">to<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#kotlin.Function1[androidx.navigation.NavOptionsBuilder,kotlin.Unit]/PointingToGenericParameters(0)/">A</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">args<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateTo/#no.nordicsemi.android.common.navigation.DestinationId[TypeParam(bounds=[kotlin.Any?]),*]#TypeParam(bounds=[kotlin.Any?])#kotlin.Function1[androidx.navigation.NavOptionsBuilder,kotlin.Unit]/PointingToGenericParameters(0)/">A</span><span class="token punctuation">, </span></span><span class="parameter ">builder<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/androidx/navigation/NavOptionsBuilder.html">NavOptionsBuilder</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="902904636%2FFunctions%2F-964722486" anchor-label="navigateUp" id="902904636%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#902904636%2FFunctions%2F-964722486"><span>navigate</span><wbr><span><span>Up</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="902904636%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#902904636%2FFunctions%2F-964722486"><span class="token function">navigateUp</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-449779793%2FFunctions%2F-964722486" anchor-label="navigateUpWithResult" id="-449779793%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-449779793%2FFunctions%2F-964722486"><span>navigate</span><wbr><span>Up</span><wbr><span>With</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-449779793%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateUpWithResult/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]#TypeParam(bounds=[kotlin.Any?])/PointingToDeclaration/">R</span><span class="token operator">&gt; </span><a href="index.html#-449779793%2FFunctions%2F-964722486"><span class="token function">navigateUpWithResult</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">from<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateUpWithResult/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]#TypeParam(bounds=[kotlin.Any?])/PointingToGenericParameters(0)/">R</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">result<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/navigateUpWithResult/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]#TypeParam(bounds=[kotlin.Any?])/PointingToGenericParameters(0)/">R</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-261251370%2FFunctions%2F-964722486" anchor-label="nullableParameterOf" id="-261251370%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-261251370%2FFunctions%2F-964722486"><span>nullable</span><wbr><span>Parameter</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-261251370%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-261251370%2FFunctions%2F-964722486">A</a><span class="token operator">&gt; </span><a href="index.html#-261251370%2FFunctions%2F-964722486"><span class="token function">nullableParameterOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destinationId<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><a href="index.html#-261251370%2FFunctions%2F-964722486">A</a><span class="token operator">?</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#-261251370%2FFunctions%2F-964722486">A</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1994092840%2FFunctions%2F-964722486" anchor-label="open" id="1994092840%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1994092840%2FFunctions%2F-964722486"><span><span>open</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1994092840%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#1994092840%2FFunctions%2F-964722486"><span class="token function">open</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">link<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1152136135%2FFunctions%2F-964722486" anchor-label="parameterOf" id="-1152136135%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-599931604%2FFunctions%2F-964722486"><span>parameter</span><wbr><span><span>Of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1152136135%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-599931604%2FFunctions%2F-964722486">A</a><span class="token operator">&gt; </span><a href="index.html#-599931604%2FFunctions%2F-964722486"><span class="token function">parameterOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destinationId<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><a href="index.html#-599931604%2FFunctions%2F-964722486">A</a><span class="token operator"> &amp; </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#-599931604%2FFunctions%2F-964722486">A</a></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-599315303%2FFunctions%2F-964722486"><span class="token function">parameterOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">destinationId<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html">Unit</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-nothing/index.html">Nothing</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="634608888%2FFunctions%2F-964722486" anchor-label="resultFrom" id="634608888%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#634608888%2FFunctions%2F-964722486"><span>result</span><wbr><span><span>From</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="634608888%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/resultFrom/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]/PointingToDeclaration/">R</span><span class="token operator">&gt; </span><a href="index.html#634608888%2FFunctions%2F-964722486"><span class="token function">resultFrom</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">from<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.android.common.navigation/DestinationId///PointingToDeclaration/">DestinationId</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/resultFrom/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]/PointingToGenericParameters(0)/">R</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation/NavigationResult///PointingToDeclaration/">NavigationResult</span><span class="token operator">&lt;</span><span data-unresolved-link="no.nordicsemi.android.common.navigation.viewmodel/SimpleNavigationViewModel/resultFrom/#no.nordicsemi.android.common.navigation.DestinationId[*,TypeParam(bounds=[kotlin.Any?])]/PointingToGenericParameters(0)/">R</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1555291241%2FFunctions%2F-964722486" anchor-label="turnLed" id="1555291241%2FFunctions%2F-964722486" data-filterable-set=":app_client:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":app_client:dokkaHtmlPartial/release" data-filterable-set=":app_client:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="turn-led.html"><span>turn</span><wbr><span><span>Led</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1555291241%2FFunctions%2F-964722486"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":app_client:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">fun </span><a href="turn-led.html"><span class="token function">turnLed</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
