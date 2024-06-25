@@ -38,6 +38,7 @@ import androidx.annotation.RequiresPermission
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import no.nordicsemi.android.kotlin.ble.core.data.BondState
+import java.util.Locale
 
 /**
  * Class representing BLE device. It can be either mocked or native variant.
@@ -153,7 +154,7 @@ data class MockClientDevice(
 
         fun nextDevice(): MockClientDevice {
             counter = ++counter % 100
-            val lastDigit = String.format("%02d", counter)
+            val lastDigit = String.format(Locale.US, "%02d", counter)
             return MockClientDevice(address = "11:22:33:44:55:$lastDigit")
         }
     }
