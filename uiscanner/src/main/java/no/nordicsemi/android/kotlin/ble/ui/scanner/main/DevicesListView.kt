@@ -71,7 +71,7 @@ fun DevicesListView(
     }
 }
 
-@Preview(name = "Location required")
+@Preview(showBackground = true, name = "Location required")
 @Composable
 private fun DeviceListView_Preview_LocationRequired() {
     MaterialTheme {
@@ -83,7 +83,7 @@ private fun DeviceListView_Preview_LocationRequired() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun DeviceListView_Preview_LocationNotRequired() {
     MaterialTheme {
@@ -95,7 +95,7 @@ private fun DeviceListView_Preview_LocationNotRequired() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun DeviceListView_Preview_Error() {
     MaterialTheme {
@@ -107,7 +107,7 @@ private fun DeviceListView_Preview_Error() {
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun DeviceListView_Preview_Empty() {
     MaterialTheme {
