@@ -50,8 +50,16 @@ plugins {
     alias(libs.plugins.nordic.kotlin.android) apply false
 }
 
+val skip = listOf(
+    "uiscanner",
+    "app-client",
+    "app-server",
+    "test",
+)
 subprojects {
-    apply(plugin = "org.jetbrains.dokka")
+    if (name !in skip) {
+        apply(plugin = "org.jetbrains.dokka")
+    }
 }
 
 tasks.dokkaHtmlMultiModule.configure {
