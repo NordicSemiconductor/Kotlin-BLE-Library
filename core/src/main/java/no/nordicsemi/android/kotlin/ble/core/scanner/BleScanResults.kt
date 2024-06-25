@@ -49,7 +49,7 @@ data class BleScanResults(
 ): Parcelable {
 
     @IgnoredOnParcel
-    val highestRssi = scanResult.maxOfOrNull { it.rssi } ?: 0
+    val highestRssi = scanResult.maxOfOrNull { it.rssi } ?: -127
 
     @IgnoredOnParcel
     val lastScanResult = scanResult.lastOrNull()
