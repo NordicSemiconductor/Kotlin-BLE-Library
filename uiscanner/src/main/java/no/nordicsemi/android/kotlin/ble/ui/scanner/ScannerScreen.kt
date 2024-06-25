@@ -48,13 +48,13 @@ import no.nordicsemi.android.kotlin.ble.ui.scanner.view.ScannerAppBar
 /**
  * Based scanner filter class.
  * @property title The title to be shown on the chip.
- * @property initiallyEnabled Initial state of the filter.
+ * @property initiallySelected Initial state of the filter.
  * @property filter The predicate applied to scanned devices.
  */
 sealed class Filter(
     open val title: String,
-    open val initiallyEnabled: Boolean,
-    val filter: (BleScanResults) -> Boolean,
+    open val initiallySelected: Boolean,
+    open val filter: (isFilterSelected: Boolean, result: BleScanResults) -> Boolean,
 )
 
 /**
@@ -65,11 +65,13 @@ sealed class Filter(
 data class OnlyNearby(
     override val title: String = "Nearby",
     val rssi: Int = -50, // dBm
-    override val initiallyEnabled: Boolean =  true,
+    override val initiallySelected: Boolean =  true,
 ): Filter(
     title = title,
-    initiallyEnabled = initiallyEnabled,
-    filter = { it.highestRssi >= rssi }
+    initiallySelected = initiallySelected,
+    filter = { isFilterSelected, result ->
+        !isFilterSelected || result.highestRssi >= rssi
+    }
 )
 
 /**
@@ -78,11 +80,13 @@ data class OnlyNearby(
  */
 data class OnlyWithNames(
     override val title: String = "Named",
-    override val initiallyEnabled: Boolean = true,
+    override val initiallySelected: Boolean = true,
 ) : Filter(
     title = title,
-    initiallyEnabled = initiallyEnabled,
-    filter = { it.device.hasName || it.advertisedName?.isNotEmpty() == true }
+    initiallySelected = initiallySelected,
+    filter = { isFilterSelected, result ->
+        !isFilterSelected ||  result.device.hasName || result.advertisedName?.isNotEmpty() == true
+    }
 )
 
 /**
@@ -93,23 +97,25 @@ data class OnlyWithNames(
 data class WithServiceUuid(
     override val title: String,
     val uuid: ParcelUuid,
-    override val initiallyEnabled: Boolean = true,
+    override val initiallySelected: Boolean = true,
 ): Filter(
     title = title,
-    initiallyEnabled = initiallyEnabled,
-    filter = { it.device.isBonded || it.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true }
+    initiallySelected = initiallySelected,
+    filter = { isFilterSelected, result ->
+        !isFilterSelected || result.device.isBonded || result.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true
+    }
 )
 
 /**
  * Custom filter.
+ *
  * The filter shows only devices that match the given predicate.
- * @property predicate The predicate to be applied to scanned devices.
  */
 data class CustomFilter(
     override val title: String,
-    override val initiallyEnabled: Boolean,
-    val predicate: (BleScanResults) -> Boolean,
-): Filter(title, initiallyEnabled, predicate)
+    override val initiallySelected: Boolean,
+    override val filter: (isFilterSelected: Boolean, result: BleScanResults) -> Boolean,
+): Filter(title, initiallySelected, filter)
 
 @Composable
 fun ScannerScreen(
@@ -156,13 +162,19 @@ fun ScannerScreen(
 ) {
     // Show the "All" filter only when UUID was set.
     val uuidFilter = if (uuid != null ) listOf(
-        WithServiceUuid("Service", uuid, true),
+        CustomFilter(
+            title = stringResource(id = R.string.filter_uuid),
+            initiallySelected = false,
+            filter = { isFilterSelected, result ->
+                isFilterSelected || result.device.isBonded || result.lastScanResult?.scanRecord?.serviceUuids?.contains(uuid) == true
+            }
+        ),
     ) else emptyList()
 
     // Nearby and Name filters were always visible.
     val otherFilters = listOf(
-        OnlyNearby(rssi = -50 /* dBm */, initiallyEnabled = false),
-        OnlyWithNames(initiallyEnabled = true),
+        OnlyNearby(rssi = -50 /* dBm */, initiallySelected = false),
+        OnlyWithNames(initiallySelected = true),
     )
 
     ScannerScreen(

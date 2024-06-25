@@ -80,6 +80,7 @@ fun ScannerView(
         ) { isLocationRequiredAndDisabled ->
             val viewModel = hiltViewModel<ScannerViewModel>()
             LaunchedEffect(key1 = Unit) {
+                print("Launch effect")
                 viewModel.setFilters(filters)
             }
 
