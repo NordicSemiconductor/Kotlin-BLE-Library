@@ -21,7 +21,7 @@ works as long as a Flow has an attached consumer. After the Flow is closed the s
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:scanner:1.0.14'
+implementation 'no.nordicsemi.android.kotlin.ble:scanner:1.1.0'
 ```
 
 ## BLE Client
@@ -32,9 +32,11 @@ Below example is based on [the Blinky profile](https://github.com/NordicSemicond
 
 Connection to the Blinky DK may look like that:
 ```kotlin
+import no.nordicsemi.android.kotlin.ble.client.main.callback.ClientBleGatt
+
 viewModelScope.launch {
-    //Connect a Bluetooth LE device. This is a suspend function which waits until device is in conncted state.
-    val connection = blinkyDevice.connect(context) //blinkyDevice from scanner
+    //Connect a Bluetooth LE device. This is a suspend function which waits until device is in connected state.
+    val connection = ClientBleGatt.connect(context, blinkyDevice, viewModelScope, options) //blinkyDevice from scanner
 
     //Discover services on the Bluetooth LE Device. This is a suspend function which waits until device discovery is finished.
     val services = connection.discoverServices()
@@ -76,7 +78,7 @@ viewModelScope.launch {
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:client:1.0.14'
+implementation 'no.nordicsemi.android.kotlin.ble:client:1.1.0'
 ```
 
 ## BLE Advertiser
@@ -110,7 +112,7 @@ The library is used to advertise the server.
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:advertiser:1.0.14'
+implementation 'no.nordicsemi.android.kotlin.ble:advertiser:1.1.0'
 ```
 
 ## BLE Server
@@ -187,5 +189,5 @@ The library is used to create a Bluetooth LE server.
 
 ### Dependency
 ```Groovy
-implementation 'no.nordicsemi.android.kotlin.ble:server:1.0.14'
+implementation 'no.nordicsemi.android.kotlin.ble:server:1.1.0'
 ```
