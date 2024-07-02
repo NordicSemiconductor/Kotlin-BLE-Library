@@ -9,7 +9,7 @@ androidxComposeRuntimeTracing = "1.0.0-beta01"
 androidxCore = "1.13.1"
 androidxCoreSplashscreen = "1.0.1"
 androidxDataStore = "1.1.1"
-androidxEspresso = "3.5.1"
+androidxEspresso = "3.6.1"
 androidxHiltNavigationCompose = "1.2.0"
 androidxLifecycle = "2.8.2"
 androidxLocalbroadcastmanager = "1.1.0"
@@ -19,10 +19,10 @@ androidxMetrics = "1.0.0-beta01"
 androidxProfileinstaller = "1.3.1"
 androidxStartup = "1.1.1"
 androidxWindowManager = "1.3.0"
-androidxTestCore = "1.5.0"
-androidxTestExt = "1.1.5"
-androidxTestRunner = "1.5.2"
-androidxTestRules = "1.5.0"
+androidxTestCore = "1.6.1"
+androidxTestExt = "1.2.1"
+androidxTestRunner = "1.6.1"
+androidxTestRules = "1.6.1"
 androidxTracing = "1.2.0"
 androidxUiAutomator = "2.3.0"
 androidxWork = "2.9.0"
@@ -37,15 +37,14 @@ kotlinCompose = "1.6.11"
 ksp = "2.0.0-1.0.22"
 lint = "31.5.0"
 publishPlugin = "1.2.1"
-markdown = "0.4.1"
 timber = "5.0.1"
 chart = "3.1.0"
 leakcanary = "2.14"
 mockk = "1.13.10"
-slf4j = "1.7.36" # don't update to 2.x, unless the next one is also updated
-slf4j-timber = "3.1" # <- this one
+slf4j = "2.0.13"
+slf4j-timber = "1.1"
 robolectric = "4.12.1"
-material3 = "1.3.0-beta03"
+material3 = "1.3.0-beta04"
 material = "1.6.8"
 
 # Nordic
@@ -55,7 +54,7 @@ nordic-common = "2.0.0"
 nordic-memfault = "1.0.2"
 
 # Plugins
-nordicPlugins = "2.1"
+nordicPlugins = "2.3"
 dokkaPlugin = "1.9.20"
 googleServicesPlugins = "4.4.2"
 junit = "1.1.5"
@@ -133,13 +132,12 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "lint" }
-markdown = { group = "com.github.jeziellago", name = "compose-markdown", version.ref = "markdown" }
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 chart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "chart" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
-slf4j-timber = { group = "com.arcao", name = "slf4j-timber", version.ref = "slf4j-timber" }
+slf4j-timber = { group = "uk.kulikov", name = "slf4j2-timber", version.ref = "slf4j-timber" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 test-robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 
