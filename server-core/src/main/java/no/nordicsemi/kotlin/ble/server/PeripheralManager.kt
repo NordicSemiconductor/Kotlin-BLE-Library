@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.server
 
 import kotlinx.coroutines.flow.StateFlow
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.ServerScope
 
 /**
  * Peripheral Manager is responsible for managing the local GATT server and incoming connections.
@@ -138,7 +139,7 @@ interface PeripheralManager<ID, C: Central<ID>>: Manager<PeripheralManagerEngine
      *
      * #### Important
      * These are NOT the services of the connected devices. Peripheral Manager provides access
-     * only to the local services, added using [PeripheralManager.addService].
+     * only to the local services, added using [PeripheralManager.setup].
      * These services can be discovered by the connected central devices. Each central device may
      * read and write a value to the local characteristic or a descriptor and get value updates.
      * The changes are not automatically propagated to other centrals.

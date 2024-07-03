@@ -33,6 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.core
 
+import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
 import java.util.UUID
 
 /**
@@ -41,29 +42,26 @@ import java.util.UUID
 interface Descriptor {
 
     companion object {
-        /*
-         * Note:
-         *
-         * What is "-0x7FFFFF7FA064CB05", you ask?
-         *
-         * Due to the fact, that the least significant part of the Base Bluetooth UUID
-         * (0x800000805f9b34fb) is outside of the range of Long, the value cannot be
-         * simply written as UUID(0x0000290000001000, 0x800000805f9B34FB).
-         * Instead, we take a 2's complement of the least significant part and invert the sign.
-         */
         /** Characteristic Extended Properties descriptor UUID. */
-        val CHAR_EXT_PROP_UUID: UUID by lazy { UUID(0x0000290000001000, -0x7FFFFF7FA064CB05) }
+        val CHAR_EXT_PROP_UUID: UUID by lazy { BluetoothUuid.uuid(0x2900) }
         /** Characteristic User Description descriptor UUID. */
-        val CHAR_USER_DESC_UUID: UUID by lazy { UUID(0x0000290100001000, -0x7FFFFF7FA064CB05) }
+        val CHAR_USER_DESC_UUID: UUID by lazy { BluetoothUuid.uuid(0x2901) }
         /** Client Characteristic Configuration descriptor UUID. */
-        val CLIENT_CHAR_CONF_UUID: UUID by lazy { UUID(0x0000290200001000, -0x7FFFFF7FA064CB05) }
+        val CLIENT_CHAR_CONF_UUID: UUID by lazy { BluetoothUuid.uuid(0x2902) }
         /** Server Characteristic Configuration descriptor UUID. */
-        val SERVER_CHAR_CONF_UUID: UUID by lazy { UUID(0x0000290300001000, -0x7FFFFF7FA064CB05) }
+        val SERVER_CHAR_CONF_UUID: UUID by lazy { BluetoothUuid.uuid(0x2903) }
         /** Characteristic Presentation Format descriptor UUID. */
-        val CHAR_PRESENTATION_FORMAT_UUID: UUID by lazy { UUID(0x0000290400001000, -0x7FFFFF7FA064CB05) }
+        val CHAR_PRESENTATION_FORMAT_UUID: UUID by lazy { BluetoothUuid.uuid(0x2904) }
         /** Characteristic Aggregate Format descriptor UUID. */
-        val CHAR_AGGREGATE_FORMAT_UUID: UUID by lazy { UUID(0x0000290500001000, -0x7FFFFF7FA064CB05) }
+        val CHAR_AGGREGATE_FORMAT_UUID: UUID by lazy { BluetoothUuid.uuid(0x2905) }
     }
+
+    /**
+     * The owner of the parent service of this descriptor.
+     *
+     * The owner is set to null when the service was invalidated.
+     */
+    val owner: Peer<*>?
 
     /**
      * [UUID] of the descriptor.

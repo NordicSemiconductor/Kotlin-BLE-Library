@@ -38,4 +38,4 @@ import no.nordicsemi.kotlin.ble.core.Manager
 /**
  * Thrown when an operation is requested on a [Manager] that has been closed.
  */
-class ManagerClosedException: IllegalStateException()
+class ManagerClosedException: IllegalStateException("Manager is closed")

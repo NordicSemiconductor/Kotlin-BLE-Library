@@ -33,11 +33,31 @@
 
 package no.nordicsemi.kotlin.ble.server
 
-import no.nordicsemi.kotlin.ble.core.Service
+import no.nordicsemi.kotlin.ble.core.AnyService
+import no.nordicsemi.kotlin.ble.core.IncludedService
+import no.nordicsemi.kotlin.ble.core.PrimaryService
+
+/**
+ * Interface representing a Bluetooth GATT service on the local GATT server.
+ */
+interface AnyLocalService: AnyService<LocalCharacteristic> {
+    override val includedServices: List<LocalIncludedService>
+    override val owner: Central<*>?
+}
 
 /**
  * A local service that can be added to the GATT server.
  */
-interface LocalService: Service<LocalCharacteristic> {
-    override val owner: Central<*>
+interface LocalService: PrimaryService<LocalCharacteristic>, AnyLocalService
+
+/**
+ * A local service that is included in another service on the GATT server.
+ *
+ * There are no limits to the number of include definitions or
+ * the depth of nested includes in a service definition.
+ */
+interface LocalIncludedService: IncludedService<LocalCharacteristic>, AnyLocalService {
+    override val service: LocalService
+    override val owner: Central<*>?
+        get() = service.owner
 }

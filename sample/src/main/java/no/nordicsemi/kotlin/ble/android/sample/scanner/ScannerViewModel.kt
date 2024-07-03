@@ -114,6 +114,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     fun connect(peripheral: Peripheral, autoConnect: Boolean) {
         if (!peripheral.isDisconnected) { return }
         scope.launch {
@@ -168,6 +169,18 @@ class ScannerViewModel @Inject constructor(
                 peripheral.services()
                     .onEach {
                         Timber.w("Services changed: $it")
+
+                        // Read characteristic
+                        it.forEach { remoteService ->
+                            remoteService.characteristics.forEach { remoteCharacteristic ->
+                                try {
+                                    val value = remoteCharacteristic.read()
+                                    Timber.w("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                                } catch (e: Exception) {
+                                    Timber.e("Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                                }
+                            }
+                        }
                     }
                     .stateIn(scope)
             } catch (e: Exception) {

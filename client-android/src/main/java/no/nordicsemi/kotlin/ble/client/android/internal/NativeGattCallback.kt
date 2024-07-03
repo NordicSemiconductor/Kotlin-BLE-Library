@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RssiRead
+import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
@@ -51,9 +52,9 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import org.slf4j.LoggerFactory
 
-internal class PeripheralGattCallback: BluetoothGattCallback() {
+internal class NativeGattCallback: BluetoothGattCallback() {
     // TODO: remove logger here?
-    private val logger = LoggerFactory.getLogger(PeripheralGattCallback::class.java)
+    private val logger = LoggerFactory.getLogger(NativeGattCallback::class.java)
 
     private val _events: MutableSharedFlow<GattEvent> = MutableSharedFlow(extraBufferCapacity = 64)
     val events: SharedFlow<GattEvent> = _events.asSharedFlow()
@@ -69,6 +70,12 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         logger.debug("onServicesDiscovered: status=$status")
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            logger.warn("Services discovery failed with status $status")
+            _events.tryEmit(ServicesChanged(emptyList()))
+            return
+        }
+        _events.tryEmit(ServicesChanged(gatt.services.map { NativeRemoteService(gatt, it, events) }))
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
@@ -78,21 +85,25 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
 
     // Handling value changes.
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray
     ) {
-
+        logger.debug("onCharacteristicChanged: characteristic={}, value={}", characteristic.uuid, value.toHexString())
+        _events.tryEmit(CharacteristicChanged(characteristic, value))
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
         value: ByteArray,
         status: Int
     ) {
-
+        logger.debug("onCharacteristicRead: characteristic={}, value={}, status={}", characteristic.uuid, value.toHexString(), status)
+        _events.tryEmit(CharacteristicRead(characteristic, value, status.toOperationStatus()))
     }
 
     override fun onCharacteristicWrite(
@@ -100,16 +111,19 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
         characteristic: BluetoothGattCharacteristic,
         status: Int
     ) {
-
+        logger.debug("onCharacteristicWrite: characteristic={}, status={}", characteristic.uuid, status)
+        _events.tryEmit(CharacteristicWrite(characteristic, status.toOperationStatus()))
     }
 
+    @OptIn(ExperimentalStdlibApi::class)
     override fun onDescriptorRead(
         gatt: BluetoothGatt,
         descriptor: BluetoothGattDescriptor,
         status: Int,
         value: ByteArray
     ) {
-
+        logger.debug("onDescriptorRead: descriptor={}, value={}, status={}", descriptor.uuid, value.toHexString(), status)
+        _events.tryEmit(DescriptorRead(descriptor, value, status.toOperationStatus()))
     }
 
     override fun onDescriptorWrite(
@@ -117,11 +131,13 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
         descriptor: BluetoothGattDescriptor,
         status: Int
     ) {
-
+        logger.debug("onDescriptorWrite: descriptor={}, status={}", descriptor.uuid, status)
+        _events.tryEmit(DescriptorWrite(descriptor, status.toOperationStatus()))
     }
 
     override fun onReliableWriteCompleted(gatt: BluetoothGatt, status: Int) {
-
+        logger.debug("onReliableWriteCompleted: status=$status")
+        // TODO implement
     }
 
     // Handling connection parameter updates
@@ -215,5 +231,4 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
     ) {
         onDescriptorRead(gatt, descriptor, status, descriptor.value.clone())
     }
-
 }

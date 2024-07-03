@@ -63,4 +63,7 @@ class ScanningFailedToStartException(val reason: Reason): ScanningException() {
          */
         data class Unknown(val code: Int): Reason()
     }
+
+    override val message: String
+        get() = "Scanning failed to start: reason=$reason"
 }

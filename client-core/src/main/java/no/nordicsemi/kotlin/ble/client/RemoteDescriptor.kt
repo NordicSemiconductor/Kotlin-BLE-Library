@@ -33,7 +33,11 @@
 
 package no.nordicsemi.kotlin.ble.client
 
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.Descriptor
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
 /**
  * A GATT descriptor of a characteristic on a remote connected peripheral device.
@@ -43,19 +47,28 @@ import no.nordicsemi.kotlin.ble.core.Descriptor
  */
 interface RemoteDescriptor: Descriptor {
     override val characteristic: RemoteCharacteristic
+    override val owner: GenericPeripheral<*, *>?
+        get() = characteristic.owner
 
     /**
-     * Reads the value of the characteristic.
+     * Reads the value of the descriptor.
      *
-     * @return The value of the characteristic.
-     * @throws
+     * @return The value of the descriptor.
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun read(): ByteArray
 
     /**
-     * Writes the value of the characteristic.
+     * Writes the value of the descriptor.
      *
      * @param data The data to be written.
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the descriptor has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun write(data: ByteArray)
 }

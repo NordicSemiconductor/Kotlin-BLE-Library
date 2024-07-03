@@ -29,22 +29,47 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.client.exception
+package no.nordicsemi.kotlin.ble.core.internal
 
-import no.nordicsemi.kotlin.ble.core.ConnectionState
-import no.nordicsemi.kotlin.ble.core.exception.GattException
+import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.Descriptor
+import no.nordicsemi.kotlin.ble.core.Permission
+import no.nordicsemi.kotlin.ble.core.and
+import java.util.UUID
 
-/**
- * Thrown when the connection to the peripheral has failed.
- *
- * @property reason The reason why the connection attempt failed.
- */
-class ConnectionFailedException(
-    val reason: ConnectionState.Disconnected.Reason
-): GattException() {
+class ServiceDefinition(
+    val uuid: UUID,
+    val characteristics: List<CharacteristicDefinition>,
+    val innerServices: List<ServiceDefinition>,
+)
 
-    override val message: String
-        get() = "Connection failed: reason=$reason"
-}
+class CharacteristicDefinition(
+    val uuid: UUID,
+    val properties: List<CharacteristicProperty>,
+    val permissions: List<Permission>,
+    val descriptors: List<DescriptorDefinition>,
+)
+
+open class DescriptorDefinition(
+    val uuid: UUID,
+    val permissions: List<Permission>,
+)
+
+class CCCD: DescriptorDefinition(
+    uuid = Descriptor.CLIENT_CHAR_CONF_UUID,
+    permissions = Permission.READ and Permission.WRITE
+)
+
+class CUD(
+    val description: String,
+    writable: Boolean,
+): DescriptorDefinition(
+    uuid = Descriptor.CHAR_USER_DESC_UUID,
+    permissions = if (writable) {
+        listOf(Permission.READ, Permission.WRITE)
+    } else {
+        listOf(Permission.READ)
+    }
+)

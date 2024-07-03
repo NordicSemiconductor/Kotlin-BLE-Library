@@ -46,6 +46,10 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
  * or [INDICATE][CharacteristicProperty.INDICATE] property set.
  */
 interface LocalCharacteristic: Characteristic<LocalDescriptor> {
+    override val service: AnyLocalService
+    override val owner: Central<*>?
+        get() = service.owner
+
     val subscribedCentrals: Flow<SubscriptionEvent>
 
     /**

@@ -34,6 +34,7 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanRecord
 import android.content.Context
@@ -53,9 +54,11 @@ import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartEx
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import no.nordicsemi.kotlin.ble.core.WriteType
 
 internal fun Int.toState(): Manager.State = when (this) {
     BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
@@ -149,7 +152,7 @@ internal fun NativeScanResult.toScanResult(scope: CoroutineScope, context: Conte
 }
 
 private fun ScanRecord.toAdvertisementData(): AdvertisementData {
-    @Suppress("UNNECESSARY_SAFE_CALL")
+    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS")
     return AdvertisementData(
         name = deviceName,
         serviceUuids = serviceUuids?.map { it.uuid } ?: emptyList(),
@@ -214,4 +217,25 @@ internal fun ConnectionPriority.toPriority() = when (this) {
             BluetoothGatt.CONNECTION_PRIORITY_DCK
         else
             BluetoothGatt.CONNECTION_PRIORITY_BALANCED
+}
+
+internal fun Int.toOperationStatus(): OperationStatus = when (this) {
+    BluetoothGatt.GATT_SUCCESS -> OperationStatus.SUCCESS
+    BluetoothGatt.GATT_CONNECTION_CONGESTED -> OperationStatus.CONNECTION_CONGESTED
+    BluetoothGatt.GATT_READ_NOT_PERMITTED -> OperationStatus.READ_NOT_PERMITTED
+    BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> OperationStatus.WRITE_NOT_PERMITTED
+    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION -> OperationStatus.INSUFFICIENT_AUTHENTICATION
+    BluetoothGatt.GATT_INSUFFICIENT_AUTHORIZATION -> OperationStatus.INSUFFICIENT_AUTHORIZATION
+    BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> OperationStatus.INSUFFICIENT_ENCRYPTION
+    BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED -> OperationStatus.REQUEST_NOT_SUPPORTED
+    BluetoothGatt.GATT_INVALID_OFFSET -> OperationStatus.INVALID_OFFSET
+    BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH -> OperationStatus.INVALID_ATTRIBUTE_LENGTH
+    133 -> OperationStatus.GATT_ERROR
+    else -> OperationStatus.UNKNOWN_ERROR
+}
+
+internal fun WriteType.toInt() = when (this) {
+    WriteType.WITH_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+    WriteType.WITHOUT_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+    WriteType.SIGNED -> BluetoothGattCharacteristic.WRITE_TYPE_SIGNED
 }

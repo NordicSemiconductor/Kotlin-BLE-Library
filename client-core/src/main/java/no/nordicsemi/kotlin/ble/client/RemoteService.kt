@@ -31,11 +31,32 @@
 
 package no.nordicsemi.kotlin.ble.client
 
-import no.nordicsemi.kotlin.ble.core.Service
+import no.nordicsemi.kotlin.ble.core.AnyService
+import no.nordicsemi.kotlin.ble.core.IncludedService
+import no.nordicsemi.kotlin.ble.core.PrimaryService
+
+
+interface AnyRemoteService: AnyService<RemoteCharacteristic> {
+    override val includedServices: List<RemoteIncludedService>
+    override val owner: GenericPeripheral<*, *>?
+}
 
 /**
  * A GATT service on a remote connected peripheral device.
  */
-interface RemoteService: Service<RemoteCharacteristic> {
-    override val owner: GenericPeripheral<*, *>
+abstract class RemoteService: PrimaryService<RemoteCharacteristic>, AnyRemoteService {
+    override var owner: GenericPeripheral<*, *>? = null
+        internal set
+}
+
+/**
+ * A GATT service that is included in another service on a remote connected peripheral device.
+ *
+ * There are no limits to the number of include definitions or
+ * the depth of nested includes in a service definition.
+ */
+interface RemoteIncludedService: IncludedService<RemoteCharacteristic>, AnyRemoteService {
+    override val service: AnyRemoteService
+    override val owner: GenericPeripheral<*, *>?
+        get() = service.owner
 }

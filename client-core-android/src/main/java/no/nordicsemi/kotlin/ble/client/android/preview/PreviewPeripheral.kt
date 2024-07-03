@@ -38,12 +38,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.RssiRead
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
@@ -53,15 +56,25 @@ import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.BondState
+import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.OperationStatus
+import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
+import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
+import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
+import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
 import java.util.UUID
 
 /**
@@ -142,43 +155,73 @@ private class StubExecutor(
 class StubRemoteService internal constructor(
     override val uuid: UUID,
     override val instanceId: Int = 0,
-    includedServices: List<InnerServiceBuilder> = emptyList(),
-    characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
-): RemoteService {
-    override lateinit var owner: PreviewPeripheral
-
-    class Builder(
-        val uuid: UUID,
-        val instanceId: Int = 0,
-        val includedServices: List<InnerServiceBuilder> = emptyList(),
-        val characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
-    )
-
-    class InnerServiceBuilder(
-        val uuid: UUID,
-        val instanceId: Int = 0,
-        val characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
-    )
+    includedServices: List<ServiceDefinition> = emptyList(),
+    characteristics: List<CharacteristicDefinition> = emptyList(),
+): RemoteService() {
 
     override val characteristics: List<StubRemoteCharacteristic> = characteristics
-        .map { cb ->
+        .mapIndexed { index, cd ->
             StubRemoteCharacteristic(
                 service = this,
-                uuid = cb.uuid,
-                instanceId = cb.instanceId,
-                initialValue = cb.initialValue,
-                descriptors = cb.descriptors,
+                uuid = cd.uuid,
+                instanceId = index,
+                properties = cd.properties,
+                permissions = cd.permissions,
+                descriptors = cd.descriptors,
             )
         }
 
-    override val includedServices: List<Service<RemoteCharacteristic>> = includedServices
-        .map { sb ->
-            StubRemoteService(
-                uuid = sb.uuid,
-                instanceId = sb.instanceId,
-                characteristics = sb.characteristics,
+    override val includedServices: List<RemoteIncludedService> = includedServices
+        .mapIndexed { index, sd ->
+            StubRemoteIncludedService(
+                service = this,
+                uuid = sd.uuid,
+                instanceId = index,
+                characteristics = sd.characteristics,
+                includedServices = sd.innerServices,
             )
         }
+
+    override fun toString(): String = uuid.toString()
+}
+
+/**
+ * A stub implementation of [RemoteIncludedService] for Android.
+ *
+ * This class is used to preview the UI in the Compose Preview.
+ */
+class StubRemoteIncludedService internal constructor(
+    override val service: AnyRemoteService,
+    override val uuid: UUID,
+    override val instanceId: Int = 0,
+    characteristics: List<CharacteristicDefinition> = emptyList(),
+    includedServices: List<ServiceDefinition> = emptyList(),
+): RemoteIncludedService {
+
+    override val characteristics: List<RemoteCharacteristic> = characteristics
+        .mapIndexed { index, cd ->
+            StubRemoteCharacteristic(
+                service = this,
+                uuid = cd.uuid,
+                instanceId = index,
+                properties = cd.properties,
+                permissions = cd.permissions,
+                descriptors = cd.descriptors,
+            )
+        }
+
+    override val includedServices: List<RemoteIncludedService> = includedServices
+        .mapIndexed { index, sd ->
+            StubRemoteIncludedService(
+                service = this,
+                uuid = sd.uuid,
+                instanceId = index,
+                characteristics = sd.characteristics,
+                includedServices = sd.innerServices,
+            )
+        }
+
+    override fun toString(): String = uuid.toString()
 }
 
 /**
@@ -187,42 +230,66 @@ class StubRemoteService internal constructor(
  * This class is used to preview the UI in the Compose Preview.
  */
 class StubRemoteCharacteristic internal constructor(
-    override val service: RemoteService,
+    override val service: AnyRemoteService,
     override val uuid: UUID,
-    override val instanceId: Int = 0,
-    initialValue: ByteArray = byteArrayOf(),
+    override val instanceId: Int,
     override val properties: List<CharacteristicProperty> = emptyList(),
-    descriptors: List<StubRemoteDescriptor.Builder> = emptyList(),
+    private val permissions: List<Permission>,
+    descriptors: List<DescriptorDefinition> = emptyList(),
 ): RemoteCharacteristic {
+    private var _isNotifying = false
 
-    class Builder(
-        val uuid: UUID,
-        val instanceId: Int = 0,
-        val initialValue: ByteArray = byteArrayOf(),
-        val descriptors: List<StubRemoteDescriptor.Builder> = emptyList(),
-    )
+    override val isNotifying: Boolean
+        get() = _isNotifying &&
+                (CharacteristicProperty.NOTIFY in properties || CharacteristicProperty.INDICATE in properties)
+
+    override suspend fun setNotifying(enabled: Boolean) = when {
+        owner == null -> throw InvalidAttributeException()
+        properties
+            .intersect(listOf(CharacteristicProperty.NOTIFY, CharacteristicProperty.INDICATE))
+            .isEmpty() -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        else -> _isNotifying = enabled
+    }
 
     override val descriptors: List<RemoteDescriptor> = descriptors
-        .map { db ->
+        .mapIndexed { index, dd ->
             StubRemoteDescriptor(
                 characteristic = this,
-                uuid = db.uuid,
-                instanceId = db.instanceId,
-                initialValue = db.initialValue
+                uuid = dd.uuid,
+                instanceId = index,
+                permissions = dd.permissions,
             )
         }
 
-    private val _value = MutableStateFlow(initialValue)
+    private val _value = MutableStateFlow(byteArrayOf())
 
-    override suspend fun read(): ByteArray = _value.value
-
-    override suspend fun write(data: ByteArray, writeType: WriteType) {
-        _value.update { data }
+    override suspend fun read(): ByteArray = when {
+        owner == null -> throw InvalidAttributeException()
+        permissions
+            .intersect(listOf(Permission.READ, Permission.READ_ENCRYPTED, Permission.READ_ENCRYPTED_MITM))
+            .isNotEmpty() -> _value.value
+        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
     }
 
-    override suspend fun subscribe(): Flow<ByteArray> = _value.asStateFlow()
+    override suspend fun write(data: ByteArray, writeType: WriteType) = when {
+        owner == null -> throw InvalidAttributeException()
+        permissions
+            .intersect(listOf(Permission.WRITE, Permission.WRITE_ENCRYPTED, Permission.WRITE_ENCRYPTED_MITM))
+            .isNotEmpty() -> _value.update { data }
+        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+    }
 
-    override suspend fun waitForValueChange(): ByteArray = _value.first()
+    override suspend fun subscribe(): Flow<ByteArray> = when {
+        owner == null -> throw InvalidAttributeException()
+        properties
+            .intersect(listOf(CharacteristicProperty.NOTIFY, CharacteristicProperty.INDICATE))
+            .isNotEmpty() -> _value.filter { _isNotifying }
+        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+    }
+
+    override suspend fun waitForValueChange(): ByteArray = subscribe().first()
+
+    override fun toString(): String = uuid.toString()
 }
 
 /**
@@ -233,21 +300,28 @@ class StubRemoteCharacteristic internal constructor(
 class StubRemoteDescriptor internal constructor(
     override val characteristic: RemoteCharacteristic,
     override val uuid: UUID,
-    override val instanceId: Int = 0,
-    private var initialValue: ByteArray,
+    override val instanceId: Int,
+    private val permissions: List<Permission>,
 ): RemoteDescriptor {
+    private var value: ByteArray = byteArrayOf()
 
-    class Builder(
-        val uuid: UUID,
-        val instanceId: Int = 0,
-        val initialValue: ByteArray = byteArrayOf(),
-    )
-
-    override suspend fun read(): ByteArray = initialValue
-
-    override suspend fun write(data: ByteArray) {
-        initialValue = data
+    override suspend fun read(): ByteArray = when {
+        owner == null -> throw InvalidAttributeException()
+        permissions
+            .intersect(listOf(Permission.READ, Permission.READ_ENCRYPTED, Permission.READ_ENCRYPTED_MITM))
+            .isNotEmpty() -> value
+        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
     }
+
+    override suspend fun write(data: ByteArray) = when {
+        owner == null -> throw InvalidAttributeException()
+        permissions
+            .intersect(listOf(Permission.WRITE, Permission.WRITE_ENCRYPTED, Permission.WRITE_ENCRYPTED_MITM))
+            .isNotEmpty() -> value = data
+        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+    }
+
+    override fun toString(): String = uuid.toString()
 }
 
 /**
@@ -273,15 +347,31 @@ open class PreviewPeripheral(
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.LE_1M,
     state: ConnectionState = ConnectionState.Disconnected(),
-    services: List<StubRemoteService.Builder> = when (state) {
-        ConnectionState.Connected ->
-            listOf(
-                StubRemoteService.Builder(
-                    uuid = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb"),
-                    characteristics = emptyList()
-                )
+    services: ServerScope.() -> Unit = {
+        Service(Service.GENERIC_ACCESS_UUID) {
+            Characteristic(
+                uuid = Characteristic.DEVICE_NAME,
+                property = CharacteristicProperty.READ,
+                permission = Permission.READ,
             )
-        else -> emptyList()
+            Characteristic(
+                uuid = Characteristic.APPEARANCE,
+                property = CharacteristicProperty.READ,
+                permission = Permission.READ,
+            )
+            Characteristic(
+                uuid = Characteristic.PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS,
+                property = CharacteristicProperty.READ,
+                permission = Permission.READ,
+            )
+        }
+        Service(Service.GENERIC_ATTRIBUTE_UUID) {
+            Characteristic(
+                uuid = Characteristic.SERVICE_CHANGED,
+                property = CharacteristicProperty.INDICATE,
+                permission = Permission.READ,
+            )
+        }
     },
     hasBondInformation: Boolean = false
 ): Peripheral(
@@ -291,20 +381,21 @@ open class PreviewPeripheral(
         name = name,
         type = type,
         initialState = state,
-        initialServices = services.map {
-            StubRemoteService(
-                uuid = it.uuid,
-                instanceId = it.instanceId,
-                characteristics = it.characteristics
-            )
-        },
+        initialServices = ServerScopeImpl()
+            .apply(services)
+            .services.mapIndexed { index, sd ->
+                StubRemoteService(
+                    uuid = sd.uuid,
+                    instanceId = index,
+                    characteristics = sd.characteristics,
+                    includedServices = sd.innerServices,
+                )
+            },
         rssi = rssi,
         phy = phy,
         hasBondInformation = hasBondInformation
     )
 ) {
-    // TODO assign this as services owner
-
     override fun toString(): String {
         return name ?: address
     }

@@ -36,4 +36,4 @@ import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 /**
  * Thrown when Bluetooth is disabled or unavailable on the device.
  */
-class BluetoothUnavailableException: BluetoothException()
+class BluetoothUnavailableException: BluetoothException("Bluetooth is disabled or unavailable")

@@ -34,8 +34,11 @@
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Characteristic
-import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 
 /**
@@ -46,12 +49,36 @@ import no.nordicsemi.kotlin.ble.core.WriteType
  * subscribe for value changes, etc.
  */
 interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
-    override val service: RemoteService
+    override val service: AnyRemoteService
+    override val owner: GenericPeripheral<*, *>?
+        get() = service.owner
+
+    /**
+     * Returns whether the characteristic is notifying or indicating.
+     */
+    val isNotifying: Boolean
+
+    /**
+     * Sets notifications or indications state, depending on the characteristic's properties.
+     *
+     * Note, that calling [suspend] or [waitForValueChange] will enable notifications
+     * automatically.
+     *
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     */
+    suspend fun setNotifying(enabled: Boolean)
 
     /**
      * Reads the value of the characteristic.
      *
      * @return The value of the characteristic.
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun read(): ByteArray
 
@@ -60,6 +87,10 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *
      * @param data The data to be written.
      * @param writeType The write type to be used.
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun write(data: ByteArray, writeType: WriteType)
 
@@ -68,7 +99,15 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *
      * This method suspends until the notifications are enabled.
      *
-     * The client will unsubscribe when the flow is closed.
+     * The client will NOT unsubscribe when the flow is closed. Use [isNotifying] to disable
+     * or check the notifications state.
+     *
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * @see isNotifying
+     * @see setNotifying
      */
     suspend fun subscribe(): Flow<ByteArray>
 
@@ -79,6 +118,13 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * are not enabled, it will enable them.
      *
      * @return The new value of the characteristic.
+     * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException if the operation failed.
+     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * @see subscribe
+     * @see isNotifying
+     * @see setNotifying
      */
     suspend fun waitForValueChange(): ByteArray
 }

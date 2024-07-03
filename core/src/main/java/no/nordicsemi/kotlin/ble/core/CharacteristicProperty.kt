@@ -72,6 +72,11 @@ enum class CharacteristicProperty {
      */
     SIGNED_WRITE,
     /**
+     * A property that indicates the characteristic defines additional properties in the extended
+     * properties descriptor.
+     */
+    EXTENDED_PROPERTIES;
+    /**
      * A property that indicates the peripheral allows reliable writes of the characteristic’s value.
      *
      * Once reliable write, also known as queued write, is started, all write requests
@@ -81,11 +86,23 @@ enum class CharacteristicProperty {
      * executed. If a characteristic was not written correctly, aborting reliable write will
      * cancel the current transaction without committing any values on the remote LE device.
      */
-    RELIABLE_WRITE,
+    // RELIABLE_WRITE,
     /**
      * A property that indicates the Characteristic User Description descriptor is writable.
      */
-    WRITEABLE_AUXILIARIES,
+    // WRITEABLE_AUXILIARIES,
+
+    /**
+     * The write type associated with this property, or null if the property does not
+     * relates to writing.
+     */
+    val writeType: WriteType?
+        get() = when (this) {
+            WRITE -> WriteType.WITH_RESPONSE
+            WRITE_WITHOUT_RESPONSE -> WriteType.WITHOUT_RESPONSE
+            SIGNED_WRITE -> WriteType.SIGNED
+            else -> null
+        }
 }
 
 infix fun CharacteristicProperty.and(property: CharacteristicProperty): List<CharacteristicProperty> {
@@ -95,4 +112,14 @@ infix fun CharacteristicProperty.and(property: CharacteristicProperty): List<Cha
 infix fun List<CharacteristicProperty>.and(property: CharacteristicProperty): List<CharacteristicProperty> {
     return this + property
 }
+
+/**
+ * Returns the default write type for the given list of properties.
+ *
+ * The default write type is the first write type found in the list, or [WriteType.WITH_RESPONSE]
+ * if the list contains [CharacteristicProperty.WRITE].
+ */
+val List<CharacteristicProperty>.defaultWriteType: WriteType?
+    get() = if (CharacteristicProperty.WRITE in this) WriteType.WITH_RESPONSE else firstNotNullOfOrNull { it.writeType }
+
 

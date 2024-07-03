@@ -66,7 +66,10 @@ import kotlin.math.min
 /**
  * Android-specific implementation of a peripheral.
  *
- * @property scope The coroutine scope.
+ * This class extends [GenericPeripheral] and adds Android-specific methods.
+ *
+ * @param scope scope The coroutine scope.
+ * @param impl The executor that provides methods to interact with the peripheral.
  */
 open class Peripheral(
     scope: CoroutineScope,

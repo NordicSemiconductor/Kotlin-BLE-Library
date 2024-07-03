@@ -34,4 +34,9 @@ package no.nordicsemi.kotlin.ble.core.exception
 /**
  * Base class for all Bluetooth exceptions.
  */
-open class BluetoothException: IllegalStateException()
+open class BluetoothException: IllegalStateException {
+    constructor(): super()
+    constructor(message: String): super(message)
+    constructor(throwable: Throwable): super(throwable)
+    constructor(message: String, throwable: Throwable): super(message, throwable)
+}

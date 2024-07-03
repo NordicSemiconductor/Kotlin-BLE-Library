@@ -29,24 +29,23 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.server.internal
+package no.nordicsemi.kotlin.ble.core.internal
 
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.Permission
-import no.nordicsemi.kotlin.ble.server.CharacteristicScope
-import no.nordicsemi.kotlin.ble.server.InnerServiceScope
-import no.nordicsemi.kotlin.ble.server.PrimaryServiceScope
-import no.nordicsemi.kotlin.ble.server.ServerScope
-import no.nordicsemi.kotlin.ble.server.ServiceScope
+import no.nordicsemi.kotlin.ble.core.CharacteristicScope
+import no.nordicsemi.kotlin.ble.core.ServerScope
+import no.nordicsemi.kotlin.ble.core.ServiceScope
 import java.util.UUID
 
-internal class ServerScopeImpl: ServerScope {
+class ServerScopeImpl: ServerScope {
     private val _services = mutableListOf<ServiceDefinition>()
     val services: List<ServiceDefinition>
         get() = _services.toList()
 
-    override fun Service(uuid: UUID, builder: PrimaryServiceScope.() -> Unit) {
-        PrimaryServiceScopeImpl()
+    override fun Service(uuid: UUID, builder: ServiceScope.() -> Unit) {
+        ServiceScopeImpl()
             .apply(builder)
             .let { scope ->
                 _services.add(
@@ -62,6 +61,7 @@ internal class ServerScopeImpl: ServerScope {
 
 private open class ServiceScopeImpl: ServiceScope {
     val characteristics = mutableListOf<CharacteristicDefinition>()
+    val innerServices = mutableListOf<ServiceDefinition>()
 
     override fun Characteristic(
         uuid: UUID,
@@ -71,6 +71,12 @@ private open class ServiceScopeImpl: ServiceScope {
     ): Unit = CharacteristicScopeImpl()
         .apply(builder)
         .let { scope ->
+            // Add CCCD (Client Characteristic Configuration Descriptor) if NOTIFY or INDICATE is
+            // supported and it wasn't added by the user.
+            if ((properties.contains(CharacteristicProperty.NOTIFY) || properties.contains(CharacteristicProperty.INDICATE))
+                && scope.descriptors.none { it.uuid == Descriptor.CLIENT_CHAR_CONF_UUID }) {
+                scope.descriptors.add(CCCD())
+            }
             characteristics.add(
                 CharacteristicDefinition(
                     uuid = uuid,
@@ -80,25 +86,19 @@ private open class ServiceScopeImpl: ServiceScope {
                 )
             )
         }
-}
 
-private class InnerServiceScopeImpl: ServiceScopeImpl(), InnerServiceScope
-
-private class PrimaryServiceScopeImpl: ServiceScopeImpl(), PrimaryServiceScope {
-    val innerServices = mutableListOf<ServiceDefinition>()
-
-    override fun InnerService(
+    override fun IncludedService(
         uuid: UUID,
-        builder: InnerServiceScope.() -> Unit
+        builder: ServiceScope.() -> Unit
     ) {
-        InnerServiceScopeImpl()
+        ServiceScopeImpl()
             .apply(builder)
             .let { scope ->
                 innerServices.add(
                     ServiceDefinition(
                         uuid = uuid,
                         characteristics = scope.characteristics,
-                        innerServices = emptyList()
+                        innerServices = scope.innerServices,
                     )
                 )
             }

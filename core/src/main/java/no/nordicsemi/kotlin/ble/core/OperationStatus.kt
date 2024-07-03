@@ -56,6 +56,8 @@ enum class OperationStatus {
     READ_NOT_PERMITTED,
     /** GATT write operation is not permitted. */
     WRITE_NOT_PERMITTED,
+    /** The characteristic does not support subscribing for value change. */
+    SUBSCRIBE_NOT_PERMITTED,
     /** The given request is not supported. */
     REQUEST_NOT_SUPPORTED,
     /** Insufficient encryption for a given operation. */
@@ -63,7 +65,9 @@ enum class OperationStatus {
     /** Insufficient authentication for a given operation. */
     INSUFFICIENT_AUTHENTICATION,
     /**Insufficient authorization for a given operation. */
-    INSUFFICIENT_AUTHORIZATION;
+    INSUFFICIENT_AUTHORIZATION,
+    /** Device is busy. */
+    BUSY;
 
     val isSuccess
         get() = this == SUCCESS

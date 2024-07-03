@@ -34,11 +34,19 @@
 package no.nordicsemi.kotlin.ble.core
 
 import java.util.UUID
+import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
 
 /**
  * Interface representing a Bluetooth GATT service.
  */
-interface Service<C: Characteristic<*>> {
+sealed interface Service<C: Characteristic<*>> {
+
+    companion object {
+        /** The UUID of Generic Access Service. */
+        val GENERIC_ACCESS_UUID: UUID by lazy { BluetoothUuid.uuid(0x1800) }
+        /** The UUID of Generic Attribute Service. */
+        val GENERIC_ATTRIBUTE_UUID: UUID by lazy { BluetoothUuid.uuid(0x1801) }
+    }
 
     /**
      * [UUID] of a service.
@@ -58,10 +66,40 @@ interface Service<C: Characteristic<*>> {
     /**
      * List of included secondary services.
      */
-    val includedServices: List<Service<C>>
+    val includedServices: List<IncludedService<C>>
+}
+
+/**
+ * An interface representing a primary or an included service.
+ */
+interface AnyService<C: Characteristic<*>>: Service<C> {
 
     /**
      * The owner of the service.
+     *
+     * The owner is set to null when the service was invalidated.
      */
-    val owner: Peer<*>
+    val owner: Peer<*>?
+}
+
+/**
+ * An interface representing a primary service.
+ */
+interface PrimaryService<C: Characteristic<*>>: AnyService<C>
+
+/**
+ * An interface representing a service included in another service.
+ *
+ * There are no limits to the number of include definitions or
+ * the depth of nested includes in a service definition.
+ */
+interface IncludedService<C: Characteristic<*>>: AnyService<C> {
+
+    /**
+     * The parent service of the service.
+     */
+    val service: AnyService<C>
+
+    override val owner: Peer<*>?
+        get() = service.owner
 }

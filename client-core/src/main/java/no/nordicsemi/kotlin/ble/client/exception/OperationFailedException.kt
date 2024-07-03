@@ -29,13 +29,20 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.exception
 
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.exception.GattException
 
 /**
- * Thrown when the attribute does not allow writing value.
+ * Thrown when the GATT operation failed.
+ *
+ * @property reason The reason of the failure.
  */
-class WriteNotPermittedException: GattException()
+data class OperationFailedException(
+    val reason: OperationStatus
+): GattException() {
+
+    override val message: String
+        get() = "Operation failed: reason=$reason"
+}

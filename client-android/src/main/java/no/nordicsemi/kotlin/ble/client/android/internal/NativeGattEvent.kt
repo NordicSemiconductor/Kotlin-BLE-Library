@@ -29,47 +29,38 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.client.android.internal
 
-package no.nordicsemi.kotlin.ble.server.internal
+import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothGattDescriptor
+import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 
-import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
-import no.nordicsemi.kotlin.ble.core.Descriptor
-import no.nordicsemi.kotlin.ble.core.Permission
-import no.nordicsemi.kotlin.ble.core.and
-import java.util.UUID
+internal sealed class NativeGattEvent: ImplSpecificEvent()
 
-internal class ServiceDefinition(
-    val uuid: UUID,
-    val characteristics: List<CharacteristicDefinition>,
-    val innerServices: List<ServiceDefinition>,
-)
+internal class CharacteristicChanged(
+    val characteristic: BluetoothGattCharacteristic,
+    val value: ByteArray,
+): NativeGattEvent()
 
-internal class CharacteristicDefinition(
-    val uuid: UUID,
-    val properties: List<CharacteristicProperty>,
-    val permissions: List<Permission>,
-    val descriptors: List<DescriptorDefinition>,
-)
+internal class CharacteristicRead(
+    val characteristic: BluetoothGattCharacteristic,
+    val value: ByteArray,
+    val status: OperationStatus,
+): NativeGattEvent()
 
-internal open class DescriptorDefinition(
-    val uuid: UUID,
-    val permissions: List<Permission>,
-)
+internal class CharacteristicWrite(
+    val characteristic: BluetoothGattCharacteristic,
+    val status: OperationStatus,
+): NativeGattEvent()
 
-internal class CCCD: DescriptorDefinition(
-    uuid = Descriptor.CLIENT_CHAR_CONF_UUID,
-    permissions = Permission.READ and Permission.WRITE
-)
+internal class DescriptorRead(
+    val descriptor: BluetoothGattDescriptor,
+    val value: ByteArray,
+    val status: OperationStatus,
+): NativeGattEvent()
 
-internal class CUD(
-    val description: String,
-    writable: Boolean,
-): DescriptorDefinition(
-    uuid = Descriptor.CHAR_USER_DESC_UUID,
-    permissions = if (writable) {
-        listOf(Permission.READ, Permission.WRITE)
-    } else {
-        listOf(Permission.READ)
-    }
-)
+internal class DescriptorWrite(
+    val descriptor: BluetoothGattDescriptor,
+    val status: OperationStatus,
+): NativeGattEvent()

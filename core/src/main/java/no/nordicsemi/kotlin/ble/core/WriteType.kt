@@ -50,5 +50,15 @@ enum class WriteType {
     /**
      * Write characteristic including authentication signature.
      */
-    SIGNED
+    SIGNED;
+
+    /**
+     * Returns the characteristic property required for this write type.
+     */
+    val requiredProperty: CharacteristicProperty
+        get() = when (this) {
+            WITH_RESPONSE -> CharacteristicProperty.WRITE
+            WITHOUT_RESPONSE -> CharacteristicProperty.WRITE_WITHOUT_RESPONSE
+            SIGNED -> CharacteristicProperty.SIGNED_WRITE
+        }
 }

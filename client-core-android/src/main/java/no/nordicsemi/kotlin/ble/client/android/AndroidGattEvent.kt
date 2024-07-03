@@ -34,9 +34,7 @@
 package no.nordicsemi.kotlin.ble.client.android
 
 import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
-import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
-import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption

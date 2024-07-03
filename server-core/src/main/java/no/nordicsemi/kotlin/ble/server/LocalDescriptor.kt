@@ -37,6 +37,9 @@ import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.kotlin.ble.core.Descriptor
 
 interface LocalDescriptor: Descriptor {
+    override val characteristic: LocalCharacteristic
+    override val owner: Central<*>?
+        get() = characteristic.owner
 
     /**
      * Sets a value provider for the descriptor.

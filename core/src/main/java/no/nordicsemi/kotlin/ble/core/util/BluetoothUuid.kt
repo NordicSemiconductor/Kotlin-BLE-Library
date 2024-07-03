@@ -29,10 +29,12 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package no.nordicsemi.kotlin.ble.core.util
 
-import java.nio.ByteOrder
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.UUID
 
 object BluetoothUuid {
@@ -49,7 +51,7 @@ object BluetoothUuid {
     /**
      * Base UUID for 16-bit and 32-bit UUIDs.
      */
-    private val BASE_UUID: UUID by lazy { UUID(0x0000000000001000, -0x7FFFFF7FA064CB05) }
+    val BASE_UUID: UUID by lazy { UUID(0x0000000000001000, -0x7FFFFF7FA064CB05) }
 
     /**
      * Length of bytes for 16 bit UUID.
@@ -67,10 +69,23 @@ object BluetoothUuid {
     const val UUID_BYTES_128_BIT = 16
 
     /**
-     * Extract the Service Identifier or the actual uuid from the Parcel Uuid. For example, if
-     * 0000110B-0000-1000-8000-00805F9B34FB is the parcel Uuid, this function will return 110B
+     * Creates a 128-bit UUID from a 16-bit or 32-bit UUID using [Bluetooth Base UUID][BASE_UUID].
+     *
+     * @param serviceIdentifier The 16-bit or 32-bit UUID.
+     * @return The 128-bit UUID.
      */
-    private fun getServiceIdentifierFromParcelUuid(uuid: UUID): Int {
+    fun uuid(serviceIdentifier: Int): UUID = UUID(
+        BASE_UUID.mostSignificantBits or (serviceIdentifier.toLong() shl 32),
+        BASE_UUID.leastSignificantBits
+    )
+
+    /**
+     * Extract the 16-bit or 32-bit Service Identifier of the 128-bit UUID.
+     *
+     * For example, if `0000110B-0000-1000-8000-00805F9B34FB` is the parcel UUID, this
+     * function will return `0x110B` as [Int].
+     */
+    fun getServiceIdentifier(uuid: UUID): Int {
         val value = uuid.mostSignificantBits and -0x100000000L ushr 32
         return value.toInt()
     }
@@ -88,14 +103,14 @@ object BluetoothUuid {
     fun uuidToBytes(uuid: UUID): ByteArray {
         if (is16BitUuid(uuid)) {
             val uuidBytes = ByteArray(UUID_BYTES_16_BIT)
-            val uuidVal = getServiceIdentifierFromParcelUuid(uuid)
+            val uuidVal = getServiceIdentifier(uuid)
             uuidBytes[0] = (uuidVal and 0xFF).toByte()
             uuidBytes[1] = (uuidVal and 0xFF00 shr 8).toByte()
             return uuidBytes
         }
         if (is32BitUuid(uuid)) {
             val uuidBytes = ByteArray(UUID_BYTES_32_BIT)
-            val uuidVal = getServiceIdentifierFromParcelUuid(uuid)
+            val uuidVal = getServiceIdentifier(uuid)
             uuidBytes[0] = (uuidVal and 0xFF).toByte()
             uuidBytes[1] = (uuidVal and 0xFF00 shr 8).toByte()
             uuidBytes[2] = (uuidVal and 0xFF0000 shr 16).toByte()

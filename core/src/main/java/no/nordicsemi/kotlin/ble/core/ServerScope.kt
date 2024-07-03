@@ -31,10 +31,8 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.server
+package no.nordicsemi.kotlin.ble.core
 
-import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
-import no.nordicsemi.kotlin.ble.core.Permission
 import java.util.UUID
 
 /**
@@ -56,6 +54,9 @@ interface ServerScope {
      *       // Note: Client Characteristic Configuration descriptor is added automatically.
      *    }
      *    Characteristic(...)
+     *    IncludedService(<Some UUID>) {
+     *       Characteristic(...)
+     *    }
      * }
      * ```
      *
@@ -65,7 +66,7 @@ interface ServerScope {
     @Suppress("FunctionName")
     fun Service(
         uuid: UUID,
-        builder: PrimaryServiceScope.() -> Unit = {}
+        builder: ServiceScope.() -> Unit = {}
     )
 }
 
@@ -153,12 +154,6 @@ interface ServiceScope {
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
     ) = Characteristic(uuid, listOf(property), listOf(permission), builder)
-}
-
-/**
- * Scope of a primary service.
- */
-interface PrimaryServiceScope: ServiceScope {
 
     /**
      * Declares an inner service with the given UUID.
@@ -179,13 +174,8 @@ interface PrimaryServiceScope: ServiceScope {
      * @param builder Scope of the inner service.
      */
     @Suppress("FunctionName")
-    fun InnerService(uuid: UUID, builder: InnerServiceScope.() -> Unit)
+    fun IncludedService(uuid: UUID, builder: ServiceScope.() -> Unit)
 }
-
-/**
- * Scope of an inner service.
- */
-interface InnerServiceScope: ServiceScope
 
 /**
  * Scope of a characteristic.
@@ -228,6 +218,11 @@ interface CharacteristicScope {
 
     /**
      * Declares a Characteristic User Description descriptor.
+     *
+     * This descriptor is used to provide a human-readable description of the characteristic.
+     * Although the CUDD is usually read-only, it may be writable. In that case, the
+     * [CharacteristicProperty.EXTENDED_PROPERTIES] property and Characteristic Extended Properties
+     * descriptor with `WRITABLE_AUXILIARIES` flag will be added automatically.
      *
      * @param description The human-readable description of the characteristic.
      * @param writable Whether the descriptor is writable.

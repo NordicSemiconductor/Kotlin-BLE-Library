@@ -33,12 +33,35 @@
 
 package no.nordicsemi.kotlin.ble.core
 
+import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
 import java.util.UUID
 
 /**
  * Interface representing a Bluetooth GATT characteristic.
  */
 interface Characteristic<D: Descriptor> {
+
+    companion object {
+        /** Device Name characteristic UUID. */
+        val DEVICE_NAME: UUID by lazy { BluetoothUuid.uuid(0x2A00) }
+        /** Appearance characteristic UUID. */
+        val APPEARANCE: UUID by lazy { BluetoothUuid.uuid(0x2A01) }
+        /** Peripheral Privacy Flag characteristic UUID. */
+        val PERIPHERAL_PRIVACY_FLAG: UUID by lazy { BluetoothUuid.uuid(0x2A02) }
+        /** Reconnection Address characteristic UUID. */
+        val RECONNECTION_ADDRESS: UUID by lazy { BluetoothUuid.uuid(0x2A03) }
+        /** Peripheral Preferred Connection Parameters characteristic UUID. */
+        val PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS: UUID by lazy { BluetoothUuid.uuid(0x2A04) }
+        /** Service Changed characteristic UUID. */
+        val SERVICE_CHANGED: UUID by lazy { BluetoothUuid.uuid(0x2A05) }
+    }
+
+    /**
+     * The owner of the parent service of this characteristic.
+     *
+     * The owner is set to null when the service was invalidated.
+     */
+    val owner: Peer<*>?
 
     /**
      * [UUID] of a characteristic.
@@ -58,7 +81,7 @@ interface Characteristic<D: Descriptor> {
     /**
      * The parent service.
      */
-    val service: Service<out Characteristic<D>>
+    val service: AnyService<out Characteristic<D>>
 
     /**
      * List of descriptors of this characteristic.

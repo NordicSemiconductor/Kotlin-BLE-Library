@@ -87,10 +87,10 @@ internal class NativeExecutor(
     private var gatt: BluetoothGatt? = null
 
     /**
-     * The [PeripheralGattCallback] receives callbacks from the [BluetoothGatt] and emits them
+     * The [NativeGattCallback] receives callbacks from the [BluetoothGatt] and emits them
      * as [GattEvent] to [events].
      */
-    private val gattCallback: PeripheralGattCallback = PeripheralGattCallback()
+    private val gattCallback: NativeGattCallback = NativeGattCallback()
 
     /** The current bond state. */
     private var _bondState = MutableStateFlow(bluetoothDevice.bondState.toBondState())

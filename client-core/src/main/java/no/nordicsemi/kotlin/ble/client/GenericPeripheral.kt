@@ -63,6 +63,8 @@ import kotlin.time.Duration.Companion.milliseconds
 /**
  * Class representing a Bluetooth LE peripheral.
  *
+ * @property scope The coroutine scope.
+ * @property impl The executor that provides methods to interact with the peripheral.
  * @property name The friendly Bluetooth name of the remote device.
  * The local adapter will automatically retrieve remote names when performing a device scan,
  * and will cache them. This method just returns the name for this device from the cache
@@ -227,7 +229,9 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
             }
             _state.update { event.newState }
         }
-        is ServicesChanged -> _services.update { event.services }
+        is ServicesChanged -> _services.update {
+            event.services.onEach { it.owner = this }
+        }
         else -> { /* Ignore */ }
     }
 
@@ -237,6 +241,7 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
      * It should reset data associated with the connection.
      */
     protected open fun handleDisconnection() {
+        _services.value.onEach { it.owner = null}
         _services.update { emptyList() }
     }
 

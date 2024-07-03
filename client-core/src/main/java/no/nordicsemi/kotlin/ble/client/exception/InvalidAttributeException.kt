@@ -29,13 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.exception
 
-import no.nordicsemi.kotlin.ble.core.exception.GattException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
 /**
- * Thrown when the attribute does not allow reading value.
+ * Thrown when the attribute has been invalidated and cannot be used anymore.
+ *
+ * An attribute may be invalidated when the device has disconnected, the services
+ * of the device have changed.
  */
-class ReadNotPermittedException: GattException()
+class InvalidAttributeException: BluetoothException("The attribute has been invalidated and cannot be used anymore")
