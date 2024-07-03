@@ -37,5 +37,5 @@ import no.nordicsemi.kotlin.ble.core.Service
  * A GATT service on a remote connected peripheral device.
  */
 interface RemoteService: Service<RemoteCharacteristic> {
-    override val owner: GenericPeripheral<*>
+    override val owner: GenericPeripheral<*, *>
 }

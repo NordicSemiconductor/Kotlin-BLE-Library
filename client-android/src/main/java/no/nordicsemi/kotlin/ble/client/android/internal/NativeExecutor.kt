@@ -38,12 +38,12 @@ import android.os.Build
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
-import no.nordicsemi.kotlin.ble.client.android.GattEvent
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
-import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
@@ -67,7 +67,7 @@ internal class NativeExecutor(
         null
     },
 ): Peripheral.Executor {
-    override val address: String = bluetoothDevice.address
+    override val identifier: String = bluetoothDevice.address
     override val type: PeripheralType = try {
         // This may throw Security Exception if Bluetooth Connect permission isn't granted.
         bluetoothDevice.type.toPeripheralType()

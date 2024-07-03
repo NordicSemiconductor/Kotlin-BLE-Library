@@ -36,9 +36,9 @@ package no.nordicsemi.kotlin.ble.client.android.mock
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
-import no.nordicsemi.kotlin.ble.client.android.GattEvent
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -55,7 +55,7 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
  * @param initialBondState The initial bond state of the peripheral, defaults to [BondState.NONE].
  */
 open class MockExecutor(
-    final override val address: String,
+    address: String,
     name: String? = null,
     override val type: PeripheralType = PeripheralType.LE,
     override val initialState: ConnectionState = ConnectionState.Disconnected(),
@@ -69,6 +69,8 @@ open class MockExecutor(
             "Invalid MAC address: $address"
         }
     }
+
+    override val identifier: String = address
 
     /** The current bond state. */
     private val _bondState = MutableStateFlow(initialBondState)

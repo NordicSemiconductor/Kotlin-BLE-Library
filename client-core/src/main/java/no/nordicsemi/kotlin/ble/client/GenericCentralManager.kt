@@ -53,12 +53,13 @@ import java.io.Closeable
  */
 abstract class GenericCentralManager<
         ID,
-        P: GenericPeripheral<ID>,
+        P: GenericPeripheral<ID, EX>,
+        EX: GenericPeripheral.GenericExecutor<ID>,
         F: GenericCentralManager.ScanFilterScope,
         SR: GenericScanResult<*, *>,
 >(
-    private val engine: GenericCentralManagerEngine<ID, P, F, SR>,
-): Manager<GenericCentralManagerEngine<ID, P, F, SR>>, Closeable {
+    private val engine: GenericCentralManagerEngine<ID, P, EX, F, SR>,
+): Manager<GenericCentralManagerEngine<ID, P, EX, F, SR>>, Closeable {
     override val state: StateFlow<Manager.State> by lazy { engine.state }
 
     init {

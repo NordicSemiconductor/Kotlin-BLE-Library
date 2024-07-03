@@ -50,7 +50,8 @@ import java.io.Closeable
  */
 abstract class GenericCentralManagerEngine<
         ID,
-        P: GenericPeripheral<ID>,
+        P: GenericPeripheral<ID, EX>,
+        EX: GenericPeripheral.GenericExecutor<ID>,
         F: GenericCentralManager.ScanFilterScope,
         SR: GenericScanResult<*, *>,
 >(

@@ -35,26 +35,18 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withTimeout
+import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.GenericPeripheral
 import no.nordicsemi.kotlin.ble.client.ReliableWriteScope
-import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
@@ -69,10 +61,7 @@ import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
-import java.util.UUID
 import kotlin.math.min
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Android-specific implementation of a peripheral.
@@ -80,9 +69,9 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property scope The coroutine scope.
  */
 open class Peripheral(
-    private val scope: CoroutineScope,
-    private val impl: Executor,
-): GenericPeripheral<String> {
+    scope: CoroutineScope,
+    impl: Executor,
+): GenericPeripheral<String, Peripheral.Executor>(scope, impl) {
     private val logger = LoggerFactory.getLogger(Peripheral::class.java)
 
     /**
@@ -90,45 +79,16 @@ open class Peripheral(
      *
      * The implementation should initiate requests and report events using [events] flow.
      */
-    interface Executor {
+    interface Executor: GenericExecutor<String> {
         /** MAC address of the device. */
         val address: String
-
-        /**
-         * The name of the device, if available.
-         *
-         * The name may change during the lifetime of the peripheral.
-         */
-        val name: String?
+            get() = identifier
 
         /** The Bluetooth device type of the remote device. */
         val type: PeripheralType
 
-        /** The initial state of the peripheral. */
-        val initialState: ConnectionState
-
-        /** The initial services of the peripheral. */
-        val initialServices: List<RemoteService>
-
         /** Bonding state as a state flow. */
         val bondState: StateFlow<BondState>
-
-        /** A flow of GATT events from the peripheral. */
-        val events: Flow<GattEvent>
-
-        /**
-         * Makes a connection to the peripheral.
-         *
-         * @param autoConnect True to use auto connect feature, false to use direct connection.
-         * @param preferredPhy The preferred PHYs for connection.
-         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
-         */
-        fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
-
-        /**
-         * Discovers services on the peripheral.
-         */
-        fun discoverServices()
 
         /**
          * Requests the connection priority to be changed.
@@ -162,27 +122,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
         fun readPhy()
-
-        /**
-         * Initiates a read of the RSSI value from the peripheral.
-         *
-         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
-         */
-        fun readRssi()
-
-        /**
-         * Disconnects from the peripheral.
-         *
-         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
-         */
-        fun disconnect()
-
-        /**
-         * Closes the connection to the peripheral.
-         *
-         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
-         */
-        fun close()
     }
 
     override val identifier: String = impl.address
@@ -192,32 +131,6 @@ open class Peripheral(
 
     /** The Bluetooth device type of the remote device. */
     val type: PeripheralType = impl.type
-
-    override val name: String?
-        get() = impl.name
-
-    /**
-     * A job that collects GATT events from the peripheral.
-     *
-     * This is not-null when the device is connected or was connected using auto connect,
-     * that is when any GATT event for the device, including connection state change, is expected.
-     */
-    private var gattEventCollector: Job? = null
-
-    /** The current state of the peripheral as a state flow. */
-    private var _state = MutableStateFlow(impl.initialState)
-    override val state = _state.asStateFlow()
-
-    /** Current list of GATT services. */
-    private var _services = MutableStateFlow(impl.initialServices)
-
-    /**
-     * A flag indicating that the services have been discovered.
-     *
-     * This flag is reset on disconnection and when services are invalidated wither remotely,
-     * or by calling [refreshCache]. // TODO make sure it's the case
-     */
-    private var servicesDiscovered = false
 
     /** Connection parameters of the peripheral as state flow. */
     private var _connectionParameters = MutableStateFlow<ConnectionParameters?>(null)
@@ -275,9 +188,7 @@ open class Peripheral(
                             // Since we're connected, let's start collecting GATT events, including
                             // connection state changes. The device may disconnect and reconnect at
                             // any time. To stop collecting the events one needs to call disconnect().
-                            gattEventCollector = impl.events
-                                .onEach { handle(it) }
-                                .launchIn(scope)
+                            startCollectingGattEvents(closeWhenDisconnected = false)
                         }
                         is ConnectionState.Disconnected -> {
                             // RPA (Resolvable Private Address) can rotate, causing address to "expire" in the
@@ -321,14 +232,9 @@ open class Peripheral(
                             _connectionParameters.update { ConnectionParameters.Unknown }
                             _phy.update {  PhyInUse.LE_1M }
                             // Since we're connected, let's start collecting GATT events.
-                            // In case of a direct connection, we a disconnection will cancel
+                            // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.
-                            gattEventCollector = impl.events
-                                .onEach { handle(it) }
-                                .filterIsInstance(ConnectionStateChanged::class)
-                                .filter { it.newState is ConnectionState.Disconnected }
-                                .onEach { close() }
-                                .launchIn(scope)
+                            startCollectingGattEvents()
                         }
                         is ConnectionState.Disconnected -> {
                             check(options.retry > 0) {
@@ -357,133 +263,27 @@ open class Peripheral(
         }
     }
 
-    override suspend fun disconnect() {
-        // Check if the peripheral isn't already disconnected or has a pending disconnection.
-        state.value.let { currentState ->
-            if (currentState is ConnectionState.Disconnected) {
-                return
-            }
-            if (currentState is ConnectionState.Disconnecting) {
-                waitUntil { it is ConnectionState.Disconnected }
-                return
-            }
-        }
-
-        // Disconnect from the peripheral.
-        logger.trace("Disconnecting from {}", this)
-        _state.update { ConnectionState.Disconnecting }
-        impl.disconnect()
-        try {
-            waitUntil(500.milliseconds) { it is ConnectionState.Disconnected }
-        } catch (e: TimeoutCancellationException) {
-            logger.warn("Disconnection takes longer than expected, closing")
-        }
-        close()
-        logger.trace("Disconnected from {}", this)
-    }
-
-    /**
-     * Waits until the given condition is met.
-     *
-     * @param timeout The timeout, or [Duration.INFINITE] (default) to wait indefinitely.
-     * @param condition The condition to meet, which takes the current state as an argument.
-     * @throws TimeoutCancellationException If the timeout is set and the condition is not met.
-     */
-    private suspend fun waitUntil(
-        timeout: Duration = Duration.INFINITE,
-        condition: suspend (ConnectionState) -> Boolean
-    ): ConnectionState = withTimeout(timeout) {
-        impl.events
-            .filterIsInstance(ConnectionStateChanged::class)
-            .map { it.newState }
-            .filter(condition)
-            .first()
-    }
-
     /**
      * Handles GATT events.
      *
      * @param event The GATT event to process.
      */
-    private fun handle(event: GattEvent) = when (event) {
-        is ConnectionStateChanged -> {
-            if (event.newState is ConnectionState.Disconnected) {
-                resetConnectionProperties()
-            }
-            _state.update { event.newState }
-        }
-        is ServicesChanged -> _services.update { event.services }
+    override fun handle(event: GattEvent) = when (event) {
         is MtuChanged -> mtu = event.mtu
         is PhyChanged -> _phy.update { event.phy }
         is ConnectionParametersChanged -> _connectionParameters.update { event.newParameters }
-        is RssiRead -> { /* Ignore */ }
-    }
-
-    /**
-     * Cancels collection of GATT events and closes the connection.
-     */
-    private fun close() {
-        gattEventCollector?.cancel()
-        gattEventCollector = null
-        resetConnectionProperties()
-        impl.close()
+        else -> super.handle(event)
     }
 
     /**
      * Resets connection properties in case of disconnection.
      */
-    private fun resetConnectionProperties() {
+    override fun handleDisconnection() {
+        super.handleDisconnection()
         mtu = ATT_MTU_DEFAULT
         mtuRequested = false
         _phy.update { null }
         _connectionParameters.update { null }
-        _services.update { emptyList() }
-    }
-
-    override fun services(uuids: List<UUID>): StateFlow<List<RemoteService>> {
-        // First call to this method triggers service discovery.
-        if (!servicesDiscovered) {
-            servicesDiscovered = true
-            logger.trace("Discovering services with filter: {}", uuids)
-            impl.discoverServices()
-        }
-
-        // If there is no filter, return the original flow.
-        if (uuids.isEmpty()) {
-            return _services.asStateFlow()
-        }
-
-        // A method to filter services by UUIDs.
-        fun List<RemoteService>.filterBy(uuids: List<UUID>): List<RemoteService> {
-            return filter { service -> uuids.any { it == service.uuid } }
-        }
-
-        // If there is a filter, create a new flow that will emit filtered services only.
-        val filteredServices = _services.value.filterBy(uuids)
-        return MutableStateFlow(filteredServices)
-            .apply {
-                // Each time the list of discovered services changes, filter it by `uuids`
-                // and populate the flow.
-                _services.onEach { allServices ->
-                    update { allServices.filterBy(uuids) }
-                }
-            }
-    }
-
-    override suspend fun readRssi(): Int {
-        check (isConnected) {
-            throw PeripheralNotConnectedException()
-        }
-        logger.trace("Reading RSSI")
-        impl.readRssi()
-        return impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(RssiRead::class)
-            .firstOrNull()?.rssi
-            ?.also {
-                logger.info("RSSI read: {} dBm", it)
-            }
-            ?: throw PeripheralNotConnectedException()
     }
 
     /**

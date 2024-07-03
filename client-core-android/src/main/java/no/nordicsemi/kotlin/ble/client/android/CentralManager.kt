@@ -48,7 +48,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 class CentralManager(
     private val engine: CentralManagerEngine<*>
-): GenericCentralManager<String, Peripheral, ConjunctionFilterScope, ScanResult>(engine) {
+): GenericCentralManager<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(engine) {
 
     /**
      * Returns a list of peripherals for which the system has bond information.

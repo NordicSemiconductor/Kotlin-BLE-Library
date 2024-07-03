@@ -48,7 +48,7 @@ import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 abstract class CentralManagerEngine<C>(
     scope: CoroutineScope,
     private val context: C,
-): GenericCentralManagerEngine<String, Peripheral, ConjunctionFilterScope, ScanResult>(scope) {
+): GenericCentralManagerEngine<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope) {
 
     /**
      * Flag indicating if the central manager is open.

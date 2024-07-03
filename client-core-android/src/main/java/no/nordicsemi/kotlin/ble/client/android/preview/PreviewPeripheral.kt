@@ -40,18 +40,19 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
+import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.RssiRead
+import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
-import no.nordicsemi.kotlin.ble.client.android.ConnectionStateChanged
-import no.nordicsemi.kotlin.ble.client.android.GattEvent
 import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
-import no.nordicsemi.kotlin.ble.client.android.RssiRead
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
@@ -72,7 +73,7 @@ import java.util.UUID
  * immediately changes the connection state to [ConnectionState.Connected] and [disconnect]
  * to [ConnectionState.Disconnected], etc.
  *
- * @param address The MAC address of the peripheral.
+ * @param identifier The MAC address of the peripheral.
  * @param name An optional name of the peripheral.
  * @param type The type of the peripheral, defaults to [PeripheralType.LE].
  * @param initialState The initial connection state of the peripheral.
@@ -81,7 +82,7 @@ import java.util.UUID
  * that is, if the peripheral is bonded to the device.
  */
 private class StubExecutor(
-    override val address: String,
+    override val identifier: String,
     override val name: String?,
     override val type: PeripheralType,
     override val initialState: ConnectionState,
@@ -101,7 +102,7 @@ private class StubExecutor(
     }
 
     override fun discoverServices() {
-        TODO("Not yet implemented")
+        _events.tryEmit(ServicesChanged(initialServices))
     }
 
     override fun requestConnectionPriority(priority: ConnectionPriority) {
@@ -286,7 +287,7 @@ open class PreviewPeripheral(
 ): Peripheral(
     scope = scope,
     impl = StubExecutor(
-        address = address,
+        identifier = address,
         name = name,
         type = type,
         initialState = state,

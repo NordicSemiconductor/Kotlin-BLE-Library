@@ -56,7 +56,7 @@ import java.util.UUID
  * @property secondaryPhy The secondary PHY used to transmit the advertisement, or `null` if not used.
  * @property timestamp The time when the advertisement was received.
  */
-interface GenericScanResult<P: GenericPeripheral<*>, AD: GenericAdvertisementData> {
+interface GenericScanResult<P: GenericPeripheral<*, *>, AD: GenericAdvertisementData> {
     val peripheral: P
     val isConnectable: Boolean
     val advertisementData: AD
@@ -86,7 +86,7 @@ interface GenericAdvertisementData {
     val manufacturerData: Map<Int, ByteArray>
 }
 
-fun <ID, P: GenericPeripheral<ID>> Flow<GenericScanResult<P, *>>.distinctByPeripheral(): Flow<GenericScanResult<P, *>> = flow {
+fun <ID, P: GenericPeripheral<ID, *>> Flow<GenericScanResult<P, *>>.distinctByPeripheral(): Flow<GenericScanResult<P, *>> = flow {
     val peripherals = mutableSetOf<ID>()
     collect { result ->
         if (peripherals.add(result.peripheral.identifier)) {

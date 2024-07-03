@@ -31,21 +31,16 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.client.android
+package no.nordicsemi.kotlin.ble.client
 
-import no.nordicsemi.kotlin.ble.client.RemoteService
-import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
-import no.nordicsemi.kotlin.ble.core.Phy
-import no.nordicsemi.kotlin.ble.core.PhyInUse
-import no.nordicsemi.kotlin.ble.core.PhyOption
 
 /**
- * A base class for all GATT events available with Android API.
+ * A base class for all GATT events.
  */
 sealed class GattEvent {
 
-    internal val isDisconnectionEvent: Boolean
+    val isDisconnectionEvent: Boolean
         get() = this is ConnectionStateChanged && disconnected
 }
 
@@ -69,22 +64,6 @@ data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
 data class ServicesChanged(val services: List<RemoteService>) : GattEvent()
 
 /**
- * Event indicating that the (Maximum Transfer Unit) MTU has changed.
- *
- * MTU is the maximum number of bytes that can be sent in a single Attribute Layer packet.
- * GATT protocol may use some of the bytes for its own headers, so the maximum size of the
- * payload is smaller, depending on the operation type.
- *
- * An Attribute Layer payload may be automatically split into multiple Link Layer packets.
- * The size of the Link Layer packet is 27 bytes by default, but it may be increased
- * using Data Length Extension feature, supported on Android 6+. The size of the
- * Link Layer packet is called the LL MTU and is not available using Android API.
- *
- * @param mtu The new MTU.
- */
-data class MtuChanged(val mtu: Int) : GattEvent()
-
-/**
  * Event indicating that the RSSI value has been read.
  *
  * The RSSI value is the signal strength of the signal received from the peripheral, in dBm.
@@ -97,21 +76,6 @@ data class MtuChanged(val mtu: Int) : GattEvent()
 data class RssiRead(val rssi: Int) : GattEvent()
 
 /**
- * Event indicating that the PHY used for the connection has changed.
- *
- * PHY defines the Physical Layer properties. LE 1M is the legacy PHY, with a speed of 1 Mbps.
- * Some Android 8+ devices supports LE 2M, with a speed of 2 Mbps and LL Coded, with a coding
- * 2 or 8 bits per symbol, providing a longer range.
- *
- * @param phy The new PHY.
- * @see Phy
- * @see PhyOption
+ * Event type used by implementations.
  */
-data class PhyChanged(val phy: PhyInUse) : GattEvent()
-
-/**
- * Event indicating that the connection parameters have changed.
- *
- * @param newParameters The new connection parameters.
- */
-data class ConnectionParametersChanged(val newParameters: ConnectionParameters) : GattEvent()
+open class ImplSpecificEvent : GattEvent()

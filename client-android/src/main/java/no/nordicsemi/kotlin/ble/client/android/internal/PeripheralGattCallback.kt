@@ -41,12 +41,12 @@ import androidx.annotation.Keep
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
+import no.nordicsemi.kotlin.ble.client.GattEvent
+import no.nordicsemi.kotlin.ble.client.RssiRead
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
-import no.nordicsemi.kotlin.ble.client.android.ConnectionStateChanged
-import no.nordicsemi.kotlin.ble.client.android.GattEvent
 import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
-import no.nordicsemi.kotlin.ble.client.android.RssiRead
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import org.slf4j.LoggerFactory
@@ -190,7 +190,7 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
 
     // Backward compatibility
 
-    @Suppress("OVERRIDE_DEPRECATION")
+    @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic
@@ -198,7 +198,7 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
         onCharacteristicChanged(gatt, characteristic, characteristic.value.clone())
     }
 
-    @Suppress("OVERRIDE_DEPRECATION")
+    @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -207,7 +207,7 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
         onCharacteristicRead(gatt, characteristic, characteristic.value.clone(), status)
     }
 
-    @Suppress("OVERRIDE_DEPRECATION")
+    @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
     override fun onDescriptorRead(
         gatt: BluetoothGatt,
         descriptor: BluetoothGattDescriptor,
