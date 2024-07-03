@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,24 +23,37 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import no.nordicsemi.android.common.theme.NordicActivity
 import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.android.common.ui.view.NordicMediumAppBar
 import no.nordicsemi.kotlin.ble.android.sample.scanner.ScannerScreen
 
 @AndroidEntryPoint
 class MainActivity : NordicActivity() {
+
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             NordicTheme {
                 val navController = rememberNavController()
-                NavHost(
-                    navController = navController,
-                    startDestination = "menu"
-                ) {
-                    composable("menu") {
-                        MenuScreen(navController)
+
+                Scaffold(
+                    topBar = {
+                        NordicMediumAppBar(
+                            title = { Text(text = "Sample app") }
+                        )
                     }
-                    composable("scanner") {
-                        ScannerScreen()
+                ) { paddings ->
+                    NavHost(
+                        modifier = Modifier.padding(paddings),
+                        navController = navController,
+                        startDestination = "menu"
+                    ) {
+                        composable("menu") {
+                            MenuScreen(navController)
+                        }
+                        composable("scanner") {
+                            ScannerScreen()
+                        }
                     }
                 }
             }
