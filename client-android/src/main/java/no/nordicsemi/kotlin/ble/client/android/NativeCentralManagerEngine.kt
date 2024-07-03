@@ -150,7 +150,7 @@ open class NativeCentralManagerEngine(
 
     override fun checkScanningPermission() {
         check(Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED) {
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED) {
             throw SecurityException("BLUETOOTH_SCAN permission not granted")
         }
     }
