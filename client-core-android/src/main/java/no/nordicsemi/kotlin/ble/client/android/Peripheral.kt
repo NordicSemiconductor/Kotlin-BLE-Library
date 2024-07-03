@@ -81,7 +81,7 @@ import kotlin.time.Duration.Companion.milliseconds
  */
 open class Peripheral(
     private val scope: CoroutineScope,
-    private val impl: Executor
+    private val impl: Executor,
 ): GenericPeripheral<String> {
     private val logger = LoggerFactory.getLogger(Peripheral::class.java)
 
@@ -107,6 +107,9 @@ open class Peripheral(
         /** The initial state of the peripheral. */
         val initialState: ConnectionState
 
+        /** The initial services of the peripheral. */
+        val initialServices: List<RemoteService>
+
         /** Bonding state as a state flow. */
         val bondState: StateFlow<BondState>
 
@@ -121,6 +124,11 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
         fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
+
+        /**
+         * Discovers services on the peripheral.
+         */
+        fun discoverServices()
 
         /**
          * Requests the connection priority to be changed.
@@ -199,6 +207,17 @@ open class Peripheral(
     /** The current state of the peripheral as a state flow. */
     private var _state = MutableStateFlow(impl.initialState)
     override val state = _state.asStateFlow()
+
+    /** Current list of GATT services. */
+    private var _services = MutableStateFlow(impl.initialServices)
+
+    /**
+     * A flag indicating that the services have been discovered.
+     *
+     * This flag is reset on disconnection and when services are invalidated wither remotely,
+     * or by calling [refreshCache]. // TODO make sure it's the case
+     */
+    private var servicesDiscovered = false
 
     /** Connection parameters of the peripheral as state flow. */
     private var _connectionParameters = MutableStateFlow<ConnectionParameters?>(null)
@@ -393,6 +412,7 @@ open class Peripheral(
             }
             _state.update { event.newState }
         }
+        is ServicesChanged -> _services.update { event.services }
         is MtuChanged -> mtu = event.mtu
         is PhyChanged -> _phy.update { event.phy }
         is ConnectionParametersChanged -> _connectionParameters.update { event.newParameters }
@@ -409,15 +429,45 @@ open class Peripheral(
         impl.close()
     }
 
+    /**
+     * Resets connection properties in case of disconnection.
+     */
     private fun resetConnectionProperties() {
         mtu = ATT_MTU_DEFAULT
         mtuRequested = false
         _phy.update { null }
         _connectionParameters.update { null }
+        _services.update { emptyList() }
     }
 
     override fun services(uuids: List<UUID>): StateFlow<List<RemoteService>> {
-        TODO("Not yet implemented")
+        // First call to this method triggers service discovery.
+        if (!servicesDiscovered) {
+            servicesDiscovered = true
+            logger.trace("Discovering services with filter: {}", uuids)
+            impl.discoverServices()
+        }
+
+        // If there is no filter, return the original flow.
+        if (uuids.isEmpty()) {
+            return _services.asStateFlow()
+        }
+
+        // A method to filter services by UUIDs.
+        fun List<RemoteService>.filterBy(uuids: List<UUID>): List<RemoteService> {
+            return filter { service -> uuids.any { it == service.uuid } }
+        }
+
+        // If there is a filter, create a new flow that will emit filtered services only.
+        val filteredServices = _services.value.filterBy(uuids)
+        return MutableStateFlow(filteredServices)
+            .apply {
+                // Each time the list of discovered services changes, filter it by `uuids`
+                // and populate the flow.
+                _services.onEach { allServices ->
+                    update { allServices.filterBy(uuids) }
+                }
+            }
     }
 
     override suspend fun readRssi(): Int {
@@ -538,7 +588,7 @@ open class Peripheral(
             return
         }
         mtuRequested = true
-        logger.trace("Requesting MTU = {}", ATT_MTU_MAX)
+        logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
         impl.requestMtu(ATT_MTU_MAX)
         impl.events
             .takeWhile { !it.isDisconnectionEvent }

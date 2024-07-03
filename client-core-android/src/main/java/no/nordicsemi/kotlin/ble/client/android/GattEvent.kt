@@ -33,6 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
+import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
@@ -59,6 +60,13 @@ data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
     val disconnected: Boolean
         get() = newState is ConnectionState.Disconnected
 }
+
+/**
+ * Event indicating that the services have changed.
+ *
+ * @param services The list of discovered remote services.
+ */
+data class ServicesChanged(val services: List<RemoteService>) : GattEvent()
 
 /**
  * Event indicating that the (Maximum Transfer Unit) MTU has changed.

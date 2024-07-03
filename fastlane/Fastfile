@@ -23,8 +23,8 @@ platform :android do
     gradle(task: "releaseStagingRepositories")
   end
 
-    desc "Generate docs."
-    lane :generateDocs do
-      gradle(task: "dokkaHtmlMultiModule")
-    end
+  desc "Generate docs."
+  lane :generateDocs do
+    gradle(task: "dokkaHtmlMultiModule")
+  end
 end

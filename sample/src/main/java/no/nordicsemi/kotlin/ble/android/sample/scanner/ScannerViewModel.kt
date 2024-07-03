@@ -162,10 +162,14 @@ class ScannerViewModel @Inject constructor(
                 val rssi = peripheral.readRssi()
                 Timber.w("RSSI: $rssi dBm")
 
-                delay(1000)
-
                 peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
                 Timber.w("Connection priority changed to HIGH")
+
+                peripheral.services()
+                    .onEach {
+                        Timber.w("Services changed: $it")
+                    }
+                    .stateIn(scope)
             } catch (e: Exception) {
                 Timber.e(e, "OMG!")
             }

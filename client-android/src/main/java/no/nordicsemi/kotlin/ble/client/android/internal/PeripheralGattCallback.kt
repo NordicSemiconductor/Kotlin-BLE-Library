@@ -48,7 +48,6 @@ import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
 import no.nordicsemi.kotlin.ble.client.android.RssiRead
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
-import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import org.slf4j.LoggerFactory
 
@@ -69,11 +68,12 @@ internal class PeripheralGattCallback: BluetoothGattCallback() {
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
-
+        logger.debug("onServicesDiscovered: status=$status")
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
-
+        logger.debug("onServiceChanged")
+        // TODO: call discoverServices() and repopulate services
     }
 
     // Handling value changes.

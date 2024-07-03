@@ -38,6 +38,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.ConnectionStateChanged
@@ -48,11 +53,15 @@ import no.nordicsemi.kotlin.ble.client.android.PeripheralType
 import no.nordicsemi.kotlin.ble.client.android.PhyChanged
 import no.nordicsemi.kotlin.ble.client.android.RssiRead
 import no.nordicsemi.kotlin.ble.core.BondState
+import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.Service
+import no.nordicsemi.kotlin.ble.core.WriteType
+import java.util.UUID
 
 /**
  * A stub implementation of [Peripheral.Executor] for Android.
@@ -76,6 +85,7 @@ private class StubExecutor(
     override val name: String?,
     override val type: PeripheralType,
     override val initialState: ConnectionState,
+    override val initialServices: List<StubRemoteService>,
     private val rssi: Int,
     private val phy: PhyInUse,
     hasBondInformation: Boolean,
@@ -88,6 +98,10 @@ private class StubExecutor(
 
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         _events.tryEmit(ConnectionStateChanged(ConnectionState.Connected))
+    }
+
+    override fun discoverServices() {
+        TODO("Not yet implemented")
     }
 
     override fun requestConnectionPriority(priority: ConnectionPriority) {
@@ -120,6 +134,122 @@ private class StubExecutor(
 }
 
 /**
+ * A stub implementation of [RemoteService] for Android.
+ *
+ * This class is used to preview the UI in the Compose Preview.
+ */
+class StubRemoteService internal constructor(
+    override val uuid: UUID,
+    override val instanceId: Int = 0,
+    includedServices: List<InnerServiceBuilder> = emptyList(),
+    characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
+): RemoteService {
+    override lateinit var owner: PreviewPeripheral
+
+    class Builder(
+        val uuid: UUID,
+        val instanceId: Int = 0,
+        val includedServices: List<InnerServiceBuilder> = emptyList(),
+        val characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
+    )
+
+    class InnerServiceBuilder(
+        val uuid: UUID,
+        val instanceId: Int = 0,
+        val characteristics: List<StubRemoteCharacteristic.Builder> = emptyList(),
+    )
+
+    override val characteristics: List<StubRemoteCharacteristic> = characteristics
+        .map { cb ->
+            StubRemoteCharacteristic(
+                service = this,
+                uuid = cb.uuid,
+                instanceId = cb.instanceId,
+                initialValue = cb.initialValue,
+                descriptors = cb.descriptors,
+            )
+        }
+
+    override val includedServices: List<Service<RemoteCharacteristic>> = includedServices
+        .map { sb ->
+            StubRemoteService(
+                uuid = sb.uuid,
+                instanceId = sb.instanceId,
+                characteristics = sb.characteristics,
+            )
+        }
+}
+
+/**
+ * A stub implementation of [RemoteCharacteristic] for Android.
+ *
+ * This class is used to preview the UI in the Compose Preview.
+ */
+class StubRemoteCharacteristic internal constructor(
+    override val service: RemoteService,
+    override val uuid: UUID,
+    override val instanceId: Int = 0,
+    initialValue: ByteArray = byteArrayOf(),
+    override val properties: List<CharacteristicProperty> = emptyList(),
+    descriptors: List<StubRemoteDescriptor.Builder> = emptyList(),
+): RemoteCharacteristic {
+
+    class Builder(
+        val uuid: UUID,
+        val instanceId: Int = 0,
+        val initialValue: ByteArray = byteArrayOf(),
+        val descriptors: List<StubRemoteDescriptor.Builder> = emptyList(),
+    )
+
+    override val descriptors: List<RemoteDescriptor> = descriptors
+        .map { db ->
+            StubRemoteDescriptor(
+                characteristic = this,
+                uuid = db.uuid,
+                instanceId = db.instanceId,
+                initialValue = db.initialValue
+            )
+        }
+
+    private val _value = MutableStateFlow(initialValue)
+
+    override suspend fun read(): ByteArray = _value.value
+
+    override suspend fun write(data: ByteArray, writeType: WriteType) {
+        _value.update { data }
+    }
+
+    override suspend fun subscribe(): Flow<ByteArray> = _value.asStateFlow()
+
+    override suspend fun waitForValueChange(): ByteArray = _value.first()
+}
+
+/**
+ * A stub implementation of [RemoteDescriptor] for Android.
+ *
+ * This class is used to preview the UI in the Compose Preview.
+ */
+class StubRemoteDescriptor internal constructor(
+    override val characteristic: RemoteCharacteristic,
+    override val uuid: UUID,
+    override val instanceId: Int = 0,
+    private var initialValue: ByteArray,
+): RemoteDescriptor {
+
+    class Builder(
+        val uuid: UUID,
+        val instanceId: Int = 0,
+        val initialValue: ByteArray = byteArrayOf(),
+    )
+
+    override suspend fun read(): ByteArray = initialValue
+
+    override suspend fun write(data: ByteArray) {
+        initialValue = data
+    }
+}
+
+/**
  * A preview implementation of [Peripheral] for Android.
  *
  * This class is used to preview the UI in the Compose Preview.
@@ -130,6 +260,7 @@ private class StubExecutor(
  * @param type The type of the peripheral, defaults to [PeripheralType.LE].
  * @param rssi The signal strength of the peripheral in dBm.
  * @param state The connection state of the peripheral.
+ * @param services The list of fake services discovered on the peripheral.
  * @param hasBondInformation `true` if the Android device has the bond information for the peripheral,
  * that is, if the peripheral is bonded to the device. Defaults to `false`.
  */
@@ -141,11 +272,38 @@ open class PreviewPeripheral(
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.LE_1M,
     state: ConnectionState = ConnectionState.Disconnected(),
-    hasBondInformation: Boolean = false,
+    services: List<StubRemoteService.Builder> = when (state) {
+        ConnectionState.Connected ->
+            listOf(
+                StubRemoteService.Builder(
+                    uuid = UUID.fromString("00001800-0000-1000-8000-00805f9b34fb"),
+                    characteristics = emptyList()
+                )
+            )
+        else -> emptyList()
+    },
+    hasBondInformation: Boolean = false
 ): Peripheral(
     scope = scope,
-    impl = StubExecutor(address, name, type, state, rssi, phy, hasBondInformation)
+    impl = StubExecutor(
+        address = address,
+        name = name,
+        type = type,
+        initialState = state,
+        initialServices = services.map {
+            StubRemoteService(
+                uuid = it.uuid,
+                instanceId = it.instanceId,
+                characteristics = it.characteristics
+            )
+        },
+        rssi = rssi,
+        phy = phy,
+        hasBondInformation = hasBondInformation
+    )
 ) {
+    // TODO assign this as services owner
+
     override fun toString(): String {
         return name ?: address
     }

@@ -38,6 +38,7 @@ import android.os.Build
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.GattEvent
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -74,6 +75,7 @@ internal class NativeExecutor(
         PeripheralType.UNKNOWN
     }
     override val initialState: ConnectionState = ConnectionState.Disconnected()
+    override val initialServices: List<RemoteService> = emptyList()
 
     /**
      * The [BluetoothGatt] object used to communicate with the physical device.
@@ -102,6 +104,10 @@ internal class NativeExecutor(
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         gatt?.close()
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
+    }
+
+    override fun discoverServices() {
+        gatt?.discoverServices()
     }
 
     override fun requestConnectionPriority(priority: ConnectionPriority) {
