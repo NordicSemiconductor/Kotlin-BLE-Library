@@ -243,6 +243,7 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
     protected open fun handleDisconnection() {
         _services.value.onEach { it.owner = null}
         _services.update { emptyList() }
+        servicesDiscovered = false
     }
 
     /**

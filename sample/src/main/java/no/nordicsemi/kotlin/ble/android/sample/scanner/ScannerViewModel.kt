@@ -35,8 +35,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,7 +43,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -142,14 +139,14 @@ class ScannerViewModel @Inject constructor(
                     .onEach {
                         Timber.w("PHY changed to: $it")
                     }
-                    .stateIn(scope)
+                    .launchIn(scope)
 
                 // Observe connection parameters
                 peripheral.connectionParameters
                     .onEach {
                         Timber.w("Connection parameters changed to: $it")
                     }
-                    .stateIn(scope)
+                    .launchIn(scope)
 
                 // Request MTU
                 peripheral.requestHighestValueLength()
@@ -166,11 +163,12 @@ class ScannerViewModel @Inject constructor(
                 peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
                 Timber.w("Connection priority changed to HIGH")
 
+                // Discover services and do some GATT operations.
                 peripheral.services()
                     .onEach {
                         Timber.w("Services changed: $it")
 
-                        // Read characteristic
+                        // Read values of all characteristics.
                         it.forEach { remoteService ->
                             remoteService.characteristics.forEach { remoteCharacteristic ->
                                 try {
@@ -181,8 +179,45 @@ class ScannerViewModel @Inject constructor(
                                 }
                             }
                         }
+
+                        it.forEach { remoteService ->
+                            remoteService.characteristics.forEach { remoteCharacteristic ->
+                                try {
+                                    Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
+                                    remoteCharacteristic.subscribe()
+                                        .onEach { newValue ->
+                                            Timber.w("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                        }
+                                        .launchIn(scope)
+                                    Timber.w("Subscribing to ${remoteCharacteristic.uuid} complete")
+                                } catch (e: Exception) {
+                                    Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                                }
+                            }
+                        }
                     }
-                    .stateIn(scope)
+                    .launchIn(scope)
+
+                // When the above operations are in progress, do some other operations in parallel.
+                // This time service discovery won't be initiated and we're just subscribing to the
+                // service flow.
+                peripheral.services()
+                    .onEach {
+                        Timber.w("-- Services changed: $it")
+
+                        // Read values of all characteristics.
+                        it.forEach { remoteService ->
+                            remoteService.characteristics.forEach { remoteCharacteristic ->
+                                try {
+                                    val value = remoteCharacteristic.read()
+                                    Timber.w("-- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                                } catch (e: Exception) {
+                                    Timber.e("-- Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                                }
+                            }
+                        }
+                    }
+                    .launchIn(scope)
             } catch (e: Exception) {
                 Timber.e(e, "OMG!")
             }
