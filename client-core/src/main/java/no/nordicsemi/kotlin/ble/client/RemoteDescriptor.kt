@@ -54,9 +54,9 @@ interface RemoteDescriptor: Descriptor {
      * Reads the value of the descriptor.
      *
      * @return The value of the descriptor.
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the descriptor has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun read(): ByteArray
@@ -65,9 +65,9 @@ interface RemoteDescriptor: Descriptor {
      * Writes the value of the descriptor.
      *
      * @param data The data to be written.
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the descriptor has been invalidated.
+     * @throws InvalidAttributeException if the descriptor has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun write(data: ByteArray)

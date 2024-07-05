@@ -48,7 +48,6 @@ import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
-import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.OperationStatus
@@ -143,7 +142,7 @@ internal class NativeRemoteCharacteristic(
 
             // Await the response.
             events
-                .takeWhile { !it.isDisconnectionEvent }
+                .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicRead::class)
                 .filter { it.characteristic == characteristic }
                 .firstOrNull()
@@ -153,7 +152,7 @@ internal class NativeRemoteCharacteristic(
                         else -> throw OperationFailedException(it.status)
                     }
                 }
-                ?: throw PeripheralNotConnectedException()
+                ?: throw InvalidAttributeException()
         }
     }
 
@@ -202,7 +201,7 @@ internal class NativeRemoteCharacteristic(
 
             // Await the write operation result.
             events
-                .takeWhile { !it.isDisconnectionEvent }
+                .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicWrite::class)
                 .filter { it.characteristic == characteristic }
                 .firstOrNull()
@@ -211,7 +210,7 @@ internal class NativeRemoteCharacteristic(
                         throw OperationFailedException(it.status)
                     }
                 }
-                ?: throw PeripheralNotConnectedException()
+                ?: throw InvalidAttributeException()
         }
     }
 
@@ -223,7 +222,7 @@ internal class NativeRemoteCharacteristic(
 
         setNotifying(true)
         return events
-            .takeWhile { !it.isDisconnectionEvent }
+            .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)
             .filter { it.characteristic == characteristic }
             .map { it.value }
@@ -237,7 +236,7 @@ internal class NativeRemoteCharacteristic(
 
         return subscribe()
             .firstOrNull()
-            ?: throw PeripheralNotConnectedException()
+            ?: throw InvalidAttributeException()
     }
 
     override fun toString(): String = uuid.toString()

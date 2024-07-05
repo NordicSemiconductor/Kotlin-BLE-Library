@@ -64,9 +64,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * Note, that calling [suspend] or [waitForValueChange] will enable notifications
      * automatically.
      *
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the characteristic has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun setNotifying(enabled: Boolean)
@@ -75,9 +75,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * Reads the value of the characteristic.
      *
      * @return The value of the characteristic.
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the characteristic has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun read(): ByteArray
@@ -87,9 +87,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *
      * @param data The data to be written.
      * @param writeType The write type to be used.
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the characteristic has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
     suspend fun write(data: ByteArray, writeType: WriteType)
@@ -99,12 +99,12 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *
      * This method suspends until the notifications are enabled.
      *
-     * The client will NOT unsubscribe when the flow is closed. Use [isNotifying] to disable
-     * or check the notifications state.
+     * The client will NOT unsubscribe when the flow is closed.
+     * Use [setNotifying] to disable notifications or indications.
      *
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the characteristic has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      * @see isNotifying
      * @see setNotifying
@@ -114,13 +114,14 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
     /**
      * Waits for the value of the characteristic to change.
      *
-     * This method suspends until the value of the characteristic changes. If the notifications
-     * are not enabled, it will enable them.
+     * This method suspends until the value of the characteristic changes.
+     * If the notifications are not enabled, it will enable them automatically.
+     * Use [setNotifying] to disable notifications or indications.
      *
      * @return The new value of the characteristic.
-     * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws OperationFailedException if the operation failed.
-     * @throws InvalidAttributeException if the characteristic has been invalidated.
+     * @throws InvalidAttributeException if the characteristic has been invalidated due to
+     * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      * @see subscribe
      * @see isNotifying

@@ -230,6 +230,7 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
             _state.update { event.newState }
         }
         ServicesChanged -> {
+            logger.trace("Services invalidated")
             invalidateServices()
             discoverServices()
         }
@@ -253,7 +254,6 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
      * Invalidates current GATT services.
      */
     private fun invalidateServices() {
-        logger.trace("Services changed")
         _services.value.onEach { it.owner = null }
         _services.update { emptyList() }
         servicesDiscovered = false

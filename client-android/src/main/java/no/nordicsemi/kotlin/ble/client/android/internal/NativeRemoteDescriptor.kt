@@ -47,7 +47,6 @@ import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
-import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import java.util.UUID
@@ -80,7 +79,7 @@ internal class NativeRemoteDescriptor(
             }
 
             events
-                .takeWhile { !it.isDisconnectionEvent }
+                .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(DescriptorRead::class)
                 .filter { it.descriptor == descriptor }
                 .firstOrNull()
@@ -90,7 +89,7 @@ internal class NativeRemoteDescriptor(
                         else -> throw OperationFailedException(it.status)
                     }
                 }
-                ?: throw PeripheralNotConnectedException()
+                ?: throw InvalidAttributeException()
         }
     }
 
@@ -127,7 +126,7 @@ internal class NativeRemoteDescriptor(
                 }
             }
             events
-                .takeWhile { !it.isDisconnectionEvent }
+                .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(DescriptorWrite::class)
                 .filter { it.descriptor == descriptor }
                 .firstOrNull()
@@ -136,7 +135,7 @@ internal class NativeRemoteDescriptor(
                         throw OperationFailedException(it.status)
                     }
                 }
-                ?: throw PeripheralNotConnectedException()
+                ?: throw InvalidAttributeException()
         }
     }
 

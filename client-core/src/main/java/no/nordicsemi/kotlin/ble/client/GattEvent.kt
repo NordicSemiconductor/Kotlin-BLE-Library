@@ -42,6 +42,9 @@ sealed class GattEvent {
 
     val isDisconnectionEvent: Boolean
         get() = this is ConnectionStateChanged && disconnected
+
+    val isServiceInvalidatedEvent: Boolean
+        get() = isDisconnectionEvent || this is ServicesChanged
 }
 
 /**

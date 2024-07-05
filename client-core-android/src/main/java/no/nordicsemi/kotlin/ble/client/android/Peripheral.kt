@@ -125,6 +125,11 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
         fun readPhy()
+
+        /**
+         * Refreshes services cache.
+         */
+        fun refreshCache()
     }
 
     override val identifier: String = impl.address
@@ -457,8 +462,12 @@ open class Peripheral(
      *
      * This method will clear the cache and discover services again.
      */
-    suspend fun refreshCache() {
-        TODO()
+    fun refreshCache() {
+        check (isConnected) {
+            throw PeripheralNotConnectedException()
+        }
+        logger.trace("Refreshing cache")
+        impl.refreshCache()
     }
 
     /**

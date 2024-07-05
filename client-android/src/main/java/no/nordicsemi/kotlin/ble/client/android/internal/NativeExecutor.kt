@@ -110,6 +110,18 @@ internal class NativeExecutor(
         gatt?.discoverServices()
     }
 
+    override fun refreshCache() {
+        gatt?.let { gatt ->
+            try {
+                val method = gatt.javaClass.getMethod("refresh")
+                method.invoke(gatt)
+                gattCallback.onServiceChanged(gatt)
+            } catch (e: Exception) {
+                // Ignore
+            }
+        }
+    }
+
     override fun requestConnectionPriority(priority: ConnectionPriority) {
         gatt?.let { gatt ->
             gatt.requestConnectionPriority(priority.toPriority())

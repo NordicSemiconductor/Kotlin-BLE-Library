@@ -94,6 +94,10 @@ open class MockExecutor(
         TODO("Not yet implemented")
     }
 
+    override fun refreshCache() {
+        TODO("Not yet implemented")
+    }
+
     override fun requestConnectionPriority(priority: ConnectionPriority) {
         TODO("Not yet implemented")
     }
