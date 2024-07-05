@@ -130,29 +130,31 @@ internal class NativeRemoteCharacteristic(
             throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
         }
 
-        // Read the characteristic value.
-        val success = try {
-            gatt.readCharacteristic(characteristic)
-        } catch (e: Exception) {
-            throw BluetoothException(e)
-        }
-        check(success) {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
-
-        // Await the response.
-        return events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(CharacteristicRead::class)
-            .filter { it.characteristic == characteristic }
-            .firstOrNull()
-            ?.let {
-                when (it.status) {
-                    OperationStatus.SUCCESS -> it.value
-                    else -> throw OperationFailedException(it.status)
-                }
+        return NativeOperationMutex.withLock {
+            // Read the characteristic value.
+            val success = try {
+                gatt.readCharacteristic(characteristic)
+            } catch (e: Exception) {
+                throw BluetoothException(e)
             }
-            ?: throw PeripheralNotConnectedException()
+            check(success) {
+                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            }
+
+            // Await the response.
+            events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(CharacteristicRead::class)
+                .filter { it.characteristic == characteristic }
+                .firstOrNull()
+                ?.let {
+                    when (it.status) {
+                        OperationStatus.SUCCESS -> it.value
+                        else -> throw OperationFailedException(it.status)
+                    }
+                }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     @Suppress("DEPRECATION")
@@ -168,40 +170,49 @@ internal class NativeRemoteCharacteristic(
         }
 
         // Write the characteristic value.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
-            when (result) {
-                BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
-                BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
-                BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY -> throw OperationFailedException(OperationStatus.BUSY)
-                else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-            }
-        } else {
-            val success = try {
-                characteristic.value = data
-                characteristic.writeType = writeType.toInt()
-                gatt.writeCharacteristic(characteristic)
-            } catch (e: Exception) {
-                throw BluetoothException(e)
-            }
-            check(success) {
-                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-            }
-        }
+        NativeOperationMutex.withLock {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+                when (result) {
+                    BluetoothStatusCodes.SUCCESS -> { /* no-op */
+                    }
 
-        // Await the write operation result.
-        events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(CharacteristicWrite::class)
-            .filter { it.characteristic == characteristic }
-            .firstOrNull()
-            ?.let {
-                when (it.status) {
-                    OperationStatus.SUCCESS -> return
-                    else -> throw OperationFailedException(it.status)
+                    BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED -> throw OperationFailedException(
+                        OperationStatus.WRITE_NOT_PERMITTED
+                    )
+
+                    BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY -> throw OperationFailedException(
+                        OperationStatus.BUSY
+                    )
+
+                    else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            } else {
+                val success = try {
+                    characteristic.value = data
+                    characteristic.writeType = writeType.toInt()
+                    gatt.writeCharacteristic(characteristic)
+                } catch (e: Exception) {
+                    throw BluetoothException(e)
+                }
+                check(success) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                 }
             }
-            ?: throw PeripheralNotConnectedException()
+
+            // Await the write operation result.
+            events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(CharacteristicWrite::class)
+                .filter { it.characteristic == characteristic }
+                .firstOrNull()
+                ?.let {
+                    check(it.status == OperationStatus.SUCCESS) {
+                        throw OperationFailedException(it.status)
+                    }
+                }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     override suspend fun subscribe(): Flow<ByteArray> {
