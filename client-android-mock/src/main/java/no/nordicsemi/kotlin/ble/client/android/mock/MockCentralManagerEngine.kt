@@ -51,6 +51,22 @@ import no.nordicsemi.kotlin.ble.core.Manager
 
 
 /**
+ * Creates an implementation of the [CentralManager] which is using native Android API to
+ * scan and connect to physical Bluetooth LE devices.
+ *
+ * @param scope The coroutine scope.
+ * @property initialState The initial state of the Central Manager,
+ * defaults to [Manager.State.POWERED_ON].
+ * @property environment The environment to use for the mock, defaults to the latest supported API.
+ */
+fun CentralManager.Factory.mock(
+    scope: CoroutineScope,
+    initialState: Manager.State = Manager.State.POWERED_ON,
+    environment: MockEnvironment = MockEnvironment.Api31()
+) =
+    CentralManager(MockCentralManagerEngine(scope, initialState, environment))
+
+/**
  * A mock implementation of [GenericCentralManager] for Android.
  *
  * @param scope The coroutine scope.
