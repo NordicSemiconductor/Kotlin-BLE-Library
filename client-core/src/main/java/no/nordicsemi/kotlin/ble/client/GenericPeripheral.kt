@@ -229,7 +229,12 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
             }
             _state.update { event.newState }
         }
-        is ServicesChanged -> _services.update {
+        ServicesChanged -> {
+            invalidateServices()
+            discoverServices()
+        }
+        is ServicesDiscovered -> _services.update {
+            // Assign the owner to each service, making them valid.
             event.services.onEach { it.owner = this }
         }
         else -> { /* Ignore */ }
@@ -241,9 +246,30 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
      * It should reset data associated with the connection.
      */
     protected open fun handleDisconnection() {
-        _services.value.onEach { it.owner = null}
+        invalidateServices()
+    }
+
+    /**
+     * Invalidates current GATT services.
+     */
+    private fun invalidateServices() {
+        logger.trace("Services changed")
+        _services.value.onEach { it.owner = null }
         _services.update { emptyList() }
         servicesDiscovered = false
+    }
+
+    /**
+     * Initiates service discovery on the peripheral.
+     *
+     * This method does nothing if [servicesDiscovered] is `true`.
+     */
+    private fun discoverServices() {
+        if (!servicesDiscovered) {
+            servicesDiscovered = true
+            logger.trace("Discovering services")
+            impl.discoverServices()
+        }
     }
 
     /**
@@ -271,11 +297,7 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
             throw PeripheralNotConnectedException()
         }
         // First call to this method triggers service discovery.
-        if (!servicesDiscovered) {
-            servicesDiscovered = true
-            logger.trace("Discovering services with filter: {}", uuids)
-            impl.discoverServices()
-        }
+        discoverServices()
 
         // If there is no filter, return the original flow.
         if (uuids.isEmpty()) {

@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RssiRead
+import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.MtuChanged
@@ -72,15 +73,15 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         logger.debug("onServicesDiscovered: status=$status")
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("Services discovery failed with status $status")
-            _events.tryEmit(ServicesChanged(emptyList()))
+            _events.tryEmit(ServicesDiscovered(emptyList()))
             return
         }
-        _events.tryEmit(ServicesChanged(gatt.services.map { NativeRemoteService(gatt, it, events) }))
+        _events.tryEmit(ServicesDiscovered(gatt.services.map { NativeRemoteService(gatt, it, events) }))
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
         logger.debug("onServiceChanged")
-        // TODO: call discoverServices() and repopulate services
+        _events.tryEmit(ServicesChanged)
     }
 
     // Handling value changes.

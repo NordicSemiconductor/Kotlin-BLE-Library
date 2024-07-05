@@ -61,7 +61,12 @@ data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
  *
  * @param services The list of discovered remote services.
  */
-data class ServicesChanged(val services: List<RemoteService>) : GattEvent()
+data class ServicesDiscovered(val services: List<RemoteService>) : GattEvent()
+
+/**
+ * Event indicating that the services have changed.
+ */
+data object ServicesChanged : GattEvent()
 
 /**
  * Event indicating that the RSSI value has been read.

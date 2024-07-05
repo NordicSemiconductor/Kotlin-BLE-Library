@@ -49,7 +49,7 @@ import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.RssiRead
-import no.nordicsemi.kotlin.ble.client.ServicesChanged
+import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
 import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.MtuChanged
@@ -115,7 +115,7 @@ private class StubExecutor(
     }
 
     override fun discoverServices() {
-        _events.tryEmit(ServicesChanged(initialServices))
+        _events.tryEmit(ServicesDiscovered(initialServices))
     }
 
     override fun requestConnectionPriority(priority: ConnectionPriority) {
