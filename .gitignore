@@ -54,6 +54,7 @@ captures/
 *.ipr
 *~
 *.swp
+.kotlin
 
 # Keystore files
 *.jks
