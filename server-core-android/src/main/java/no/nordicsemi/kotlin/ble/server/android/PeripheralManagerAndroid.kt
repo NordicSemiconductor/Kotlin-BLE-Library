@@ -54,7 +54,7 @@ interface PeripheralManagerAndroid: PeripheralManager<String, CentralAndroid> {
 /**
  * An event indicating a connection event.
  */
-sealed class ConnectionEvent<ID, C: Central<ID>> (
+sealed class ConnectionEvent<ID: Any, C: Central<ID>> (
     val device: C
 )
 

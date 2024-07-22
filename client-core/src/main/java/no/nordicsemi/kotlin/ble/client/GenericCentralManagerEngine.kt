@@ -50,7 +50,7 @@ import kotlin.time.Duration
  * @property scope The coroutine scope.
  */
 abstract class GenericCentralManagerEngine<
-        ID,
+        ID: Any,
         P: GenericPeripheral<ID, EX>,
         EX: GenericPeripheral.GenericExecutor<ID>,
         F: GenericCentralManager.ScanFilterScope,

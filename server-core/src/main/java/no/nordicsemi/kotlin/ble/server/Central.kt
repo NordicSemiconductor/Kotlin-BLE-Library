@@ -41,7 +41,7 @@ import no.nordicsemi.kotlin.ble.core.Peer
  * The [Central] class represents remote central devices (or centrals) that have connected to
  * an app implementing the peripheral role on a local device.
  */
-interface Central<ID>: Peer<ID> {
+interface Central<ID: Any>: Peer<ID> {
 
     /**
      * The maximum amount of data, in bytes, that the central can receive in a single

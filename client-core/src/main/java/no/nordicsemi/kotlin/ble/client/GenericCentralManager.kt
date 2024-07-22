@@ -53,7 +53,7 @@ import kotlin.time.Duration
  * @property engine The engine that performs the operations.
  */
 abstract class GenericCentralManager<
-        ID,
+        ID: Any,
         P: GenericPeripheral<ID, EX>,
         EX: GenericPeripheral.GenericExecutor<ID>,
         F: GenericCentralManager.ScanFilterScope,
@@ -76,7 +76,7 @@ abstract class GenericCentralManager<
      * @return List of peripherals. The list may have a smaller size than the input list.
      * @see [Peer.identifier]
      */
-    fun getPeripheralsById(ids: List<ID & Any>): List<P> = engine.getPeripheralsById(ids)
+    fun getPeripheralsById(ids: List<ID>): List<P> = engine.getPeripheralsById(ids)
 
     /**
      * Returns a list of peripherals discovered by this instance of the Central Manager.
@@ -85,7 +85,7 @@ abstract class GenericCentralManager<
      * @return A peripheral associated with the given UUID, if found.
      * @see [Peer.identifier]
      */
-    fun getPeripheralById(id: ID & Any): P? = getPeripheralsById(listOf(id)).firstOrNull()
+    fun getPeripheralById(id: ID): P? = getPeripheralsById(listOf(id)).firstOrNull()
 
     /**
      * Scans for Bluetooth LE devices.

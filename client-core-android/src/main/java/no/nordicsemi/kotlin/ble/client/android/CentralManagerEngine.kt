@@ -45,7 +45,7 @@ import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
  * @param scope The coroutine scope.
  * @param context The context.
  */
-abstract class CentralManagerEngine<C>(
+abstract class CentralManagerEngine<C: Any>(
     scope: CoroutineScope,
     private val context: C,
 ): GenericCentralManagerEngine<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope) {

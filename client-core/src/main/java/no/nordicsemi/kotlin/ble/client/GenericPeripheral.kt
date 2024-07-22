@@ -71,7 +71,7 @@ import kotlin.time.Duration.Companion.milliseconds
  * @property state The connection state of the peripheral, as [StateFlow]. The flow emits a new
  * value whenever the state of the peripheral changes.
  */
-abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
+abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<ID>>(
     protected val scope: CoroutineScope,
     protected val impl: EX,
 ): Peer<ID> {
@@ -110,7 +110,7 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
      *
      * The implementation should initiate requests and report events using [events] flow.
      */
-    interface GenericExecutor<ID> {
+    interface GenericExecutor<ID: Any> {
         /** The peripheral identifier. */
         val identifier: ID
 
@@ -393,5 +393,16 @@ abstract class GenericPeripheral<ID, EX: GenericPeripheral.GenericExecutor<ID>>(
         }
         close()
         logger.trace("Disconnected from {}", this)
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is GenericPeripheral<*, *>) return false
+
+        return identifier == other.identifier
+    }
+
+    override fun hashCode(): Int {
+        return identifier.hashCode()
     }
 }

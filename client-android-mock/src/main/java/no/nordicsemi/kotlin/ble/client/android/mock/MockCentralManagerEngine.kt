@@ -79,7 +79,7 @@ open class MockCentralManagerEngine(
     scope: CoroutineScope,
     private val initialState: Manager.State = Manager.State.POWERED_ON,
     private val environment: MockEnvironment = MockEnvironment.Api31(),
-): CentralManagerEngine<Any>(scope, 1) {
+): CentralManagerEngine<Unit>(scope, Unit) {
 
     /**
      * Simulates a state change in the central manager.

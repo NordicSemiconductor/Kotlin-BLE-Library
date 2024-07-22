@@ -38,6 +38,6 @@ package no.nordicsemi.kotlin.ble.core
  *
  * @property identifier A platform-specific unique device identifier.
  */
-interface Peer<ID> {
+interface Peer<ID: Any> {
     val identifier: ID
 }
