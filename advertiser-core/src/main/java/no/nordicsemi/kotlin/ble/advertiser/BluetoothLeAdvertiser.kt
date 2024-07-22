@@ -59,6 +59,7 @@ interface BluetoothLeAdvertiser<P: BluetoothLeAdvertiser.Parameters, D: Bluetoot
 
     /**
      * Base class for the advertising data.
+     *
      * Different OSes may allow different types of data to be advertised.
      */
     interface Payload

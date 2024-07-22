@@ -35,25 +35,34 @@ import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
 import java.util.UUID
 
 /**
- * Advertise data packet container for Bluetooth LE advertising.
+ * Advertising payload for Bluetooth LE advertising.
  *
  * This represents the data to be advertised in the Advertising Data as well as the Scan Response
  * data.
  *
- * @property includeDeviceName Whether the device name should be included in advertise packet.
- * @property includeTxPowerLever Whether the TX power level should be included in the
- *                               advertising packet.
- * @property serviceUuids A list of service UUID to advertise.
- * @property serviceSolicitationUuids Service solicitation UUID to advertise data.
- * @property manufacturerData Manufacturer specific data. The keys should be the Company ID as
- *                            defined in Assigned Numbers.
- * @property serviceData Service data to be advertised.
+ * @property advertisingData The data to be advertised in the Advertising Data.
+ * @property scanResponse An optional data to be advertised in the Scan Response.
  */
 data class AdvertisingPayload(
     val advertisingData: AdvertisingData,
     val scanResponse: AdvertisingData? = null,
 ): BluetoothLeAdvertiser.Payload {
 
+    /**
+     * Advertise data packet container for Bluetooth LE advertising.
+     *
+     * This represents the data to be advertised in the Advertising Data as well as the Scan Response
+     * data.
+     *
+     * @property includeDeviceName Whether the device name should be included in advertise packet.
+     * @property includeTxPowerLevel Whether the TX power level should be included in the
+     *                               advertising packet.
+     * @property serviceUuids A list of service UUID to advertise.
+     * @property serviceSolicitationUuids Service solicitation UUID to advertise data.
+     * @property serviceData Service data to be advertised.
+     * @property manufacturerData Manufacturer specific data. The keys should be the Company ID as
+     *                            defined in Assigned Numbers.
+     */
     data class AdvertisingData(
         val includeDeviceName: Boolean = false,
         val includeTxPowerLevel: Boolean = false,
