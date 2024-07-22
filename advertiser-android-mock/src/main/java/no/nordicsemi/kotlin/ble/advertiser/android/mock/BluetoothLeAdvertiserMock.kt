@@ -31,14 +31,14 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
-import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiserAndroid
-import org.jetbrains.annotations.Range
+import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.coroutines.suspendCoroutine
 
 
 /**
@@ -46,32 +46,14 @@ import org.slf4j.LoggerFactory
  *
  * The behavior of a mock advertiser should mimic one from the same Android version.
  *
- * @param multipleAdvertisementSupported Whether the mock device should support multiple advertisements.
- * @param leExtendedAdvertisingSupported Whether the mock device should support Advertising Extension
- *        from Bluetooth 5.
- * @param le2MPhySupported Whether the mock device should support PHY LE 2M.
- * @param leCodedPhySupported Whether the mock device should support PHY LE Coded.
- * @param leMaximumAdvertisingDataLength Maximum length of the advertising data. For legacy advertising
- *        this is set to 31 bytes per packet.
- * @param bluetoothAdvertisePermissionGranted Whether the mock device should emulate the permission
- *        to advertise granted, or not.
+ * @param environment The mock environment to use.
  * @return A mock instance of the [BluetoothLeAdvertiserAndroid].
  */
 @Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.mock(
-    multipleAdvertisementSupported: Boolean = true,
-    leExtendedAdvertisingSupported: Boolean = true,
-    le2MPhySupported: Boolean = true,
-    leCodedPhySupported: Boolean = true,
-    leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 1650,
-    bluetoothAdvertisePermissionGranted: Boolean = true,
+    environment: MockEnvironment = MockEnvironment.Api31(),
 ): BluetoothLeAdvertiserAndroid = BluetoothLeAdvertiserMock(
-    multipleAdvertisementSupported = multipleAdvertisementSupported,
-    leExtendedAdvertisingSupported = leExtendedAdvertisingSupported,
-    le2MPhySupported = le2MPhySupported,
-    leCodedPhySupported = leCodedPhySupported,
-    leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
-    bluetoothAdvertisePermissionGranted = bluetoothAdvertisePermissionGranted,
+    environment = environment
 )
 
 /**
@@ -80,12 +62,7 @@ fun BluetoothLeAdvertiser.Factory.mock(
  * Use this implementation to emulate Bluetooth LE advertising in tests.
  */
 class BluetoothLeAdvertiserMock internal constructor(
-    val multipleAdvertisementSupported: Boolean,
-    val leExtendedAdvertisingSupported: Boolean,
-    val le2MPhySupported: Boolean,
-    val leCodedPhySupported: Boolean,
-    val leMaximumAdvertisingDataLength: Int,
-    val bluetoothAdvertisePermissionGranted: Boolean,
+    val environment: MockEnvironment,
 ): BluetoothLeAdvertiserAndroid {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserMock::class.java)
 
@@ -95,10 +72,13 @@ class BluetoothLeAdvertiserMock internal constructor(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         block: ((txPower: Int) -> Unit)?
-    ) = suspendCancellableCoroutine<Unit> { continuation ->
+    ) = suspendCoroutine<Unit> { continuation ->
         // Mocking advertising has no impact on other features.
         // Local advertising is not visible on scanner nor can be used to connect.
         // Let's just pretend advertising has started.
         logger.info("Advertising initiated")
+
+        // TODO implement validation using above environment variables
+        // TODO implement timeout
     }
 }

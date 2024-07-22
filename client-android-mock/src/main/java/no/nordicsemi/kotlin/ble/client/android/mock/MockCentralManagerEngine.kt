@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
 import no.nordicsemi.kotlin.ble.client.android.CentralManager

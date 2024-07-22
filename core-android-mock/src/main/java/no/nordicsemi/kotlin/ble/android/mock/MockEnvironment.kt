@@ -31,9 +31,9 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.client.android.mock
+package no.nordicsemi.kotlin.ble.android.mock
 
-import no.nordicsemi.kotlin.ble.core.Manager
+import org.jetbrains.annotations.Range
 
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
@@ -49,9 +49,15 @@ import no.nordicsemi.kotlin.ble.core.Manager
  * advertising on LE Coded PHY as Primary PHY.
  * @property isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
  * @property isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
+ * @property isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+ * @property isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
+ * @property leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
+ * if LE Extended Advertising feature is supported.
+ * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
  */
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
+    // Client variables
     val isBluetoothSupported: Boolean = true,
     val isLocationRequiredForScanning: Boolean = false,
     val isLocationPermissionGranted: Boolean = false,
@@ -61,17 +67,25 @@ sealed class MockEnvironment(
     val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val isBluetoothScanPermissionGranted: Boolean = false,
     val isBluetoothConnectPermissionGranted: Boolean = false,
+    // Advertiser variables
+    val isMultipleAdvertisementSupported: Boolean,
+    val isLeExtendedAdvertisingSupported: Boolean = false,
+    val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
+    val isBluetoothAdvertisePermissionGranted: Boolean = false,
 ) {
     /**
      * A mock environment for Android API 21 (Lollipop).
      *
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      */
     class Api21(
         isBluetoothSupported: Boolean = true,
+        isMultipleAdvertisementSupported: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 21 /* Lollipop */,
         isBluetoothSupported = isBluetoothSupported,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
     )
 
     /**
@@ -80,17 +94,19 @@ sealed class MockEnvironment(
      * Since Android 6.0, location is required to scan for Bluetooth devices.
      *
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      */
     class Api23(
-        initialState: Manager.State = Manager.State.POWERED_ON,
         isBluetoothSupported: Boolean = true,
+        isMultipleAdvertisementSupported: Boolean = true,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 23 /* Marshmallow */,
         isBluetoothSupported = isBluetoothSupported,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -104,6 +120,10 @@ sealed class MockEnvironment(
      * on LE Coded PHY as Primary PHY despite supporting LE Coded PHY.
      *
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+     * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
+     * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
+     * if LE Extended Advertising feature is supported.
      * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
@@ -113,6 +133,10 @@ sealed class MockEnvironment(
      */
     class Api26(
         isBluetoothSupported: Boolean = true,
+        isMultipleAdvertisementSupported: Boolean = true,
+        isLeExtendedAdvertisingSupported: Boolean = true,
+        leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
+            if (isLeExtendedAdvertisingSupported) 1650 else 31,
         isLe2MPhySupported: Boolean = true,
         isLeCodedPhySupported: Boolean = true,
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
@@ -121,6 +145,9 @@ sealed class MockEnvironment(
     ): MockEnvironment(
         androidSdkVersion = 26 /* Oreo */,
         isBluetoothSupported = isBluetoothSupported,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
+        isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -142,6 +169,10 @@ sealed class MockEnvironment(
      * * [`neverForLocation flag`](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions#assert-never-for-location)
      *
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+     * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
+     * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
+     * if LE Extended Advertising feature is supported.
      * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
@@ -155,17 +186,25 @@ sealed class MockEnvironment(
      */
     class Api31(
         isBluetoothSupported: Boolean = true,
+        isMultipleAdvertisementSupported: Boolean = true,
+        isLeExtendedAdvertisingSupported: Boolean = true,
+        leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
+            if (isLeExtendedAdvertisingSupported) 1650 else 31,
         isLe2MPhySupported: Boolean = true,
         isLeCodedPhySupported: Boolean = true,
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
         isBluetoothScanPermissionGranted: Boolean = true,
         isBluetoothConnectPermissionGranted: Boolean = true,
+        isBluetoothAdvertisePermissionGranted: Boolean = true,
         usesLeScanningForLocation: Boolean = false,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 31 /* S */,
         isBluetoothSupported = isBluetoothSupported,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
+        isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
         isLocationRequiredForScanning = !usesLeScanningForLocation,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -174,6 +213,7 @@ sealed class MockEnvironment(
         isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
         isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
         isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
+        isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
     )
 
 }

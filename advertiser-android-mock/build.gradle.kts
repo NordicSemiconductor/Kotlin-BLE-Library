@@ -48,6 +48,7 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":advertiser-core-android"))
+    api(project(":core-android-mock"))
 
     implementation(libs.slf4j)
 }

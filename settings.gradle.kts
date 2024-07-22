@@ -53,7 +53,7 @@ rootProject.name = "Kotlin-BLE-Library"
 
 include(":core")
 include(":core-android")
-include(":core-mock")
+include(":core-android-mock")
 
 include(":advertiser-core")
 include(":advertiser-core-android")

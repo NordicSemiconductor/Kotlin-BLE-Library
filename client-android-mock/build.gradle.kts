@@ -48,6 +48,7 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":client-core-android"))
-    implementation(project(":core-mock"))
+    api(project(":core-android-mock"))
+
     implementation(libs.slf4j)
 }
