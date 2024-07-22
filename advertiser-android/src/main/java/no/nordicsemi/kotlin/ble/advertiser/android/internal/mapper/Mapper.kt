@@ -36,14 +36,16 @@ import android.bluetooth.le.AdvertiseCallback
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
-import no.nordicsemi.kotlin.ble.core.Phy
-import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingInterval
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.TxPowerLevel
-import kotlin.math.min
+import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import android.bluetooth.le.AdvertiseData as NativeAdvertiseData
 import android.bluetooth.le.AdvertiseSettings as NativeAdvertiseSettings
 import android.bluetooth.le.AdvertisingSetParameters as NativeAdvertisingSetParameters
@@ -82,17 +84,18 @@ internal fun AdvertisingSetParameters.toLegacy(): NativeAdvertiseSettings {
             setDiscoverable(discoverable)
         }
 
-        fun Int.toTimeout(interval: Int) = this * interval + 50
-        val timeout: Int = when {
-            // If both timeout and maxAdvertisingEvents are 0, there's no timeout.
-            timeoutMillis == 0 && maxAdvertisingEvents == 0 -> 0
-            // If timeout is set, use it.
-            timeoutMillis > 0 && maxAdvertisingEvents == 0 -> timeoutMillis
+        fun Int.toTimeout(interval: Int) = interval.milliseconds * this
+        val noTimeout = !timeout.isPositive()
+        val timeout: Duration = when {
+            // If maxAdvertisingEvents is not set, use timeout.
+            maxAdvertisingEvents <= 0 -> timeout.coerceAtLeast(Duration.ZERO)
             // If maxAdvertisingEvents is set, convert it to timeout using the advertising interval.
-            maxAdvertisingEvents > 0 && timeoutMillis == 0 -> maxAdvertisingEvents.toTimeout(interval.millis)
-            else -> min(timeoutMillis, maxAdvertisingEvents.toTimeout(interval.millis))
+            noTimeout -> maxAdvertisingEvents.toTimeout(interval.millis)
+            // Else, use the minimum of the two.
+            else -> maxAdvertisingEvents.toTimeout(interval.millis).coerceAtMost(timeout)
         }
-        setTimeout(min(timeout, 180_0000))
+        // Maximum timeout for legacy advertising is 180 seconds.
+        setTimeout(timeout.coerceAtMost(180.seconds).inWholeMilliseconds.toInt())
     }.build()
 }
 

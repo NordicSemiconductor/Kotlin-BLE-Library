@@ -31,38 +31,21 @@
 
 package no.nordicsemi.kotlin.ble.advertiser
 
-/**
- * Base advertiser interface.
- */
-interface BluetoothLeAdvertiser<P: BluetoothLeAdvertiser.Parameters, D: BluetoothLeAdvertiser.Payload> {
+data class InvalidAdvertisingDataException(
+    val reason: Reason
+): IllegalStateException("Invalid advertising data or payload, reason: $reason") {
 
     /**
-     * Starts Bluetooth LE advertising using given parameters.
-     *
-     * @param parameters Advertising parameters describing how the data are to be advertised.
-     * @param payload Advertising data to be broadcast.
-     * @param block A block that will be called when the advertising is started. The block will
-     *              receive the actual TX power (in dBm) used for advertising.
-     * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
+     * Advertising error.
      */
-    suspend fun advertise(
-        parameters: P,
-        payload: D,
-        block: ((txPower: Int) -> Unit)? = null,
-    )
-
-    companion object Factory
-
-    /**
-     * Advertising set parameters define how the data should be advertised.
-     */
-    interface Parameters
-
-    /**
-     * Base class for the advertising data.
-     *
-     * Different OSes may allow different types of data to be advertised.
-     */
-    interface Payload
+    enum class Reason {
+        /** Failed to start advertising as the advertise data to be broadcast is larger than 31 bytes. */
+        DATA_TOO_LARGE,
+        /** Requested PHY is not supported on this platform. */
+        PHY_NOT_SUPPORTED,
+        /** Periodic advertising is not supported on this platform. */
+        EXTENDED_ADVERTISING_NOT_SUPPORTED,
+        /** Failed to start advertising due to illegal parameters. */
+        ILLEGAL_PARAMETERS,
+    }
 }

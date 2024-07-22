@@ -80,7 +80,10 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 AdvertisingDataValidator(
                     le2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
                     leCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
-                    lePeriodicAdvertisingSupported = bluetoothAdapter.isLePeriodicAdvertisingSupported,
+                    // Up until Android 15 BluetoothLeAdvertiser was checking
+                    // if periodic advertising is supported, not extended advertising:
+                    // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
+                    isLeExtendedAdvertisingSupported = bluetoothAdapter.isLePeriodicAdvertisingSupported,
                     leMaximumAdvertisingDataLength = bluetoothAdapter.leMaximumAdvertisingDataLength,
                     deviceName = name ?: ""
                 )
@@ -88,7 +91,7 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 AdvertisingDataValidator(
                     le2MPhySupported = false,
                     leCodedPhySupported = false,
-                    lePeriodicAdvertisingSupported = false,
+                    isLeExtendedAdvertisingSupported = false,
                     leMaximumAdvertisingDataLength = 31,
                     deviceName = name ?: ""
                 )

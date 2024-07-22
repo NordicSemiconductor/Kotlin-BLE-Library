@@ -35,6 +35,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
 import org.jetbrains.annotations.Range
+import kotlin.time.Duration
 
 /**
  * The class provide a way to adjust advertising preferences for each Bluetooth LE
@@ -43,8 +44,8 @@ import org.jetbrains.annotations.Range
  * @property txPowerLevel The TX power level ([TxPowerLevel]) for advertising.
  * @property interval The advertising interval ([AdvertisingInterval]).
  * @property connectable Whether the advertisement will be connectable.
- * @property timeoutMillis Advertising time limit. May not exceed 180000 milliseconds. A value
- *                         of 0 will disable the time limit.
+ * @property timeout Advertising time limit. May not exceed 180000 ms on Android 5-7 and
+ *                   655350 ms on Android 8+. By default there is no timeout set.
  * @property maxAdvertisingEvents The maximum number of advertising events. A value of 0 means
  *                         no maximum limit.
  * @property legacy Whether the legacy advertisement will be used.
@@ -61,7 +62,7 @@ data class AdvertisingSetParameters(
     val txPowerLevel: TxPowerLevel = TxPowerLevel.TX_POWER_HIGH,
     val interval: AdvertisingInterval = AdvertisingInterval.INTERVAL_MEDIUM,
     val connectable: Boolean,
-    val timeoutMillis: @Range(from = 0L, to = 655350L) Int = 0,
+    val timeout: Duration = Duration.INFINITE,
     val maxAdvertisingEvents: @Range(from = 0L, to = 255L) Int = 0,
 
     // Available only on Android 8.0+.

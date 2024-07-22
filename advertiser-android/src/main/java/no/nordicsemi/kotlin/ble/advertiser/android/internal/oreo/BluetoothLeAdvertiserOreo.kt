@@ -40,6 +40,7 @@ import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
@@ -159,6 +160,8 @@ internal class BluetoothLeAdvertiserOreo(
                     payload.scanResponse?.toNative(),
                     null,
                     null,
+                    parameters.timeout.inWholeMilliseconds.toInt(),
+                    parameters.maxAdvertisingEvents,
                     callback,
                 )
                 logger.info("Advertising initiated")
@@ -169,13 +172,15 @@ internal class BluetoothLeAdvertiserOreo(
                 // To get the actual reason, we need to check the messages. Seriously...
                 // (that's why we do initial validation above)
                 if (e.message?.contains("too big") == true) {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.DATA_TOO_LARGE)
+                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.DATA_TOO_LARGE)
+                } else if (e.message?.contains("PHY") == true) {
+                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.PHY_NOT_SUPPORTED)
                 } else if (e.message?.contains("support") == true) {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.FEATURE_UNSUPPORTED)
+                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
                 } else if (e.message?.contains("callback") == true) {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.ALREADY_STARTED)
+                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.INTERNAL_ERROR)
                 } else if (e.message?.contains("out of range") == true) {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.ILLEGAL_PARAMETERS)
+                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.ILLEGAL_PARAMETERS)
                 } else {
                     continuation.resumeWithReason(AdvertisingNotStartedException.Reason.UNKNOWN)
                 }
@@ -197,4 +202,8 @@ internal class BluetoothLeAdvertiserOreo(
     private fun CancellableContinuation<Unit>.resumeWithReason(
         reason: AdvertisingNotStartedException.Reason
     ) = resumeWithException(AdvertisingNotStartedException(reason = reason))
+
+    private fun CancellableContinuation<Unit>.resumeWithReason(
+        reason: InvalidAdvertisingDataException.Reason
+    ) = resumeWithException(InvalidAdvertisingDataException(reason = reason))
 }

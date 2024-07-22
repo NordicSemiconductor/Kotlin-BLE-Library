@@ -31,31 +31,45 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException.*
+import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
+import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException.Reason
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
 import org.jetbrains.annotations.Range
+import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * A class that validates advertising data for given environment.
+ */
 class AdvertisingDataValidator(
     private val le2MPhySupported: Boolean,
     private val leCodedPhySupported: Boolean,
-    private val lePeriodicAdvertisingSupported: Boolean,
+    private val isLeExtendedAdvertisingSupported: Boolean,
     private val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int,
     private val deviceName: String,
 ) {
     companion object {
+        /** The maximum number of bytes in the advertising data or scan response. */
         private const val MAX_LEGACY_ADVERTISING_DATA_BYTES = 31
 
-        // Each fields need one byte for field length and another byte for field type.
+        // Each field needs one byte for field length and another byte for field type.
         private const val OVERHEAD_BYTES_PER_FIELD = 2
 
         // Flags field will be set by system.
         private const val FLAGS_FIELD_BYTES = 3
+
+        // Company Identifiers are 2 bytes long Bluetooth SIG assigned numbers.
         private const val MANUFACTURER_SPECIFIC_DATA_LENGTH = 2
     }
 
+    /**
+     * Validates the advertising parameters and payload.
+     *
+     * @param parameters The advertising parameters.
+     * @param payload The advertising payload.
+     * @throws InvalidAdvertisingDataException If the parameters or payload are invalid.
+     */
     fun validate(parameters: AdvertisingSetParameters, payload: AdvertisingPayload) {
         // Android adds flags automatically when advertising is connectable and discoverable.
         val isConnectable = parameters.connectable
@@ -65,38 +79,38 @@ class AdvertisingDataValidator(
         // Check data length and optional features.
         if (parameters.legacy) {
             if (totalBytes(payload.advertisingData, hasFlags) > MAX_LEGACY_ADVERTISING_DATA_BYTES) {
-                throw AdvertisingNotStartedException(Reason.DATA_TOO_LARGE)
+                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
             if (totalBytes(payload.scanResponse, false) > MAX_LEGACY_ADVERTISING_DATA_BYTES) {
-                throw AdvertisingNotStartedException(Reason.DATA_TOO_LARGE)
+                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
         } else {
             if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED && !leCodedPhySupported) {
-                throw AdvertisingNotStartedException(Reason.FEATURE_UNSUPPORTED)
+                throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
             }
             if (parameters.secondaryPhy == Phy.PHY_LE_CODED && !leCodedPhySupported ||
                 parameters.secondaryPhy == Phy.PHY_LE_2M && !le2MPhySupported) {
-                throw AdvertisingNotStartedException(Reason.FEATURE_UNSUPPORTED)
+                throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
             }
             if (totalBytes(payload.advertisingData, hasFlags) > leMaximumAdvertisingDataLength) {
-                throw AdvertisingNotStartedException(Reason.DATA_TOO_LARGE)
+                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
             if (totalBytes(payload.scanResponse, false) > leMaximumAdvertisingDataLength) {
-                throw AdvertisingNotStartedException(Reason.DATA_TOO_LARGE)
+                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
         }
 
         // Check other parameters.
         if (parameters.maxAdvertisingEvents < 0 || parameters.maxAdvertisingEvents > 255) {
-            throw AdvertisingNotStartedException(Reason.ILLEGAL_PARAMETERS)
+            throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
         }
 
-        if (parameters.maxAdvertisingEvents != 0 && !lePeriodicAdvertisingSupported) {
-            throw AdvertisingNotStartedException(Reason.FEATURE_UNSUPPORTED)
+        if (parameters.maxAdvertisingEvents != 0 && !isLeExtendedAdvertisingSupported) {
+            throw InvalidAdvertisingDataException(Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
         }
 
-        if (parameters.timeoutMillis < 0 || parameters.timeoutMillis > 655350) {
-            throw AdvertisingNotStartedException(Reason.ILLEGAL_PARAMETERS)
+        if (parameters.timeout.isNegative() || parameters.timeout > 655350.milliseconds) {
+            throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
         }
     }
 
