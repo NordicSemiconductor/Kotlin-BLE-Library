@@ -55,6 +55,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
@@ -76,7 +77,7 @@ class ScannerViewModel @Inject constructor(
         _devices.update { listOf(PreviewPeripheral(scope)) }
         _isScanning.update { true }
         centralManager
-            .scan(1250) {
+            .scan(1250.milliseconds) {
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")

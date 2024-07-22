@@ -48,6 +48,7 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.GenericCentralManager
 import no.nordicsemi.kotlin.ble.core.Manager
+import kotlin.time.Duration
 
 
 /**
@@ -110,20 +111,20 @@ open class MockCentralManagerEngine(
     }
 
     override fun scan(
-        timeoutMillis: Long,
+        timeout: Duration,
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<ScanResult> {
         TODO("Not yet implemented")
     }
 
     override fun monitor(
-        timeoutMillis: Long,
+        timeout: Duration,
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<MonitoringEvent<Peripheral>> {
         TODO("Not yet implemented")
     }
 
-    override fun range(peripheral: Peripheral, timeoutMillis: Long): Flow<RangeEvent<Peripheral>> {
+    override fun range(peripheral: Peripheral, timeout: Duration): Flow<RangeEvent<Peripheral>> {
         TODO("Not yet implemented")
     }
 

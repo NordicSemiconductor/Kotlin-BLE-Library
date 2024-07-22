@@ -71,6 +71,8 @@ import no.nordicsemi.kotlin.ble.core.Manager.State.UNKNOWN
 import no.nordicsemi.kotlin.ble.core.Manager.State.UNSUPPORTED
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import org.slf4j.LoggerFactory
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import android.bluetooth.le.ScanCallback as NativeScanCallback
 import android.bluetooth.le.ScanResult as NativeScanResult
 import android.bluetooth.le.ScanSettings as NativeScanSettings
@@ -198,7 +200,7 @@ open class NativeCentralManagerEngine(
     }
 
     override fun scan(
-        timeoutMillis: Long,
+        timeout: Duration,
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<ScanResult> = callbackFlow {
         // Ensure the central manager has not been closed.
@@ -261,13 +263,13 @@ open class NativeCentralManagerEngine(
         scanner.startScan(scanFilters, settings, callback)
 
         // Set a timeout to stop the scan.
-        if (timeoutMillis > 0) {
+        if (timeout > 0.milliseconds) {
             launch(Dispatchers.IO) {
                 // If the flow is cancelled before the timeout, the delay() method will throw
                 // a CancellationException, which will be ignored.
-                delay(timeoutMillis)
+                delay(timeout)
                 // If we reached the timeout, close the flow manually.
-                logger.trace("Scanning timed out after {} ms", timeoutMillis)
+                logger.trace("Scanning timed out after {}", timeout)
                 close()
             }
         }
@@ -278,13 +280,13 @@ open class NativeCentralManagerEngine(
     }
 
     override fun monitor(
-        timeoutMillis: Long,
+        timeout: Duration,
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<MonitoringEvent<Peripheral>> {
         TODO("Not yet implemented")
     }
 
-    override fun range(peripheral: Peripheral, timeoutMillis: Long): Flow<RangeEvent<Peripheral>> {
+    override fun range(peripheral: Peripheral, timeout: Duration): Flow<RangeEvent<Peripheral>> {
         TODO("Not yet implemented")
     }
 

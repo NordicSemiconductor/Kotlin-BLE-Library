@@ -38,6 +38,7 @@ import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Engine
 import no.nordicsemi.kotlin.ble.core.Peer
 import java.io.Closeable
+import kotlin.time.Duration
 
 /**
  * An engine is responsible for scanning, monitoring and connecting to Bluetooth LE devices.
@@ -74,13 +75,13 @@ abstract class GenericCentralManagerEngine<
      *
      * The scan will be stopped after the given period of time or when the flow is cancelled.
      *
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    abstract fun scan(timeoutMillis: Long = 0L, filter: F.() -> Unit = {}): Flow<SR>
+    abstract fun scan(timeout: Duration = Duration.INFINITE, filter: F.() -> Unit = {}): Flow<SR>
 
     /**
      * Starts monitoring for Bluetooth LE devices.
@@ -90,13 +91,13 @@ abstract class GenericCentralManagerEngine<
      *
      * The scan will be stopped after the given period of time or when the flow is cancelled.
      *
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    abstract fun monitor(timeoutMillis: Long = 0L, filter: F.() -> Unit): Flow<MonitoringEvent<P>>
+    abstract fun monitor(timeout: Duration = Duration.INFINITE, filter: F.() -> Unit): Flow<MonitoringEvent<P>>
 
     /**
      * Starts ranging for Bluetooth LE devices.
@@ -106,12 +107,12 @@ abstract class GenericCentralManagerEngine<
      *
      * The flow is closed automatically when the peripheral leaves range of the monitoring device.
      * @param peripheral The peripheral to range.
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    abstract fun range(peripheral: P, timeoutMillis: Long = 0L): Flow<RangeEvent<P>>
+    abstract fun range(peripheral: P, timeout: Duration = Duration.INFINITE): Flow<RangeEvent<P>>
 
     /**
      * Connects to the given device.

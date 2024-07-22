@@ -40,6 +40,7 @@ import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
 import java.io.Closeable
+import kotlin.time.Duration
 
 /**
  * A central manager is responsible for scanning, monitoring and connecting to Bluetooth LE devices.
@@ -75,7 +76,7 @@ abstract class GenericCentralManager<
      * @return List of peripherals. The list may have a smaller size than the input list.
      * @see [Peer.identifier]
      */
-    fun getPeripheralsById(ids: List<ID>): List<P> = engine.getPeripheralsById(ids)
+    fun getPeripheralsById(ids: List<ID & Any>): List<P> = engine.getPeripheralsById(ids)
 
     /**
      * Returns a list of peripherals discovered by this instance of the Central Manager.
@@ -84,21 +85,21 @@ abstract class GenericCentralManager<
      * @return A peripheral associated with the given UUID, if found.
      * @see [Peer.identifier]
      */
-    fun getPeripheralById(id: ID): P? = getPeripheralsById(listOf(id)).firstOrNull()
+    fun getPeripheralById(id: ID & Any): P? = getPeripheralsById(listOf(id)).firstOrNull()
 
     /**
      * Scans for Bluetooth LE devices.
      *
      * The scan will be stopped after the given period of time or when the flow is cancelled.
      *
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    fun scan(timeoutMillis: Long = 0L, filter: F.() -> Unit = {}): Flow<SR> =
-        engine.scan(timeoutMillis, filter)
+    fun scan(timeout: Duration = Duration.INFINITE, filter: F.() -> Unit = {}): Flow<SR> =
+        engine.scan(timeout, filter)
 
     /**
      * Starts monitoring for Bluetooth LE devices.
@@ -108,14 +109,14 @@ abstract class GenericCentralManager<
      *
      * The scan will be stopped after the given period of time or when the flow is cancelled.
      *
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    fun monitor(timeoutMillis: Long = 0L, filter: F.() -> Unit): Flow<MonitoringEvent<P>> =
-        engine.monitor(timeoutMillis, filter)
+    fun monitor(timeout: Duration = Duration.INFINITE, filter: F.() -> Unit): Flow<MonitoringEvent<P>> =
+        engine.monitor(timeout, filter)
 
     /**
      * Starts ranging for Bluetooth LE devices.
@@ -125,13 +126,13 @@ abstract class GenericCentralManager<
      *
      * The flow is closed automatically when the peripheral leaves range of the monitoring device.
      * @param peripheral The peripheral to range.
-     * @param timeoutMillis The scan duration, in milliseconds. 0 to scan indefinitely.
+     * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
      */
-    fun range(peripheral: P, timeoutMillis: Long = 0L): Flow<RangeEvent<P>> =
-        engine.range(peripheral, timeoutMillis)
+    fun range(peripheral: P, timeout: Duration = Duration.INFINITE): Flow<RangeEvent<P>> =
+        engine.range(peripheral, timeout)
 
     /**
      * Connects to the given device.
