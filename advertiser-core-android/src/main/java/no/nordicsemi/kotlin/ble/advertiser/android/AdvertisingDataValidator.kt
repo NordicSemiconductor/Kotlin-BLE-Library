@@ -41,12 +41,22 @@ import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A class that validates advertising data for given environment.
+ *
+ * @property androidSdkVersion The Android SDK version.
+ * @property isLe2MPhySupported True if LE 2M PHY is supported.
+ * @property isLeCodedPhySupported True if LE Coded PHY is supported.
+ * @property isLeExtendedAdvertisingSupported True if extended advertising is supported.
+ * @property leMaximumAdvertisingDataLength The maximum number of bytes in the advertising data.
+ * @property deviceName The device name. On Android the advertised device name is added automatically,
+ * and is set in the system settings. With longer device name the advertising data may be too large.
  */
 class AdvertisingDataValidator(
-    private val le2MPhySupported: Boolean,
-    private val leCodedPhySupported: Boolean,
-    private val isLeExtendedAdvertisingSupported: Boolean,
-    private val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int,
+    private val androidSdkVersion: Int,
+    private val isLe2MPhySupported: Boolean = androidSdkVersion > 26 /* Oreo */,
+    private val isLeCodedPhySupported: Boolean = androidSdkVersion > 26 /* Oreo */,
+    private val isLeExtendedAdvertisingSupported: Boolean = androidSdkVersion > 26 /* Oreo */,
+    private val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
+        if (isLeExtendedAdvertisingSupported) 1650 else 31,
     private val deviceName: String,
 ) {
     companion object {
@@ -85,11 +95,11 @@ class AdvertisingDataValidator(
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
         } else {
-            if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED && !leCodedPhySupported) {
+            if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED && !isLeCodedPhySupported) {
                 throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
             }
-            if (parameters.secondaryPhy == Phy.PHY_LE_CODED && !leCodedPhySupported ||
-                parameters.secondaryPhy == Phy.PHY_LE_2M && !le2MPhySupported) {
+            if (parameters.secondaryPhy == Phy.PHY_LE_CODED && !isLeCodedPhySupported ||
+                parameters.secondaryPhy == Phy.PHY_LE_2M && !isLe2MPhySupported) {
                 throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
             }
             if (totalBytes(payload.advertisingData, hasFlags) > leMaximumAdvertisingDataLength) {
@@ -109,7 +119,8 @@ class AdvertisingDataValidator(
             throw InvalidAdvertisingDataException(Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
         }
 
-        if (parameters.timeout.isNegative() || parameters.timeout > 655350.milliseconds) {
+        val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
+        if (parameters.timeout.isNegative() || parameters.timeout > maxTimeout) {
             throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
         }
     }

@@ -39,8 +39,6 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import androidx.core.content.PackageManagerCompat
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
@@ -78,8 +76,9 @@ internal abstract class NativeBluetoothLeAdvertiser(
             val bluetoothAdapter = bluetoothAdapter
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && bluetoothAdapter != null)
                 AdvertisingDataValidator(
-                    le2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
-                    leCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
+                    androidSdkVersion = Build.VERSION.SDK_INT,
+                    isLe2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
+                    isLeCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
                     // Up until Android 15 BluetoothLeAdvertiser was checking
                     // if periodic advertising is supported, not extended advertising:
                     // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
@@ -89,8 +88,9 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 )
             else
                 AdvertisingDataValidator(
-                    le2MPhySupported = false,
-                    leCodedPhySupported = false,
+                    androidSdkVersion = Build.VERSION.SDK_INT,
+                    isLe2MPhySupported = false,
+                    isLeCodedPhySupported = false,
                     isLeExtendedAdvertisingSupported = false,
                     leMaximumAdvertisingDataLength = 31,
                     deviceName = name ?: ""
