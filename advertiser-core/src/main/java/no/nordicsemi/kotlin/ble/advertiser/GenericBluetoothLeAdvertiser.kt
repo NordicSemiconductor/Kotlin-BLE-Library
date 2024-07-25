@@ -29,27 +29,44 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android
+package no.nordicsemi.kotlin.ble.advertiser
 
-import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
+import kotlin.time.Duration
 
 /**
- * Base advertiser interface for Android.
- *
- * This interface extends [BluetoothLeAdvertiser] and adds Android-specific methods.
- * For example, it is not possible to set the local device name on Android. The name of the device
- * is used, and user can only control whether it should be included in the advertising data.
- *
- * Use [name] property to get or set the device name (it will affect all applications).
+ * Base advertiser interface.
  */
-interface BluetoothLeAdvertiserAndroid:
-    BluetoothLeAdvertiser<AdvertisingSetParameters, AdvertisingPayload> {
+interface GenericBluetoothLeAdvertiser<
+        P: GenericBluetoothLeAdvertiser.Parameters,
+        D: GenericBluetoothLeAdvertiser.Payload
+> {
+    /**
+     * Starts Bluetooth LE advertising using given parameters.
+     *
+     * @param parameters Advertising parameters describing how the data are to be advertised.
+     * @param payload Advertising data to be broadcast.
+     * @param timeout The advertising time limit. By default there is no timeout set.
+     * @param block A block that will be called when the advertising is started. The block will
+     * receive the actual TX power (in dBm) used for advertising.
+     * @throws AdvertisingNotStartedException If the advertising could not be started.
+     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
+     */
+    suspend fun advertise(
+        parameters: P,
+        payload: D,
+        timeout: Duration = Duration.INFINITE,
+        block: ((txPower: Int) -> Unit)? = null,
+    )
 
     /**
-     * The local Bluetooth adapter name.
-     *
-     * On Android, it is this name that is advertised when
-     * [AdvertisingPayload.AdvertisingData.includeDeviceName] is enabled.
+     * Advertising set parameters define how the data should be advertised.
      */
-    var name: String?
+    interface Parameters
+
+    /**
+     * Base class for the advertising data.
+     *
+     * Different OSes may allow different types of data to be advertised.
+     */
+    interface Payload
 }

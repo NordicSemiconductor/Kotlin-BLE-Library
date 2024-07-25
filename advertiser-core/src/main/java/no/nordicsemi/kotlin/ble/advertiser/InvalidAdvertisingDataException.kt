@@ -33,10 +33,10 @@ package no.nordicsemi.kotlin.ble.advertiser
 
 data class InvalidAdvertisingDataException(
     val reason: Reason
-): IllegalStateException("Invalid advertising data or payload, reason: $reason") {
+): IllegalStateException("Invalid advertising data, reason: $reason") {
 
     /**
-     * Advertising error.
+     * An enum that represents the reason why the advertising data is invalid.
      */
     enum class Reason {
         /** Failed to start advertising as the advertise data to be broadcast is larger than 31 bytes. */
@@ -47,5 +47,18 @@ data class InvalidAdvertisingDataException(
         EXTENDED_ADVERTISING_NOT_SUPPORTED,
         /** Failed to start advertising due to illegal parameters. */
         ILLEGAL_PARAMETERS,
+        /** Scan response is required for scannable advertisement, but not provided. */
+        SCAN_RESPONSE_REQUIRED,
+        /** Scan response is not allowed for non-scannable and non-connectable advertisement. */
+        SCAN_RESPONSE_NOT_ALLOWED;
+
+        override fun toString() = when (this) {
+            DATA_TOO_LARGE -> "Data too large"
+            PHY_NOT_SUPPORTED -> "PHY not supported"
+            EXTENDED_ADVERTISING_NOT_SUPPORTED -> "Extended advertising not supported"
+            ILLEGAL_PARAMETERS -> "Illegal value of maxAdvertisingEvents or timeout parameters"
+            SCAN_RESPONSE_REQUIRED -> "Scan response is required for scannable non-legacy advertisement"
+            SCAN_RESPONSE_NOT_ALLOWED -> "Scan response is not allowed for non-scannable and non-connectable advertisement"
+        }
     }
 }

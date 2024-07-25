@@ -44,13 +44,13 @@ import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration
 
 /**
  * Class responsible for starting advertisements on Android API level >= 26.
@@ -63,17 +63,38 @@ import kotlin.coroutines.resumeWithException
 internal class BluetoothLeAdvertiserOreo(
     context: Context,
 ) : NativeBluetoothLeAdvertiser(context) {
-    private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserLegacy::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserOreo::class.java)
 
     override suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
+        timeout: Duration,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        advertise(parameters, payload, timeout, 0, block)
+    }
+
+    override suspend fun advertise(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        maxAdvertisingEvents: Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        advertise(parameters, payload, Duration.ZERO, maxAdvertisingEvents, block)
+    }
+
+    private suspend fun advertise(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        timeout: Duration,
+        maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
         // First, let's validate the advertising data.
         // This will be done later, when the advertising is started, but this way we may throw
         // an exact reason.
         validator.validate(parameters, payload)
+        timeoutValidator.validate(timeout, maxAdvertisingEvents)
 
         // Check if Bluetooth is enabled and can advertise.
         if (!isBluetoothEnabled()) {
@@ -139,29 +160,30 @@ internal class BluetoothLeAdvertiserOreo(
                         logger.info("Advertising timed out: stopping advertising")
                         // Advertising set is disabled, it also needs to be stopped.
                         bluetoothLeAdvertiser?.stopAdvertisingSet(this)
-                        continuation.resume(Unit)
                     }
                 }
 
                 /*
                  * This method is called when the advertising set is stopped using
-                 * `advertiser.stopAdvertisingSet(callback)`.
+                 * `advertiser.stopAdvertisingSet(callback)` or due to a timeout.
                  */
                 override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
                     logger.info("Advertising stopped")
+                    continuation.resume(Unit)
                 }
             }
 
             // Start advertising.
             try {
+                val duration = if (timeout.isInfinite()) 0 else timeout.inWholeMilliseconds.toInt()
                 advertiser.startAdvertisingSet(
                     parameters.toNative(),
                     payload.advertisingData.toNative(),
                     payload.scanResponse?.toNative(),
                     null,
                     null,
-                    parameters.timeout.inWholeMilliseconds.toInt(),
-                    parameters.maxAdvertisingEvents,
+                    duration / 10, // in 10 ms units
+                    maxAdvertisingEvents,
                     callback,
                 )
                 logger.info("Advertising initiated")

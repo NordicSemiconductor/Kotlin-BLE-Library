@@ -31,7 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
 import java.util.UUID
 
 /**
@@ -46,7 +46,7 @@ import java.util.UUID
 data class AdvertisingPayload(
     val advertisingData: AdvertisingData,
     val scanResponse: AdvertisingData? = null,
-): BluetoothLeAdvertiser.Payload {
+): GenericBluetoothLeAdvertiser.Payload {
 
     /**
      * Advertise data packet container for Bluetooth LE advertising.
@@ -56,12 +56,12 @@ data class AdvertisingPayload(
      *
      * @property includeDeviceName Whether the device name should be included in advertise packet.
      * @property includeTxPowerLevel Whether the TX power level should be included in the
-     *                               advertising packet.
+     * advertising packet.
      * @property serviceUuids A list of service UUID to advertise.
      * @property serviceSolicitationUuids Service solicitation UUID to advertise data.
      * @property serviceData Service data to be advertised.
      * @property manufacturerData Manufacturer specific data. The keys should be the Company ID as
-     *                            defined in Assigned Numbers.
+     * defined in Assigned Numbers.
      */
     data class AdvertisingData(
         val includeDeviceName: Boolean = false,

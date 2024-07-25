@@ -53,6 +53,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Class responsible for starting advertisements on Android API level < 26.
@@ -70,12 +72,14 @@ internal class BluetoothLeAdvertiserLegacy(
     override suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
+        timeout: Duration,
         block: ((txPower: Int) -> Unit)?
     ) {
         // First, let's validate the advertising data.
         // This will be done later, when the advertising is started, but this way we may throw
         // an exact reason.
         validator.validate(parameters, payload)
+        timeoutValidator.validate(timeout, 0)
 
         // Check if Bluetooth is enabled and can advertise.
         if (!isBluetoothEnabled()) {
@@ -129,7 +133,7 @@ internal class BluetoothLeAdvertiserLegacy(
             // Start advertising.
             try {
                 advertiser.startAdvertising(
-                    parameters.toLegacy(),
+                    parameters.toLegacy(timeout),
                     payload.advertisingData.toNative(),
                     payload.scanResponse?.toNative(),
                     callback,
@@ -160,5 +164,23 @@ internal class BluetoothLeAdvertiserLegacy(
                 bluetoothLeAdvertiser?.stopAdvertising(callback)
             }
         }
+    }
+
+    override suspend fun advertise(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        maxAdvertisingEvents: Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        timeoutValidator.validate(Duration.INFINITE, maxAdvertisingEvents)
+
+        val timeout: Duration = when {
+            // If maxAdvertisingEvents is not set, there is no timeout.
+            // This should not be possible, as maxAdvertisingEvents is in range 1..255.
+            maxAdvertisingEvents <= 0 -> Duration.INFINITE
+            // If maxAdvertisingEvents is set, convert it to timeout using the advertising interval.
+            else -> parameters.interval.millis.milliseconds * maxAdvertisingEvents
+        }
+        advertise(parameters, payload, timeout, block)
     }
 }

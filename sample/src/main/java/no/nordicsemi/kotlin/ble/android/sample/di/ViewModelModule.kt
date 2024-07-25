@@ -29,40 +29,48 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser
+package no.nordicsemi.kotlin.ble.android.sample.di
 
-/**
- * Base advertiser interface.
- */
-interface BluetoothLeAdvertiser<P: BluetoothLeAdvertiser.Parameters, D: BluetoothLeAdvertiser.Payload> {
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.ViewModelLifecycle
+import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ViewModelScoped
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.native
+import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.native
 
-    /**
-     * Starts Bluetooth LE advertising using given parameters.
-     *
-     * @param parameters Advertising parameters describing how the data are to be advertised.
-     * @param payload Advertising data to be broadcast.
-     * @param block A block that will be called when the advertising is started. The block will
-     *              receive the actual TX power (in dBm) used for advertising.
-     * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
-     */
-    suspend fun advertise(
-        parameters: P,
-        payload: D,
-        block: ((txPower: Int) -> Unit)? = null,
-    )
 
-    companion object Factory
+@Module
+@InstallIn(ViewModelComponent::class)
+object ViewModelModule {
 
-    /**
-     * Advertising set parameters define how the data should be advertised.
-     */
-    interface Parameters
+    @Provides
+    @ViewModelScoped
+    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
+        return CloseableCoroutineScope(SupervisorJob())
+            .also { closeableCoroutineScope ->
+                lifecycle.addOnClearedListener(closeableCoroutineScope)
+            }
+    }
 
-    /**
-     * Base class for the advertising data.
-     *
-     * Different OSes may allow different types of data to be advertised.
-     */
-    interface Payload
+    @Provides
+    @ViewModelScoped
+    fun providesAdvertiser(@ApplicationContext context: Context): BluetoothLeAdvertiser {
+        return BluetoothLeAdvertiser.Factory.native(context)
+    }
+
+    @Provides
+    @ViewModelScoped
+    fun provideCentralManager(@ApplicationContext context: Context, scope: CoroutineScope): CentralManager {
+        return CentralManager.Factory.native(context, scope)
+    }
+
 }

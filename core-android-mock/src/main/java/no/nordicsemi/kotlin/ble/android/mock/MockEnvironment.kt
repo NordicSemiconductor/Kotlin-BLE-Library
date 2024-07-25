@@ -35,10 +35,13 @@ package no.nordicsemi.kotlin.ble.android.mock
 
 import org.jetbrains.annotations.Range
 
+private const val DEFAULT_NAME = "Mock"
+
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
  * @property androidSdkVersion The Android SDK version.
+ * @property deviceName The device name, by default set to "Mock".
  * @property isBluetoothSupported Whether Bluetooth is supported on the device.
  * @property isLocationRequiredForScanning Whether location is required to scan for Bluetooth devices.
  * @property isLocationPermissionGranted Whether the fine location permission is granted.
@@ -57,8 +60,9 @@ import org.jetbrains.annotations.Range
  */
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
-    // Client variables
+    var deviceName: String,
     val isBluetoothSupported: Boolean = true,
+    val isBluetoothEnabled: Boolean = true,
     val isLocationRequiredForScanning: Boolean = false,
     val isLocationPermissionGranted: Boolean = false,
     val isLocationEnabled: Boolean = false,
@@ -67,7 +71,6 @@ sealed class MockEnvironment(
     val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val isBluetoothScanPermissionGranted: Boolean = false,
     val isBluetoothConnectPermissionGranted: Boolean = false,
-    // Advertiser variables
     val isMultipleAdvertisementSupported: Boolean,
     val isLeExtendedAdvertisingSupported: Boolean = false,
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
@@ -76,15 +79,21 @@ sealed class MockEnvironment(
     /**
      * A mock environment for Android API 21 (Lollipop).
      *
+     * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      */
     class Api21(
+        deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 21 /* Lollipop */,
+        deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
     )
 
@@ -93,19 +102,25 @@ sealed class MockEnvironment(
      *
      * Since Android 6.0, location is required to scan for Bluetooth devices.
      *
+     * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      */
     class Api23(
+        deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 23 /* Marshmallow */,
+        deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
@@ -119,7 +134,9 @@ sealed class MockEnvironment(
      * the device. Also, some devices may not support scanning for Bluetooth LE devices advertising
      * on LE Coded PHY as Primary PHY despite supporting LE Coded PHY.
      *
+     * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
@@ -132,7 +149,9 @@ sealed class MockEnvironment(
      * @param isLocationEnabled Whether location service is enabled on the device.
      */
     class Api26(
+        deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
         isLeExtendedAdvertisingSupported: Boolean = true,
         leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
@@ -144,7 +163,9 @@ sealed class MockEnvironment(
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 26 /* Oreo */,
+        deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
@@ -168,7 +189,9 @@ sealed class MockEnvironment(
      * * [Bluetooth Permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions)
      * * [`neverForLocation flag`](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions#assert-never-for-location)
      *
+     * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
@@ -185,7 +208,9 @@ sealed class MockEnvironment(
      * @param isLocationEnabled Whether location service is enabled on the device.
      */
     class Api31(
+        deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
         isLeExtendedAdvertisingSupported: Boolean = true,
         leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
@@ -201,7 +226,9 @@ sealed class MockEnvironment(
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
         androidSdkVersion = 31 /* S */,
+        deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,

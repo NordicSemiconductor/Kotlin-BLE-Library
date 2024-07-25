@@ -31,28 +31,29 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
-import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiserAndroid
+import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.suspendCoroutine
+import kotlin.time.Duration
 
 
 /**
- * Creates an instance of a mock [BluetoothLeAdvertiser] for Android.
+ * Creates an instance of a mock [GenericBluetoothLeAdvertiser] for Android.
  *
  * The behavior of a mock advertiser should mimic one from the same Android version.
  *
  * @param environment The mock environment to use.
- * @return A mock instance of the [BluetoothLeAdvertiserAndroid].
+ * @return A mock instance of the [BluetoothLeAdvertiser].
  */
 @Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.mock(
     environment: MockEnvironment = MockEnvironment.Api31(),
-): BluetoothLeAdvertiserAndroid = BluetoothLeAdvertiserMock(
+): BluetoothLeAdvertiser = BluetoothLeAdvertiserMock(
     environment = environment
 )
 
@@ -60,17 +61,37 @@ fun BluetoothLeAdvertiser.Factory.mock(
  * A mock implementation of Bluetooth LE advertiser.
  *
  * Use this implementation to emulate Bluetooth LE advertising in tests.
+ *
+ * @property environment The mock environment.
  */
 class BluetoothLeAdvertiserMock internal constructor(
-    val environment: MockEnvironment,
-): BluetoothLeAdvertiserAndroid {
+    private val environment: MockEnvironment,
+): BluetoothLeAdvertiser {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserMock::class.java)
 
-    override var name: String? = null
+    override var name: String? = environment.deviceName
+
+    override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int {
+        if (!environment.isBluetoothSupported) return 0
+        if (legacy ||
+            environment.androidSdkVersion < 26 /* Oreo */ ||
+            !environment.isLeExtendedAdvertisingSupported) return 31
+        return environment.leMaximumAdvertisingDataLength
+    }
 
     override suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
+        maxAdvertisingEvents: Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun advertise(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        timeout: Duration,
         block: ((txPower: Int) -> Unit)?
     ) = suspendCoroutine<Unit> { continuation ->
         // Mocking advertising has no impact on other features.

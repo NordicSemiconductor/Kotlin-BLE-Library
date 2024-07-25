@@ -44,7 +44,7 @@ import no.nordicsemi.kotlin.ble.advertiser.android.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.INFINITE
 import kotlin.time.Duration.Companion.seconds
 import android.bluetooth.le.AdvertiseData as NativeAdvertiseData
 import android.bluetooth.le.AdvertiseSettings as NativeAdvertiseSettings
@@ -52,51 +52,52 @@ import android.bluetooth.le.AdvertisingSetParameters as NativeAdvertisingSetPara
 
 @RequiresApi(Build.VERSION_CODES.O)
 internal fun AdvertisingSetParameters.toNative(): NativeAdvertisingSetParameters {
-    return NativeAdvertisingSetParameters.Builder().apply {
-        setLegacyMode(legacy)
-        setAnonymous(anonymous)
-        setConnectable(connectable)
-        setScannable(scannable)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            setDiscoverable(discoverable)
+    return NativeAdvertisingSetParameters.Builder()
+        .apply {
+            setLegacyMode(legacy)
+            setAnonymous(!legacy && anonymous)
+            setConnectable(connectable && (legacy || !anonymous))
+            // Legacy advertisements can be both connectable and scannable,
+            // but cannot be connectable and non-scannable.
+            setScannable(if (legacy) connectable else scannable && !connectable && !anonymous)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                setDiscoverable(discoverable)
+            }
+            setInterval(interval.toNative())
+            setIncludeTxPower(if (legacy) false else includeTxPowerLevel)
+            setTxPowerLevel(txPowerLevel.toNative())
+            setPrimaryPhy(when (primaryPhy) {
+                PrimaryPhy.PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
+                PrimaryPhy.PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
+            })
+            setSecondaryPhy(when (secondaryPhy) {
+                Phy.PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
+                Phy.PHY_LE_2M -> BluetoothDevice.PHY_LE_2M
+                Phy.PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
+            })
         }
-        setInterval(interval.toNative())
-        setIncludeTxPower(includeTxPower)
-        setTxPowerLevel(txPowerLevel.toNative())
-        setPrimaryPhy(when (primaryPhy) {
-            PrimaryPhy.PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            PrimaryPhy.PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-        })
-        setSecondaryPhy(when (secondaryPhy) {
-            Phy.PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
-            Phy.PHY_LE_2M -> BluetoothDevice.PHY_LE_2M
-            Phy.PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
-        })
-    }.build()
+        .build()
 }
 
-internal fun AdvertisingSetParameters.toLegacy(): NativeAdvertiseSettings {
-    return NativeAdvertiseSettings.Builder().apply {
-        setConnectable(connectable)
-        setAdvertiseMode(interval.toLegacy())
-        setTxPowerLevel(txPowerLevel.toLegacy())
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            setDiscoverable(discoverable)
+internal fun AdvertisingSetParameters.toLegacy(
+    timeout: Duration,
+): NativeAdvertiseSettings {
+    return NativeAdvertiseSettings.Builder()
+        .apply {
+            setConnectable(connectable)
+            setAdvertiseMode(interval.toLegacy())
+            setTxPowerLevel(txPowerLevel.toLegacy())
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                setDiscoverable(discoverable)
+            }
+            // Maximum timeout for legacy advertising is 180 seconds.
+            val legacyTimeout = when (timeout) {
+                INFINITE -> Duration.ZERO
+                else -> timeout.coerceAtMost(180.seconds)
+            }
+            setTimeout(legacyTimeout.inWholeMilliseconds.toInt())
         }
-
-        fun Int.toTimeout(interval: Int) = interval.milliseconds * this
-        val noTimeout = !timeout.isPositive()
-        val timeout: Duration = when {
-            // If maxAdvertisingEvents is not set, use timeout.
-            maxAdvertisingEvents <= 0 -> timeout.coerceAtLeast(Duration.ZERO)
-            // If maxAdvertisingEvents is set, convert it to timeout using the advertising interval.
-            noTimeout -> maxAdvertisingEvents.toTimeout(interval.millis)
-            // Else, use the minimum of the two.
-            else -> maxAdvertisingEvents.toTimeout(interval.millis).coerceAtMost(timeout)
-        }
-        // Maximum timeout for legacy advertising is 180 seconds.
-        setTimeout(timeout.coerceAtMost(180.seconds).inWholeMilliseconds.toInt())
-    }.build()
+        .build()
 }
 
 internal fun AdvertisingPayload.AdvertisingData.toNative(): NativeAdvertiseData {
@@ -133,16 +134,8 @@ internal fun AdvertisingInterval.toLegacy(): Int {
     }
 }
 
-internal fun AdvertisingInterval.value(): Int {
-    return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-        toLegacy()
-    } else {
-        toNative()
-    }
-}
-
 @RequiresApi(Build.VERSION_CODES.O)
-fun TxPowerLevel.toNative(): Int {
+internal fun TxPowerLevel.toNative(): Int {
     return when (this) {
         TxPowerLevel.TX_POWER_ULTRA_LOW -> NativeAdvertisingSetParameters.TX_POWER_ULTRA_LOW
         TxPowerLevel.TX_POWER_LOW       -> NativeAdvertisingSetParameters.TX_POWER_LOW

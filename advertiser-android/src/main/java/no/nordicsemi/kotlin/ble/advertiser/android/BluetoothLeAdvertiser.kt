@@ -39,29 +39,28 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
 
-
 /**
- * Creates an instance of [BluetoothLeAdvertiser] for Android.
+ * Creates an instance of [GenericBluetoothLeAdvertiser] for Android.
  *
  * The implementation differs based on Android version.
  * Limited functionality is available prior to Android O.
  *
  * @param context An application context.
- * @return Instance of [BluetoothLeAdvertiserAndroid].
+ * @return Instance of [BluetoothLeAdvertiser].
  */
 @Suppress("unused")
-fun BluetoothLeAdvertiser.Factory.native(context: Context): BluetoothLeAdvertiserAndroid = when {
+fun BluetoothLeAdvertiser.Factory.native(context: Context): BluetoothLeAdvertiser = when {
     Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> BluetoothLeAdvertiserOreo(context)
     else -> BluetoothLeAdvertiserLegacy(context)
 }
 
 internal abstract class NativeBluetoothLeAdvertiser(
     private val context: Context,
-): BluetoothLeAdvertiserAndroid {
+): BluetoothLeAdvertiser {
 
     private val bluetoothAdapter: BluetoothAdapter?
         get() {
@@ -76,7 +75,6 @@ internal abstract class NativeBluetoothLeAdvertiser(
             val bluetoothAdapter = bluetoothAdapter
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && bluetoothAdapter != null)
                 AdvertisingDataValidator(
-                    androidSdkVersion = Build.VERSION.SDK_INT,
                     isLe2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
                     isLeCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
                     // Up until Android 15 BluetoothLeAdvertiser was checking
@@ -88,7 +86,6 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 )
             else
                 AdvertisingDataValidator(
-                    androidSdkVersion = Build.VERSION.SDK_INT,
                     isLe2MPhySupported = false,
                     isLeCodedPhySupported = false,
                     isLeExtendedAdvertisingSupported = false,
@@ -96,6 +93,16 @@ internal abstract class NativeBluetoothLeAdvertiser(
                     deviceName = name ?: ""
                 )
             }
+
+    internal val timeoutValidator: AdvertisingParametersValidator
+        get() = AdvertisingParametersValidator(
+            androidSdkVersion = Build.VERSION.SDK_INT,
+            // Up until Android 15 BluetoothLeAdvertiser was checking
+            // if periodic advertising is supported, not extended advertising:
+            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
+            isLeExtendedAdvertisingSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 &&
+                    bluetoothAdapter?.isLePeriodicAdvertisingSupported == true
+        )
 
     /**
      * Checks if Bluetooth adapter is enabled.
@@ -116,12 +123,6 @@ internal abstract class NativeBluetoothLeAdvertiser(
         return true
     }
 
-    /**
-     * The local Bluetooth adapter name.
-     *
-     * On Android, it is this name that is advertised when
-     * [AdvertisingPayload.AdvertisingData.includeDeviceName] is enabled.
-     */
     @get:RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
     @set:RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
     override var name: String?
@@ -131,5 +132,12 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 return bluetoothAdapter?.name
             }
             return null
+        }
+
+    override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int =
+        if (!legacy && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            bluetoothAdapter?.leMaximumAdvertisingDataLength ?: 31
+        } else {
+            31
         }
 }

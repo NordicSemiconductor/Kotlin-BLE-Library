@@ -12,6 +12,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":advertiser-android"))
     implementation(project(":client-android"))
     implementation(project(":client-android-mock"))
 

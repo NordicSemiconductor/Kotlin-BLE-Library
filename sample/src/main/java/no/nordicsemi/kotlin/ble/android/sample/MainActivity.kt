@@ -2,29 +2,27 @@ package no.nordicsemi.kotlin.ble.android.sample
 
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import no.nordicsemi.android.common.theme.NordicActivity
 import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.android.common.ui.view.NordicMediumAppBar
+import no.nordicsemi.kotlin.ble.android.sample.advertiser.AdvertiserScreen
+import no.nordicsemi.kotlin.ble.android.sample.menu.MenuScreen
 import no.nordicsemi.kotlin.ble.android.sample.scanner.ScannerScreen
+
+const val NAV_MENU = "Menu"
+const val NAV_ADVERTISER = "Advertiser"
+const val NAV_SCANNER = "Scanner"
 
 @AndroidEntryPoint
 class MainActivity : NordicActivity() {
@@ -35,66 +33,40 @@ class MainActivity : NordicActivity() {
         setContent {
             NordicTheme {
                 val navController = rememberNavController()
+                val backStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = backStackEntry?.destination?.route
 
                 Scaffold(
                     topBar = {
                         NordicMediumAppBar(
-                            title = { Text(text = "Sample app") }
+                            // TODO: Titles should go from strings.xml
+                            title = { Text(text = currentRoute ?: NAV_MENU) },
+                            showBackButton = currentRoute != NAV_MENU,
+                            onNavigationButtonClick = {
+                                navController.popBackStack()
+                            }
                         )
                     }
                 ) { paddings ->
                     NavHost(
                         modifier = Modifier.padding(paddings),
                         navController = navController,
-                        startDestination = "menu"
+                        startDestination = NAV_MENU
                     ) {
-                        composable("menu") {
-                            MenuScreen(navController)
+                        composable(NAV_MENU) {
+                            MenuScreen(
+                                onMenuClicked = { navController.navigate(it) }
+                            )
                         }
-                        composable("scanner") {
+                        composable(NAV_ADVERTISER) {
+                            AdvertiserScreen()
+                        }
+                        composable(NAV_SCANNER) {
                             ScannerScreen()
                         }
                     }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun MenuScreen(
-    navController: NavController,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Text(
-            text = "Menu",
-            style = MaterialTheme.typography.headlineMedium,
-        )
-
-        Text(text = "Select a feature to test")
-
-        // Add buttons here
-        Button(
-            onClick = { navController.navigate("scanner") },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = "Scanner")
-        }
-    }
-}
-
-@Preview
-@Composable
-fun PreviewMenuScreen() {
-    NordicTheme {
-        MenuScreen(
-            navController = rememberNavController(),
-        )
     }
 }

@@ -37,12 +37,10 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
 import org.jetbrains.annotations.Range
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * A class that validates advertising data for given environment.
  *
- * @property androidSdkVersion The Android SDK version.
  * @property isLe2MPhySupported True if LE 2M PHY is supported.
  * @property isLeCodedPhySupported True if LE Coded PHY is supported.
  * @property isLeExtendedAdvertisingSupported True if extended advertising is supported.
@@ -51,10 +49,9 @@ import kotlin.time.Duration.Companion.milliseconds
  * and is set in the system settings. With longer device name the advertising data may be too large.
  */
 class AdvertisingDataValidator(
-    private val androidSdkVersion: Int,
-    private val isLe2MPhySupported: Boolean = androidSdkVersion > 26 /* Oreo */,
-    private val isLeCodedPhySupported: Boolean = androidSdkVersion > 26 /* Oreo */,
-    private val isLeExtendedAdvertisingSupported: Boolean = androidSdkVersion > 26 /* Oreo */,
+    private val isLe2MPhySupported: Boolean,
+    private val isLeCodedPhySupported: Boolean,
+    private val isLeExtendedAdvertisingSupported: Boolean,
     private val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
         if (isLeExtendedAdvertisingSupported) 1650 else 31,
     private val deviceName: String,
@@ -83,6 +80,7 @@ class AdvertisingDataValidator(
     fun validate(parameters: AdvertisingSetParameters, payload: AdvertisingPayload) {
         // Android adds flags automatically when advertising is connectable and discoverable.
         val isConnectable = parameters.connectable
+        val isScannable = parameters.scannable
         val isDiscoverable = parameters.discoverable
         val hasFlags = isConnectable && isDiscoverable
 
@@ -108,20 +106,12 @@ class AdvertisingDataValidator(
             if (totalBytes(payload.scanResponse, false) > leMaximumAdvertisingDataLength) {
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
-        }
-
-        // Check other parameters.
-        if (parameters.maxAdvertisingEvents < 0 || parameters.maxAdvertisingEvents > 255) {
-            throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
-        }
-
-        if (parameters.maxAdvertisingEvents != 0 && !isLeExtendedAdvertisingSupported) {
-            throw InvalidAdvertisingDataException(Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
-        }
-
-        val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
-        if (parameters.timeout.isNegative() || parameters.timeout > maxTimeout) {
-            throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
+            if (isScannable && payload.scanResponse == null) {
+                throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_REQUIRED)
+            }
+            if (!isConnectable && !isScannable && payload.scanResponse != null) {
+                throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_NOT_ALLOWED)
+            }
         }
     }
 

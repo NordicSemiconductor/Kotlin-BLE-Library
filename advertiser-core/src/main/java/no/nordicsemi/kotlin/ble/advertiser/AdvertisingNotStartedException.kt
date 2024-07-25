@@ -36,7 +36,7 @@ data class AdvertisingNotStartedException(
 ): IllegalStateException("Advertising failed to start, reason: $reason") {
 
     /**
-     * Advertising error.
+     * An enum that represents the reason why the advertising failed to start.
      */
     enum class Reason {
         /** Failed to start advertising due to an unknown error. */
@@ -56,6 +56,18 @@ data class AdvertisingNotStartedException(
         /** Failed to start advertising as Bluetooth adapter is disabled of not available. */
         BLUETOOTH_NOT_AVAILABLE,
         /** At least one of permissions required for advertising is denied. */
-        PERMISSION_DENIED
+        PERMISSION_DENIED;
+
+        override fun toString() = when (this) {
+            UNKNOWN -> "Unknown error"
+            ALREADY_STARTED -> "Advertising already started"
+            DATA_TOO_LARGE -> "Data too large"
+            FEATURE_UNSUPPORTED -> "Feature unsupported"
+            INTERNAL_ERROR -> "Internal error"
+            TOO_MANY_ADVERTISERS -> "Too many advertisers"
+            ILLEGAL_PARAMETERS -> "Illegal parameters"
+            BLUETOOTH_NOT_AVAILABLE -> "Bluetooth not available"
+            PERMISSION_DENIED -> "Permission denied"
+        }
     }
 }

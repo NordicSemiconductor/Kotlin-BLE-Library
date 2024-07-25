@@ -29,41 +29,57 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.android.sample.di
+package no.nordicsemi.kotlin.ble.android.sample.menu
 
-import android.content.Context
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.ViewModelLifecycle
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
-import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
-import no.nordicsemi.kotlin.ble.client.android.CentralManager
-import no.nordicsemi.kotlin.ble.client.android.native
-import javax.inject.Singleton
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.kotlin.ble.android.sample.NAV_ADVERTISER
+import no.nordicsemi.kotlin.ble.android.sample.NAV_SCANNER
 
-
-@Module
-@InstallIn(ViewModelComponent::class)
-object CentralManagerModule {
-
-    @Provides
-    @ViewModelScoped
-    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob()).also { closeableCoroutineScope ->
-            lifecycle.addOnClearedListener(closeableCoroutineScope)
+@Composable
+fun MenuScreen(
+    onMenuClicked: (String) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        // Add buttons here
+        Button(
+            onClick = { onMenuClicked(NAV_ADVERTISER) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Advertiser")
+        }
+        Button(
+            onClick = { onMenuClicked(NAV_SCANNER) },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "Scanner")
         }
     }
+}
 
-    @Provides
-    @ViewModelScoped
-    fun provideCentralManager(@ApplicationContext context: Context, scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.native(context, scope)
+@Preview
+@Composable
+fun PreviewMenuScreen() {
+    NordicTheme {
+        MenuScreen(
+            onMenuClicked = { },
+        )
     }
-
 }
