@@ -292,8 +292,7 @@ open class NativeCentralManagerEngine(
 
     override fun close() {
         // Ignore if already closed.
-        if (!isOpen)
-            return
+        if (!isOpen) return
 
         // Release resources.
         applicationContext.unregisterReceiver(stateBroadcastReceiver)
@@ -310,7 +309,6 @@ open class NativeCentralManagerEngine(
      *
      * This states are mapped as follows:
      * - [UNSUPPORTED] if Bluetooth is not supported.
-     * has not been granted (Android 12+).
      * - [POWERED_OFF] if the Bluetooth adapter is disabled.
      * - [POWERED_ON] if the Bluetooth adapter is enabled.
      * - [RESETTING] if the Bluetooth adapter is turning off or on.
@@ -318,9 +316,8 @@ open class NativeCentralManagerEngine(
      */
     private fun getState(): Manager.State {
         // If the central manager was closed, return unknown state.
-        if (!isOpen) {
-            return UNKNOWN
-        }
+        if (!isOpen) return UNKNOWN
+
         // Get the current state.
         return manager?.adapter?.state?.toState() ?: UNSUPPORTED
     }
