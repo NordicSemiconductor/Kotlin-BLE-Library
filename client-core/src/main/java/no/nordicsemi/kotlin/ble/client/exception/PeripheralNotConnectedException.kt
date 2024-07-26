@@ -38,8 +38,4 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
 /**
  * Thrown when the peripheral is not connected, or has disconnected during the operation.
  */
-class PeripheralNotConnectedException: GattException() {
-
-    override val message: String
-        get() = "Peripheral is not connected"
-}
+class PeripheralNotConnectedException: GattException("Peripheral is not connected")

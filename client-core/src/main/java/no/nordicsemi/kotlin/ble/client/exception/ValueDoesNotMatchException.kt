@@ -37,8 +37,5 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
  * Thrown when the value reported by the remote device does not match the value sent
  * using Reliable Write operation.
  */
-class ValueDoesNotMatchException: GattException() {
-
-    override val message: String
-        get() = "The received value does not match the value sent using Reliable Write"
-}
+class ValueDoesNotMatchException:
+    GattException("The received value does not match the value sent using Reliable Write")

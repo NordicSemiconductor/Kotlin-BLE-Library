@@ -43,8 +43,4 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
  */
 class ConnectionFailedException(
     val reason: ConnectionState.Disconnected.Reason
-): GattException() {
-
-    override val message: String
-        get() = "Connection failed: reason=$reason"
-}
+): GattException("Connection failed, reason: $reason")

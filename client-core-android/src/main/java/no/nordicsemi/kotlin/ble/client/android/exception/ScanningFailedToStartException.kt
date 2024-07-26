@@ -40,7 +40,8 @@ import no.nordicsemi.kotlin.ble.client.exception.ScanningException
  *
  * @param reason The reason why scanning failed.
  */
-class ScanningFailedToStartException(val reason: Reason): ScanningException() {
+class ScanningFailedToStartException(val reason: Reason):
+    ScanningException("Scanning failed to start, reason: $reason") {
     /**
      * The reason why scanning failed.
      */
@@ -63,7 +64,4 @@ class ScanningFailedToStartException(val reason: Reason): ScanningException() {
          */
         data class Unknown(val code: Int): Reason()
     }
-
-    override val message: String
-        get() = "Scanning failed to start: reason=$reason"
 }

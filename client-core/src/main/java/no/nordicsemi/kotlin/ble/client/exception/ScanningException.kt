@@ -36,4 +36,7 @@ import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 /**
  * Base class for scanning exceptions.
  */
-open class ScanningException: BluetoothException("Scanning failed")
+open class ScanningException: BluetoothException {
+    constructor(): super("Scanning failed")
+    constructor(message: String): super(message)
+}

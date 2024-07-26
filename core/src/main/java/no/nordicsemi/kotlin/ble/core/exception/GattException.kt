@@ -34,8 +34,7 @@ package no.nordicsemi.kotlin.ble.core.exception
 /**
  * Base class for all GATT exceptions.
  */
-open class GattException: Exception() {
-
-    override val message: String
-        get() = "GATT error"
+open class GattException: Exception {
+    constructor(): super("GATT error")
+    constructor(message: String): super(message)
 }
