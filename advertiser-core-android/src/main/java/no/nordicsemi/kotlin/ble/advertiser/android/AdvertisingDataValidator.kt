@@ -41,20 +41,20 @@ import org.jetbrains.annotations.Range
 /**
  * A class that validates advertising data for given environment.
  *
+ * @property deviceName The device name. On Android the advertised device name is added automatically,
+ * and is set in the system settings. With longer device name the advertising data may be too large.
  * @property isLe2MPhySupported True if LE 2M PHY is supported.
  * @property isLeCodedPhySupported True if LE Coded PHY is supported.
  * @property isLeExtendedAdvertisingSupported True if extended advertising is supported.
  * @property leMaximumAdvertisingDataLength The maximum number of bytes in the advertising data.
- * @property deviceName The device name. On Android the advertised device name is added automatically,
- * and is set in the system settings. With longer device name the advertising data may be too large.
  */
 class AdvertisingDataValidator(
+    private val deviceName: String,
     private val isLe2MPhySupported: Boolean,
     private val isLeCodedPhySupported: Boolean,
     private val isLeExtendedAdvertisingSupported: Boolean,
     private val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
         if (isLeExtendedAdvertisingSupported) 1650 else 31,
-    private val deviceName: String,
 ) {
     companion object {
         /** The maximum number of bytes in the advertising data or scan response. */
