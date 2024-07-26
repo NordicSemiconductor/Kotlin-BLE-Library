@@ -58,6 +58,7 @@ interface BluetoothLeAdvertiser:
      * 655.350 ms on Android 8+. By default there is no timeout set.
      * @param block A block that will be called when the advertising is started. The block will
      * receive the actual TX power (in dBm) used for advertising.
+     * @throws SecurityException If the BLUETOOTH_ADVERTISE permission is denied.
      * @throws AdvertisingNotStartedException If the advertising could not be started.
      * @throws InvalidAdvertisingDataException If the advertising data is invalid.
      */
@@ -76,6 +77,7 @@ interface BluetoothLeAdvertiser:
      * @param maxAdvertisingEvents The maximum number of advertising events, in range 1-255.
      * @param block A block that will be called when the advertising is started. The block will
      * receive the actual TX power (in dBm) used for advertising.
+     * @throws SecurityException If the BLUETOOTH_ADVERTISE permission is denied.
      * @throws AdvertisingNotStartedException If the advertising could not be started.
      * @throws InvalidAdvertisingDataException If the advertising data is invalid.
      */
@@ -89,8 +91,10 @@ interface BluetoothLeAdvertiser:
     /**
      * The local Bluetooth adapter name, or null on error.
      *
-     * On Android, it is this name that is advertised when
+     * This name that is advertised when
      * [AdvertisingPayload.AdvertisingData.includeDeviceName] is enabled.
+     *
+     * @throws SecurityException If the BLUETOOTH_CONNECT permission is denied.
      */
     var name: String?
 

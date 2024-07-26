@@ -67,6 +67,7 @@ internal abstract class NativeBluetoothLeAdvertiser(
             val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
             return manager?.adapter
         }
+
     internal val bluetoothLeAdvertiser: android.bluetooth.le.BluetoothLeAdvertiser?
         get() = bluetoothAdapter?.bluetoothLeAdvertiser
 
@@ -75,6 +76,7 @@ internal abstract class NativeBluetoothLeAdvertiser(
             val bluetoothAdapter = bluetoothAdapter
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && bluetoothAdapter != null)
                 AdvertisingDataValidator(
+                    deviceName = nameOrNull ?: "",
                     isLe2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
                     isLeCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
                     // Up until Android 15 BluetoothLeAdvertiser was checking
@@ -82,15 +84,14 @@ internal abstract class NativeBluetoothLeAdvertiser(
                     // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
                     isLeExtendedAdvertisingSupported = bluetoothAdapter.isLePeriodicAdvertisingSupported,
                     leMaximumAdvertisingDataLength = bluetoothAdapter.leMaximumAdvertisingDataLength,
-                    deviceName = name ?: ""
                 )
             else
                 AdvertisingDataValidator(
+                    deviceName = nameOrNull ?: "",
                     isLe2MPhySupported = false,
                     isLeCodedPhySupported = false,
                     isLeExtendedAdvertisingSupported = false,
                     leMaximumAdvertisingDataLength = 31,
-                    deviceName = name ?: ""
                 )
             }
 
@@ -133,6 +134,9 @@ internal abstract class NativeBluetoothLeAdvertiser(
             }
             return null
         }
+
+    internal val nameOrNull: String?
+        get() = try { name } catch (_: Exception) { null }
 
     override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int =
         if (!legacy && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
