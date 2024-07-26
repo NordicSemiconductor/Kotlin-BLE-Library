@@ -321,10 +321,8 @@ open class NativeCentralManagerEngine(
         if (!isOpen) {
             return UNKNOWN
         }
-        // Ensure Bluetooth is supported.
-        val manager = manager ?: return UNSUPPORTED
         // Get the current state.
-        return manager.adapter.state.toState()
+        return manager?.adapter?.state?.toState() ?: UNSUPPORTED
     }
 
 }
