@@ -71,4 +71,21 @@ enum class OperationStatus {
 
     val isSuccess
         get() = this == SUCCESS
+
+    override fun toString() = when (this) {
+        SUCCESS -> "Success"
+        UNKNOWN_ERROR -> "Unknown error"
+        GATT_ERROR -> "GATT error"
+        CONNECTION_CONGESTED -> "Connection congested"
+        INVALID_ATTRIBUTE_LENGTH -> "Invalid attribute length"
+        INVALID_OFFSET -> "Invalid offset"
+        READ_NOT_PERMITTED -> "Read not permitted"
+        WRITE_NOT_PERMITTED -> "Write not permitted"
+        SUBSCRIBE_NOT_PERMITTED -> "Subscribe not permitted"
+        REQUEST_NOT_SUPPORTED -> "Request not supported"
+        INSUFFICIENT_ENCRYPTION -> "Insufficient encryption"
+        INSUFFICIENT_AUTHENTICATION -> "Insufficient authentication"
+        INSUFFICIENT_AUTHORIZATION -> "Insufficient authorization"
+        BUSY -> "Busy"
+    }
 }
