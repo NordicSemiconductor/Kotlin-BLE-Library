@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser
+package no.nordicsemi.kotlin.ble.advertiser.exception
 
 import kotlin.time.Duration
 

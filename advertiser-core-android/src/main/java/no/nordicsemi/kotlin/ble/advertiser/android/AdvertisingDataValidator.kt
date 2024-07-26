@@ -31,8 +31,8 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
-import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException.Reason
+import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
+import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException.Reason
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid

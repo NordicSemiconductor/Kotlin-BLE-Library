@@ -31,7 +31,6 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo
 
-import android.Manifest
 import android.bluetooth.le.AdvertisingSet
 import android.bluetooth.le.AdvertisingSetCallback
 import android.content.Context
@@ -39,13 +38,13 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
+import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume

@@ -39,7 +39,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
 

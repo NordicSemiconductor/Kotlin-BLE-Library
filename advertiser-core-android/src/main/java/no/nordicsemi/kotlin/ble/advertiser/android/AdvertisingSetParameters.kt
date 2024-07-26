@@ -35,7 +35,7 @@ package no.nordicsemi.kotlin.ble.advertiser.android
 
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 
 /**
  * The class provide a way to adjust advertising preferences for each Bluetooth LE

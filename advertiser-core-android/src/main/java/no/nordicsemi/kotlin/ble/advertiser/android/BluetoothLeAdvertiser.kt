@@ -31,9 +31,9 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.InvalidAdvertisingDataException
+import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
 import org.jetbrains.annotations.Range
 import kotlin.time.Duration
 

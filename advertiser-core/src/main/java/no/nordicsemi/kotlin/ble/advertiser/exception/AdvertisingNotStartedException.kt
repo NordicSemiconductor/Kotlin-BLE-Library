@@ -29,36 +29,42 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser
+package no.nordicsemi.kotlin.ble.advertiser.exception
 
-data class InvalidAdvertisingDataException(
+data class AdvertisingNotStartedException(
     val reason: Reason
-): IllegalStateException("Invalid advertising data, reason: $reason") {
+): IllegalStateException("Advertising failed to start, reason: $reason") {
 
     /**
-     * An enum that represents the reason why the advertising data is invalid.
+     * An enum that represents the reason why the advertising failed to start.
      */
     enum class Reason {
+        /** Failed to start advertising due to an unknown error. */
+        UNKNOWN,
+        /** Failed to start advertising as the advertising is already started. */
+        ALREADY_STARTED,
         /** Failed to start advertising as the advertise data to be broadcast is larger than 31 bytes. */
         DATA_TOO_LARGE,
-        /** Requested PHY is not supported on this platform. */
-        PHY_NOT_SUPPORTED,
-        /** Periodic advertising is not supported on this platform. */
-        EXTENDED_ADVERTISING_NOT_SUPPORTED,
+        /** This feature is not supported on this platform. */
+        FEATURE_UNSUPPORTED,
+        /** Operation failed due to an internal error. */
+        INTERNAL_ERROR,
+        /** Failed to start advertising because no advertising instance is available. */
+        TOO_MANY_ADVERTISERS,
         /** Failed to start advertising due to illegal parameters. */
         ILLEGAL_PARAMETERS,
-        /** Scan response is required for scannable advertisement, but not provided. */
-        SCAN_RESPONSE_REQUIRED,
-        /** Scan response is not allowed for non-scannable and non-connectable advertisement. */
-        SCAN_RESPONSE_NOT_ALLOWED;
+        /** Failed to start advertising as Bluetooth adapter is disabled of not available. */
+        BLUETOOTH_NOT_AVAILABLE;
 
         override fun toString() = when (this) {
+            UNKNOWN -> "Unknown"
+            ALREADY_STARTED -> "Advertising already started"
             DATA_TOO_LARGE -> "Data too large"
-            PHY_NOT_SUPPORTED -> "PHY not supported"
-            EXTENDED_ADVERTISING_NOT_SUPPORTED -> "Extended advertising not supported"
-            ILLEGAL_PARAMETERS -> "Illegal value of maxAdvertisingEvents or timeout parameters"
-            SCAN_RESPONSE_REQUIRED -> "Scan response is required for scannable non-legacy advertisement"
-            SCAN_RESPONSE_NOT_ALLOWED -> "Scan response is not allowed for non-scannable and non-connectable advertisement"
+            FEATURE_UNSUPPORTED -> "Feature unsupported"
+            INTERNAL_ERROR -> "Internal error"
+            TOO_MANY_ADVERTISERS -> "Too many advertisers"
+            ILLEGAL_PARAMETERS -> "Illegal parameters"
+            BLUETOOTH_NOT_AVAILABLE -> "Bluetooth not available"
         }
     }
 }

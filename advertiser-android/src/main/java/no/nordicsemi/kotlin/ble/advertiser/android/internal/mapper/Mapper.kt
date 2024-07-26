@@ -36,7 +36,7 @@ import android.bluetooth.le.AdvertiseCallback
 import android.os.Build
 import android.os.ParcelUuid
 import androidx.annotation.RequiresApi
-import no.nordicsemi.kotlin.ble.advertiser.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingInterval
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters

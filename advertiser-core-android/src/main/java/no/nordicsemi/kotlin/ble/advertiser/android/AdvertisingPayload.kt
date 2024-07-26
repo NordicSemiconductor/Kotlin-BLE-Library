@@ -31,7 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 import java.util.UUID
 
 /**

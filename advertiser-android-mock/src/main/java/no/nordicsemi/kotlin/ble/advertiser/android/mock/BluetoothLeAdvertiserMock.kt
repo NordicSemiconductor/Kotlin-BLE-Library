@@ -31,7 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
-import no.nordicsemi.kotlin.ble.advertiser.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
