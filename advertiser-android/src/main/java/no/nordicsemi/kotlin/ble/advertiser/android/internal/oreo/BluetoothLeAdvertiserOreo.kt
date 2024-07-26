@@ -89,34 +89,28 @@ internal class BluetoothLeAdvertiserOreo(
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
-        // First, let's validate the advertising data.
-        // This will be done later, when the advertising is started, but this way we may throw
-        // an exact reason.
+        // First, let's validate input.
+        // On newer Android versions this will also be done by the system when the advertising
+        // is started, but this way we may throw an exact reason.
         validator.validate(parameters, payload)
         timeoutValidator.validate(timeout, maxAdvertisingEvents)
 
         // Check if Bluetooth is enabled and can advertise.
-        if (!isBluetoothEnabled()) {
-            logger.error("Advertising failed to start: Bluetooth is disabled or not available")
+        check(isBluetoothEnabled()) {
             throw AdvertisingNotStartedException(
                 reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
             )
         }
+
         val advertiser = bluetoothLeAdvertiser
-        if (advertiser == null) {
-            logger.error("Advertising failed to start: Bluetooth LE advertiser is null")
+        check(advertiser != null) {
             throw AdvertisingNotStartedException(
                 reason = AdvertisingNotStartedException.Reason.FEATURE_UNSUPPORTED
             )
         }
 
         // Android S introduced a new permission for advertising.
-        if (!isPermissionGranted(Manifest.permission.BLUETOOTH_ADVERTISE)) {
-            logger.error("Advertising failed to start: BLUETOOTH_ADVERTISE permission not granted")
-            throw AdvertisingNotStartedException(
-                reason = AdvertisingNotStartedException.Reason.PERMISSION_DENIED
-            )
-        }
+        checkAdvertisePermission()
 
         // If all is fine, let's start advertising.
         suspendCancellableCoroutine { continuation ->
@@ -129,7 +123,7 @@ internal class BluetoothLeAdvertiserOreo(
                     txPower: Int,
                     status: Int
                 ) {
-                    if (status != ADVERTISE_SUCCESS) {
+                    check(status == ADVERTISE_SUCCESS) {
                         logger.error("Advertising failed to start: $status")
                         continuation.resumeWithReason(status.toReason())
                         return
@@ -172,17 +166,43 @@ internal class BluetoothLeAdvertiserOreo(
                 }
             }
 
+            /** Timeout converted to number of milliseconds. */
+            var timeoutMillis = if (timeout.isInfinite()) 0 else timeout.inWholeMilliseconds.toInt()
+            /** Maximum number of advertising events. */
+            var maxExtendedAdvertisingEvents = maxAdvertisingEvents
+
+            // When checking support for max advertising events up until Android 15
+            // the BluetoothLeAdvertiser was checking if periodic advertising is supported,
+            // not extended advertising:
+            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
+            val isLeExtendedAdvertisingSupported = when {
+                Build.VERSION.SDK_INT >= 35 /* Vanilla Ice Cream */ ->
+                        bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
+
+                else -> bluetoothAdapter?.isLePeriodicAdvertisingSupported == true &&
+                        bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
+            }
+            // When user requested max advertising events, but extended advertising is not supported,
+            // let's convert it to a timeout using the advertising interval, just like in the
+            // legacy advertiser.
+            if (maxAdvertisingEvents > 0 && !isLeExtendedAdvertisingSupported) {
+                val newTimeout = parameters.interval.millis * maxAdvertisingEvents
+                if (timeoutMillis < newTimeout) {
+                    timeoutMillis = parameters.interval.millis * maxAdvertisingEvents
+                }
+                maxExtendedAdvertisingEvents = 0
+            }
+
             // Start advertising.
             try {
-                val duration = if (timeout.isInfinite()) 0 else timeout.inWholeMilliseconds.toInt()
                 advertiser.startAdvertisingSet(
                     parameters.toNative(),
                     payload.advertisingData.toNative(),
                     payload.scanResponse?.toNative(),
                     null,
                     null,
-                    duration / 10, // in 10 ms units
-                    maxAdvertisingEvents,
+                    timeoutMillis / 10, // convert to 10 ms units
+                    maxExtendedAdvertisingEvents,
                     callback,
                 )
                 logger.info("Advertising initiated")

@@ -69,7 +69,8 @@ class BluetoothLeAdvertiserMock internal constructor(
 ): BluetoothLeAdvertiser {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserMock::class.java)
 
-    override var name: String? = environment.deviceName
+    override var name: String? = if (environment.isBluetoothConnectPermissionGranted)
+        environment.deviceName else null
 
     override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int {
         if (!environment.isBluetoothSupported) return 0

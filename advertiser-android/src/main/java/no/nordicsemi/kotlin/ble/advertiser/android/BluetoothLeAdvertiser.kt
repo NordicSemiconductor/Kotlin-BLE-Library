@@ -62,7 +62,7 @@ internal abstract class NativeBluetoothLeAdvertiser(
     private val context: Context,
 ): BluetoothLeAdvertiser {
 
-    private val bluetoothAdapter: BluetoothAdapter?
+    internal val bluetoothAdapter: BluetoothAdapter?
         get() {
             val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
             return manager?.adapter
@@ -98,30 +98,35 @@ internal abstract class NativeBluetoothLeAdvertiser(
     internal val timeoutValidator: AdvertisingParametersValidator
         get() = AdvertisingParametersValidator(
             androidSdkVersion = Build.VERSION.SDK_INT,
-            // Up until Android 15 BluetoothLeAdvertiser was checking
-            // if periodic advertising is supported, not extended advertising:
-            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
-            isLeExtendedAdvertisingSupported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 &&
-                    bluetoothAdapter?.isLePeriodicAdvertisingSupported == true
         )
 
     /**
      * Checks if Bluetooth adapter is enabled.
      */
-    internal fun isBluetoothEnabled(): Boolean {
-        return bluetoothAdapter?.isEnabled == true
+    internal fun isBluetoothEnabled() = bluetoothAdapter?.isEnabled == true
+
+    /**
+     * Checks if the [Manifest.permission.BLUETOOTH_CONNECT] permission is granted.
+     *
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     */
+    internal fun checkConnectPermission() {
+        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
+        }
     }
 
     /**
      * Checks if the [Manifest.permission.BLUETOOTH_ADVERTISE] permission is granted.
      *
-     * This method returns true on Android versions below S.
+     * @throws SecurityException If BLUETOOTH_ADVERTISE permission is denied.
      */
-    internal fun isPermissionGranted(permission: String): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-             return ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_GRANTED
+    internal fun checkAdvertisePermission() {
+        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED) {
+            throw SecurityException("BLUETOOTH_ADVERTISE permission not granted")
         }
-        return true
     }
 
     @get:RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
@@ -129,10 +134,8 @@ internal abstract class NativeBluetoothLeAdvertiser(
     override var name: String?
         set(value) { bluetoothAdapter?.name = value }
         get() {
-            if (isPermissionGranted(Manifest.permission.BLUETOOTH_CONNECT)) {
-                return bluetoothAdapter?.name
-            }
-            return null
+            checkConnectPermission()
+            return bluetoothAdapter?.name
         }
 
     internal val nameOrNull: String?

@@ -41,12 +41,10 @@ import kotlin.time.Duration.Companion.milliseconds
  * A class that validates advertising parameters for given environment.
  *
  * @property androidSdkVersion The Android SDK version.
- * @property isLeExtendedAdvertisingSupported True if extended advertising is supported.
  * @throws InvalidAdvertisingDataException If the advertising parameters are invalid.
  */
 class AdvertisingParametersValidator(
     private val androidSdkVersion: Int,
-    private val isLeExtendedAdvertisingSupported: Boolean,
 ) {
 
     /**
@@ -56,12 +54,8 @@ class AdvertisingParametersValidator(
      * @param maxAdvertisingEvents The maximum number of advertising events. Available range is 0-255.
      */
     fun validate(timeout: Duration, maxAdvertisingEvents: Int) {
-        if (maxAdvertisingEvents < 0 || maxAdvertisingEvents > 255) {
+        require(maxAdvertisingEvents in 0..255) {
             throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
-        }
-
-        if (maxAdvertisingEvents != 0 && !isLeExtendedAdvertisingSupported) {
-            throw InvalidAdvertisingDataException(Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
         }
 
         // Infinite timeout is mapped to 0 (no timeout) in Mapper.
@@ -69,7 +63,7 @@ class AdvertisingParametersValidator(
             return
 
         val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
-        if (timeout.isNegative() || timeout > maxTimeout) {
+        require(!timeout.isNegative() && timeout <= maxTimeout) {
             throw InvalidAdvertisingDataException(Reason.ILLEGAL_PARAMETERS)
         }
     }

@@ -86,31 +86,43 @@ class AdvertisingDataValidator(
 
         // Check data length and optional features.
         if (parameters.legacy) {
-            if (totalBytes(payload.advertisingData, hasFlags) > MAX_LEGACY_ADVERTISING_DATA_BYTES) {
+            require(totalBytes(payload.advertisingData, hasFlags) <= MAX_LEGACY_ADVERTISING_DATA_BYTES) {
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
-            if (totalBytes(payload.scanResponse, false) > MAX_LEGACY_ADVERTISING_DATA_BYTES) {
+            require(totalBytes(payload.scanResponse, false) <= MAX_LEGACY_ADVERTISING_DATA_BYTES) {
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
         } else {
-            if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED && !isLeCodedPhySupported) {
-                throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+            if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED) {
+                require(isLeCodedPhySupported) {
+                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                }
             }
-            if (parameters.secondaryPhy == Phy.PHY_LE_CODED && !isLeCodedPhySupported ||
-                parameters.secondaryPhy == Phy.PHY_LE_2M && !isLe2MPhySupported) {
-                throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+            if (parameters.secondaryPhy == Phy.PHY_LE_CODED) {
+                require(isLeCodedPhySupported) {
+                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                }
             }
-            if (totalBytes(payload.advertisingData, hasFlags) > leMaximumAdvertisingDataLength) {
+            if (parameters.secondaryPhy == Phy.PHY_LE_2M) {
+                require(isLe2MPhySupported) {
+                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                }
+            }
+            require(totalBytes(payload.advertisingData, hasFlags) <= leMaximumAdvertisingDataLength) {
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
-            if (totalBytes(payload.scanResponse, false) > leMaximumAdvertisingDataLength) {
+            require(totalBytes(payload.scanResponse, false) <= leMaximumAdvertisingDataLength) {
                 throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
             }
-            if (isScannable && payload.scanResponse == null) {
-                throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_REQUIRED)
+            if (isScannable) {
+                require(payload.scanResponse != null) {
+                    throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_REQUIRED)
+                }
             }
-            if (!isConnectable && !isScannable && payload.scanResponse != null) {
-                throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_NOT_ALLOWED)
+            if (!isConnectable && !isScannable) {
+                require(payload.scanResponse == null) {
+                    throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_NOT_ALLOWED)
+                }
             }
         }
     }
