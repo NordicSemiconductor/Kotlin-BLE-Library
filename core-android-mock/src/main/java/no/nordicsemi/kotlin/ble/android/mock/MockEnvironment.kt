@@ -61,8 +61,8 @@ private const val DEFAULT_NAME = "Mock"
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
     var deviceName: String,
-    val isBluetoothSupported: Boolean = true,
-    val isBluetoothEnabled: Boolean = true,
+    val isBluetoothSupported: Boolean,
+    val isBluetoothEnabled: Boolean,
     val isLocationRequiredForScanning: Boolean = false,
     val isLocationPermissionGranted: Boolean = false,
     val isLocationEnabled: Boolean = false,

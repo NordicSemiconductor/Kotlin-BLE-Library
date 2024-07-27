@@ -31,46 +31,19 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.di
 
-import android.content.Context
+import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.ViewModelLifecycle
-import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.android.scopes.ViewModelScoped
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.android.native
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
-import no.nordicsemi.kotlin.ble.client.android.CentralManager
-import no.nordicsemi.kotlin.ble.client.android.native
-
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Named
 
 @Module
-@InstallIn(ViewModelComponent::class)
-object ViewModelModule {
+@InstallIn(SingletonComponent::class)
+class SdkModule {
 
     @Provides
-    @ViewModelScoped
-    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
-            }
-    }
-
-    @Provides
-    @ViewModelScoped
-    fun providesAdvertiser(@ApplicationContext context: Context): BluetoothLeAdvertiser {
-        return BluetoothLeAdvertiser.Factory.native(context)
-    }
-
-    @Provides
-    @ViewModelScoped
-    fun provideCentralManager(@ApplicationContext context: Context, scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.native(context, scope)
-    }
+    @Named("sdkVersion")
+    fun provideSdkVersion() = Build.VERSION.SDK_INT
 
 }

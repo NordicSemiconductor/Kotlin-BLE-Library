@@ -31,11 +31,14 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
+import kotlinx.coroutines.CancellableContinuation
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
+import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import org.jetbrains.annotations.Range
+import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Base advertiser interface for Android.
@@ -46,8 +49,10 @@ import kotlin.time.Duration
  *
  * Use [name] property to get or set the device name (it will affect all applications).
  */
-interface BluetoothLeAdvertiser:
+abstract class BluetoothLeAdvertiser:
     GenericBluetoothLeAdvertiser<AdvertisingSetParameters, AdvertisingPayload> {
+
+    companion object Factory
 
     /**
      * Starts Bluetooth LE advertising using given parameters.
@@ -60,14 +65,16 @@ interface BluetoothLeAdvertiser:
      * receive the actual TX power (in dBm) used for advertising.
      * @throws SecurityException If the BLUETOOTH_ADVERTISE permission is denied.
      * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
+     * @throws ValidationException If the advertising data is invalid.
      */
-    override suspend fun advertise(
+    final override suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         timeout: Duration,
         block: ((txPower: Int) -> Unit)?
-    )
+    ){
+        advertise(parameters, payload, timeout, 0, block)
+    }
 
     /**
      * Starts Bluetooth LE advertising using given parameters.
@@ -79,12 +86,70 @@ interface BluetoothLeAdvertiser:
      * receive the actual TX power (in dBm) used for advertising.
      * @throws SecurityException If the BLUETOOTH_ADVERTISE permission is denied.
      * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
+     * @throws ValidationException If the advertising data is invalid.
      */
-    suspend fun advertise(
+    final suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         maxAdvertisingEvents: @Range(from = 1L, to = 255L) Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        var timeout = Duration.INFINITE
+        var maxExtendedAdvertisingEvents = maxAdvertisingEvents
+
+        // When user requested max advertising events but extended advertising is not supported,
+        // convert it to a timeout using the advertising interval.
+        if (!isLeExtendedAdvertisingSupported) {
+            timeout = parameters.interval.millis.milliseconds * maxAdvertisingEvents
+            maxExtendedAdvertisingEvents = 0
+        }
+
+        advertise(parameters, payload, timeout, maxExtendedAdvertisingEvents, block)
+    }
+
+    private suspend fun advertise(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        timeout: Duration,
+        maxAdvertisingEvents: Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        // First, let's validate input.
+        // On newer Android versions this will also be done by the system when the advertising
+        // is started, but this way we may throw an exact reason.
+        validator.validate(parameters, payload)
+        timeoutValidator.validate(timeout, maxAdvertisingEvents)
+
+        // Check if Bluetooth is enabled and can advertise.
+        check(isBluetoothEnabled()) {
+            throw AdvertisingNotStartedException(
+                reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
+            )
+        }
+
+        // Check if the BLUETOOTH_ADVERTISE permission is granted.
+        checkAdvertisePermission()
+
+        startAdvertising(
+            parameters = parameters,
+            payload = payload,
+            timeout = timeout,
+            maxAdvertisingEvents = maxAdvertisingEvents,
+            block = block
+        )
+    }
+
+    /**
+     * This method should start advertising using the given parameters.
+     *
+     * If Advertising Extension is not supported, the [maxAdvertisingEvents] will be 0
+     * and the value already converted to [timeout].
+     */
+    protected abstract suspend fun startAdvertising(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        timeout: Duration,
+        maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     )
 
@@ -96,14 +161,62 @@ interface BluetoothLeAdvertiser:
      *
      * @throws SecurityException If the BLUETOOTH_CONNECT permission is denied.
      */
-    var name: String?
+    abstract var name: String?
+
+    /**
+     * The local Bluetooth adapter name, or null on error.
+     *
+     * @see name
+     */
+    val nameOrNull: String?
+        get() = try { name } catch (_: Exception) { null }
 
     /**
      * The maximum advertising data length supported by the Bluetooth adapter.
      *
      * @param legacy Whether the legacy advertising data length should be returned.
      */
-    fun getMaximumAdvertisingDataLength(legacy: Boolean): Int
+    abstract fun getMaximumAdvertisingDataLength(legacy: Boolean): Int
 
-    companion object Factory
+    /**
+     * Validator for the advertising data.
+     */
+    protected abstract val validator: AdvertisingDataValidator
+
+    /**
+     * Validator for the advertising parameters.
+     */
+    protected abstract val timeoutValidator: AdvertisingParametersValidator
+
+    /**
+     * Checks if Bluetooth adapter is enabled.
+     */
+    protected abstract fun isBluetoothEnabled(): Boolean
+
+    /**
+     * Checks if the BLUETOOTH_CONNECT permission is granted.
+     *
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     */
+    protected abstract fun checkConnectPermission()
+
+    /**
+     * Checks if the BLUETOOTH_ADVERTISE permission is granted.
+     *
+     * @throws SecurityException If BLUETOOTH_ADVERTISE permission is denied.
+     */
+    protected abstract fun checkAdvertisePermission()
+
+    /**
+     * Checks if the LE Extended Advertising is supported.
+     */
+    protected abstract val isLeExtendedAdvertisingSupported: Boolean
+
+    protected fun CancellableContinuation<Unit>.resumeWithReason(
+        reason: AdvertisingNotStartedException.Reason
+    ) = resumeWithException(AdvertisingNotStartedException(reason = reason))
+
+    protected fun CancellableContinuation<Unit>.resumeWithReason(
+        reason: ValidationException.Reason
+    ) = resumeWithException(ValidationException(reason = reason))
 }

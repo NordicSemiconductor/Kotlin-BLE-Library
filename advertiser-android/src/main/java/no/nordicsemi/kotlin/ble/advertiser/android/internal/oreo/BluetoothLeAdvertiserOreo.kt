@@ -36,7 +36,6 @@ import android.bluetooth.le.AdvertisingSetCallback
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
@@ -44,12 +43,13 @@ import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
+import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Class responsible for starting advertisements on Android API level >= 26.
@@ -64,44 +64,13 @@ internal class BluetoothLeAdvertiserOreo(
 ) : NativeBluetoothLeAdvertiser(context) {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserOreo::class.java)
 
-    override suspend fun advertise(
-        parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
-        timeout: Duration,
-        block: ((txPower: Int) -> Unit)?
-    ) {
-        advertise(parameters, payload, timeout, 0, block)
-    }
-
-    override suspend fun advertise(
-        parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
-        maxAdvertisingEvents: Int,
-        block: ((txPower: Int) -> Unit)?
-    ) {
-        advertise(parameters, payload, Duration.ZERO, maxAdvertisingEvents, block)
-    }
-
-    private suspend fun advertise(
+    override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
-        // First, let's validate input.
-        // On newer Android versions this will also be done by the system when the advertising
-        // is started, but this way we may throw an exact reason.
-        validator.validate(parameters, payload)
-        timeoutValidator.validate(timeout, maxAdvertisingEvents)
-
-        // Check if Bluetooth is enabled and can advertise.
-        check(isBluetoothEnabled()) {
-            throw AdvertisingNotStartedException(
-                reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
-            )
-        }
-
         val advertiser = bluetoothLeAdvertiser
         check(advertiser != null) {
             throw AdvertisingNotStartedException(
@@ -109,142 +78,112 @@ internal class BluetoothLeAdvertiserOreo(
             )
         }
 
-        // Android S introduced a new permission for advertising.
-        checkAdvertisePermission()
-
         // If all is fine, let's start advertising.
-        suspendCancellableCoroutine { continuation ->
-            val callback = object: AdvertisingSetCallback() {
-                /*
+        try {
+            suspendCancellableCoroutine { continuation ->
+                val callback = object : AdvertisingSetCallback() {
+                    /*
                  * This method is called when the advertising set is started.
                  */
-                override fun onAdvertisingSetStarted(
-                    advertisingSet: AdvertisingSet?,
-                    txPower: Int,
-                    status: Int
-                ) {
-                    check(status == ADVERTISE_SUCCESS) {
-                        logger.error("Advertising failed to start: $status")
-                        continuation.resumeWithReason(status.toReason())
-                        return
+                    override fun onAdvertisingSetStarted(
+                        advertisingSet: AdvertisingSet?,
+                        txPower: Int,
+                        status: Int
+                    ) {
+                        check(status == ADVERTISE_SUCCESS) {
+                            logger.error("Advertising failed to start: $status")
+                            continuation.resumeWithReason(status.toReason())
+                            return
+                        }
+                        // Advertising started.
+                        //
+                        // Note: Method `onAdvertisingEnabled(_, true, SUCCESS)` will NOT be called afterwards.
+                        //       It is only called when the advertising stops due to a timeout (with enable = false),
+                        //       or when it is restarted using `advertisingSet.enableAdvertising(true, 0, 0)`.
+                        logger.info("Advertising started")
+                        block?.invoke(txPower)
                     }
-                    // Advertising started.
-                    //
-                    // Note: Method `onAdvertisingEnabled(_, true, SUCCESS)` will NOT be called afterwards.
-                    //       It is only called when the advertising stops due to a timeout (with enable = false),
-                    //       or when it is restarted using `advertisingSet.enableAdvertising(true, 0, 0)`.
-                    logger.info("Advertising started")
-                    block?.invoke(txPower)
-                }
 
-                /*
+                    /*
                  * This method is called when the advertising stops due to a timeout or reaching
                  * required number of advertising events.
                  *
                  * It could be used to modify and restart the advertising set, but we don't support
                  * that yet. It is NOT started after starting advertising initially.
                  */
-                override fun onAdvertisingEnabled(
-                    advertisingSet: AdvertisingSet?,
-                    enable: Boolean,
-                    status: Int
-                ) {
-                    if (!enable) {
-                        logger.info("Advertising timed out: stopping advertising")
-                        // Advertising set is disabled, it also needs to be stopped.
-                        bluetoothLeAdvertiser?.stopAdvertisingSet(this)
+                    override fun onAdvertisingEnabled(
+                        advertisingSet: AdvertisingSet?,
+                        enable: Boolean,
+                        status: Int
+                    ) {
+                        if (!enable) {
+                            logger.info("Advertising timed out: stopping advertising")
+                            // Advertising set is disabled, it also needs to be stopped.
+                            bluetoothLeAdvertiser?.stopAdvertisingSet(this)
+                        }
                     }
-                }
 
-                /*
+                    /*
                  * This method is called when the advertising set is stopped using
                  * `advertiser.stopAdvertisingSet(callback)` or due to a timeout.
                  */
-                override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
-                    logger.info("Advertising stopped")
-                    continuation.resume(Unit)
+                    override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
+                        continuation.resume(Unit)
+                    }
+                }
+
+                // Start advertising.
+                try {
+                    val timeoutMillis = when {
+                        timeout == ZERO || timeout.isInfinite() -> 0     // no timeout
+                        timeout < 10.milliseconds -> 1                   // 1 unit of 10 ms is the minimum
+                        else -> timeout.inWholeMilliseconds.toInt() / 10 // convert to 10 ms units
+                    }
+                    advertiser.startAdvertisingSet(
+                        parameters.toNative(),
+                        payload.advertisingData.toNative(),
+                        payload.scanResponse?.toNative(),
+                        null,
+                        null,
+                        timeoutMillis,
+                        maxAdvertisingEvents,
+                        callback,
+                    )
+                    logger.info("Advertising initiated")
+                } catch (e: IllegalArgumentException) {
+                    logger.error("Illegal advertising set parameters", e)
+                    // For some reason, the new advertiser throws bunch of IllegalArgumentExceptions
+                    // instead of returning the status code in a callback.
+                    // To get the actual reason, we need to check the messages. Seriously...
+                    // (that's why we do initial validation above)
+                    if (e.message?.contains("too big") == true) {
+                        continuation.resumeWithReason(ValidationException.Reason.DATA_TOO_LARGE)
+                    } else if (e.message?.contains("PHY") == true) {
+                        continuation.resumeWithReason(ValidationException.Reason.PHY_NOT_SUPPORTED)
+                    } else if (e.message?.contains("support") == true) {
+                        continuation.resumeWithReason(ValidationException.Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
+                    } else if (e.message?.contains("callback") == true) {
+                        continuation.resumeWithReason(AdvertisingNotStartedException.Reason.INTERNAL_ERROR)
+                    } else if (e.message?.contains("out of range") == true) {
+                        continuation.resumeWithReason(ValidationException.Reason.ILLEGAL_PARAMETERS)
+                    } else {
+                        continuation.resumeWithReason(AdvertisingNotStartedException.Reason.UNKNOWN)
+                    }
+                    return@suspendCancellableCoroutine
+                } catch (e: IllegalStateException) {
+                    logger.error("Advertising failed to start", e)
+                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE)
+                    return@suspendCancellableCoroutine
+                }
+
+                // Cancel the advertising when the coroutine is cancelled.
+                continuation.invokeOnCancellation {
+                    logger.info("Advertising cancelled: stopping advertising")
+                    bluetoothLeAdvertiser?.stopAdvertisingSet(callback)
                 }
             }
-
-            /** Timeout converted to number of milliseconds. */
-            var timeoutMillis = if (timeout.isInfinite()) 0 else timeout.inWholeMilliseconds.toInt()
-            /** Maximum number of advertising events. */
-            var maxExtendedAdvertisingEvents = maxAdvertisingEvents
-
-            // When checking support for max advertising events up until Android 15
-            // the BluetoothLeAdvertiser was checking if periodic advertising is supported,
-            // not extended advertising:
-            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
-            val isLeExtendedAdvertisingSupported = when {
-                Build.VERSION.SDK_INT >= 35 /* Vanilla Ice Cream */ ->
-                        bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
-
-                else -> bluetoothAdapter?.isLePeriodicAdvertisingSupported == true &&
-                        bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
-            }
-            // When user requested max advertising events, but extended advertising is not supported,
-            // let's convert it to a timeout using the advertising interval, just like in the
-            // legacy advertiser.
-            if (maxAdvertisingEvents > 0 && !isLeExtendedAdvertisingSupported) {
-                val newTimeout = parameters.interval.millis * maxAdvertisingEvents
-                if (timeoutMillis < newTimeout) {
-                    timeoutMillis = parameters.interval.millis * maxAdvertisingEvents
-                }
-                maxExtendedAdvertisingEvents = 0
-            }
-
-            // Start advertising.
-            try {
-                advertiser.startAdvertisingSet(
-                    parameters.toNative(),
-                    payload.advertisingData.toNative(),
-                    payload.scanResponse?.toNative(),
-                    null,
-                    null,
-                    timeoutMillis / 10, // convert to 10 ms units
-                    maxExtendedAdvertisingEvents,
-                    callback,
-                )
-                logger.info("Advertising initiated")
-            } catch (e: IllegalArgumentException) {
-                logger.error("Illegal advertising set parameters", e)
-                // For some reason, the new advertiser throws bunch of IllegalArgumentExceptions
-                // instead of returning the status code in a callback.
-                // To get the actual reason, we need to check the messages. Seriously...
-                // (that's why we do initial validation above)
-                if (e.message?.contains("too big") == true) {
-                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.DATA_TOO_LARGE)
-                } else if (e.message?.contains("PHY") == true) {
-                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.PHY_NOT_SUPPORTED)
-                } else if (e.message?.contains("support") == true) {
-                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.EXTENDED_ADVERTISING_NOT_SUPPORTED)
-                } else if (e.message?.contains("callback") == true) {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.INTERNAL_ERROR)
-                } else if (e.message?.contains("out of range") == true) {
-                    continuation.resumeWithReason(InvalidAdvertisingDataException.Reason.ILLEGAL_PARAMETERS)
-                } else {
-                    continuation.resumeWithReason(AdvertisingNotStartedException.Reason.UNKNOWN)
-                }
-                return@suspendCancellableCoroutine
-            } catch (e: IllegalStateException) {
-                logger.error("Advertising failed to start", e)
-                continuation.resumeWithReason(AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE)
-                return@suspendCancellableCoroutine
-            }
-
-            // Cancel the advertising when the coroutine is cancelled.
-            continuation.invokeOnCancellation {
-                logger.info("Advertising cancelled: stopping advertising")
-                bluetoothLeAdvertiser?.stopAdvertisingSet(callback)
-            }
+        } finally {
+            logger.info("Advertising stopped")
         }
     }
-
-    private fun CancellableContinuation<Unit>.resumeWithReason(
-        reason: AdvertisingNotStartedException.Reason
-    ) = resumeWithException(AdvertisingNotStartedException(reason = reason))
-
-    private fun CancellableContinuation<Unit>.resumeWithReason(
-        reason: InvalidAdvertisingDataException.Reason
-    ) = resumeWithException(InvalidAdvertisingDataException(reason = reason))
 }

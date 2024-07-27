@@ -31,8 +31,8 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException
-import no.nordicsemi.kotlin.ble.advertiser.exception.InvalidAdvertisingDataException.Reason
+import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
+import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException.Reason
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
@@ -75,7 +75,7 @@ class AdvertisingDataValidator(
      *
      * @param parameters The advertising parameters.
      * @param payload The advertising payload.
-     * @throws InvalidAdvertisingDataException If the parameters or payload are invalid.
+     * @throws ValidationException If the parameters or payload are invalid.
      */
     fun validate(parameters: AdvertisingSetParameters, payload: AdvertisingPayload) {
         // Android adds flags automatically when advertising is connectable and discoverable.
@@ -87,41 +87,41 @@ class AdvertisingDataValidator(
         // Check data length and optional features.
         if (parameters.legacy) {
             require(totalBytes(payload.advertisingData, hasFlags) <= MAX_LEGACY_ADVERTISING_DATA_BYTES) {
-                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
+                throw ValidationException(Reason.DATA_TOO_LARGE)
             }
             require(totalBytes(payload.scanResponse, false) <= MAX_LEGACY_ADVERTISING_DATA_BYTES) {
-                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
+                throw ValidationException(Reason.DATA_TOO_LARGE)
             }
         } else {
             if (parameters.primaryPhy == PrimaryPhy.PHY_LE_CODED) {
                 require(isLeCodedPhySupported) {
-                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                    throw ValidationException(Reason.PHY_NOT_SUPPORTED)
                 }
             }
             if (parameters.secondaryPhy == Phy.PHY_LE_CODED) {
                 require(isLeCodedPhySupported) {
-                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                    throw ValidationException(Reason.PHY_NOT_SUPPORTED)
                 }
             }
             if (parameters.secondaryPhy == Phy.PHY_LE_2M) {
                 require(isLe2MPhySupported) {
-                    throw InvalidAdvertisingDataException(Reason.PHY_NOT_SUPPORTED)
+                    throw ValidationException(Reason.PHY_NOT_SUPPORTED)
                 }
             }
             require(totalBytes(payload.advertisingData, hasFlags) <= leMaximumAdvertisingDataLength) {
-                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
+                throw ValidationException(Reason.DATA_TOO_LARGE)
             }
             require(totalBytes(payload.scanResponse, false) <= leMaximumAdvertisingDataLength) {
-                throw InvalidAdvertisingDataException(Reason.DATA_TOO_LARGE)
+                throw ValidationException(Reason.DATA_TOO_LARGE)
             }
             if (isScannable) {
                 require(payload.scanResponse != null) {
-                    throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_REQUIRED)
+                    throw ValidationException(Reason.SCAN_RESPONSE_REQUIRED)
                 }
             }
             if (!isConnectable && !isScannable) {
                 require(payload.scanResponse == null) {
-                    throw InvalidAdvertisingDataException(Reason.SCAN_RESPONSE_NOT_ALLOWED)
+                    throw ValidationException(Reason.SCAN_RESPONSE_NOT_ALLOWED)
                 }
             }
         }

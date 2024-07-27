@@ -153,14 +153,6 @@ fun TxPowerLevel.toLegacy(): Int {
     }
 }
 
-internal fun TxPowerLevel.value(): Int {
-    return if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-        toLegacy()
-    } else {
-        toNative()
-    }
-}
-
 internal fun Int.toReason(): AdvertisingNotStartedException.Reason = when (this) {
     AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE -> AdvertisingNotStartedException.Reason.DATA_TOO_LARGE
     AdvertiseCallback.ADVERTISE_FAILED_TOO_MANY_ADVERTISERS -> AdvertisingNotStartedException.Reason.TOO_MANY_ADVERTISERS

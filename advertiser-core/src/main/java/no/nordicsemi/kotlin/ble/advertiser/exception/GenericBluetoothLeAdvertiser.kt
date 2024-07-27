@@ -48,8 +48,9 @@ interface GenericBluetoothLeAdvertiser<
      * @param timeout The advertising time limit. By default there is no timeout set.
      * @param block A block that will be called when the advertising is started. The block will
      * receive the actual TX power (in dBm) used for advertising.
+     * @throws SecurityException If the required permission is denied.
      * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws InvalidAdvertisingDataException If the advertising data is invalid.
+     * @throws ValidationException If the advertising data is invalid.
      */
     suspend fun advertise(
         parameters: P,

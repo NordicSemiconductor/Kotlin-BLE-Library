@@ -29,42 +29,36 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android
+package no.nordicsemi.kotlin.ble.android.sample.advertiser
 
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException.Reason
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.INFINITE
-import kotlin.time.Duration.Companion.milliseconds
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 
-/**
- * A class that validates advertising parameters for given environment.
- *
- * @property androidSdkVersion The Android SDK version.
- */
-class AdvertisingParametersValidator(
-    private val androidSdkVersion: Int,
-) {
+@Composable
+fun AdvertiserScreen() {
+    val vm = hiltViewModel<AdvertiserViewModel>()
+    val state by vm.isAdvertising.collectAsStateWithLifecycle()
+    val error by vm.error.collectAsStateWithLifecycle()
 
-    /**
-     * Validates timeout and maximum number of advertising events.
-     *
-     * @param timeout The advertising timeout.
-     * @param maxAdvertisingEvents The maximum number of advertising events. Available range is 0-255.
-     * @throws ValidationException If the advertising parameters are invalid.
-     */
-    fun validate(timeout: Duration, maxAdvertisingEvents: Int) {
-        require(maxAdvertisingEvents in 0..255) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
-        }
-
-        // Infinite timeout is mapped to 0 (no timeout) in Mapper.
-        if (timeout == INFINITE)
-            return
-
-        val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
-        require(!timeout.isNegative() && timeout <= maxTimeout) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
-        }
-    }
+    AdvertiserView(
+        isAdvertising = state,
+        onStartClicked = vm::startAdvertising,
+        onStopClicked = vm::stopAdvertising,
+        errorMessage = error,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(top = 16.dp, bottom = 32.dp),
+        sdkVersion = vm.sdkVersion,
+    )
 }

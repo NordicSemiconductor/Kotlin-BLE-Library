@@ -9,10 +9,20 @@ android {
         applicationId = "no.nordicsemi.kotlin.ble.android.sample"
         resourceConfigurations.add("en")
     }
+    flavorDimensions += listOf("mode")
+    productFlavors {
+        create("native") {
+            dimension = "mode"
+        }
+        create("mock") {
+            dimension = "mode"
+        }
+    }
 }
 
 dependencies {
     implementation(project(":advertiser-android"))
+    implementation(project(":advertiser-android-mock"))
     implementation(project(":client-android"))
     implementation(project(":client-android-mock"))
 

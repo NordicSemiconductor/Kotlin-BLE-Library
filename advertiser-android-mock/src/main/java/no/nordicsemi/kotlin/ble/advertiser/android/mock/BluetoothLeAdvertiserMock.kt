@@ -31,16 +31,25 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
-import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
+import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.TxPowerLevel
+import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.coroutines.suspendCoroutine
+import kotlin.coroutines.resume
 import kotlin.time.Duration
-
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Creates an instance of a mock [GenericBluetoothLeAdvertiser] for Android.
@@ -66,11 +75,66 @@ fun BluetoothLeAdvertiser.Factory.mock(
  */
 class BluetoothLeAdvertiserMock internal constructor(
     private val environment: MockEnvironment,
-): BluetoothLeAdvertiser {
+): BluetoothLeAdvertiser() {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserMock::class.java)
 
-    override var name: String? = if (environment.isBluetoothConnectPermissionGranted)
-        environment.deviceName else null
+    override suspend fun startAdvertising(
+        parameters: AdvertisingSetParameters,
+        payload: AdvertisingPayload,
+        timeout: Duration,
+        maxAdvertisingEvents: Int,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        try {
+            suspendCancellableCoroutine { continuation ->
+                // Mocking advertising has no impact on other features.
+                // Local advertising is not visible on scanner nor can be used to connect.
+                // Let's just pretend advertising has started.
+                logger.info("Advertising initiated")
+
+                fun TxPowerLevel.toDecibels() = when (this) {
+                    TxPowerLevel.TX_POWER_ULTRA_LOW -> -21
+                    TxPowerLevel.TX_POWER_LOW       -> -15
+                    TxPowerLevel.TX_POWER_MEDIUM    ->  -7
+                    TxPowerLevel.TX_POWER_HIGH      ->  +1
+                }
+                block?.invoke(parameters.txPowerLevel.toDecibels())
+
+                val duration = when {
+                    timeout > Duration.ZERO && timeout != Duration.INFINITE -> timeout
+                    maxAdvertisingEvents > 0 -> parameters.interval.millis.milliseconds * maxAdvertisingEvents
+                    else -> Duration.INFINITE
+                }
+
+                var job: Job? = null
+                if (duration > Duration.ZERO) {
+                    @OptIn(DelicateCoroutinesApi::class)
+                    job = GlobalScope.launch {
+                        delay(duration)
+                        logger.info("Advertising timed out: stopping advertising")
+                        continuation.resume(Unit)
+                    }
+                }
+
+                continuation.invokeOnCancellation {
+                    logger.info("Advertising cancelled: stopping advertising")
+                    job?.cancel()
+                }
+            }
+        } finally {
+            logger.info("Advertising stopped")
+        }
+    }
+
+    override var name: String?
+        set(value) {
+            require(value != null)
+            environment.deviceName = value
+        }
+        get() {
+            checkConnectPermission()
+            return environment.deviceName
+        }
 
     override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int {
         if (!environment.isBluetoothSupported) return 0
@@ -80,27 +144,38 @@ class BluetoothLeAdvertiserMock internal constructor(
         return environment.leMaximumAdvertisingDataLength
     }
 
-    override suspend fun advertise(
-        parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
-        maxAdvertisingEvents: Int,
-        block: ((txPower: Int) -> Unit)?
-    ) {
-        TODO("Not yet implemented")
+    override val isLeExtendedAdvertisingSupported: Boolean
+        get() = environment.androidSdkVersion >= 26 /* Oreo */ &&
+                environment.isLeExtendedAdvertisingSupported
+
+    override val validator: AdvertisingDataValidator
+        get() = AdvertisingDataValidator(
+                    deviceName = nameOrNull ?: "",
+                    isLe2MPhySupported = environment.isLe2MPhySupported,
+                    isLeCodedPhySupported = environment.isLeCodedPhySupported,
+                    isLeExtendedAdvertisingSupported = environment.isLeExtendedAdvertisingSupported,
+                    leMaximumAdvertisingDataLength = environment.leMaximumAdvertisingDataLength,
+                )
+
+    override val timeoutValidator: AdvertisingParametersValidator
+        get() = AdvertisingParametersValidator(
+                    androidSdkVersion = environment.androidSdkVersion,
+                )
+
+    override fun isBluetoothEnabled(): Boolean =
+        environment.isBluetoothSupported && environment.isBluetoothEnabled
+
+    override fun checkConnectPermission() {
+        if (environment.androidSdkVersion >= 31 /* S */ &&
+            !environment.isBluetoothConnectPermissionGranted) {
+            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
+        }
     }
 
-    override suspend fun advertise(
-        parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
-        timeout: Duration,
-        block: ((txPower: Int) -> Unit)?
-    ) = suspendCoroutine<Unit> { continuation ->
-        // Mocking advertising has no impact on other features.
-        // Local advertising is not visible on scanner nor can be used to connect.
-        // Let's just pretend advertising has started.
-        logger.info("Advertising initiated")
-
-        // TODO implement validation using above environment variables
-        // TODO implement timeout
+    override fun checkAdvertisePermission() {
+        if (environment.androidSdkVersion >= 31 /* S */ &&
+            !environment.isBluetoothAdvertisePermissionGranted) {
+            throw SecurityException("BLUETOOTH_ADVERTISE permission not granted")
+        }
     }
 }

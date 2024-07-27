@@ -31,30 +31,26 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy
 
-import android.Manifest
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
 import android.content.Context
-import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
+import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Class responsible for starting advertisements on Android API level < 26.
@@ -68,119 +64,88 @@ internal class BluetoothLeAdvertiserLegacy(
 ) : NativeBluetoothLeAdvertiser(context) {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserLegacy::class.java)
 
-    @RequiresPermission(value = Manifest.permission.BLUETOOTH_ADMIN)
-    override suspend fun advertise(
+    override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         timeout: Duration,
+        maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
-        // First, let's validate the advertising data.
-        // This will be done later, when the advertising is started, but this way we may throw
-        // an exact reason.
-        validator.validate(parameters, payload)
-        timeoutValidator.validate(timeout, 0)
-
-        // Check if Bluetooth is enabled and can advertise.
-        if (!isBluetoothEnabled()) {
-            logger.error("Advertising failed to start: Bluetooth is disabled or not available")
-            throw AdvertisingNotStartedException(
-                reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
-            )
-        }
         val advertiser = bluetoothLeAdvertiser
-        if (advertiser == null) {
-            logger.error("Advertising failed to start: Bluetooth LE advertiser is null")
+        check(advertiser != null) {
             throw AdvertisingNotStartedException(
                 reason = AdvertisingNotStartedException.Reason.FEATURE_UNSUPPORTED
             )
         }
 
         // If all is fine, let's start advertising.
-        suspendCancellableCoroutine { continuation ->
-            var timeoutJob: Job? = null
+        try {
+            suspendCancellableCoroutine { continuation ->
+                var timeoutJob: Job? = null
 
-            val callback = object : AdvertiseCallback() {
-                override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-                    logger.info("Advertising started")
+                val callback = object : AdvertiseCallback() {
+                    override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
+                        logger.info("Advertising started")
 
-                    // Legacy advertising doesn't have any callback for the timeout, so we need to
-                    // start a coroutine that will resume the method. Advertising should stop on
-                    // its own.
-                    // The max number of advertising events is converted to timeout if set,
-                    // so it's enough to check only the timeout.
-                    if (settingsInEffect.timeout > 0) {
-                        @OptIn(DelicateCoroutinesApi::class)
-                        timeoutJob = GlobalScope.launch {
-                            delay(settingsInEffect.timeout.toLong())
-                            logger.info("Advertising timed out")
-                            continuation.resume(Unit)
+                        // Legacy advertising doesn't have any callback for the timeout, so we need to
+                        // start a coroutine that will resume the method. Advertising should stop on
+                        // its own.
+                        // The max number of advertising events is converted to timeout if set,
+                        // so it's enough to check only the timeout.
+                        if (settingsInEffect.timeout > 0) {
+                            val callback = this
+
+                            @OptIn(DelicateCoroutinesApi::class)
+                            timeoutJob = GlobalScope.launch {
+                                delay(settingsInEffect.timeout.toLong())
+                                logger.info("Advertising timed out: stopping advertising")
+                                bluetoothLeAdvertiser?.stopAdvertising(callback)
+                                continuation.resume(Unit)
+                            }
                         }
+
+                        // Notify the caller that the advertising has started.
+                        block?.invoke(settingsInEffect.txPowerLevel)
                     }
 
-                    // Notify the caller that the advertising has started.
-                    block?.invoke(settingsInEffect.txPowerLevel)
+                    override fun onStartFailure(errorCode: Int) {
+                        logger.error("Advertising failed to start: error $errorCode")
+                        continuation.resumeWithReason(errorCode.toReason())
+                    }
                 }
 
-                override fun onStartFailure(errorCode: Int) {
-                    logger.error("Advertising failed to start: error $errorCode")
-                    continuation.resumeWithException(
-                        AdvertisingNotStartedException(reason = errorCode.toReason())
+                // Start advertising.
+                try {
+                    advertiser.startAdvertising(
+                        parameters.toLegacy(timeout),
+                        payload.advertisingData.toNative(),
+                        payload.scanResponse?.toNative(),
+                        callback,
                     )
-                }
-            }
-
-            // Start advertising.
-            try {
-                advertiser.startAdvertising(
-                    parameters.toLegacy(timeout),
-                    payload.advertisingData.toNative(),
-                    payload.scanResponse?.toNative(),
-                    callback,
-                )
-                logger.info("Advertising initiated")
-            } catch (e: IllegalArgumentException) {
-                logger.error("Illegal advertising set parameters", e)
-                continuation.resumeWithException(
-                    AdvertisingNotStartedException(
+                    logger.info("Advertising initiated")
+                } catch (e: IllegalArgumentException) {
+                    logger.error("Illegal advertising set parameters", e)
+                    continuation.resumeWithReason(
                         reason = AdvertisingNotStartedException.Reason.UNKNOWN
                     )
-                )
-                return@suspendCancellableCoroutine
-            } catch (e: IllegalStateException) {
-                logger.error("Failed to start advertising", e)
-                continuation.resumeWithException(
-                    AdvertisingNotStartedException(
+                    return@suspendCancellableCoroutine
+                } catch (e: IllegalStateException) {
+                    logger.error("Failed to start advertising", e)
+                    continuation.resumeWithReason(
                         reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
                     )
-                )
-                return@suspendCancellableCoroutine
+                    return@suspendCancellableCoroutine
+                }
+
+                // Cancel the advertising when the coroutine is cancelled.
+                continuation.invokeOnCancellation {
+                    logger.info("Advertising cancelled: stopping advertising")
+                    timeoutJob?.cancel()
+                    bluetoothLeAdvertiser?.stopAdvertising(callback)
+                }
             }
-
-            // Cancel the advertising when the coroutine is cancelled.
-            continuation.invokeOnCancellation {
-                logger.info("Advertising cancelled: stopping advertising")
-                timeoutJob?.cancel()
-                bluetoothLeAdvertiser?.stopAdvertising(callback)
-            }
+        } finally {
+            logger.info("Advertising stopped")
         }
-    }
-
-    override suspend fun advertise(
-        parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
-        maxAdvertisingEvents: Int,
-        block: ((txPower: Int) -> Unit)?
-    ) {
-        timeoutValidator.validate(Duration.INFINITE, maxAdvertisingEvents)
-
-        val timeout: Duration = when {
-            // If maxAdvertisingEvents is not set, there is no timeout.
-            // This should not be possible, as maxAdvertisingEvents is in range 1..255.
-            maxAdvertisingEvents <= 0 -> Duration.INFINITE
-            // If maxAdvertisingEvents is set, convert it to timeout using the advertising interval.
-            else -> parameters.interval.millis.milliseconds * maxAdvertisingEvents
-        }
-        advertise(parameters, payload, timeout, block)
     }
 }

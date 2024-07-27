@@ -54,7 +54,7 @@ fun LabeledSwitch(
 ) {
     Row(
         modifier = Modifier
-            .clickable { onCheckedChange(!checked) }
+            .clickable(enabled = enabled) { onCheckedChange(!checked) }
             .then(modifier),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -29,42 +29,36 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android
+package no.nordicsemi.kotlin.ble.advertiser.exception
 
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException.Reason
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.INFINITE
-import kotlin.time.Duration.Companion.milliseconds
-
-/**
- * A class that validates advertising parameters for given environment.
- *
- * @property androidSdkVersion The Android SDK version.
- */
-class AdvertisingParametersValidator(
-    private val androidSdkVersion: Int,
-) {
+data class ValidationException(
+    val reason: Reason
+): IllegalStateException("Invalid advertising data, reason: $reason") {
 
     /**
-     * Validates timeout and maximum number of advertising events.
-     *
-     * @param timeout The advertising timeout.
-     * @param maxAdvertisingEvents The maximum number of advertising events. Available range is 0-255.
-     * @throws ValidationException If the advertising parameters are invalid.
+     * An enum that represents the reason why the advertising data is invalid.
      */
-    fun validate(timeout: Duration, maxAdvertisingEvents: Int) {
-        require(maxAdvertisingEvents in 0..255) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
-        }
+    enum class Reason {
+        /** Failed to start advertising as the advertise data to be broadcast is larger than 31 bytes. */
+        DATA_TOO_LARGE,
+        /** Requested PHY is not supported on this platform. */
+        PHY_NOT_SUPPORTED,
+        /** Periodic advertising is not supported on this platform. */
+        EXTENDED_ADVERTISING_NOT_SUPPORTED,
+        /** Failed to start advertising due to illegal parameters. */
+        ILLEGAL_PARAMETERS,
+        /** Scan response is required for scannable advertisement, but not provided. */
+        SCAN_RESPONSE_REQUIRED,
+        /** Scan response is not allowed for non-scannable and non-connectable advertisement. */
+        SCAN_RESPONSE_NOT_ALLOWED;
 
-        // Infinite timeout is mapped to 0 (no timeout) in Mapper.
-        if (timeout == INFINITE)
-            return
-
-        val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
-        require(!timeout.isNegative() && timeout <= maxTimeout) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
+        override fun toString() = when (this) {
+            DATA_TOO_LARGE -> "Data too large"
+            PHY_NOT_SUPPORTED -> "PHY not supported"
+            EXTENDED_ADVERTISING_NOT_SUPPORTED -> "Extended advertising not supported"
+            ILLEGAL_PARAMETERS -> "Illegal value of maxAdvertisingEvents or timeout parameters"
+            SCAN_RESPONSE_REQUIRED -> "Scan response is required for scannable non-legacy advertisement"
+            SCAN_RESPONSE_NOT_ALLOWED -> "Scan response is not allowed for non-scannable and non-connectable advertisement"
         }
     }
 }

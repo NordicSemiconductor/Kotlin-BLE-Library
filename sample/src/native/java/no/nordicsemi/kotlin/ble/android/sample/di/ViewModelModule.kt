@@ -29,42 +29,42 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android
+package no.nordicsemi.kotlin.ble.android.sample.di
 
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException.Reason
-import kotlin.time.Duration
-import kotlin.time.Duration.Companion.INFINITE
-import kotlin.time.Duration.Companion.milliseconds
+import android.content.Context
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.ViewModelLifecycle
+import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.native
+import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.native
 
-/**
- * A class that validates advertising parameters for given environment.
- *
- * @property androidSdkVersion The Android SDK version.
- */
-class AdvertisingParametersValidator(
-    private val androidSdkVersion: Int,
-) {
+@Module
+@InstallIn(ViewModelComponent::class)
+object ViewModelModule {
 
-    /**
-     * Validates timeout and maximum number of advertising events.
-     *
-     * @param timeout The advertising timeout.
-     * @param maxAdvertisingEvents The maximum number of advertising events. Available range is 0-255.
-     * @throws ValidationException If the advertising parameters are invalid.
-     */
-    fun validate(timeout: Duration, maxAdvertisingEvents: Int) {
-        require(maxAdvertisingEvents in 0..255) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
-        }
+    @Provides
+    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
+        return CloseableCoroutineScope(SupervisorJob())
+            .also { closeableCoroutineScope ->
+                lifecycle.addOnClearedListener(closeableCoroutineScope)
+            }
+    }
 
-        // Infinite timeout is mapped to 0 (no timeout) in Mapper.
-        if (timeout == INFINITE)
-            return
+    @Provides
+    fun providesAdvertiser(@ApplicationContext context: Context): BluetoothLeAdvertiser {
+        return BluetoothLeAdvertiser.Factory.native(context)
+    }
 
-        val maxTimeout = if (androidSdkVersion >= 26) 655_350.milliseconds else 180_000.milliseconds
-        require(!timeout.isNegative() && timeout <= maxTimeout) {
-            throw ValidationException(Reason.ILLEGAL_PARAMETERS)
-        }
+    @Provides
+    fun provideCentralManager(@ApplicationContext context: Context, scope: CoroutineScope): CentralManager {
+        return CentralManager.Factory.native(context, scope)
     }
 }

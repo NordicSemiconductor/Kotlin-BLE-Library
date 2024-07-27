@@ -36,11 +36,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -58,9 +55,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingInterval
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
@@ -74,33 +68,13 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
 @Composable
-fun AdvertiserScreen() {
-    val vm = hiltViewModel<AdvertiserViewModel>()
-    val state by vm.isAdvertising.collectAsStateWithLifecycle()
-    val error by vm.error.collectAsStateWithLifecycle()
-
-    RequireBluetooth {
-        AdvertiserView(
-            isAdvertising = state,
-            onStartClicked = vm::startAdvertising,
-            onStopClicked = vm::stopAdvertising,
-            errorMessage = error,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(top = 16.dp, bottom = 32.dp),
-        )
-    }
-}
-
-@Composable
-private fun AdvertiserView(
+fun AdvertiserView(
     isAdvertising: Boolean,
     onStartClicked: (AdvertisingSetParameters) -> Unit,
     onStopClicked: () -> Unit,
     errorMessage: String?,
     modifier: Modifier = Modifier,
+    sdkVersion: Int = Build.VERSION.SDK_INT,
 ) {
     Column(
         modifier = modifier,
@@ -195,7 +169,7 @@ private fun AdvertiserView(
                     LabeledSwitch(
                         title = "Advertising Extension",
                         subtitle = "Requires Android 8+",
-                        enabled = !isAdvertising && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
+                        enabled = !isAdvertising && sdkVersion >= Build.VERSION_CODES.O,
                         checked = !legacy,
                         onCheckedChange = { legacy = !legacy },
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -226,7 +200,7 @@ private fun AdvertiserView(
                             LabeledSwitch(
                                 title = "Discoverable",
                                 subtitle = "Requires Android 14+",
-                                enabled = !isAdvertising && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+                                enabled = !isAdvertising && sdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
                                 checked = discoverable,
                                 onCheckedChange = { discoverable = !discoverable },
                                 modifier = Modifier.padding(horizontal = 16.dp),
