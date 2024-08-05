@@ -259,7 +259,9 @@ open class NativeCentralManagerEngine(
 
         // Finally, start the scan.
         val scanFilters = filters.filters
-        logger.trace("Starting scanning with filters: {}", scanFilters)
+        scanFilters?.let {
+            logger.trace("Starting scanning with filters: {}", it)
+        } ?: logger.trace("Starting scanning with no filters")
         scanner.startScan(scanFilters, settings, callback)
 
         // Set a timeout to stop the scan.
