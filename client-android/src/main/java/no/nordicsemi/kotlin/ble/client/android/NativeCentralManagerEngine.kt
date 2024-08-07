@@ -252,7 +252,7 @@ open class NativeCentralManagerEngine(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                logger.error("Scan failed, error code: $errorCode")
+                logger.error("Scan failed, error code: {}", errorCode)
                 close(ScanningFailedToStartException(errorCode.errorCodeToReason()))
             }
         }
