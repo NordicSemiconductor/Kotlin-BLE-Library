@@ -160,7 +160,7 @@ private fun ScanRecord.toAdvertisementData(): AdvertisementData {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                 serviceSolicitationUuids?.map { it.uuid } ?: emptyList()
             else emptyList(),
-        serviceData = serviceData.mapKeys { it.key.uuid },
+        serviceData = serviceData?.mapKeys { it.key.uuid } ?: emptyMap(),
         manufacturerData = manufacturerSpecificData.toMap(),
         raw = bytes,
     )
