@@ -161,7 +161,7 @@ private fun ScanRecord.toAdvertisementData(): AdvertisementData {
                 serviceSolicitationUuids?.map { it.uuid } ?: emptyList()
             else emptyList(),
         serviceData = serviceData?.mapKeys { it.key.uuid } ?: emptyMap(),
-        manufacturerData = manufacturerSpecificData.toMap(),
+        manufacturerData = manufacturerSpecificData?.toMap() ?: emptyMap(),
         raw = bytes,
     )
 }
