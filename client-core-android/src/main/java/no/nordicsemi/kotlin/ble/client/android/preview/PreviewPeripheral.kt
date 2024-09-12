@@ -350,7 +350,7 @@ open class PreviewPeripheral(
     name: String? = "My Device",
     type: PeripheralType = PeripheralType.LE,
     rssi: Int = -40, // dBm
-    phy: PhyInUse = PhyInUse.LE_1M,
+    phy: PhyInUse = PhyInUse.PHY_LE_1M,
     state: ConnectionState = ConnectionState.Disconnected(),
     services: ServerScope.() -> Unit = {
         Service(Service.GENERIC_ACCESS_UUID) {
