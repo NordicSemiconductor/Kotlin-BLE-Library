@@ -37,6 +37,7 @@ import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Engine
 import no.nordicsemi.kotlin.ble.core.Peer
+import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import java.io.Closeable
 import kotlin.time.Duration
 
@@ -61,12 +62,13 @@ abstract class GenericCentralManagerEngine<
     internal var isUsed: Boolean = false
 
     /**
-     * Returns a list of peripherals discovered by this instance of the Central Manager.
+     * Returns a list of peripherals with given IDs, known by this instance of the Central Manager.
      *
      * @param ids List of peripheral identifiers.
      * @return List of peripherals. The list may have a smaller size than the input list.
      * @see [Peer.identifier]
-     * @throws IllegalStateException When the engine was closed.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      */
     abstract fun getPeripheralsById(ids: List<ID>): List<P>
 
@@ -77,6 +79,8 @@ abstract class GenericCentralManagerEngine<
      *
      * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
+     * @return A flow of scan results.
+     * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
@@ -93,6 +97,8 @@ abstract class GenericCentralManagerEngine<
      *
      * @param timeout The scan duration. By default the scan will run until the flow is closed.
      * @param filter The filter to apply. By default no filter is applied.
+     * @return A flow of monitoring events.
+     * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
@@ -108,6 +114,8 @@ abstract class GenericCentralManagerEngine<
      * The flow is closed automatically when the peripheral leaves range of the monitoring device.
      * @param peripheral The peripheral to range.
      * @param timeout The scan duration. By default the scan will run until the flow is closed.
+     * @return A flow of ranging events.
+     * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
      * @throws ScanningException If an error occurred while starting the scan.
@@ -118,6 +126,10 @@ abstract class GenericCentralManagerEngine<
      * Connects to the given device.
      *
      * @param peripheral The peripheral to connect to.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
+     * by scanning or [getPeripheralsById].
      */
     abstract suspend fun connect(peripheral: P)
 }

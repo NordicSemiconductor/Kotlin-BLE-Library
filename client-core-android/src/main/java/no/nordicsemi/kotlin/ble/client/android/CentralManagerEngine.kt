@@ -74,6 +74,11 @@ abstract class CentralManagerEngine<C: Any>(
 
     /**
      * Returns a list of peripherals for which the system has bond information.
+     *
+     * @return List of bonded peripherals.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     abstract fun getBondedPeripherals(): List<Peripheral>
 
@@ -82,7 +87,11 @@ abstract class CentralManagerEngine<C: Any>(
      *
      * @param peripheral The peripheral to connect to.
      * @param options Connection options.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
+     * by scanning, [getPeripheralsById] or [getBondedPeripherals].
      */
     open suspend fun connect(
         peripheral: Peripheral,
@@ -107,7 +116,11 @@ abstract class CentralManagerEngine<C: Any>(
      * Connects to the given device using default connection options.
      *
      * @param peripheral The peripheral to connect to.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
+     * by scanning, [getPeripheralsById] or [getBondedPeripherals].
      * @see [ConnectionOptions.Default]
      */
     override suspend fun connect(peripheral: Peripheral) {
