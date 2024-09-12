@@ -131,7 +131,7 @@ internal class NativeRemoteDescriptor(
                 .filter { it.descriptor == descriptor }
                 .firstOrNull()
                 ?.let {
-                    check(it.status == OperationStatus.SUCCESS) {
+                    check(it.status.isSuccess) {
                         throw OperationFailedException(it.status)
                     }
                 }
