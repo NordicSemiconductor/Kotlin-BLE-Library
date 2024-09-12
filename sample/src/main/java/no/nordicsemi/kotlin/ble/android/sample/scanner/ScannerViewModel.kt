@@ -132,7 +132,7 @@ class ScannerViewModel @Inject constructor(
             .onCompletion {
                 _isScanning.update { false }
             }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
     }
 
     @OptIn(ExperimentalStdlibApi::class)
