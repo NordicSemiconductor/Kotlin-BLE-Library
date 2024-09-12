@@ -171,19 +171,17 @@ internal class NativeRemoteCharacteristic(
         // Write the characteristic value.
         NativeOperationMutex.withLock {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+                val result = try {
+                    gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+                } catch (e: Exception) {
+                    throw BluetoothException(e)
+                }
                 when (result) {
-                    BluetoothStatusCodes.SUCCESS -> { /* no-op */
-                    }
-
-                    BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED -> throw OperationFailedException(
-                        OperationStatus.WRITE_NOT_PERMITTED
-                    )
-
-                    BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY -> throw OperationFailedException(
-                        OperationStatus.BUSY
-                    )
-
+                    BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
+                    BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
+                        throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+                    BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
+                        throw OperationFailedException(OperationStatus.BUSY)
                     else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                 }
             } else {

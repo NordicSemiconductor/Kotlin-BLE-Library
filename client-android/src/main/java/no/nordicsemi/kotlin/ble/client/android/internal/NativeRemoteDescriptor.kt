@@ -102,7 +102,11 @@ internal class NativeRemoteDescriptor(
 
         NativeOperationMutex.withLock {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val result = gatt.writeDescriptor(descriptor, data)
+                val result = try {
+                    gatt.writeDescriptor(descriptor, data)
+                } catch (e: Exception) {
+                    throw BluetoothException(e)
+                }
                 when (result) {
                     BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
                     BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
