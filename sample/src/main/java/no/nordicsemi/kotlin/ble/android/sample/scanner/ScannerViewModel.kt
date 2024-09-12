@@ -103,14 +103,26 @@ class ScannerViewModel @Inject constructor(
             }
             //.distinct()
             .onEach { newPeripheral ->
-                Timber.w("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
+                Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
                 _devices.update { devices.value + newPeripheral }
             }
             .onEach { peripheral ->
                 // Track state of each peripheral.
                 peripheral.state
                     .onEach {
-                        Timber.w("State: $it")
+                        Timber.i("State: $it")
+                    }
+                    .onCompletion {
+                        Timber.d("State collection completed")
+                    }
+                    .launchIn(scope)
+                // Track bond state of each peripheral.
+                peripheral.bondState
+                    .onEach {
+                        Timber.i("Bond state: $it")
+                    }
+                    .onCompletion {
+                        Timber.d("Bond state collection completed")
                     }
                     .launchIn(scope)
             }
@@ -132,7 +144,7 @@ class ScannerViewModel @Inject constructor(
             launch {
                 try {
                     withTimeout(5000) {
-                        Timber.w("Connecting to ${peripheral.name}...")
+                        Timber.v("Connecting to ${peripheral.name}...")
                         centralManager.connect(
                             peripheral = peripheral,
                             options = if (autoConnect) {
@@ -147,31 +159,31 @@ class ScannerViewModel @Inject constructor(
                             },
                         )
                     }
-                    Timber.w("Connected to ${peripheral.name}!")
+                    Timber.i("Connected to ${peripheral.name}!")
 
                     // Observe PHY
                     peripheral.phy
                         .onEach {
-                            Timber.w("PHY changed to: $it")
+                            Timber.i("PHY changed to: $it")
                         }
                         .onEmpty {
                             Timber.w("PHY didn't change")
                         }
                         .onCompletion {
-                            Timber.i("PHY collection completed")
+                            Timber.d("PHY collection completed")
                         }
                         .launchIn(this)
 
                     // Observe connection parameters
                     peripheral.connectionParameters
                         .onEach {
-                            Timber.w("Connection parameters changed to: $it")
+                            Timber.i("Connection parameters changed to: $it")
                         }
                         .onEmpty {
                             Timber.w("Connection parameters didn't change")
                         }
                         .onCompletion {
-                            Timber.i("Connection parameters collection completed")
+                            Timber.d("Connection parameters collection completed")
                         }
                         .launchIn(this)
 
@@ -181,31 +193,31 @@ class ScannerViewModel @Inject constructor(
                     // Check maximum write length
                     val writeType = WriteType.WITHOUT_RESPONSE
                     val length = peripheral.maximumWriteValueLength(writeType)
-                    Timber.w("Maximum write length for $writeType: $length")
+                    Timber.i("Maximum write length for $writeType: $length")
 
                     // Read RSSI
                     val rssi = peripheral.readRssi()
-                    Timber.w("RSSI: $rssi dBm")
+                    Timber.i("RSSI: $rssi dBm")
 
                     // Read PHY
                     val phyInUse = peripheral.readPhy()
-                    Timber.w("PHY in use: $phyInUse")
+                    Timber.i("PHY in use: $phyInUse")
 
                     // Request connection priority
                     peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
-                    Timber.w("Connection priority changed to HIGH")
+                    Timber.i("Connection priority changed to HIGH")
 
                     // Discover services and do some GATT operations.
                     peripheral.services()
                         .onEach {
-                            Timber.w("Services changed: $it")
+                            Timber.i("Services changed: $it")
 
                             // Read values of all characteristics.
                             it.forEach { remoteService ->
                                 remoteService.characteristics.forEach { remoteCharacteristic ->
                                     try {
                                         val value = remoteCharacteristic.read()
-                                        Timber.w("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                                        Timber.i("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                                     } catch (e: Exception) {
                                         Timber.e("Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
                                     }
@@ -218,10 +230,16 @@ class ScannerViewModel @Inject constructor(
                                         Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
                                         remoteCharacteristic.subscribe()
                                             .onEach { newValue ->
-                                                Timber.w("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                                Timber.i("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                            }
+                                            .onEmpty {
+                                                Timber.w("No updates from ${remoteCharacteristic.uuid}")
+                                            }
+                                            .onCompletion {
+                                                Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
                                             }
                                             .launchIn(scope)
-                                        Timber.w("Subscribing to ${remoteCharacteristic.uuid} complete")
+                                        Timber.d("Subscribing to ${remoteCharacteristic.uuid} complete")
                                     } catch (e: Exception) {
                                         Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
                                     }
@@ -232,7 +250,7 @@ class ScannerViewModel @Inject constructor(
                             Timber.w("No services found")
                         }
                         .onCompletion {
-                            Timber.i("Service collection completed")
+                            Timber.d("Service collection completed")
                         }
                         .launchIn(this)
 
@@ -241,14 +259,14 @@ class ScannerViewModel @Inject constructor(
                     // service flow.
                     peripheral.services()
                         .onEach {
-                            Timber.w("-- Services changed: $it")
+                            Timber.i("-- Services changed: $it")
 
                             // Read values of all characteristics.
                             it.forEach { remoteService ->
                                 remoteService.characteristics.forEach { remoteCharacteristic ->
                                     try {
                                         val value = remoteCharacteristic.read()
-                                        Timber.w("-- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                                        Timber.i("-- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                                     } catch (e: Exception) {
                                         Timber.e("-- Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
                                     }
@@ -259,13 +277,13 @@ class ScannerViewModel @Inject constructor(
                             Timber.w("-- No services found")
                         }
                         .onCompletion {
-                            Timber.i("-- Service collection completed")
+                            Timber.d("-- Service collection completed")
                         }
                         .launchIn(this)
                 } catch (e: Exception) {
                     Timber.e(e, "OMG!")
                 }
-                Timber.w("Finishing job")
+                Timber.v("Finishing job")
             }
         }
     }
@@ -273,10 +291,10 @@ class ScannerViewModel @Inject constructor(
     fun disconnect(peripheral: Peripheral) {
         if (peripheral.isDisconnected) { return }
         scope.launch {
-            Timber.w("Disconnecting from ${peripheral.name}...")
+            Timber.v("Disconnecting from ${peripheral.name}...")
             try {
                 peripheral.disconnect()
-                Timber.w("Disconnected from ${peripheral.name}!")
+                Timber.i("Disconnected from ${peripheral.name}!")
             } catch (e: Exception) {
                 Timber.e(e)
             } finally {
