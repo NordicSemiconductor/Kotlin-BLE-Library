@@ -45,6 +45,7 @@ import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.mock.mock
 import no.nordicsemi.kotlin.ble.client.android.native
 
 @Module
@@ -65,8 +66,8 @@ object ViewModelModule {
     }
 
     @Provides
-    fun provideCentralManager(@ApplicationContext context: Context, scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.native(context, scope)
+    fun provideCentralManager(scope: CoroutineScope): CentralManager {
+        return CentralManager.Factory.mock(scope)
     }
 
 }
