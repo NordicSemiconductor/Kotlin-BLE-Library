@@ -48,6 +48,8 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":core"))
+
     api(libs.kotlinx.datetime)
+
     implementation(libs.slf4j)
 }

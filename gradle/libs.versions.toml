@@ -1,44 +1,25 @@
 [versions]
-androidDesugarJdkLibs = "2.1.2"
 androidGradlePlugin = "8.6.0"
 androidxActivity = "1.9.2"
 androidxAnnotation = "1.8.2"
-androidxAppCompat = "1.7.0"
 androidxComposeBom = "2024.09.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidxComposeRuntimeTracing = "1.0.0-beta01"
 androidxCore = "1.13.1"
 androidxCoreSplashscreen = "1.0.1"
-androidxDataStore = "1.1.1"
 androidxEspresso = "3.6.1"
 androidxHiltNavigationCompose = "1.2.0"
 androidxLifecycle = "2.8.5"
-androidxLocalbroadcastmanager = "1.1.0"
-androidxMacroBenchmark = "1.3.0"
 androidxNavigation = "2.8.0"
-androidxMetrics = "1.0.0-beta01"
-androidxProfileinstaller = "1.3.1"
-androidxStartup = "1.1.1"
-androidxWindowManager = "1.3.0"
-androidxTestCore = "1.6.1"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
-androidxTracing = "1.2.0"
-androidxUiAutomator = "2.3.0"
-androidxWork = "2.9.1"
 hilt = "2.52"
-hiltExt = "1.2.0"
 junit4 = "4.13.2"
 kotlin = "2.0.20"
 kotlinxCoroutines = "1.9.0-RC.2"
 kotlinxDatetime = "0.6.0"
-kotlinxSerializationJson = "1.7.0"
 kotlinCompose = "1.6.11"
 ksp = "2.0.20-1.0.25"
-lint = "31.6.0"
 publishPlugin = "1.2.2"
-timber = "5.0.1"
-chart = "3.1.0"
 leakcanary = "2.14"
 mockk = "1.13.10"
 slf4j = "2.0.13"
@@ -49,44 +30,22 @@ robolectric = "4.12.2"
 nordic-log = "2.5.0"
 nordic-data = "0.1.0"
 nordic-common = "2.1.0"
-nordic-memfault = "1.0.2"
 
 # Plugins
 nordicPlugins = "2.4"
 dokkaPlugin = "1.9.20"
-googleServicesPlugins = "4.4.2"
-junit = "1.2.1"
-materialVersion = "1.12.0"
 
 [libraries]
-android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidxActivity" }
 androidx-annotation = { group = "androidx.annotation", name = "annotation", version.ref = "androidxAnnotation" }
-androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "androidxAppCompat" }
-androidx-benchmark-macro = { group = "androidx.benchmark", name = "benchmark-macro-junit4", version.ref = "androidxMacroBenchmark" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "androidxComposeBom" }
-androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
-androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout" }
-androidx-compose-material = { group = "androidx.compose.material", name = "material" }
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-iconsExtended = { group = "androidx.compose.material", name = "material-icons-extended" }
-androidx-compose-material3-windowSizeClass = {group = "androidx.compose.material3", name = "material3-window-size-class" }
-androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime" }
-androidx-compose-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata" }
-androidx-compose-runtime-tracing = { group = "androidx.compose.runtime", name = "runtime-tracing", version.ref = "androidxComposeRuntimeTracing" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-compose-ui-testManifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
-androidx-compose-animation = {group = "androidx.compose.animation", name = "animation"}
 androidx-core = { group = "androidx.core", name = "core", version.ref = "androidxCore" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "androidxCore" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxCoreSplashscreen" }
-androidx-dataStore-core = { group = "androidx.datastore", name = "datastore", version.ref = "androidxDataStore" }
-androidx-dataStore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "androidxDataStore" }
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "androidxHiltNavigationCompose" }
 androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata", version.ref = "androidxLifecycle" }
@@ -97,28 +56,12 @@ androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-s
 androidx-lifecycle-viewModel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewModel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidxLifecycle" }
 androidx-lifecycle-viewModel-savedState = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-savedstate", version.ref = "androidxLifecycle" }
-androidx-localbroadcastmanager = { group = "androidx.localbroadcastmanager", name = "localbroadcastmanager", version.ref = "androidxLocalbroadcastmanager" }
-androidx-metrics = { group = "androidx.metrics", name = "metrics-performance", version.ref = "androidxMetrics" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
-androidx-navigation-testing = { group = "androidx.navigation", name = "navigation-testing", version.ref = "androidxNavigation" }
-androidx-profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "androidxProfileinstaller" }
-androidx-startup = { group = "androidx.startup", name = "startup-runtime", version.ref = "androidxStartup" }
-androidx-window-manager = {module = "androidx.window:window", version.ref = "androidxWindowManager"}
-androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 androidx-test-ext = { group = "androidx.test.ext", name = "junit-ktx", version.ref = "androidxTestExt" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxEspresso" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidxTestRules" }
-androidx-test-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "androidxUiAutomator" }
-androidx-tracing-ktx = {group = "androidx.tracing", name="tracing-ktx", version.ref = "androidxTracing" }
-androidx-work-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "androidxWork" }
-androidx-work-testing = { group = "androidx.work", name = "work-testing", version.ref = "androidxWork" }
-firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics-ktx" }
-firebase-database = { group = "com.google.firebase", name = "firebase-database-ktx" }
-firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics-ktx" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
-hilt-ext-work = { group = "androidx.hilt", name = "hilt-work", version.ref = "hiltExt" }
-hilt-ext-compiler = { group = "androidx.hilt", name = "hilt-compiler", version.ref = "hiltExt" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-android-testing = { group = "com.google.dagger", name = "hilt-android-testing", version.ref = "hilt" }
 junit4 = { group = "junit", name = "junit", version.ref = "junit4" }
@@ -128,12 +71,9 @@ kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "kotlinxCoroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutines" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinxDatetime" }
-kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
-lint-api = { group = "com.android.tools.lint", name = "lint-api", version.ref = "lint" }
-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
-chart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "chart" }
 leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", version.ref = "leakcanary" }
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
+slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 slf4j-timber = { group = "uk.kulikov", name = "slf4j2-timber", version.ref = "slf4j-timber" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
@@ -149,19 +89,8 @@ nordic-theme = { group = "no.nordicsemi.android.common", name = "theme", version
 nordic-analytics = { group = "no.nordicsemi.android.common", name = "analytics", version.ref = "nordic-common" }
 nordic-navigation = { group = "no.nordicsemi.android.common", name = "navigation", version.ref = "nordic-common" }
 nordic-logger = { group = "no.nordicsemi.android.common", name = "logger", version.ref = "nordic-common" }
-nordic-permissions-nfc = { group = "no.nordicsemi.android.common", name = "permissions-nfc", version.ref = "nordic-common" }
 nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version.ref = "nordic-common" }
-nordic-permissions-internet = { group = "no.nordicsemi.android.common", name = "permissions-internet", version.ref = "nordic-common" }
-nordic-permissions-notification = { group = "no.nordicsemi.android.common", name = "permissions-notification", version.ref = "nordic-common" }
-nordic-permissions-wifi = { group = "no.nordicsemi.android.common", name = "permissions-wifi", version.ref = "nordic-common" }
 # nordic-scanner = { group = "no.nordicsemi.android.common", name = "scanner", version.ref = "nordic-common" }
-nordic-memfault = { group = "no.nordicsemi.android", name = "memfault", version.ref = "nordic-memfault" }
-
-# Dependencies of the included build-logic
-android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "androidGradlePlugin" }
-kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
-androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junit" }
-material = { group = "com.google.android.material", name = "material", version.ref = "materialVersion" }
 
 [plugins]
 nordic-application = { id = "no.nordicsemi.android.plugin.application", version.ref = "nordicPlugins" }
@@ -188,4 +117,3 @@ kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref =
 kotlin-compose = { id = "org.jetbrains.compose", version.ref = "kotlinCompose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 publish = { id = "com.gradle.plugin-publish", version.ref = "publishPlugin" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugins" }

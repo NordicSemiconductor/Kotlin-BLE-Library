@@ -48,5 +48,6 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":client-core"))
+
     implementation(libs.slf4j)
 }

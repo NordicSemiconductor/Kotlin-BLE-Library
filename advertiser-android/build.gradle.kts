@@ -55,7 +55,7 @@ dependencies {
     api(project(":advertiser-core-android"))
 
     api(libs.androidx.annotation)
-    api(libs.androidx.core)
+    api(libs.androidx.core.ktx)
     api(libs.kotlinx.coroutines.android)
 
     implementation(libs.slf4j)
