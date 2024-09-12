@@ -55,6 +55,7 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
 import timber.log.Timber
 import javax.inject.Inject
@@ -79,7 +80,11 @@ class ScannerViewModel @Inject constructor(
     private var connectionScope: CoroutineScope? = null
 
     fun startScan() {
-        _devices.update { listOf(PreviewPeripheral(scope)) }
+        // Add a preview peripheral. Normally you may add it only in composable previews.
+        _devices.update {
+            listOf(PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M)))
+        }
+
         _isScanning.update { true }
         centralManager
             .scan(1250.milliseconds) {
@@ -182,6 +187,11 @@ class ScannerViewModel @Inject constructor(
                     val rssi = peripheral.readRssi()
                     Timber.w("RSSI: $rssi dBm")
 
+                    // Read PHY
+                    val phyInUse = peripheral.readPhy()
+                    Timber.w("PHY in use: $phyInUse")
+
+                    // Request connection priority
                     peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
                     Timber.w("Connection priority changed to HIGH")
 
