@@ -83,7 +83,31 @@ class ScannerViewModel @Inject constructor(
     fun startScan() {
         // Add a preview peripheral. Normally you may add it only in composable previews.
         _devices.update {
-            listOf(PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M)))
+            listOf(
+                PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
+                    .apply {
+                        state
+                            .onEach {
+                                Timber.i("State: $it")
+                                // Cancel connection scope, so that previously launched jobs are cancelled.
+                                if (it is ConnectionState.Disconnected) {
+                                    connectionScope.remove(this)?.cancel()
+                                }
+                            }
+                            .onCompletion {
+                                Timber.d("State collection completed")
+                            }
+                            .launchIn(scope)
+                        bondState
+                            .onEach {
+                                Timber.i("Bond state: $it")
+                            }
+                            .onCompletion {
+                                Timber.d("Bond state collection completed")
+                            }
+                            .launchIn(scope)
+                    }
+            )
         }
 
         _isScanning.update { true }
