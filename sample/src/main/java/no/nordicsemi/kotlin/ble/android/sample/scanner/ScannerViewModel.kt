@@ -54,6 +54,7 @@ import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
+import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -77,7 +78,7 @@ class ScannerViewModel @Inject constructor(
     private val _isScanning: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()
 
-    private var connectionScope: CoroutineScope? = null
+    private var connectionScope = mutableMapOf<Peripheral, CoroutineScope>()
 
     fun startScan() {
         // Add a preview peripheral. Normally you may add it only in composable previews.
@@ -111,6 +112,10 @@ class ScannerViewModel @Inject constructor(
                 peripheral.state
                     .onEach {
                         Timber.i("State: $it")
+                        // Cancel connection scope, so that previously launched jobs are cancelled.
+                        if (it is ConnectionState.Disconnected) {
+                            connectionScope.remove(peripheral)?.cancel()
+                        }
                     }
                     .onCompletion {
                         Timber.d("State collection completed")
@@ -140,7 +145,7 @@ class ScannerViewModel @Inject constructor(
         if (!peripheral.isDisconnected) {
             return
         }
-        connectionScope = CoroutineScope(context = Dispatchers.IO).apply {
+        connectionScope[peripheral] = CoroutineScope(context = Dispatchers.IO).apply {
             launch {
                 try {
                     withTimeout(5000) {
@@ -297,11 +302,6 @@ class ScannerViewModel @Inject constructor(
                 Timber.i("Disconnected from ${peripheral.name}!")
             } catch (e: Exception) {
                 Timber.e(e)
-            } finally {
-                // Cancel connection scope, so that previously launched jobs are cancelled.
-                Timber.v("Cancelling connection scope")
-                connectionScope?.cancel()
-                connectionScope = null
             }
         }
     }
