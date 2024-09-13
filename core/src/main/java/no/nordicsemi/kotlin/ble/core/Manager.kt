@@ -34,11 +34,12 @@
 package no.nordicsemi.kotlin.ble.core
 
 import kotlinx.coroutines.flow.StateFlow
+import java.io.Closeable
 
 /**
  * A base interface for a Bluetooth LE manager.
  */
-interface Manager<E: Engine> {
+interface Manager<E: Engine>: Closeable {
 
     /** A flow of the current state of the manager. */
     val state: StateFlow<State>
