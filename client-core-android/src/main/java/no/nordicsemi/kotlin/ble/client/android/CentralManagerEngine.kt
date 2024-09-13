@@ -51,14 +51,6 @@ abstract class CentralManagerEngine<C: Any>(
 ): GenericCentralManagerEngine<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope) {
 
     /**
-     * Flag indicating if the central manager is open.
-     *
-     * This is set to false when [close] is called.
-     */
-    protected var isOpen = true
-        private set
-
-    /**
      * Checks whether the BLUETOOTH_CONNECT permission is granted.
      *
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
@@ -98,7 +90,10 @@ abstract class CentralManagerEngine<C: Any>(
         options: ConnectionOptions
     ) {
         // Ensure the central manager has not been closed.
-        check(isOpen) { throw ManagerClosedException() }
+        ensureOpen()
+
+        // Ensure the peripheral was acquired from this Central Manager.
+        checkPeripheral(peripheral)
 
         // Ensure Bluetooth is enabled.
         check(state.value == Manager.State.POWERED_ON) {
@@ -125,12 +120,5 @@ abstract class CentralManagerEngine<C: Any>(
      */
     override suspend fun connect(peripheral: Peripheral) {
         connect(peripheral, ConnectionOptions.Default)
-    }
-
-    override fun close() {
-        // Ignore if already closed.
-        if (!isOpen)
-            return
-        isOpen = false
     }
 }

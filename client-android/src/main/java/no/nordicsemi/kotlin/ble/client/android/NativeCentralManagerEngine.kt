@@ -35,7 +35,6 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -111,11 +110,6 @@ open class NativeCentralManagerEngine(
     private val manager = ContextCompat.getSystemService(applicationContext, BluetoothManager::class.java)
 
     /**
-     * A list of peripherals known to this Central Manager instance.
-     */
-    private val knownPeripherals = mutableMapOf<BluetoothDevice, Peripheral>()
-
-    /**
      * State of the Bluetooth adapter.
      *
      * This is a [MutableStateFlow] that emits the current state of the Bluetooth adapter.
@@ -159,46 +153,27 @@ open class NativeCentralManagerEngine(
     }
 
     override fun getPeripheralsById(ids: List<String>): List<Peripheral> {
-        check(isOpen) { throw ManagerClosedException() }
+        // Ensure the central manager has not been closed.
+        ensureOpen()
 
         val adapter = manager?.adapter ?: throw BluetoothUnavailableException()
-        return ids
-            .map { adapter.getRemoteDevice(it) }
-            .map {
-                knownPeripherals.getOrPut(it) {
-                    Peripheral(
-                        scope = scope,
-                        impl = NativeExecutor(applicationContext, it)
-                    )
-                }
+        return ids.map {
+            getOrPutPeripheral(it) {
+                Peripheral(
+                    scope = scope,
+                    impl = NativeExecutor(applicationContext, adapter.getRemoteDevice(it))
+                )
             }
+        }
     }
 
     override fun getBondedPeripherals(): List<Peripheral> {
-        check(isOpen) { throw ManagerClosedException() }
+        // Ensure the central manager has not been closed.
+        ensureOpen()
 
         val adapter = manager?.adapter ?: throw BluetoothUnavailableException()
-        return adapter.bondedDevices
-            ?.map {
-                knownPeripherals.getOrPut(it) {
-                    Peripheral(
-                        scope = scope,
-                        impl = NativeExecutor(applicationContext, it)
-                    )
-                }
-            }
-            ?: emptyList()
-    }
-
-    override suspend fun connect(
-        peripheral: Peripheral,
-        options: CentralManager.ConnectionOptions
-    ) {
-        // Ensure the peripheral was acquired from this Central Manager.
-        require(knownPeripherals.containsValue(peripheral)) {
-            "$peripheral is not known to Central Manager instance"
-        }
-        super.connect(peripheral, options)
+        val ids = adapter.bondedDevices?.map { it.address } ?: return emptyList()
+        return getPeripheralsById(ids)
     }
 
     override fun scan(
@@ -246,7 +221,7 @@ open class NativeCentralManagerEngine(
             override fun onScanResult(callbackType: Int, result: NativeScanResult) {
                 val scanResult = result.toScanResult(
                     peripheral = { device, name ->
-                        knownPeripherals.getOrPut(device) {
+                        getOrPutPeripheral(device.address) {
                             Peripheral(scope, NativeExecutor(applicationContext, device, name))
                         }
                     }

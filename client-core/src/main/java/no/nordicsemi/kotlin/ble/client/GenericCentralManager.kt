@@ -39,7 +39,6 @@ import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
-import java.io.Closeable
 import kotlin.time.Duration
 
 /**
@@ -60,13 +59,12 @@ abstract class GenericCentralManager<
         SR: GenericScanResult<*, *>,
 >(
     private val engine: GenericCentralManagerEngine<ID, P, EX, F, SR>,
-): Manager<GenericCentralManagerEngine<ID, P, EX, F, SR>>, Closeable {
+): Manager<GenericCentralManagerEngine<ID, P, EX, F, SR>> {
     override val state: StateFlow<Manager.State> by lazy { engine.state }
 
     init {
         // Ensure the engine is not used by another manager.
-        check(!engine.isUsed) { "The engine is already used by another manager." }
-        engine.isUsed = true
+        engine.claim()
     }
 
     /**
@@ -146,7 +144,7 @@ abstract class GenericCentralManager<
      *
      * This method must be called when the manager is no longer needed.
      */
-    override fun close() = engine.close()
+    override fun close() = engine.finalize()
 
     /**
      * A base interface for scan filter scope.

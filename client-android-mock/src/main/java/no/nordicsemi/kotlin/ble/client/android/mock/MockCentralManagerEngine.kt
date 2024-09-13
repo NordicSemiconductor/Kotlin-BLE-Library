@@ -86,7 +86,7 @@ open class MockCentralManagerEngine(
      * Simulates a state change in the central manager.
      */
     fun simulateStateChange(newState: Manager.State) {
-        ensureNotClosed()
+        ensureOpen()
         require(newState != Manager.State.UNKNOWN)
         _state.update { newState }
     }
@@ -144,9 +144,5 @@ open class MockCentralManagerEngine(
         // Set the state to unknown.
         _state.update { Manager.State.UNKNOWN }
         super.close()
-    }
-
-    private fun ensureNotClosed() {
-        check(isOpen) { "CentralManager is closed" }
     }
 }

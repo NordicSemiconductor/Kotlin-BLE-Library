@@ -53,6 +53,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.Engine
+import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -222,23 +224,28 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      *
      * @param event The GATT event to process.
      */
-    protected open fun handle(event: GattEvent) = when (event) {
-        is ConnectionStateChanged -> {
-            if (event.newState is ConnectionState.Disconnected) {
-                handleDisconnection()
+    protected open fun handle(event: GattEvent) {
+        when (event) {
+            is ConnectionStateChanged -> {
+                _state.update { event.newState }
+                if (event.newState is ConnectionState.Disconnected) {
+                    handleDisconnection()
+                }
             }
-            _state.update { event.newState }
+
+            ServicesChanged -> {
+                logger.trace("Services invalidated")
+                invalidateServices()
+                discoverServices()
+            }
+
+            is ServicesDiscovered -> _services.update {
+                // Assign the owner to each service, making them valid.
+                event.services.onEach { it.owner = this }
+            }
+
+            else -> { /* Ignore */ }
         }
-        ServicesChanged -> {
-            logger.trace("Services invalidated")
-            invalidateServices()
-            discoverServices()
-        }
-        is ServicesDiscovered -> _services.update {
-            // Assign the owner to each service, making them valid.
-            event.services.onEach { it.owner = this }
-        }
-        else -> { /* Ignore */ }
     }
 
     /**
@@ -280,6 +287,18 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         gattEventCollector = null
         handleDisconnection()
         impl.close()
+    }
+
+    internal fun bind(engine: Engine) {
+        engine.state
+            .filter { it == Manager.State.POWERED_OFF }
+            .onEach {
+                _state.update {
+                    ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.TerminateLocalHost)
+                }
+                close()
+            }
+            .launchIn(scope)
     }
 
     /**

@@ -38,7 +38,6 @@ import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Engine
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
-import java.io.Closeable
 import kotlin.time.Duration
 
 /**
@@ -58,8 +57,74 @@ abstract class GenericCentralManagerEngine<
         SR: GenericScanResult<*, *>,
 >(
     protected val scope: CoroutineScope,
-): Engine, Closeable {
-    internal var isUsed: Boolean = false
+): Engine {
+    /**
+     * A flag indicating whether the engine is used by a manager.
+     */
+    private var isUsed: Boolean = false
+
+    /**
+     * Claims the engine for a manager.
+     */
+    internal fun claim() {
+        if (isUsed) {
+            throw IllegalStateException("The engine is already in use.")
+        }
+        isUsed = true
+    }
+
+    /**
+     * A list of peripherals known to this Central Manager instance.
+     */
+    private val knownPeripherals = mutableMapOf<ID, P>()
+
+    protected fun checkPeripheral(peripheral: P) {
+        require(knownPeripherals.containsValue(peripheral)) {
+            "$peripheral is not known to this Central Manager instance"
+        }
+    }
+
+    protected fun getOrPutPeripheral(id: ID, factory: (ID) -> P): P {
+        return knownPeripherals.getOrPut(id) {
+            factory(id).also {
+                it.bind(this)
+            }
+        }
+    }
+
+    /**
+     * Flag indicating if the central manager is open.
+     *
+     * This is set to false when [close] is called.
+     */
+    protected var isOpen = true
+        private set
+
+    /**
+     * Checks if the central manager is open, otherwise throws [ManagerClosedException].
+     */
+    protected fun ensureOpen() {
+        require(isOpen) { throw ManagerClosedException() }
+    }
+
+    /**
+     * Closes the manager engine.
+     *
+     * The engine cannot be used after it has been closed.
+     */
+    protected open fun close() {
+        isOpen = false
+    }
+
+    /**
+     * Closes the manager engine.
+     *
+     * This method just calls [close], but has `internal` access modifier to allow calling it
+     * from the manager.
+     */
+    internal fun finalize() {
+        close()
+    }
 
     /**
      * Returns a list of peripherals with given IDs, known by this instance of the Central Manager.
