@@ -37,4 +37,5 @@ dependencies {
 
     // Binder SLF4J -> Timber
     implementation(libs.slf4j.timber)
+    debugImplementation(libs.leakcanary)
 }
