@@ -77,11 +77,11 @@ sealed class ConnectionState {
             /**
              * Connection attempt was aborted due to an unsupported address.
              *
-             * See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
+             * Resolvable Private Address (RPA) can rotate, causing address to "expire" in the
+             * background connection list. RPA is allowed for direct connection, as such request
+             * times out after a short period of time.
              *
-             * RPA (Resolvable Private Address) can rotate, causing address to "expire" in the
-             * background connection list. RPA is allowed for direct connect, as such request
-             * times out after 30 seconds.
+             * See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
              */
             data object UnsupportedAddress: Reason()
             /**
