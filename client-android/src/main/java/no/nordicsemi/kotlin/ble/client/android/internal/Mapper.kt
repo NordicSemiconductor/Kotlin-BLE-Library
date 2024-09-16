@@ -37,17 +37,14 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanRecord
-import android.content.Context
 import android.os.Build
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.core.util.forEach
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 import no.nordicsemi.kotlin.ble.client.android.AdvertisementData
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import android.bluetooth.le.ScanResult as NativeScanResult
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
@@ -59,6 +56,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.WriteType
+import android.bluetooth.le.ScanResult as NativeScanResult
 
 internal fun Int.toState(): Manager.State = when (this) {
     BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
