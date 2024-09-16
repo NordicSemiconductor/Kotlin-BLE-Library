@@ -69,7 +69,6 @@ import no.nordicsemi.kotlin.ble.core.Manager.State.POWERED_ON
 import no.nordicsemi.kotlin.ble.core.Manager.State.RESETTING
 import no.nordicsemi.kotlin.ble.core.Manager.State.UNKNOWN
 import no.nordicsemi.kotlin.ble.core.Manager.State.UNSUPPORTED
-import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -181,15 +180,18 @@ open class NativeCentralManagerEngine(
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<ScanResult> = callbackFlow {
         // Ensure the central manager has not been closed.
-        if (!isOpen) {
-            close(ManagerClosedException())
+        try {
+            ensureOpen()
+        } catch (e: Exception) {
+            close(e)
             return@callbackFlow
         }
 
         // Ensure the Bluetooth is enabled and Bluetooth LE Scanner is available.
         val scanner = manager?.adapter
             ?.takeIf { it.isEnabled }
-            ?.bluetoothLeScanner ?: run {
+            ?.bluetoothLeScanner
+            ?: run {
                 close(BluetoothUnavailableException())
                 return@callbackFlow
             }
