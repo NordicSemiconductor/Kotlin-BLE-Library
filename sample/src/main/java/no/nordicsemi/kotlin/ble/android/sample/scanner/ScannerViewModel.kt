@@ -32,11 +32,11 @@
 package no.nordicsemi.kotlin.ble.android.sample.scanner
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -136,6 +136,8 @@ class ScannerViewModel @Inject constructor(
                 peripheral.state
                     .onEach {
                         Timber.i("State: $it")
+                        // Just for testing, wait with cancelling the scope to get all the logs.
+                        delay(500)
                         // Cancel connection scope, so that previously launched jobs are cancelled.
                         if (it is ConnectionState.Disconnected) {
                             connectionScope.remove(peripheral)?.cancel()
