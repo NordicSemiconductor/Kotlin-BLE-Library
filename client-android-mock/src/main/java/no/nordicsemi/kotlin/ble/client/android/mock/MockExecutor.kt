@@ -86,6 +86,9 @@ open class MockExecutor(
     override val events: Flow<GattEvent>
         get() = TODO("Not yet implemented")
 
+    override val isClosed: Boolean
+        get() = TODO("Not yet implemented")
+
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         TODO("Not yet implemented")
     }

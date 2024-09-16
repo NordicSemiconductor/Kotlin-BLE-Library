@@ -156,8 +156,8 @@ open class NativeCentralManagerEngine(
         ensureOpen()
 
         val adapter = manager?.adapter ?: throw BluetoothUnavailableException()
-        return ids.map {
-            getOrPutPeripheral(it) {
+        return ids.map { id ->
+            peripheral(id) {
                 Peripheral(
                     scope = scope,
                     impl = NativeExecutor(applicationContext, adapter.getRemoteDevice(it))
@@ -223,7 +223,7 @@ open class NativeCentralManagerEngine(
             override fun onScanResult(callbackType: Int, result: NativeScanResult) {
                 val scanResult = result.toScanResult(
                     peripheral = { device, name ->
-                        getOrPutPeripheral(device.address) {
+                        peripheral(device.address) {
                             Peripheral(scope, NativeExecutor(applicationContext, device, name))
                         }
                     }

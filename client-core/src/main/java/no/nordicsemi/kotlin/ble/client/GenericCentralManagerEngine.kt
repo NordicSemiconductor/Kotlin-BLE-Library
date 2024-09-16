@@ -33,9 +33,14 @@ package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onEach
 import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Engine
+import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
@@ -78,16 +83,40 @@ abstract class GenericCentralManagerEngine<
      */
     private val knownPeripherals = mutableMapOf<ID, P>()
 
+    /**
+     * Checks whether the given peripheral was obtained using this instance
+     * of the Central Manager.
+     */
     protected fun checkPeripheral(peripheral: P) {
         require(knownPeripherals.containsValue(peripheral)) {
-            "$peripheral is not known to this Central Manager instance"
+            "$peripheral was not obtained using this Central Manager instance"
         }
     }
 
-    protected fun getOrPutPeripheral(id: ID, factory: (ID) -> P): P {
+    /**
+     * Returns the [GenericPeripheral] object associated with given [id].
+     *
+     * If the Central Manager engine does not have a matching peripheral, the factory method
+     * is called to create it.
+     *
+     * @param id The peripheral ID.
+     * @param factory A lambda that should return a new peripheral instance for the given ID.
+     * @return The peripheral.
+     */
+    protected fun peripheral(id: ID, factory: (ID) -> P): P {
         return knownPeripherals.getOrPut(id) {
-            factory(id).also {
-                it.bind(this)
+            factory(id).also { newPeripheral ->
+                // Make sure the new peripheral is closed when the manager gets closed or
+                // the scope gets cancelled.
+                state
+                    .filter { it != Manager.State.POWERED_ON }
+                    .onEach {
+                        newPeripheral.forceClose()
+                    }
+                    .onCompletion {
+                        newPeripheral.forceClose()
+                    }
+                    .launchIn(scope)
             }
         }
     }

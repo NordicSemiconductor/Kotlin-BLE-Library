@@ -111,6 +111,9 @@ private class StubExecutor(
     private val _bondState = MutableStateFlow(if (hasBondInformation) BondState.BONDED else BondState.NONE)
     override val bondState: StateFlow<BondState> = _bondState.asStateFlow()
 
+    override val isClosed: Boolean
+        get() = false
+
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         _events.tryEmit(ConnectionStateChanged(ConnectionState.Connected))
     }

@@ -33,7 +33,6 @@
 
 package no.nordicsemi.kotlin.ble.client
 
-import org.slf4j.LoggerFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
@@ -47,17 +46,17 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
-import no.nordicsemi.kotlin.ble.core.Engine
-import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
+import org.slf4j.LoggerFactory
 import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -131,6 +130,11 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
 
         /** A flow of GATT events from the peripheral. */
         val events: Flow<GattEvent>
+
+        /**
+         * Returns true if the connection is closed.
+         */
+        val isClosed: Boolean
 
         /**
          * Makes a connection to the peripheral.
@@ -210,13 +214,56 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      *        false to keep collecting events.
      */
     protected fun startCollectingGattEvents(closeWhenDisconnected: Boolean = true) {
-        gattEventCollector?.cancel()
+        assert(gattEventCollector == null) {
+            "Previous GATT event collector wasn't nullified before creating a new one"
+        }
+
         gattEventCollector = impl.events
+            // Handle each GATT event.
             .onEach { handle(it) }
+            // In case of a Connection State Changed event...
             .filterIsInstance(ConnectionStateChanged::class)
+            // ...when the device got disconnected and the closeWhenDisconnected flag was set...
             .filter { closeWhenDisconnected && it.newState is ConnectionState.Disconnected }
-            .onEach { close() }
+            // ...cancel the collector. This will call...
+            .onEach { gattEventCollector?.cancel() }
+            // ...the onCompletion method.
+            .onCompletion {
+                gattEventCollector = null
+                close()
+            }
+            // Peripheral will also be closed if the scope gets cancelled.
             .launchIn(scope)
+    }
+
+    /**
+     * Cancels collection of GATT events and closes the connection.
+     */
+    protected fun close() {
+        // Cancel the event collector.
+        // If the collector was already cancelled or wasn't started, close the executor.
+        gattEventCollector?.cancel() ?: run {
+            handleDisconnection()
+            impl.close()
+        }
+    }
+
+    /**
+     * This method is called when the connection to the peripheral was terminated.
+     *
+     * It should reset data associated with the connection.
+     */
+    protected open fun handleDisconnection() {
+        invalidateServices()
+    }
+
+    /**
+     * Invalidates current GATT services.
+     */
+    private fun invalidateServices() {
+        _services.value.onEach { it.owner = null }
+        _services.update { emptyList() }
+        servicesDiscovered = false
     }
 
     /**
@@ -249,24 +296,6 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
     }
 
     /**
-     * This method is called when the connection to the peripheral was terminated.
-     *
-     * It should reset data associated with the connection.
-     */
-    protected open fun handleDisconnection() {
-        invalidateServices()
-    }
-
-    /**
-     * Invalidates current GATT services.
-     */
-    private fun invalidateServices() {
-        _services.value.onEach { it.owner = null }
-        _services.update { emptyList() }
-        servicesDiscovered = false
-    }
-
-    /**
      * Initiates service discovery on the peripheral.
      *
      * This method does nothing if [servicesDiscovered] is `true`.
@@ -280,26 +309,24 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
     }
 
     /**
-     * Cancels collection of GATT events and closes the connection.
+     * Forces closing the connection.
+     *
+     * This method should be called when the manager was closed or Bluetooth was disabled.
      */
-    protected fun close() {
-        gattEventCollector?.cancel()
-        gattEventCollector = null
-        handleDisconnection()
-        impl.close()
+    internal fun forceClose() {
+        if (impl.isClosed) {
+            return
+        }
+
+        if (state.value !is ConnectionState.Disconnected) {
+            _state.update {
+                ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.TerminateLocalHost)
+            }
+        }
+        close()
     }
 
-    internal fun bind(engine: Engine) {
-        engine.state
-            .filter { it == Manager.State.POWERED_OFF }
-            .onEach {
-                _state.update {
-                    ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.TerminateLocalHost)
-                }
-                close()
-            }
-            .launchIn(scope)
-    }
+    // Public API implementation
 
     /**
      * Returns a flow with a list of services discovered on the device.
@@ -412,6 +439,12 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         }
         close()
         logger.trace("Disconnected from {}", this)
+    }
+
+    // Other
+
+    override fun toString(): String {
+        return identifier.toString()
     }
 
     override fun equals(other: Any?): Boolean {

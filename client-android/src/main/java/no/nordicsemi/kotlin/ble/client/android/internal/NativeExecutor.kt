@@ -101,6 +101,9 @@ internal class NativeExecutor(
     override val events: Flow<GattEvent>
         get() = gattCallback.events
 
+    override val isClosed: Boolean
+        get() = gatt == null
+
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         gatt?.close()
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
@@ -174,6 +177,10 @@ internal class NativeExecutor(
     override fun close() {
         try {
             gatt?.disconnect()
+        } catch (e: Exception) {
+            // Ignore
+        }
+        try {
             gatt?.close()
         } catch (e: Exception) {
             // Ignore
