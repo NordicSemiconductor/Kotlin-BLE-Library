@@ -171,10 +171,8 @@ open class Peripheral(
      */
     internal suspend fun connect(options: CentralManager.ConnectionOptions) {
         // Check if the peripheral isn't already connected or has a pending connection.
-        state.value.let { currentState ->
-            if (currentState is ConnectionState.Connected) {
-                return
-            }
+        if (state.value is ConnectionState.Connected) {
+            return
         }
 
         // Start connection attempt, based on the connection options.
