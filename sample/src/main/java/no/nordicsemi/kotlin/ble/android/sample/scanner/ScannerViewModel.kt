@@ -78,34 +78,20 @@ class ScannerViewModel @Inject constructor(
     private val _isScanning: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()
 
-    private var connectionScope = mutableMapOf<Peripheral, CoroutineScope>()
+    private var connectionScopeMap = mutableMapOf<Peripheral, CoroutineScope>()
 
-    fun startScan() {
+    fun onScanRequested() {
         // Add a preview peripheral. Normally you may add it only in composable previews.
         _devices.update {
             listOf(
                 PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
                     .apply {
-                        state
-                            .onEach {
-                                Timber.i("State: $it")
-                                // Cancel connection scope, so that previously launched jobs are cancelled.
-                                if (it is ConnectionState.Disconnected) {
-                                    connectionScope.remove(this)?.cancel()
-                                }
-                            }
-                            .onCompletion {
-                                Timber.d("State collection completed")
-                            }
-                            .launchIn(scope)
-                        bondState
-                            .onEach {
-                                Timber.i("Bond state: $it")
-                            }
-                            .onCompletion {
-                                Timber.d("Bond state collection completed")
-                            }
-                            .launchIn(scope)
+                        // Track state of each peripheral.
+                        // Note, that the states are observed using the view model scope, even when the
+                        // device isn't connected.
+                        observePeripheralState(this, scope)
+                        // Track bond state of each peripheral.
+                        observeBondState(this, scope)
                     }
             )
         }
@@ -117,6 +103,7 @@ class ScannerViewModel @Inject constructor(
                     Name("Pixel 5")
                     Name("Pixel 7")
                     Name("Nordic_LBS")
+                    Name("Nordic_Buttonless")
                     Name("DFU2A16")
                     Name("Mesh Light")
                     // TODO Filtering by Regex and other runtime filters
@@ -133,29 +120,11 @@ class ScannerViewModel @Inject constructor(
             }
             .onEach { peripheral ->
                 // Track state of each peripheral.
-                peripheral.state
-                    .onEach {
-                        Timber.i("State: $it")
-                        // Just for testing, wait with cancelling the scope to get all the logs.
-                        delay(500)
-                        // Cancel connection scope, so that previously launched jobs are cancelled.
-                        if (it is ConnectionState.Disconnected) {
-                            connectionScope.remove(peripheral)?.cancel()
-                        }
-                    }
-                    .onCompletion {
-                        Timber.d("State collection completed")
-                    }
-                    .launchIn(scope)
+                // Note, that the states are observed using the view model scope, even when the
+                // device isn't connected.
+                observePeripheralState(peripheral, scope)
                 // Track bond state of each peripheral.
-                peripheral.bondState
-                    .onEach {
-                        Timber.i("Bond state: $it")
-                    }
-                    .onCompletion {
-                        Timber.d("Bond state collection completed")
-                    }
-                    .launchIn(scope)
+                observeBondState(peripheral, scope)
             }
             .catch { t ->
                 Timber.e("Scan failed: $t")
@@ -166,173 +135,214 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
-    fun connect(peripheral: Peripheral, autoConnect: Boolean) {
-        if (!peripheral.isDisconnected) {
-            return
-        }
-        connectionScope[peripheral] = CoroutineScope(context = Dispatchers.IO).apply {
-            launch {
-                try {
-                    withTimeout(5000) {
-                        Timber.v("Connecting to ${peripheral.name}...")
-                        centralManager.connect(
-                            peripheral = peripheral,
-                            options = if (autoConnect) {
-                                CentralManager.ConnectionOptions.AutoConnect
-                            } else {
-                                CentralManager.ConnectionOptions.Direct(
-                                    timeout = 24.seconds,
-                                    retry = 2,
-                                    retryDelay = 1.seconds,
-                                    Phy.PHY_LE_2M,
-                                )
-                            },
-                        )
-                    }
-                    Timber.i("Connected to ${peripheral.name}!")
-
-                    // Observe PHY
-                    peripheral.phy
-                        .onEach {
-                            Timber.i("PHY changed to: $it")
-                        }
-                        .onEmpty {
-                            Timber.w("PHY didn't change")
-                        }
-                        .onCompletion {
-                            Timber.d("PHY collection completed")
-                        }
-                        .launchIn(this)
-
-                    // Observe connection parameters
-                    peripheral.connectionParameters
-                        .onEach {
-                            Timber.i("Connection parameters changed to: $it")
-                        }
-                        .onEmpty {
-                            Timber.w("Connection parameters didn't change")
-                        }
-                        .onCompletion {
-                            Timber.d("Connection parameters collection completed")
-                        }
-                        .launchIn(this)
-
-                    // Request MTU
-                    peripheral.requestHighestValueLength()
-
-                    // Check maximum write length
-                    val writeType = WriteType.WITHOUT_RESPONSE
-                    val length = peripheral.maximumWriteValueLength(writeType)
-                    Timber.i("Maximum write length for $writeType: $length")
-
-                    // Read RSSI
-                    val rssi = peripheral.readRssi()
-                    Timber.i("RSSI: $rssi dBm")
-
-                    // Read PHY
-                    val phyInUse = peripheral.readPhy()
-                    Timber.i("PHY in use: $phyInUse")
-
-                    // Request connection priority
-                    peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
-                    Timber.i("Connection priority changed to HIGH")
-
-                    // Discover services and do some GATT operations.
-                    peripheral.services()
-                        .onEach {
-                            Timber.i("Services changed: $it")
-
-                            // Read values of all characteristics.
-                            it.forEach { remoteService ->
-                                remoteService.characteristics.forEach { remoteCharacteristic ->
-                                    try {
-                                        val value = remoteCharacteristic.read()
-                                        Timber.i("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
-                                    } catch (e: Exception) {
-                                        Timber.e("Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
-                                    }
-                                }
-                            }
-
-                            it.forEach { remoteService ->
-                                remoteService.characteristics.forEach { remoteCharacteristic ->
-                                    try {
-                                        Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
-                                        remoteCharacteristic.subscribe()
-                                            .onEach { newValue ->
-                                                Timber.i("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
-                                            }
-                                            .onEmpty {
-                                                Timber.w("No updates from ${remoteCharacteristic.uuid}")
-                                            }
-                                            .onCompletion {
-                                                Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
-                                            }
-                                            .launchIn(this)
-                                    } catch (e: Exception) {
-                                        Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
-                                    }
-                                }
-                            }
-                        }
-                        .onEmpty {
-                            Timber.w("No services found")
-                        }
-                        .onCompletion {
-                            Timber.d("Service collection completed")
-                        }
-                        .launchIn(this)
-
-                    // When the above operations are in progress, do some other operations in parallel.
-                    // This time service discovery won't be initiated and we're just subscribing to the
-                    // service flow.
-                    peripheral.services()
-                        .onEach {
-                            Timber.i("-- Services changed: $it")
-
-                            // Read values of all characteristics.
-                            it.forEach { remoteService ->
-                                remoteService.characteristics.forEach { remoteCharacteristic ->
-                                    try {
-                                        val value = remoteCharacteristic.read()
-                                        Timber.i("-- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
-                                    } catch (e: Exception) {
-                                        Timber.e("-- Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
-                                    }
-                                }
-                            }
-                        }
-                        .onEmpty {
-                            Timber.w("-- No services found")
-                        }
-                        .onCompletion {
-                            Timber.d("-- Service collection completed")
-                        }
-                        .launchIn(this)
-                } catch (e: Exception) {
-                    Timber.e(e, "OMG!")
-                }
-                Timber.v("Finishing job")
-            }
-        }
-    }
-
-    fun disconnect(peripheral: Peripheral) {
-        if (peripheral.isDisconnected) { return }
-        scope.launch {
+    fun onPeripheralSelected(peripheral: Peripheral) {
+        // If the connection scope exists for the given peripheral, that means we're connected
+        // and the user initiated disconnection.
+        val connectionScope = connectionScopeMap[peripheral]
+        connectionScope?.launch {
             Timber.v("Disconnecting from ${peripheral.name}...")
             try {
                 peripheral.disconnect()
                 Timber.i("Disconnected from ${peripheral.name}!")
             } catch (e: Exception) {
-                Timber.e(e)
+                Timber.e(e, "Disconnect failed")
             }
+        } ?: run {
+            // Otherwise, create a new connection scope that will handle all events until we are
+            // done with the device.
+            connectionScopeMap[peripheral] = CoroutineScope(context = Dispatchers.IO)
+                .apply {
+                    launch {
+                        try {
+                            withTimeout(5000) {
+                                connect(peripheral, true)
+                            }
+
+                            // The first time the app connects to the peripheral it needs to initiate
+                            // observers for various parameters.
+                            // The observers will get cancelled when the connection scope gets cancelled,
+                            // that is when the device is manually disconnected in case of auto connect,
+                            // or disconnects for any reason when auto connect was false.
+                            observerPhy(peripheral, this)
+                            observeConnectionParameters(peripheral, this)
+                            observerServices(peripheral, this)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Connection attempt failed")
+                        }
+                    }
+                }
         }
     }
 
     override fun onCleared() {
         super.onCleared()
         centralManager.close()
+    }
+
+    // ---- Implementation ----
+
+    private suspend fun connect(peripheral: Peripheral, autoConnect: Boolean) {
+        Timber.v("Connecting to ${peripheral.name}...")
+        centralManager.connect(
+            peripheral = peripheral,
+            options = if (autoConnect) {
+                CentralManager.ConnectionOptions.AutoConnect
+            } else {
+                CentralManager.ConnectionOptions.Direct(
+                    timeout = 24.seconds,
+                    retry = 2,
+                    retryDelay = 1.seconds,
+                    Phy.PHY_LE_2M,
+                )
+            },
+        )
+        Timber.i("Connected to ${peripheral.name}!")
+    }
+
+    private suspend fun initiateConnection(peripheral: Peripheral) {
+        try {
+            // Request MTU
+            peripheral.requestHighestValueLength()
+
+            // Check maximum write length
+            val writeType = WriteType.WITHOUT_RESPONSE
+            val length = peripheral.maximumWriteValueLength(writeType)
+            Timber.i("Maximum write length for $writeType: $length")
+
+            // Read RSSI
+            val rssi = peripheral.readRssi()
+            Timber.i("RSSI: $rssi dBm")
+
+            // Read PHY
+            val phyInUse = peripheral.readPhy()
+            Timber.i("PHY in use: $phyInUse")
+
+            // Request connection priority
+            peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
+            Timber.i("Connection priority changed to HIGH")
+
+            // Request service discovery
+            peripheral.services()
+        } catch (e: Exception) {
+            Timber.e(e, "OMG!")
+        }
+    }
+
+    private fun observerPhy(peripheral: Peripheral, scope: CoroutineScope) {
+        peripheral.phy
+            .onEach {
+                Timber.i("PHY changed to: $it")
+            }
+            .onEmpty {
+                Timber.w("PHY didn't change")
+            }
+            .onCompletion {
+                Timber.d("PHY collection completed")
+            }
+            .launchIn(scope)
+    }
+
+    private fun observeConnectionParameters(peripheral: Peripheral, scope: CoroutineScope) {
+        peripheral.connectionParameters
+            .onEach {
+                Timber.i("Connection parameters changed to: $it")
+            }
+            .onEmpty {
+                Timber.w("Connection parameters didn't change")
+            }
+            .onCompletion {
+                Timber.d("Connection parameters collection completed")
+            }
+            .launchIn(scope)
+    }
+
+    @OptIn(ExperimentalStdlibApi::class)
+    private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
+        peripheral.services()
+            .onEach {
+                Timber.i("Services changed: $it")
+
+                // Read values of all characteristics.
+                it.forEach { remoteService ->
+                    remoteService.characteristics.forEach { remoteCharacteristic ->
+                        try {
+                            val value = remoteCharacteristic.read()
+                            Timber.i("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                        } catch (e: Exception) {
+                            Timber.e("Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                        }
+                    }
+                }
+
+                it.forEach { remoteService ->
+                    remoteService.characteristics.forEach { remoteCharacteristic ->
+                        try {
+                            Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
+                            remoteCharacteristic.subscribe()
+                                .onEach { newValue ->
+                                    Timber.i("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                }
+                                .onEmpty {
+                                    Timber.w("No updates from ${remoteCharacteristic.uuid}")
+                                }
+                                .onCompletion {
+                                    Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
+                                }
+                                .launchIn(scope)
+                        } catch (e: Exception) {
+                            Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                        }
+                    }
+                }
+            }
+            .onEmpty {
+                Timber.w("No services found")
+            }
+            .onCompletion {
+                Timber.d("Service collection completed")
+            }
+            .launchIn(scope)
+    }
+
+    private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
+        peripheral.state
+            .onEach {
+                Timber.i("State: $it")
+
+                // Each time a connection changes, handle the new state
+                when (it) {
+                    is ConnectionState.Connected -> {
+                        connectionScopeMap[peripheral]?.launch {
+                            initiateConnection(peripheral)
+                        }
+                    }
+
+                    is ConnectionState.Disconnected -> {
+                        if (it.reason != ConnectionState.Disconnected.Reason.LinkLoss) {
+                            // Just for testing, wait with cancelling the scope to get all the logs.
+                            delay(500)
+                            // Cancel connection scope, so that previously launched jobs are cancelled.
+                            connectionScopeMap.remove(peripheral)?.cancel()
+                        }
+                    }
+
+                    else -> { /* Ignore */ }
+                }
+            }
+            .onCompletion {
+                Timber.d("State collection completed")
+            }
+            .launchIn(scope)
+    }
+
+    private fun observeBondState(peripheral: Peripheral, scope: CoroutineScope) {
+        peripheral.bondState
+            .onEach {
+                Timber.i("Bond state: $it")
+            }
+            .onCompletion {
+                Timber.d("Bond state collection completed")
+            }
+            .launchIn(scope)
     }
 }

@@ -76,19 +76,15 @@ fun ScannerScreen() {
         Text(text = "Bluetooth state: $state")
 
         RequireBluetooth {
-            RequireLocation { isLocationRequiredAndDisabled ->
+            RequireLocation {
                 // Both Bluetooth and Location permissions are granted.
                 // We can now start scanning.
                 ScannerView(
                     devices = devices,
                     isScanning = isScanning,
-                    onStartScan = { vm.startScan() },
+                    onStartScan = { vm.onScanRequested() },
                     onPeripheralClicked = {  device ->
-                        if (device.isConnected) {
-                            vm.disconnect(device)
-                        } else {
-                            vm.connect(device, autoConnect = false)
-                        }
+                        vm.onPeripheralSelected(device)
                     }
                 )
             }
