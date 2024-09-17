@@ -44,6 +44,7 @@ import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.PeripheralType
+import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
@@ -95,6 +96,13 @@ internal class NativeExecutor(
     /** The current bond state. */
     private var _bondState = MutableStateFlow(bluetoothDevice.bondState.toBondState())
     override val bondState = _bondState.asStateFlow()
+
+    /**
+     * This method is called when the bond state of the device changes.
+     */
+    internal fun onBondStateChanged(state: BondState) {
+        _bondState.value = state
+    }
 
     // Implementation
 

@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -48,9 +49,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.client.GenericCentralManager
@@ -60,9 +65,11 @@ import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartEx
 import no.nordicsemi.kotlin.ble.client.android.internal.ConjunctionFilter
 import no.nordicsemi.kotlin.ble.client.android.internal.NativeExecutor
 import no.nordicsemi.kotlin.ble.client.android.internal.errorCodeToReason
+import no.nordicsemi.kotlin.ble.client.android.internal.toBondState
 import no.nordicsemi.kotlin.ble.client.android.internal.toScanResult
 import no.nordicsemi.kotlin.ble.client.android.internal.toState
 import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Manager.State.POWERED_OFF
 import no.nordicsemi.kotlin.ble.core.Manager.State.POWERED_ON
@@ -131,10 +138,31 @@ open class NativeCentralManagerEngine(
         }
     }
 
+    private val _bondState =
+        MutableSharedFlow<Pair<String, BondState>>(extraBufferCapacity = 1)
+
+    private val bondStateBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val device = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                intent?.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                intent?.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
+            } ?: return
+            val previousBondState = intent!!.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.BOND_NONE).toBondState()
+            val bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE).toBondState()
+            logger.info("Bond state of $device changed: $previousBondState -> $bondState")
+            _bondState.tryEmit(device.address to bondState)
+        }
+    }
+
     init {
         // Register a broadcast receiver to monitor Bluetooth state changes.
-        val intentFilter = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, intentFilter, ContextCompat.RECEIVER_EXPORTED)
+        val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
+
+        val monitorBondState = IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, bondStateBroadcastReceiver, monitorBondState, ContextCompat.RECEIVER_EXPORTED)
     }
 
     override fun checkConnectPermission() {
@@ -161,6 +189,12 @@ open class NativeCentralManagerEngine(
                 Peripheral(
                     scope = scope,
                     impl = NativeExecutor(applicationContext, adapter.getRemoteDevice(it))
+                        .apply {
+                            _bondState
+                                .filter { (address, _) -> address == id }
+                                .onEach { (_, state) -> onBondStateChanged(state) }
+                                .launchIn(scope)
+                        }
                 )
             }
         }
@@ -224,7 +258,16 @@ open class NativeCentralManagerEngine(
                 val scanResult = result.toScanResult(
                     peripheral = { device, name ->
                         peripheral(device.address) {
-                            Peripheral(scope, NativeExecutor(applicationContext, device, name))
+                            Peripheral(
+                                scope = scope,
+                                impl = NativeExecutor(applicationContext, device, name)
+                                    .apply {
+                                        _bondState
+                                            .filter { (address, _) -> address == device.address }
+                                            .onEach { (_, state) -> onBondStateChanged(state) }
+                                            .launchIn(scope)
+                                    }
+                            )
                         }
                     }
                 ) ?: return
@@ -283,6 +326,7 @@ open class NativeCentralManagerEngine(
 
         // Release resources.
         applicationContext.unregisterReceiver(stateBroadcastReceiver)
+        applicationContext.unregisterReceiver(bondStateBroadcastReceiver)
 
         // Set the state to unknown.
         _state.update { UNKNOWN }
