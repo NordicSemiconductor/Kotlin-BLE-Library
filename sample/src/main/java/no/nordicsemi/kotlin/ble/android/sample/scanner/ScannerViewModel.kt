@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -72,7 +73,19 @@ class ScannerViewModel @Inject constructor(
 ): ViewModel() {
     val state = centralManager.state
 
-    private val _devices: MutableStateFlow<List<Peripheral>> = MutableStateFlow(emptyList())
+    private val _devices: MutableStateFlow<List<Peripheral>> = MutableStateFlow(
+        listOf(
+            PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
+                .apply {
+                    // Track state of each peripheral.
+                    // Note, that the states are observed using the view model scope, even when the
+                    // device isn't connected.
+                    observePeripheralState(this, scope)
+                    // Track bond state of each peripheral.
+                    observeBondState(this, scope)
+                }
+        )
+    )
     val devices = _devices.asStateFlow()
 
     private val _isScanning: MutableStateFlow<Boolean> = MutableStateFlow(false)
@@ -81,21 +94,6 @@ class ScannerViewModel @Inject constructor(
     private var connectionScopeMap = mutableMapOf<Peripheral, CoroutineScope>()
 
     fun onScanRequested() {
-        // Add a preview peripheral. Normally you may add it only in composable previews.
-        _devices.update {
-            listOf(
-                PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
-                    .apply {
-                        // Track state of each peripheral.
-                        // Note, that the states are observed using the view model scope, even when the
-                        // device isn't connected.
-                        observePeripheralState(this, scope)
-                        // Track bond state of each peripheral.
-                        observeBondState(this, scope)
-                    }
-            )
-        }
-
         _isScanning.update { true }
         centralManager
             .scan(1250.milliseconds) {
@@ -113,6 +111,7 @@ class ScannerViewModel @Inject constructor(
             .map {
                 it.peripheral
             }
+            .filterNot { _devices.value.contains(it) }
             //.distinct()
             .onEach { newPeripheral ->
                 Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
@@ -177,7 +176,9 @@ class ScannerViewModel @Inject constructor(
     fun onBondRequested(peripheral: Peripheral) {
         scope.launch {
             try {
+                Timber.i("Bonding with ${peripheral.name}...")
                 peripheral.createBond()
+                Timber.i("Bonding successful")
             } catch (e: Exception) {
                 Timber.e(e, "Bonding failed")
             }
@@ -187,7 +188,9 @@ class ScannerViewModel @Inject constructor(
     fun onRemoveBondRequested(peripheral: Peripheral) {
         scope.launch {
             try {
+                Timber.i("Removing bond information...")
                 peripheral.removeBond()
+                Timber.i("Bond removed")
             } catch (e: Exception) {
                 Timber.e(e, "Removing bond failed")
             }
@@ -197,7 +200,9 @@ class ScannerViewModel @Inject constructor(
     fun onClearCacheRequested(peripheral: Peripheral) {
         scope.launch {
             try {
+                Timber.i("Clearing cache...")
                 peripheral.refreshCache()
+                Timber.i("Cache cleared")
             } catch (e: Exception) {
                 Timber.e(e, "Clearing cache failed")
             }
@@ -219,7 +224,7 @@ class ScannerViewModel @Inject constructor(
                 CentralManager.ConnectionOptions.AutoConnect
             } else {
                 CentralManager.ConnectionOptions.Direct(
-                    timeout = 24.seconds,
+                    timeout = 3.seconds,
                     retry = 2,
                     retryDelay = 1.seconds,
                     Phy.PHY_LE_2M,
@@ -335,7 +340,7 @@ class ScannerViewModel @Inject constructor(
     private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.state
             .onEach {
-                Timber.i("State: $it")
+                Timber.i("State of $peripheral: $it")
 
                 // Each time a connection changes, handle the new state
                 when (it) {
@@ -345,20 +350,18 @@ class ScannerViewModel @Inject constructor(
                         }
                     }
 
-                    is ConnectionState.Disconnected -> {
-                        if (it.reason != ConnectionState.Disconnected.Reason.LinkLoss) {
-                            // Just for testing, wait with cancelling the scope to get all the logs.
-                            delay(500)
-                            // Cancel connection scope, so that previously launched jobs are cancelled.
-                            connectionScopeMap.remove(peripheral)?.cancel()
-                        }
+                    is ConnectionState.Closed -> {
+                        // Just for testing, wait with cancelling the scope to get all the logs.
+                        delay(500)
+                        // Cancel connection scope, so that previously launched jobs are cancelled.
+                        connectionScopeMap.remove(peripheral)?.cancel()
                     }
 
                     else -> { /* Ignore */ }
                 }
             }
             .onCompletion {
-                Timber.d("State collection completed")
+                Timber.d("State collection for $peripheral completed")
             }
             .launchIn(scope)
     }
@@ -366,10 +369,10 @@ class ScannerViewModel @Inject constructor(
     private fun observeBondState(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.bondState
             .onEach {
-                Timber.i("Bond state: $it")
+                Timber.i("Bond state of $peripheral: $it")
             }
             .onCompletion {
-                Timber.d("Bond state collection completed")
+                Timber.d("Bond state collection for $peripheral completed")
             }
             .launchIn(scope)
     }
