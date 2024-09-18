@@ -36,8 +36,8 @@ package no.nordicsemi.kotlin.ble.client
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -49,6 +49,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
@@ -140,7 +141,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         val initialServices: List<RemoteService>
 
         /** A flow of GATT events from the peripheral. */
-        val events: Flow<GattEvent>
+        val events: SharedFlow<GattEvent>
 
         /** Returns true if the connection is closed. */
         val isClosed: Boolean
@@ -214,8 +215,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         impl.events
             .filterIsInstance(ConnectionStateChanged::class)
             .map { it.newState }
-            .filter(condition)
-            .first()
+            .first { condition(it) }
     }
 
     /**
@@ -262,6 +262,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
             handleDisconnection()
             serviceDiscoveryRequested = false
             impl.close()
+            _state.update { ConnectionState.Closed }
         }
     }
 
@@ -396,7 +397,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         // If there is a filter, create a new flow that will emit filtered services only.
         val filteredServices = _services.value.filterBy(uuids)
         return _services
-            .map {  it.filterBy(uuids) }
+            .map { it.filterBy(uuids) }
             .stateIn(scope, SharingStarted.Lazily, filteredServices)
     }
 
@@ -431,16 +432,17 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
             throw PeripheralNotConnectedException()
         }
         logger.trace("Reading RSSI")
-        if (impl.readRssi()) {
-            return impl.events
-                .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(RssiRead::class)
-                .firstOrNull()?.rssi
-                ?.also { logger.info("RSSI read: {} dBm", it) }
-                ?: throw PeripheralNotConnectedException()
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        return impl.events
+            .onSubscription {
+                if (!impl.readRssi()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(RssiRead::class)
+            .firstOrNull()?.rssi
+            ?.also { logger.info("RSSI read: {} dBm", it) }
+            ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -489,7 +491,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
     // Other
 
     override fun toString(): String {
-        return identifier.toString()
+        return name ?: identifier.toString()
     }
 
     override fun equals(other: Any?): Boolean {

@@ -54,7 +54,7 @@ sealed class ConnectionState {
      *
      * @param reason Reason of disconnection, or _null_ if no connection attempt was made.
      */
-    data class Disconnected(val reason: Reason? = null): ConnectionState() {
+    data class Disconnected(val reason: Reason): ConnectionState() {
 
         /** Reason of disconnection. */
         sealed class Reason {
@@ -96,6 +96,14 @@ sealed class ConnectionState {
         }
     }
 
+    /**
+     * The connection is closed.
+     */
+    data object Closed: ConnectionState()
+
     val isConnected: Boolean
         get() = this is Connected
+
+    val isDisconnected: Boolean
+        get() = this is Disconnected || this is Closed
 }

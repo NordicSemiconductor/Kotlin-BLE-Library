@@ -35,8 +35,8 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.content.Context
 import android.os.Build
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteService
@@ -75,7 +75,7 @@ internal class NativeExecutor(
     } catch (e: SecurityException) {
         PeripheralType.UNKNOWN
     }
-    override val initialState: ConnectionState = ConnectionState.Disconnected()
+    override val initialState: ConnectionState = ConnectionState.Closed
     override val initialServices: List<RemoteService> = emptyList()
 
     /**
@@ -106,14 +106,15 @@ internal class NativeExecutor(
 
     // Implementation
 
-    override val events: Flow<GattEvent>
+    override val events: SharedFlow<GattEvent>
         get() = gattCallback.events
 
     override val isClosed: Boolean
         get() = gatt == null
 
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
-        assert(gatt == null) { "Peripheral is already connected" }
+        // On retry the previous GATT object may not be null and must be closed.
+        gatt?.close()
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
@@ -147,7 +148,6 @@ internal class NativeExecutor(
             }
 
             // There is no callback for services invalidated.
-            // TODO check if this is correct
             gattCallback.onServiceChanged(gatt)
             return true
         }

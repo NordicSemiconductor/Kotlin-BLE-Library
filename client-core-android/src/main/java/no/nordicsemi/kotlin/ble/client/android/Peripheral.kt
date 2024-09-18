@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.kotlin.ble.client.GattEvent
@@ -226,7 +227,7 @@ open class Peripheral(
             CentralManager.ConnectionOptions.AutoConnect -> {
                 impl.connect(true, emptyList())
                 try {
-                    val state = waitUntil { it is ConnectionState.Connected || it is ConnectionState.Disconnected }
+                    val state = waitUntil { it.isConnected || it.isDisconnected }
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger.info("Connected to {}", this)
@@ -254,16 +255,16 @@ open class Peripheral(
                                 _state.update { ConnectionState.Disconnected(Reason.UnsupportedAddress) }
                                 throw ConnectionFailedException(Reason.UnsupportedAddress)
                             }
-                            logger.warn("Connection attempt failed (reason: {})", state.reason ?: "unknown")
+                            logger.warn("Connection attempt failed (reason: {})", state.reason)
                             _state.update { state }
-                            throw ConnectionFailedException(state.reason ?: Reason.Success)
+                            throw ConnectionFailedException(state.reason)
                         }
                         else -> {}
                     }
                 } catch (e: CancellationException) {
                     logger.warn("Connection attempt cancelled")
+                    _state.update { ConnectionState.Disconnected(Reason.Cancelled) }
                     close()
-                    _state.update { (ConnectionState.Disconnected(Reason.Cancelled)) }
                     throw e
                 }
             }
@@ -272,7 +273,7 @@ open class Peripheral(
             is CentralManager.ConnectionOptions.Direct -> {
                 impl.connect(false, options.preferredPhy)
                 try {
-                    val state = waitUntil(options.timeout) { it is ConnectionState.Connected || it is ConnectionState.Disconnected }
+                    val state = waitUntil(options.timeout) { it.isConnected || it.isDisconnected }
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger.info("Connected to {}", this)
@@ -286,11 +287,12 @@ open class Peripheral(
                         }
                         is ConnectionState.Disconnected -> {
                             check(options.retry > 0) {
-                                logger.warn("Connection attempt failed (reason: {})", state.reason ?: "unknown")
+                                logger.warn("Connection attempt failed (reason: {})", state.reason)
                                 _state.update { state }
                                 throw ConnectionFailedException(state.reason ?: Reason.Success)
                             }
-                            logger.warn("Connection attempt failed (reason: {}), retrying in {}...", state.reason ?: "unknown", options.retryDelay)
+                            logger.warn("Connection attempt failed (reason: {}), retrying in {}...",
+                                state.reason, options.retryDelay)
                             delay(options.retryDelay)
                             connect(options.copy(retry = options.retry - 1))
                         }
@@ -298,13 +300,13 @@ open class Peripheral(
                     }
                 } catch (e: TimeoutCancellationException) {
                     logger.warn("Connection attempt timed out after {}", options.timeout)
-                    close()
                     _state.update { ConnectionState.Disconnected(Reason.Timeout(options.timeout)) }
+                    close()
                     throw e
                 } catch (e: CancellationException) {
                     logger.warn("Connection attempt cancelled")
+                    _state.update { ConnectionState.Disconnected(Reason.Cancelled) }
                     close()
-                    _state.update { (ConnectionState.Disconnected(Reason.Cancelled)) }
                     throw e
                 }
             }
@@ -349,16 +351,17 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         logger.trace("Reading PHY")
-        if (impl.readPhy()) {
-            return impl.events
-                .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(PhyChanged::class)
-                .firstOrNull()?.phy
-                ?.also { logger.info("PHY read: {}", it) }
-                ?: throw PeripheralNotConnectedException()
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        return impl.events
+            .onSubscription {
+                if (!impl.readPhy()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(PhyChanged::class)
+            .firstOrNull()?.phy
+            ?.also { logger.info("PHY read: {}", it) }
+            ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -388,16 +391,17 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         logger.trace("Setting preferred PHY: tx={}, rx={}, options={}", txPhy, rxPhy, phyOptions)
-        if (impl.requestPhy(txPhy, rxPhy, phyOptions)) {
-            return impl.events
-                .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(PhyChanged::class)
-                .firstOrNull()?.phy
-                ?.also { logger.info("PHY changed to: {}", it) }
-                ?: throw PeripheralNotConnectedException()
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        return impl.events
+            .onSubscription {
+                if (!impl.requestPhy(txPhy, rxPhy, phyOptions)) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(PhyChanged::class)
+            .firstOrNull()?.phy
+            ?.also { logger.info("PHY changed to: {}", it) }
+            ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -456,16 +460,17 @@ open class Peripheral(
         }
         mtuRequested = true
         logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
-        if (impl.requestMtu(ATT_MTU_MAX)) {
-            impl.events
-                .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(MtuChanged::class)
-                .firstOrNull()?.mtu
-                ?.also { logger.info("MTU set to {}", it) }
-                ?: throw PeripheralNotConnectedException()
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        impl.events
+            .onSubscription {
+                if (!impl.requestMtu(ATT_MTU_MAX)) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(MtuChanged::class)
+            .firstOrNull()?.mtu
+            ?.also { logger.info("MTU set to {}", it) }
+            ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -489,16 +494,17 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         logger.trace("Requesting connection priority: {}", priority)
-        if (impl.requestConnectionPriority(priority)) {
-            return impl.events
-                .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(ConnectionParametersChanged::class)
-                .firstOrNull()?.newParameters
-                ?.also { logger.info("Connection parameters updated: {}", it) }
-                ?: throw PeripheralNotConnectedException()
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        return impl.events
+            .onSubscription {
+                if (!impl.requestConnectionPriority(priority)) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(ConnectionParametersChanged::class)
+            .firstOrNull()?.newParameters
+            ?.also { logger.info("Connection parameters updated: {}", it) }
+            ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -522,19 +528,25 @@ open class Peripheral(
     }
 
     /**
-     * Refreshes the cached GATT database associated with the peripheral.
+     * Refreshes the cached GATT database associated with the peripheral and starts new service
+     * discovery automatically.
      *
-     * This method will clear the cache and start service discovery again.
-     * Flows returned by [services] will emit an empty list following by updated list of services
-     * when the service discovery is complete.
+     * All observers subscribed to invalidated attributes will be cancelled. The flows returned
+     * by [services] will emit an empty list of services following by updated list of services
+     * when the new service discovery is complete.
      *
-     * The peripheral does not need to be connected to refresh the cache, but it cannot be closed
-     * either. In example, it can be disconnected when the connection was made using
-     * [AutoConnect][CentralManager.ConnectionOptions.AutoConnect], but it cannot be disconnected
-     * when the connection was made using [Direct][CentralManager.ConnectionOptions.Direct] or
-     * never connected. In that case, the method will throw [PeripheralClosedException].
+     * The peripheral must be in any state other then [ConnectionState.Closed].
+     * It is safe to call this method when the peripheral is connected, connecting, or disconnecting.
+     * It may be called when the device is disconnected but only when the connection was made using
+     * [AutoConnect][CentralManager.ConnectionOptions.AutoConnect] option in which case the system
+     * is trying to reconnect.
      *
-     * @throws PeripheralClosedException If the peripheral is closed.
+     * A connection made using [Direct][CentralManager.ConnectionOptions.Direct] option closes
+     * automatically immediately after disconnection.
+     *
+     * When invoked when closed the method throws [PeripheralClosedException].
+     *
+     * @throws PeripheralClosedException If the peripheral is in [Closed][ConnectionState.Closed] state.
      * @throws OperationFailedException If cache could not be refreshed.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
@@ -543,13 +555,14 @@ open class Peripheral(
             throw PeripheralClosedException()
         }
         logger.trace("Refreshing cache")
-        if (impl.refreshCache()) {
-            impl.events
-                .first { it == ServicesChanged }
-                .also { logger.info("Cache refreshed") }
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        impl.events
+            .onSubscription {
+                if (!impl.refreshCache()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .first { it == ServicesChanged }
+            .also { logger.info("Cache refreshed") }
     }
 
     /**
@@ -564,22 +577,23 @@ open class Peripheral(
             return
         }
         logger.trace("Creating bond")
-        if (impl.createBond()) {
-            impl.bondState
-                .first { it != BondState.BONDING }
-                .also {
-                    when (it) {
-                        BondState.BONDED -> logger.info("Bond created")
-                        BondState.NONE -> {
-                            logger.warn("Bonding failed")
-                            throw BondingFailedException()
-                        }
-                        else -> { /* Not possible */ }
-                    }
+        impl.bondState
+            .onSubscription {
+                if (!impl.createBond()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                 }
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+            }
+            .first { it != BondState.BONDING }
+            .also {
+                when (it) {
+                    BondState.BONDED -> logger.info("Bond created")
+                    BondState.NONE -> {
+                        logger.warn("Bonding failed")
+                        throw BondingFailedException()
+                    }
+                    else -> { /* Not possible */ }
+                }
+            }
     }
 
     /**
@@ -595,13 +609,14 @@ open class Peripheral(
             return
         }
         logger.trace("Removing bond information")
-        if (impl.removeBond()) {
-            impl.bondState
-                .first { it == BondState.NONE }
-                .also { logger.info("Bond information removed") }
-        } else {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-        }
+        impl.bondState
+            .onSubscription {
+                if (!impl.removeBond()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .first { it == BondState.NONE }
+            .also { logger.info("Bond information removed") }
     }
 
     /**

@@ -33,8 +33,8 @@
 
 package no.nordicsemi.kotlin.ble.client.android.mock
 
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteService
@@ -58,7 +58,7 @@ open class MockExecutor(
     address: String,
     name: String? = null,
     override val type: PeripheralType = PeripheralType.LE,
-    override val initialState: ConnectionState = ConnectionState.Disconnected(),
+    override val initialState: ConnectionState = ConnectionState.Closed,
     override val initialServices: List<RemoteService> = emptyList(),
     initialBondState: BondState = BondState.NONE,
 ): Peripheral.Executor {
@@ -83,7 +83,7 @@ open class MockExecutor(
 
     // Implementation
 
-    override val events: Flow<GattEvent>
+    override val events: SharedFlow<GattEvent>
         get() = TODO("Not yet implemented")
 
     override val isClosed: Boolean

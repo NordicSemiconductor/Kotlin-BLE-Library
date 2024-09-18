@@ -35,6 +35,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -106,7 +107,7 @@ private class StubExecutor(
     hasBondInformation: Boolean,
 ): Peripheral.Executor {
     private val _events = MutableSharedFlow<GattEvent>(replay = 1)
-    override val events: Flow<GattEvent> = _events.asSharedFlow()
+    override val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
     private val _bondState = MutableStateFlow(if (hasBondInformation) BondState.BONDED else BondState.NONE)
     override val bondState: StateFlow<BondState> = _bondState.asStateFlow()
@@ -165,7 +166,13 @@ private class StubExecutor(
     }
 
     override fun disconnect(): Boolean {
-        _events.tryEmit(ConnectionStateChanged(ConnectionState.Disconnected()))
+        _events.tryEmit(
+            ConnectionStateChanged(
+                ConnectionState.Disconnected(
+                    reason = ConnectionState.Disconnected.Reason.Success
+                )
+            )
+        )
         return true
     }
 
@@ -373,7 +380,7 @@ open class PreviewPeripheral(
     type: PeripheralType = PeripheralType.LE,
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.PHY_LE_1M,
-    state: ConnectionState = ConnectionState.Disconnected(),
+    state: ConnectionState = ConnectionState.Closed,
     services: ServerScope.() -> Unit = {
         Service(Service.GENERIC_ACCESS_UUID) {
             Characteristic(

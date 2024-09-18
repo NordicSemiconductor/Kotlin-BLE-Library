@@ -40,9 +40,11 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
  */
 sealed class GattEvent {
 
+    /** Whether the event notifies about a disconnection. */
     val isDisconnectionEvent: Boolean
         get() = this is ConnectionStateChanged && disconnected
 
+    /** Whether the event notifies about services change, including disconnection. */
     val isServiceInvalidatedEvent: Boolean
         get() = isDisconnectionEvent || this is ServicesChanged
 }
@@ -54,9 +56,11 @@ sealed class GattEvent {
  */
 data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
 
-    /** Returns whether the new state is [ConnectionState.Disconnected]. */
+    /**
+     * Returns whether the new state is [ConnectionState.Disconnected] or [ConnectionState.Closed].
+     */
     val disconnected: Boolean
-        get() = newState is ConnectionState.Disconnected
+        get() = newState is ConnectionState.Disconnected || newState is ConnectionState.Closed
 }
 
 /**
