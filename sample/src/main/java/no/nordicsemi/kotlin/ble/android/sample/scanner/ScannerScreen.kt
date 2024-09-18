@@ -58,6 +58,7 @@ import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.core.ConnectionState
 
 @Composable
 fun ScannerScreen() {
@@ -83,9 +84,10 @@ fun ScannerScreen() {
                     devices = devices,
                     isScanning = isScanning,
                     onStartScan = { vm.onScanRequested() },
-                    onPeripheralClicked = {  device ->
-                        vm.onPeripheralSelected(device)
-                    }
+                    onPeripheralClicked = vm::onPeripheralSelected,
+                    onBondRequested = vm::onBondRequested,
+                    onRemoveBondRequested = vm::onRemoveBondRequested,
+                    onClearCacheRequested = vm::onClearCacheRequested,
                 )
             }
         }
@@ -98,6 +100,9 @@ fun ScannerView(
     isScanning: Boolean,
     onStartScan: () -> Unit,
     onPeripheralClicked: (Peripheral) -> Unit,
+    onBondRequested: (Peripheral) -> Unit,
+    onRemoveBondRequested: (Peripheral) -> Unit,
+    onClearCacheRequested: (Peripheral) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -128,7 +133,10 @@ fun ScannerView(
         DeviceList(
             modifier = Modifier.fillMaxWidth(),
             devices = devices,
-            onItemClick = { onPeripheralClicked(it) },
+            onItemClick = onPeripheralClicked,
+            onBondRequested = onBondRequested,
+            onRemoveBondRequested = onRemoveBondRequested,
+            onClearCacheRequested = onClearCacheRequested,
         )
     }
 }
@@ -140,13 +148,21 @@ fun ScannerScreenPreview() {
         val scope = rememberCoroutineScope()
         ScannerView(
             devices = listOf(
-                PreviewPeripheral(scope, "00:11:22:33:44:55", "Device 1"),
+                PreviewPeripheral(
+                    scope = scope,
+                    address = "00:11:22:33:44:55",
+                    name = "Device 1",
+                    state = ConnectionState.Connected,
+                ),
                 PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
                 PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
             ),
             isScanning = true,
             onStartScan = {},
             onPeripheralClicked = {},
+            onBondRequested = {},
+            onRemoveBondRequested = {},
+            onClearCacheRequested = {},
         )
     }
 }

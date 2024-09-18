@@ -113,42 +113,68 @@ internal class NativeExecutor(
         get() = gatt == null
 
     override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
-        gatt?.close()
+        assert(gatt == null) { "Peripheral is already connected" }
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
-    override fun discoverServices() {
-        gatt?.discoverServices()
+    override fun discoverServices(): Boolean {
+        return gatt?.discoverServices() ?: false
     }
 
-    override fun refreshCache() {
-        gatt?.let { gatt ->
-            try {
-                val method = gatt.javaClass.getMethod("refresh")
-                method.invoke(gatt)
-                gattCallback.onServiceChanged(gatt)
-            } catch (e: Exception) {
-                // Ignore
-            }
+    override fun createBond(): Boolean {
+        return bluetoothDevice.createBond()
+    }
+
+    override fun removeBond(): Boolean {
+        try {
+            val method = BluetoothDevice::class.java.getMethod("removeBond")
+            return method.invoke(bluetoothDevice) as Boolean
+        } catch (e: ReflectiveOperationException) {
+            return false
         }
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority) {
+    override fun refreshCache(): Boolean {
         gatt?.let { gatt ->
-            gatt.requestConnectionPriority(priority.toPriority())
+            val result = try {
+                val method = BluetoothGatt::class.java.getMethod("refresh")
+                method.invoke(gatt) as Boolean
+            } catch (e: ReflectiveOperationException) {
+                false
+            }
+            if (!result) {
+                return false
+            }
+
+            // There is no callback for services invalidated.
+            // TODO check if this is correct
+            gattCallback.onServiceChanged(gatt)
+            return true
+        }
+        return false
+    }
+
+    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
+        gatt?.let { gatt ->
+            val result = gatt.requestConnectionPriority(priority.toPriority())
+            if (!result) {
+                return false
+            }
 
             // Prior to Android Oreo there is no callback for connection parameters change.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 gattCallback.onConnectionUpdated()
             }
+            return true
         }
+        return false
     }
 
-    override fun requestMtu(mtu: Int) {
-        gatt?.requestMtu(mtu)
+    override fun requestMtu(mtu: Int): Boolean {
+        return gatt?.requestMtu(mtu) ?: false
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption) {
+    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 gatt.setPreferredPhy(txPhy.toPhy(), rxPhy.toPhy(), phyOptions.toOption())
@@ -158,10 +184,12 @@ internal class NativeExecutor(
                     1 /* BluetoothDevice.PHY_LE_1M */,
                     BluetoothGatt.GATT_SUCCESS)
             }
+            return true
         }
+        return false
     }
 
-    override fun readPhy() {
+    override fun readPhy(): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 gatt.readPhy()
@@ -171,15 +199,21 @@ internal class NativeExecutor(
                     1 /* BluetoothDevice.PHY_LE_1M */,
                     BluetoothGatt.GATT_SUCCESS)
             }
+            return true
         }
+        return false
     }
 
-    override fun readRssi() {
-        gatt?.readRemoteRssi()
+    override fun readRssi(): Boolean {
+        return gatt?.readRemoteRssi() ?: false
     }
 
-    override fun disconnect() {
-        gatt?.disconnect()
+    override fun disconnect(): Boolean {
+        gatt?.let { gatt ->
+            gatt.disconnect()
+            return true
+        }
+        return false
     }
 
     override fun close() {

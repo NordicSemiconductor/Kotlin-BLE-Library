@@ -95,4 +95,7 @@ sealed class ConnectionState {
             data class Timeout(val duration: Duration): Reason()
         }
     }
+
+    val isConnected: Boolean
+        get() = this is Connected
 }

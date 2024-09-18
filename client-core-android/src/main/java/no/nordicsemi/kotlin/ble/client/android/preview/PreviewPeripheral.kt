@@ -118,36 +118,55 @@ private class StubExecutor(
         _events.tryEmit(ConnectionStateChanged(ConnectionState.Connected))
     }
 
-    override fun discoverServices() {
+    override fun discoverServices(): Boolean {
         _events.tryEmit(ServicesDiscovered(initialServices))
+        return true
     }
 
-    override fun refreshCache() {
+    override fun createBond(): Boolean {
+        _bondState.tryEmit(BondState.BONDED)
+        return true
+    }
+
+    override fun removeBond(): Boolean {
+        _bondState.tryEmit(BondState.NONE)
+        _events.tryEmit(ConnectionStateChanged(ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.TerminateLocalHost)))
+        return true
+    }
+
+    override fun refreshCache(): Boolean {
         _events.tryEmit(ServicesChanged)
+        return true
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority) {
+    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
         _events.tryEmit(ConnectionParametersChanged(ConnectionParameters.Connected(15, 0, 0)))
+        return true
     }
 
-    override fun requestMtu(mtu: Int) {
+    override fun requestMtu(mtu: Int): Boolean {
         _events.tryEmit(MtuChanged(mtu))
+        return true
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption) {
+    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         _events.tryEmit(PhyChanged(PhyInUse(txPhy, rxPhy)))
+        return true
     }
 
-    override fun readPhy() {
+    override fun readPhy(): Boolean {
         _events.tryEmit(PhyChanged(phy))
+        return true
     }
 
-    override fun readRssi() {
+    override fun readRssi(): Boolean {
         _events.tryEmit(RssiRead(rssi))
+        return true
     }
 
-    override fun disconnect() {
+    override fun disconnect(): Boolean {
         _events.tryEmit(ConnectionStateChanged(ConnectionState.Disconnected()))
+        return true
     }
 
     override fun close() {

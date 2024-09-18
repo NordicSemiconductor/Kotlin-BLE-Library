@@ -93,35 +93,43 @@ open class MockExecutor(
         TODO("Not yet implemented")
     }
 
-    override fun discoverServices() {
+    override fun discoverServices(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun refreshCache() {
+    override fun createBond(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority) {
+    override fun removeBond(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun requestMtu(mtu: Int) {
+    override fun refreshCache(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption) {
+    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun readPhy() {
+    override fun requestMtu(mtu: Int): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun readRssi() {
+    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun disconnect() {
+    override fun readPhy(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun readRssi(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun disconnect(): Boolean {
         TODO("Not yet implemented")
     }
 

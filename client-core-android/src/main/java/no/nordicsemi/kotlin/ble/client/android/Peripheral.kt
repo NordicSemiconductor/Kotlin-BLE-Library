@@ -41,13 +41,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.GenericPeripheral
 import no.nordicsemi.kotlin.ble.client.ReliableWriteScope
+import no.nordicsemi.kotlin.ble.client.ServicesChanged
+import no.nordicsemi.kotlin.ble.client.android.exception.BondingFailedException
+import no.nordicsemi.kotlin.ble.client.android.exception.PeripheralClosedException
 import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
 import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
@@ -56,6 +61,7 @@ import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
@@ -96,40 +102,76 @@ open class Peripheral(
         /**
          * Requests the connection priority to be changed.
          *
+         * The result should be reported by emitting [ConnectionParametersChanged] event
+         * to [events] flow.
+         *
          * @param priority The new connection priority.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestConnectionPriority(priority: ConnectionPriority)
+        fun requestConnectionPriority(priority: ConnectionPriority): Boolean
 
         /**
          * Requests the MTU (Maximum Transmission Unit) to be set to the given value.
          *
+         * The result should be reported by emitting [MtuChanged] event to [events] flow.
+         *
          * @param mtu Requested MTU value.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestMtu(mtu: Int)
+        fun requestMtu(mtu: Int): Boolean
 
         /**
          * Requests the PHY to be changed.
+         *
+         * The result should be reported by emitting [ConnectionParametersChanged] event
+         * to [events] flow.
          *
          * @param txPhy The preferred transmitter PHY.
          * @param rxPhy The preferred receiver PHY.
          * @param phyOptions The preferred coding to use when transmitting on the LE Coded PHY.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption)
+        fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean
 
         /**
-         * Reads the current PHY parameters.
+         * This method should initiate reading the current PHY parameters.
+         *
+         * The result should be reported by emitting [PhyChanged] event to [events] flow.
          *
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun readPhy()
+        fun readPhy(): Boolean
+
+        /**
+         * This method should initiate bonding with the peripheral.
+         *
+         * This method is guaranteed to be called only when the bond information does not exist.
+         *
+         * The result should be reported by emitting state [BondState.BONDED] (in case of a success)
+         * or [BondState.NONE] (in case of a failure) to [bondState] flow.
+         *
+         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+         */
+        fun createBond(): Boolean
+
+        /**
+         * This method should initiate removing bond information associated with the peripheral.
+         *
+         * It is expected, that removing bond information will terminate existing connection.
+         *
+         * This method is guaranteed to be called only when the bond information exists.
+         *
+         * The result should be reported by emitting state [BondState.NONE] to [bondState] flow.
+         *
+         * @return True if removing bond information has been initiated.
+         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+         */
+        fun removeBond(): Boolean
 
         /**
          * Refreshes services cache.
          */
-        fun refreshCache()
+        fun refreshCache(): Boolean
     }
 
     override val identifier: String = impl.address
@@ -295,30 +337,35 @@ open class Peripheral(
     /**
      * Read the current transmitter PHY and receiver PHY of the connection.
      *
-     * This API works only on Android 8.0 (API level 26) or later.
+     * PHY LE 2M or PHY Coded is supported since Android 8.0 (API level 26) or later.
      *
      * @return The PHY in use for transmitting and receiving data.
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If PHY could not be read.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun readPhy(): PhyInUse {
-        check (isConnected) {
+        check(isConnected) {
             throw PeripheralNotConnectedException()
         }
         logger.trace("Reading PHY")
-        impl.readPhy()
-        return impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(PhyChanged::class)
-            .firstOrNull()?.phy
-            ?.also {
-                logger.info("PHY read: {}", it)
-            }
-            ?: throw PeripheralNotConnectedException()
+        if (impl.readPhy()) {
+            return impl.events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(PhyChanged::class)
+                .firstOrNull()?.phy
+                ?.also { logger.info("PHY read: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
      * Set the preferred connection PHY.
      *
-     * This API works only on Android 8.0 (API level 26) or later.
+     * PHY LE 2M or PHY Coded is supported since Android 8.0 (API level 26) or later.
+     * Other devices will continue to use the only PHY they support, that is [Phy.PHY_LE_1M].
      *
      * Please note that this is just a recommendation, whether the PHY change will happen depends
      * on other applications preferences, local and remote controller capabilities.
@@ -328,39 +375,46 @@ open class Peripheral(
      * @param rxPhy The preferred receiver PHY.
      * @param phyOptions The preferred coding to use when transmitting on the LE Coded PHY.
      * @return The PHYs in use after the change.
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If PHY change could not be requested.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun setPreferredPhy(
         txPhy: Phy,
         rxPhy: Phy,
         phyOptions: PhyOption,
     ): PhyInUse {
-        check (isConnected) {
+        check(isConnected) {
             throw PeripheralNotConnectedException()
         }
         logger.trace("Setting preferred PHY: tx={}, rx={}, options={}", txPhy, rxPhy, phyOptions)
-        impl.requestPhy(txPhy, rxPhy, phyOptions)
-        return impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(PhyChanged::class)
-            .firstOrNull()?.phy
-            ?.also {
-                logger.info("PHY changed to: {}", it)
-            }
-            ?: throw PeripheralNotConnectedException()
+        if (impl.requestPhy(txPhy, rxPhy, phyOptions)) {
+            return impl.events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(PhyChanged::class)
+                .firstOrNull()?.phy
+                ?.also { logger.info("PHY changed to: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
      * The maximum amount of data, in bytes, you can send to a characteristic in a single write
-     * request.
+     * operation.
      *
      * Maximum size for [WriteType.WITH_RESPONSE] type is *512 bytes* or to *ATT MTU - 5 bytes*
      * when writing reliably (see [usingReliableWrite]).
      * For [WriteType.WITHOUT_RESPONSE] it is equal to *ATT MTU - 3 bytes*.
      *
-     * The ATT MTU value can be negotiated using [requestHighestValueLength].
+     * Higher values of ATT MTU for [WriteType.WITHOUT_RESPONSE] can be requested
+     * using [requestHighestValueLength].
+     *
+     * @throws PeripheralNotConnectedException If the device is not connected.
      */
     override fun maximumWriteValueLength(type: WriteType): Int {
-        check (isConnected) {
+        check(isConnected) {
             throw PeripheralNotConnectedException()
         }
         // TODO Return "mtu - 5" when in Reliable Write mode
@@ -387,23 +441,31 @@ open class Peripheral(
      * claim supporting only 27 bytes of TX, but then try to send up to 251 bytes, causing the
      * connection to terminate. For such devices it is recommended not to request higher MTU
      * or never sending more than 20 bytes in a single write operation.
+     *
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If MTU could not be requested.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun requestHighestValueLength() {
+        check(isConnected) {
+            throw PeripheralNotConnectedException()
+        }
         if (mtuRequested) {
             logger.warn("MTU has been already requested")
             return
         }
         mtuRequested = true
         logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
-        impl.requestMtu(ATT_MTU_MAX)
-        impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(MtuChanged::class)
-            .firstOrNull()?.mtu
-            ?.also {
-                logger.info("MTU set to {}", it)
-            }
-            ?: throw PeripheralNotConnectedException()
+        if (impl.requestMtu(ATT_MTU_MAX)) {
+            impl.events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(MtuChanged::class)
+                .firstOrNull()?.mtu
+                ?.also { logger.info("MTU set to {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
@@ -418,21 +480,25 @@ open class Peripheral(
      *
      * @param priority The new connection priority.
      * @return The new connection parameters.
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If connection priority could not be requested.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun requestConnectionPriority(priority: ConnectionPriority): ConnectionParameters {
-        check (isConnected) {
+        check(isConnected) {
             throw PeripheralNotConnectedException()
         }
         logger.trace("Requesting connection priority: {}", priority)
-        impl.requestConnectionPriority(priority)
-        return impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(ConnectionParametersChanged::class)
-            .firstOrNull()?.newParameters
-            ?.also {
-                logger.info("Connection parameters updated: {}", it)
-            }
-            ?: throw PeripheralNotConnectedException()
+        if (impl.requestConnectionPriority(priority)) {
+            return impl.events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(ConnectionParametersChanged::class)
+                .firstOrNull()?.newParameters
+                ?.also { logger.info("Connection parameters updated: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
@@ -456,32 +522,86 @@ open class Peripheral(
     }
 
     /**
-     * Refreshes the cache of the GATT database.
+     * Refreshes the cached GATT database associated with the peripheral.
      *
-     * This method will clear the cache and discover services again.
+     * This method will clear the cache and start service discovery again.
+     * Flows returned by [services] will emit an empty list following by updated list of services
+     * when the service discovery is complete.
+     *
+     * The peripheral does not need to be connected to refresh the cache, but it cannot be closed
+     * either. In example, it can be disconnected when the connection was made using
+     * [AutoConnect][CentralManager.ConnectionOptions.AutoConnect], but it cannot be disconnected
+     * when the connection was made using [Direct][CentralManager.ConnectionOptions.Direct] or
+     * never connected. In that case, the method will throw [PeripheralClosedException].
+     *
+     * @throws PeripheralClosedException If the peripheral is closed.
+     * @throws OperationFailedException If cache could not be refreshed.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    fun refreshCache() {
-        check (isConnected) {
-            throw PeripheralNotConnectedException()
+    suspend fun refreshCache() {
+        check(!impl.isClosed) {
+            throw PeripheralClosedException()
         }
         logger.trace("Refreshing cache")
-        impl.refreshCache()
+        if (impl.refreshCache()) {
+            impl.events
+                .first { it == ServicesChanged }
+                .also { logger.info("Cache refreshed") }
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
      * Initiates bonding with the peripheral.
+     *
+     * @throws BondingFailedException If bonding failed.
+     * @throws OperationFailedException If bonding could not be started.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun createBond() {
-        TODO()
+        if (hasBondInformation) {
+            return
+        }
+        logger.trace("Creating bond")
+        if (impl.createBond()) {
+            impl.bondState
+                .first { it != BondState.BONDING }
+                .also {
+                    when (it) {
+                        BondState.BONDED -> logger.info("Bond created")
+                        BondState.NONE -> {
+                            logger.warn("Bonding failed")
+                            throw BondingFailedException()
+                        }
+                        else -> { /* Not possible */ }
+                    }
+                }
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
      * Removes the bond information associated with the peripheral.
      *
      * This method will disconnect the peripheral it it was connected.
+     *
+     * @throws OperationFailedException If bond information could not be removed.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun removeBond() {
-        TODO()
+        if (!hasBondInformation) {
+            return
+        }
+        logger.trace("Removing bond information")
+        if (impl.removeBond()) {
+            impl.bondState
+                .first { it == BondState.NONE }
+                .also { logger.info("Bond information removed") }
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
@@ -489,11 +609,12 @@ open class Peripheral(
      *
      * #### Security Note
      * Having a bond information does not guarantee that the connection to the device is secure.
-     * Some Android devices allow connecting to bonded devices without restoring encryption
-     * or they remove the bond information when it fails.
+     * Android should terminate the connection to a device for which it has a bond information
+     * if encryption cannot be resumed, but some devices don't do that. Instead, the bond state
+     * is set to [BondState.BONDED] and the connection is kept open without any security.
      */
     val hasBondInformation: Boolean
-        get() = impl.bondState.value == BondState.BONDED
+        get() = bondState.value == BondState.BONDED
 
     /**
      * Returns the current bond state as [StateFlow].

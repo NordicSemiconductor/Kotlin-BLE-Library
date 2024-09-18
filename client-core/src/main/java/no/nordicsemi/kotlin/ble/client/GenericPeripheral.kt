@@ -38,6 +38,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
@@ -48,11 +49,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeout
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -93,11 +97,13 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
     private var gattEventCollector: Job? = null
 
     /** The current state of the peripheral as a state flow. */
-    protected var _state = MutableStateFlow(impl.initialState)
+    protected var _state: MutableStateFlow<ConnectionState> = MutableStateFlow(impl.initialState)
     val state = _state.asStateFlow()
 
     /** Current list of GATT services. */
-    private var _services = MutableStateFlow(impl.initialServices)
+    private var _services: MutableStateFlow<List<RemoteService>> = MutableStateFlow(
+        value = impl.initialServices.takeIf { impl.initialState == ConnectionState.Connected } ?: emptyList()
+    )
 
     /**
      * A flag indicating that the services have been discovered.
@@ -105,6 +111,11 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      * This flag is reset on disconnection and when services are invalidated.
      */
     private var servicesDiscovered = false
+
+    /**
+     * A flag indicating that the service discovery was requested.
+     */
+    private var serviceDiscoveryRequested = false
 
     /**
      * An interface that provides methods to interact with the peripheral.
@@ -131,9 +142,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         /** A flow of GATT events from the peripheral. */
         val events: Flow<GattEvent>
 
-        /**
-         * Returns true if the connection is closed.
-         */
+        /** Returns true if the connection is closed. */
         val isClosed: Boolean
 
         /**
@@ -146,23 +155,30 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
 
         /**
-         * Discovers services on the peripheral.
+         * Initiates GATT services discovery.
+         *
+         * The result should be reported by emitting [ServicesDiscovered] event to [events] flow.
          */
-        fun discoverServices()
+        fun discoverServices(): Boolean
 
         /**
          * Initiates a read of the RSSI value from the peripheral.
          *
+         * The result should be reported by emitting [RssiRead] event to [events] flow.
+         *
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun readRssi()
+        fun readRssi(): Boolean
 
         /**
          * Disconnects from the peripheral.
          *
+         * The result should be reported by emitting [ConnectionStateChanged] event
+         * to [events] flow.
+         *
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun disconnect()
+        fun disconnect(): Boolean
 
         /**
          * Closes the connection to the peripheral.
@@ -244,6 +260,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         // If the collector was already cancelled or wasn't started, close the executor.
         gattEventCollector?.cancel() ?: run {
             handleDisconnection()
+            serviceDiscoveryRequested = false
             impl.close()
         }
     }
@@ -264,6 +281,11 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         _services.value.onEach { it.owner = null }
         _services.update { emptyList() }
         servicesDiscovered = false
+        // Note!
+        // Don't clear the serviceDiscoveryRequested flag here.
+        // It will be cleared when the peripheral is closed.
+        // This flag is used to start service discovery when the peripheral reconnects,
+        // so that existing observers will get the services.
     }
 
     /**
@@ -275,20 +297,33 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         when (event) {
             is ConnectionStateChanged -> {
                 _state.update { event.newState }
-                if (event.newState is ConnectionState.Disconnected) {
-                    handleDisconnection()
+                when (event.newState) {
+                    is ConnectionState.Connected -> {
+                        // If services are observed, start service discovery.
+                        // This may happen when services() was called before the peripheral connected.
+                        if (serviceDiscoveryRequested) {
+                            discoverServices()
+                        }
+                    }
+                    is ConnectionState.Disconnected -> {
+                        handleDisconnection()
+                    }
+                    else -> { /* Ignore */ }
                 }
             }
 
             ServicesChanged -> {
-                logger.trace("Services invalidated")
+                logger.info("Services invalidated")
                 invalidateServices()
                 discoverServices()
             }
 
-            is ServicesDiscovered -> _services.update {
-                // Assign the owner to each service, making them valid.
-                event.services.onEach { it.owner = this }
+            is ServicesDiscovered -> {
+                logger.info("Services discovered")
+                _services.update {
+                    // Assign the owner to each service, making them valid.
+                    event.services.onEach { it.owner = this }
+                }
             }
 
             else -> { /* Ignore */ }
@@ -339,11 +374,14 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      *        services with given UUIDs.
      */
     fun services(uuids: List<UUID> = emptyList()): StateFlow<List<RemoteService>> {
-        check (isConnected) {
-            throw PeripheralNotConnectedException()
-        }
+        // Mark that service discovery was requested. This is useful when the peripheral
+        // reconnects but the services observer was already set.
+        serviceDiscoveryRequested = true
+
         // First call to this method triggers service discovery.
-        discoverServices()
+        if (isConnected) {
+            discoverServices()
+        }
 
         // If there is no filter, return the original flow.
         if (uuids.isEmpty()) {
@@ -357,14 +395,9 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
 
         // If there is a filter, create a new flow that will emit filtered services only.
         val filteredServices = _services.value.filterBy(uuids)
-        return MutableStateFlow(filteredServices)
-            .apply {
-                // Each time the list of discovered services changes, filter it by `uuids`
-                // and populate the flow.
-                _services.onEach { allServices ->
-                    update { allServices.filterBy(uuids) }
-                }
-            }
+        return _services
+            .map {  it.filterBy(uuids) }
+            .stateIn(scope, SharingStarted.Lazily, filteredServices)
     }
 
     /**
@@ -378,6 +411,7 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      * The ATT MTU value can be negotiated during the connection setup.
      *
      * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     abstract fun maximumWriteValueLength(type: WriteType): Int
 
@@ -389,21 +423,24 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      *
      * @return The RSSI value in dBm.
      * @throws PeripheralNotConnectedException if the peripheral is not connected.
+     * @throws OperationFailedException If reading RSSI could not be initiated.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun readRssi(): Int {
         check (isConnected) {
             throw PeripheralNotConnectedException()
         }
         logger.trace("Reading RSSI")
-        impl.readRssi()
-        return impl.events
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(RssiRead::class)
-            .firstOrNull()?.rssi
-            ?.also {
-                logger.info("RSSI read: {} dBm", it)
-            }
-            ?: throw PeripheralNotConnectedException()
+        if (impl.readRssi()) {
+            return impl.events
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(RssiRead::class)
+                .firstOrNull()?.rssi
+                ?.also { logger.info("RSSI read: {} dBm", it) }
+                ?: throw PeripheralNotConnectedException()
+        } else {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        }
     }
 
     /**
@@ -415,6 +452,8 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
      * This method does nothing if the peripheral is already disconnected.
      *
      * Hint: Use [GenericCentralManager.connect] to connect to the peripheral.
+     *
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun disconnect() {
         // Check if the peripheral isn't already disconnected or has a pending disconnection.
@@ -431,14 +470,20 @@ abstract class GenericPeripheral<ID: Any, EX: GenericPeripheral.GenericExecutor<
         // Disconnect from the peripheral.
         logger.trace("Disconnecting from {}", this)
         _state.update { ConnectionState.Disconnecting }
-        impl.disconnect()
-        try {
-            waitUntil(500.milliseconds) { it is ConnectionState.Disconnected }
-        } catch (e: TimeoutCancellationException) {
-            logger.warn("Disconnection takes longer than expected, closing")
+        if (impl.disconnect()) {
+            try {
+                waitUntil(500.milliseconds) { it is ConnectionState.Disconnected }
+            } catch (e: TimeoutCancellationException) {
+                logger.warn("Disconnection takes longer than expected, closing")
+            }
+        } else {
+            // Update the state if disconnect() returned false.
+            _state.update {
+                ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.Success)
+            }
         }
         close()
-        logger.trace("Disconnected from {}", this)
+        logger.info("Disconnected from {}", this)
     }
 
     // Other

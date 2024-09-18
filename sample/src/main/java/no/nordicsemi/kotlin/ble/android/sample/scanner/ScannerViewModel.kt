@@ -155,7 +155,7 @@ class ScannerViewModel @Inject constructor(
                     launch {
                         try {
                             withTimeout(5000) {
-                                connect(peripheral, true)
+                                connect(peripheral, false)
                             }
 
                             // The first time the app connects to the peripheral it needs to initiate
@@ -171,6 +171,36 @@ class ScannerViewModel @Inject constructor(
                         }
                     }
                 }
+        }
+    }
+
+    fun onBondRequested(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                peripheral.createBond()
+            } catch (e: Exception) {
+                Timber.e(e, "Bonding failed")
+            }
+        }
+    }
+
+    fun onRemoveBondRequested(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                peripheral.removeBond()
+            } catch (e: Exception) {
+                Timber.e(e, "Removing bond failed")
+            }
+        }
+    }
+
+    fun onClearCacheRequested(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                peripheral.refreshCache()
+            } catch (e: Exception) {
+                Timber.e(e, "Clearing cache failed")
+            }
         }
     }
 
@@ -218,11 +248,9 @@ class ScannerViewModel @Inject constructor(
             Timber.i("PHY in use: $phyInUse")
 
             // Request connection priority
-            peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
+            val newConnectionParameters = peripheral.requestConnectionPriority(ConnectionPriority.HIGH)
             Timber.i("Connection priority changed to HIGH")
-
-            // Request service discovery
-            peripheral.services()
+            Timber.i("New connection parameters: $newConnectionParameters")
         } catch (e: Exception) {
             Timber.e(e, "OMG!")
         }
