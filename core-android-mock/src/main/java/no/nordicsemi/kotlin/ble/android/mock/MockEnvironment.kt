@@ -76,6 +76,19 @@ sealed class MockEnvironment(
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
     val isBluetoothAdvertisePermissionGranted: Boolean = false,
 ) {
+
+    /**
+     * Android SDK versions.
+     */
+    class AndroidSdkVersion {
+        companion object {
+            const val LOLLIPOP = 21
+            const val MARSHMALLOW = 23
+            const val OREO = 26
+            const val S = 31
+        }
+    }
+
     /**
      * A mock environment for Android API 21 (Lollipop).
      *
@@ -90,7 +103,7 @@ sealed class MockEnvironment(
         isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
     ): MockEnvironment(
-        androidSdkVersion = 21 /* Lollipop */,
+        androidSdkVersion = AndroidSdkVersion.LOLLIPOP,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -117,7 +130,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
-        androidSdkVersion = 23 /* Marshmallow */,
+        androidSdkVersion =AndroidSdkVersion.MARSHMALLOW,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -162,7 +175,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
-        androidSdkVersion = 26 /* Oreo */,
+        androidSdkVersion = AndroidSdkVersion.OREO,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -225,7 +238,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
     ): MockEnvironment(
-        androidSdkVersion = 31 /* S */,
+        androidSdkVersion = AndroidSdkVersion.S,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
