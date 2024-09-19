@@ -79,16 +79,16 @@ abstract class GenericCentralManagerEngine<
     }
 
     /**
-     * A list of peripherals known to this Central Manager instance.
+     * A list of peripherals managed by this Central Manager instance.
      */
-    private val knownPeripherals = mutableMapOf<ID, P>()
+    private val managedPeripherals = mutableMapOf<ID, P>()
 
     /**
      * Checks whether the given peripheral was obtained using this instance
      * of the Central Manager.
      */
     protected fun checkPeripheral(peripheral: P) {
-        require(knownPeripherals.containsValue(peripheral)) {
+        require(managedPeripherals.containsValue(peripheral)) {
             "$peripheral was not obtained using this Central Manager instance"
         }
     }
@@ -104,7 +104,7 @@ abstract class GenericCentralManagerEngine<
      * @return The peripheral.
      */
     protected fun peripheral(id: ID, factory: (ID) -> P): P {
-        return knownPeripherals.getOrPut(id) {
+        return managedPeripherals.getOrPut(id) {
             factory(id).also { newPeripheral ->
                 // Make sure the new peripheral is closed when the manager gets closed or
                 // the scope gets cancelled.
