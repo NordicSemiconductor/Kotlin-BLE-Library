@@ -59,10 +59,10 @@ import no.nordicsemi.kotlin.ble.core.WriteType
 import android.bluetooth.le.ScanResult as NativeScanResult
 
 internal fun Int.toState(): Manager.State = when (this) {
-    BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
     BluetoothAdapter.STATE_ON -> Manager.State.POWERED_ON
+    BluetoothAdapter.STATE_TURNING_ON,
     BluetoothAdapter.STATE_TURNING_OFF,
-    BluetoothAdapter.STATE_TURNING_ON -> Manager.State.RESETTING
+    BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
     else -> Manager.State.UNKNOWN
 }
 
