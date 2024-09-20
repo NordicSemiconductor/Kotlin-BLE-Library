@@ -37,23 +37,41 @@ import kotlinx.coroutines.flow.StateFlow
 import java.io.Closeable
 
 /**
- * A base interface for a Bluetooth LE manager.
+ * A base interface for a manager.
  */
 interface Manager<E: Engine>: Closeable {
 
-    /** A flow of the current state of the manager. */
+    /**
+     * A flow with the current state of the manager.
+     */
     val state: StateFlow<State>
 
-    /** The possible states of a Core Bluetooth manager. */
+    /**
+     * The possible states of a Bluetooth manager.
+     */
     enum class State {
-        /** A state that indicates Bluetooth is currently powered off. */
+        /**
+         * A state that indicates Bluetooth is currently powered off.
+         */
         POWERED_OFF,
-        /** A state that indicates Bluetooth is currently powered on and available to use. */
+
+        /**
+         * A state that indicates Bluetooth is currently powered on and available to use.
+         */
         POWERED_ON,
-        /** A state that indicates the connection with the system service was momentarily lost. */
+
+        /**
+         * A state that indicates the connection with the system service was momentarily lost.
+         *
+         * This state is not used on Android.
+         */
         RESETTING,
-        /** The manager’s state is unknown. */
+
+        /**
+         * The manager’s state is unknown.
+         */
         UNKNOWN,
+
         /**
          * A state that indicates this device doesn't support the Bluetooth Low Energy.
          */
