@@ -63,6 +63,7 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -99,6 +100,7 @@ fun DeviceList(
     }
 }
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 fun DeviceItem(
     device: Peripheral,
@@ -173,7 +175,8 @@ fun GreetingPreview() {
                     scope = scope,
                     address = "00:11:22:33:44:55",
                     name = "Mock device 2",
-                    state = ConnectionState.Connecting),
+                    state = ConnectionState.Connecting
+                ),
                 PreviewPeripheral(
                     scope = scope,
                     address = "AA:BB:CC:DD:EE:00",

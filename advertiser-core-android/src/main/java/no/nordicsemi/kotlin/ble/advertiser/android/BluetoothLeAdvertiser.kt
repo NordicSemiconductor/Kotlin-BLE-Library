@@ -32,27 +32,40 @@
 package no.nordicsemi.kotlin.ble.advertiser.android
 
 import kotlinx.coroutines.CancellableContinuation
+import no.nordicsemi.kotlin.ble.advertiser.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.internal.AdvertisingDataScopeImpl
 import org.jetbrains.annotations.Range
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Base advertiser interface for Android.
  *
- * This interface extends [GenericBluetoothLeAdvertiser] and adds Android-specific methods.
+ * This interface extends [BluetoothLeAdvertiser] and adds Android-specific methods.
  * For example, it is not possible to set the local device name on Android. The name of the device
  * is used, and user can only control whether it should be included in the advertising data.
  *
  * Use [name] property to get or set the device name (it will affect all applications).
  */
-abstract class BluetoothLeAdvertiser:
-    GenericBluetoothLeAdvertiser<AdvertisingSetParameters, AdvertisingPayload> {
+abstract class BluetoothLeAdvertiser: BluetoothLeAdvertiser<AdvertisingPayload> {
 
     companion object Factory
+
+    override suspend fun advertise(
+        connectable: Boolean,
+        payload: AdvertisingPayload,
+        timeout: Duration,
+        block: ((txPower: Int) -> Unit)?
+    ) {
+        val parameters = LegacyAdvertisingSetParameters(connectable)
+        advertise(parameters, payload, timeout, 0, block)
+    }
 
     /**
      * Starts Bluetooth LE advertising using given parameters.
@@ -67,12 +80,12 @@ abstract class BluetoothLeAdvertiser:
      * @throws AdvertisingNotStartedException If the advertising could not be started.
      * @throws ValidationException If the advertising data is invalid.
      */
-    final override suspend fun advertise(
+    suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         timeout: Duration,
         block: ((txPower: Int) -> Unit)?
-    ){
+    ) {
         advertise(parameters, payload, timeout, 0, block)
     }
 
@@ -88,7 +101,7 @@ abstract class BluetoothLeAdvertiser:
      * @throws AdvertisingNotStartedException If the advertising could not be started.
      * @throws ValidationException If the advertising data is invalid.
      */
-    final suspend fun advertise(
+    suspend fun advertise(
         parameters: AdvertisingSetParameters,
         payload: AdvertisingPayload,
         maxAdvertisingEvents: @Range(from = 1L, to = 255L) Int,
@@ -100,7 +113,7 @@ abstract class BluetoothLeAdvertiser:
         // When user requested max advertising events but extended advertising is not supported,
         // convert it to a timeout using the advertising interval.
         if (!isLeExtendedAdvertisingSupported) {
-            timeout = parameters.interval.millis.milliseconds * maxAdvertisingEvents
+            timeout = parameters.interval * maxAdvertisingEvents
             maxExtendedAdvertisingEvents = 0
         }
 
@@ -114,10 +127,16 @@ abstract class BluetoothLeAdvertiser:
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
+        val advertisingData = payload.advertisingData.let { builder ->
+            AdvertisingDataScopeImpl().apply(builder).build()
+        }
+        val scanResponse = payload.scanResponse?.let { builder ->
+            AdvertisingDataScopeImpl().apply(builder).takeIf { !it.isEmpty }?.build()
+        }
         // First, let's validate input.
         // On newer Android versions this will also be done by the system when the advertising
         // is started, but this way we may throw an exact reason.
-        validator.validate(parameters, payload)
+        validator.validate(parameters, advertisingData, scanResponse)
         timeoutValidator.validate(timeout, maxAdvertisingEvents)
 
         // Check if Bluetooth is enabled and can advertise.
@@ -132,7 +151,8 @@ abstract class BluetoothLeAdvertiser:
 
         startAdvertising(
             parameters = parameters,
-            payload = payload,
+            advertisingData = advertisingData,
+            scanResponse = scanResponse,
             timeout = timeout,
             maxAdvertisingEvents = maxAdvertisingEvents,
             block = block
@@ -147,7 +167,8 @@ abstract class BluetoothLeAdvertiser:
      */
     protected abstract suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
+        advertisingData: AdvertisingData,
+        scanResponse: AdvertisingData?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
@@ -156,9 +177,9 @@ abstract class BluetoothLeAdvertiser:
     /**
      * The local Bluetooth adapter name, or null on error.
      *
-     * This name that is advertised when
-     * [AdvertisingPayload.AdvertisingData.includeDeviceName] is enabled.
+     * This name that is advertised as local name when included in the advertising data.
      *
+     * @throws IllegalArgumentException If the name set is null.
      * @throws SecurityException If the BLUETOOTH_CONNECT permission is denied.
      */
     abstract var name: String?

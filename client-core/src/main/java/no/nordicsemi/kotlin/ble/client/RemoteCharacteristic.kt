@@ -35,7 +35,6 @@ package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
-import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Characteristic
@@ -50,7 +49,7 @@ import no.nordicsemi.kotlin.ble.core.WriteType
  */
 interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
     override val service: AnyRemoteService
-    override val owner: GenericPeripheral<*, *>?
+    override val owner: Peripheral<*, *>?
         get() = service.owner
 
     /**

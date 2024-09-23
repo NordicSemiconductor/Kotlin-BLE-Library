@@ -48,7 +48,7 @@ import no.nordicsemi.kotlin.ble.core.ServerScope
  * To handle read and write requests and send notifications and indications, obtain list of
  * [LocalService] corresponding to the connected central device using [services].
  */
-interface PeripheralManager<ID: Any, C: Central<ID>>: Manager<PeripheralManagerEngine> {
+interface PeripheralManager<ID: Any, C: Central<ID>>: Manager {
 
     /**
      * Creates services definition in the local GATT server.

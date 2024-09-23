@@ -35,17 +35,19 @@ import no.nordicsemi.kotlin.ble.core.AnyService
 import no.nordicsemi.kotlin.ble.core.IncludedService
 import no.nordicsemi.kotlin.ble.core.PrimaryService
 
-
-interface AnyRemoteService: AnyService<RemoteCharacteristic> {
+/**
+ * A GATT service on a remote connected peripheral device.
+ */
+sealed interface AnyRemoteService: AnyService<RemoteCharacteristic> {
     override val includedServices: List<RemoteIncludedService>
-    override val owner: GenericPeripheral<*, *>?
+    override val owner: Peripheral<*, *>?
 }
 
 /**
  * A GATT service on a remote connected peripheral device.
  */
 abstract class RemoteService: PrimaryService<RemoteCharacteristic>, AnyRemoteService {
-    override var owner: GenericPeripheral<*, *>? = null
+    override var owner: Peripheral<*, *>? = null
         internal set
 }
 
@@ -57,6 +59,6 @@ abstract class RemoteService: PrimaryService<RemoteCharacteristic>, AnyRemoteSer
  */
 interface RemoteIncludedService: IncludedService<RemoteCharacteristic>, AnyRemoteService {
     override val service: AnyRemoteService
-    override val owner: GenericPeripheral<*, *>?
+    override val owner: Peripheral<*, *>?
         get() = service.owner
 }

@@ -33,25 +33,27 @@
 
 package no.nordicsemi.kotlin.ble.core
 
-import java.util.UUID
-import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Interface representing a Bluetooth GATT service.
  */
+@OptIn(ExperimentalUuidApi::class)
 sealed interface Service<C: Characteristic<*>> {
 
     companion object {
         /** The UUID of Generic Access Service. */
-        val GENERIC_ACCESS_UUID: UUID by lazy { BluetoothUuid.uuid(0x1800) }
+        val GENERIC_ACCESS_UUID: Uuid by lazy { Uuid.fromShortUuid(0x1800) }
         /** The UUID of Generic Attribute Service. */
-        val GENERIC_ATTRIBUTE_UUID: UUID by lazy { BluetoothUuid.uuid(0x1801) }
+        val GENERIC_ATTRIBUTE_UUID: Uuid by lazy { Uuid.fromShortUuid(0x1801) }
     }
 
     /**
-     * [UUID] of a service.
+     * [Uuid] of a service.
      */
-    val uuid: UUID
+    val uuid: Uuid
 
     /**
      * Instance id of a characteristic.

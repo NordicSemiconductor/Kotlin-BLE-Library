@@ -31,12 +31,14 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.di
 
-import android.os.Build
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+// import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.android.mock.MockAdvertiser
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import timber.log.Timber
 import javax.inject.Named
 
 @Module
@@ -49,13 +51,27 @@ class SdkModule {
 
     @Provides
     fun providesEnvironment(@Named("sdkVersion") sdkVersion: Int): MockEnvironment {
+        // Setting an advertiser callback allows to simulate different behaviors
+        // of the advertiser, such as returning a different TX power, or failing.
+        val advertiser: MockAdvertiser = { requestedTxPower, advertisingData, scanResponse ->
+            Timber.d("Mocking advertisement of: $advertisingData, $scanResponse")
+
+            // Mock advertisement can return a failure:
+            // Result.failure(AdvertisingNotStartedException(AdvertisingNotStartedException.Reason.FEATURE_UNSUPPORTED))
+
+            // Or a success by providing the mock TX power to return to the advertiser:
+            Result.success(requestedTxPower - 1)
+        }
+
+        // Return an environment based on the mock SDK version.
         fun Int.toMockEnvironment() = when (this) {
-            in 21..22 -> MockEnvironment.Api21()
-            in 23..25 -> MockEnvironment.Api23()
-            in 26..30 -> MockEnvironment.Api26()
+            in 21..22 -> MockEnvironment.Api21(advertiser = advertiser)
+            in 23..25 -> MockEnvironment.Api23(advertiser = advertiser)
+            in 26..30 -> MockEnvironment.Api26(advertiser = advertiser)
             else -> MockEnvironment.Api31(
                 isLeCodedPhySupported = false,
-                isScanningOnLeCodedPhySupported = false
+                isScanningOnLeCodedPhySupported = false,
+                advertiser = advertiser,
             )
         }
         return sdkVersion.toMockEnvironment()

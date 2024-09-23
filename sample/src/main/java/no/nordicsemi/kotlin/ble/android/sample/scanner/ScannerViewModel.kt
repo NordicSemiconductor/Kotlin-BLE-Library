@@ -63,6 +63,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -289,7 +290,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
+    @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.services()
             .onEach {

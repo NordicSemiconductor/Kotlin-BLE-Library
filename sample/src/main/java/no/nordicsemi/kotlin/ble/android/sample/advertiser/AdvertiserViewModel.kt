@@ -33,6 +33,7 @@ package no.nordicsemi.kotlin.ble.android.sample.advertiser
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,10 +41,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Named
 import kotlin.time.Duration.Companion.seconds
@@ -72,33 +73,29 @@ class AdvertiserViewModel @Inject constructor(
                 advertiser.advertise(
                     parameters = parameters,
                     payload = AdvertisingPayload(
-                        advertisingData = AdvertisingPayload.AdvertisingData(
-                            includeDeviceName = true,
-                            serviceUuids = listOf(
-                                // Environmental Sensing Service UUID
-                                UUID.fromString("0000181A-0000-1000-8000-00805F9B34FB")
-                            ),
-                            includeTxPowerLevel = false,
-                        ),
-                        scanResponse = AdvertisingPayload.AdvertisingData(
-                            serviceData = mapOf(
+                        advertisingData = {
+                            IncludeLocalName()
+                            // Environmental Sensing Service UUID
+                            ServiceUuid(0x181A)
+                        },
+                        scanResponse = {
+                            // Add scan response only for connectable or scannable advertisements.
+                            if (parameters.connectable || (parameters is Bluetooth5AdvertisingSetParameters && parameters.scannable)) {
                                 // Temperature characteristic UUID : 22'C
-                                UUID.fromString("00002A6E-0000-1000-8000-00805F9B34FB") to byteArrayOf(
-                                    22
-                                ),
-                            ),
-                            manufacturerData = mapOf(
-                                0x0059 to "Kaczka".toByteArray(),
-                            ),
-                        ),
+                                ServiceData(0x2A6E, byteArrayOf(22))
+                                ManufacturerData(0x0059, "Kaczka".toByteArray())
+                            }
+                        },
                     ),
                     timeout = 3.seconds,
                 ) { txPower ->
                     Timber.i("Tx power: $txPower")
                     _isAdvertising.update { true }
                 }
+            } catch (e: CancellationException) {
+                Timber.i("Advertising cancelled")
             } catch (e: Exception) {
-                Timber.e(e)
+                Timber.e(e, "Advertising failed")
                 _error.update { e.message }
             } finally {
                 _isAdvertising.update { false }

@@ -39,15 +39,17 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteService(
     gatt: BluetoothGatt,
     service: BluetoothGattService,
     events: Flow<GattEvent>,
 ): RemoteService() {
     // NOTE: The owner is set by the GenericPeripheral when handling ServicesChanged event.
-    override val uuid: UUID = service.uuid
+    override val uuid: Uuid = service.uuid.toKotlinUuid
     override val instanceId: Int = service.instanceId
 
     override val characteristics: List<RemoteCharacteristic> = service.characteristics
@@ -58,6 +60,7 @@ internal class NativeRemoteService(
     override fun toString(): String = uuid.toString()
 }
 
+@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteIncludedService(
     parent: AnyRemoteService,
     gatt: BluetoothGatt,
@@ -65,7 +68,7 @@ internal class NativeRemoteIncludedService(
     events: Flow<GattEvent>,
 ): RemoteIncludedService {
     override val service: AnyRemoteService = parent
-    override val uuid: UUID = service.uuid
+    override val uuid: Uuid = service.uuid.toKotlinUuid
     override val instanceId: Int = service.instanceId
 
     override val characteristics: List<RemoteCharacteristic> = service.characteristics

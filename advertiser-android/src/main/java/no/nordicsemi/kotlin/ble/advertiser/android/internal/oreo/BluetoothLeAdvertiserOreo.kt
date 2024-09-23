@@ -36,17 +36,19 @@ import android.bluetooth.le.AdvertisingSetCallback
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.ZERO
 import kotlin.time.Duration.Companion.milliseconds
@@ -66,7 +68,8 @@ internal class BluetoothLeAdvertiserOreo(
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
+        advertisingData: AdvertisingData,
+        scanResponse: AdvertisingData?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
@@ -83,8 +86,8 @@ internal class BluetoothLeAdvertiserOreo(
             suspendCancellableCoroutine { continuation ->
                 val callback = object : AdvertisingSetCallback() {
                     /*
-                 * This method is called when the advertising set is started.
-                 */
+                     * This method is called when the advertising set is started.
+                     */
                     override fun onAdvertisingSetStarted(
                         advertisingSet: AdvertisingSet?,
                         txPower: Int,
@@ -105,12 +108,12 @@ internal class BluetoothLeAdvertiserOreo(
                     }
 
                     /*
-                 * This method is called when the advertising stops due to a timeout or reaching
-                 * required number of advertising events.
-                 *
-                 * It could be used to modify and restart the advertising set, but we don't support
-                 * that yet. It is NOT started after starting advertising initially.
-                 */
+                     * This method is called when the advertising stops due to a timeout or reaching
+                     * required number of advertising events.
+                     *
+                     * It could be used to modify and restart the advertising set, but we don't support
+                     * that yet. It is NOT started after starting advertising initially.
+                     */
                     override fun onAdvertisingEnabled(
                         advertisingSet: AdvertisingSet?,
                         enable: Boolean,
@@ -124,9 +127,9 @@ internal class BluetoothLeAdvertiserOreo(
                     }
 
                     /*
-                 * This method is called when the advertising set is stopped using
-                 * `advertiser.stopAdvertisingSet(callback)` or due to a timeout.
-                 */
+                     * This method is called when the advertising set is stopped using
+                     * `advertiser.stopAdvertisingSet(callback)` or due to a timeout.
+                     */
                     override fun onAdvertisingSetStopped(advertisingSet: AdvertisingSet?) {
                         continuation.resume(Unit)
                     }
@@ -141,8 +144,8 @@ internal class BluetoothLeAdvertiserOreo(
                     }
                     advertiser.startAdvertisingSet(
                         parameters.toNative(),
-                        payload.advertisingData.toNative(),
-                        payload.scanResponse?.toNative(),
+                        advertisingData.toNative(),
+                        scanResponse?.toNative(),
                         null,
                         null,
                         timeoutMillis,
@@ -173,6 +176,10 @@ internal class BluetoothLeAdvertiserOreo(
                 } catch (e: IllegalStateException) {
                     logger.error("Advertising failed to start", e)
                     continuation.resumeWithReason(AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE)
+                    return@suspendCancellableCoroutine
+                } catch (e: Exception) {
+                    logger.error("Failed to build advertising data", e)
+                    continuation.resumeWithException(e)
                     return@suspendCancellableCoroutine
                 }
 

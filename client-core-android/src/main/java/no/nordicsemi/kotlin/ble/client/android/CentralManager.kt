@@ -33,36 +33,61 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
-import no.nordicsemi.kotlin.ble.client.GenericCentralManager
+import no.nordicsemi.kotlin.ble.client.CentralManager
+import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Android-specific implementation of the Central Manager.
+ * Android-specific interface of the Central Manager.
  *
- * This class implements the [GenericCentralManager] interface and adds support for bonded devices,
+ * This interface extends [CentralManager] and adds support for bonded devices,
  * connecting using Android-specific connection options, and getting peripherals by their
  * MAC addresses.
  */
-class CentralManager(
-    private val engine: CentralManagerEngine<*>
-): GenericCentralManager<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(engine) {
+interface CentralManager:
+    CentralManager<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult> {
 
     /**
      * Returns a list of peripherals for which the system has bond information.
+     *
+     * @return A list of bonded peripherals.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    fun getBondedPeripherals(): List<Peripheral> = engine.getBondedPeripherals()
+    fun getBondedPeripherals(): List<Peripheral>
 
     /**
-     * Connects to the given device.
+     * Connects to the given peripheral using default connection options.
+     *
+     * @param peripheral The peripheral to connect to.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
+     * by scanning, ranging, or using methods [getPeripheralsById] or [getBondedPeripherals].
+     * @see [ConnectionOptions.Default]
+     */
+    override suspend fun connect(peripheral: Peripheral) {
+        connect(peripheral, ConnectionOptions.Default)
+    }
+
+    /**
+     * Connects to the given peripheral.
      *
      * @param peripheral The peripheral to connect to.
      * @param options Connection options.
+     * @throws ManagerClosedException If the central manager has been closed.
+     * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
+     * by scanning, ranging, or using methods [getPeripheralsById] or [getBondedPeripherals].
      */
-    suspend fun connect(peripheral: Peripheral, options: ConnectionOptions) =
-        engine.connect(peripheral, options)
+    suspend fun connect(peripheral: Peripheral, options: ConnectionOptions)
 
     companion object Factory
     

@@ -33,27 +33,29 @@
 
 package no.nordicsemi.kotlin.ble.core
 
-import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
-import java.util.UUID
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Interface representing a Bluetooth GATT characteristic.
  */
+@OptIn(ExperimentalUuidApi::class)
 interface Characteristic<D: Descriptor> {
 
     companion object {
         /** Device Name characteristic UUID. */
-        val DEVICE_NAME: UUID by lazy { BluetoothUuid.uuid(0x2A00) }
+        val DEVICE_NAME: Uuid by lazy { Uuid.fromShortUuid(0x2A00) }
         /** Appearance characteristic UUID. */
-        val APPEARANCE: UUID by lazy { BluetoothUuid.uuid(0x2A01) }
+        val APPEARANCE: Uuid by lazy { Uuid.fromShortUuid(0x2A01) }
         /** Peripheral Privacy Flag characteristic UUID. */
-        val PERIPHERAL_PRIVACY_FLAG: UUID by lazy { BluetoothUuid.uuid(0x2A02) }
+        val PERIPHERAL_PRIVACY_FLAG: Uuid by lazy { Uuid.fromShortUuid(0x2A02) }
         /** Reconnection Address characteristic UUID. */
-        val RECONNECTION_ADDRESS: UUID by lazy { BluetoothUuid.uuid(0x2A03) }
+        val RECONNECTION_ADDRESS: Uuid by lazy { Uuid.fromShortUuid(0x2A03) }
         /** Peripheral Preferred Connection Parameters characteristic UUID. */
-        val PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS: UUID by lazy { BluetoothUuid.uuid(0x2A04) }
+        val PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS: Uuid by lazy { Uuid.fromShortUuid(0x2A04) }
         /** Service Changed characteristic UUID. */
-        val SERVICE_CHANGED: UUID by lazy { BluetoothUuid.uuid(0x2A05) }
+        val SERVICE_CHANGED: Uuid by lazy { Uuid.fromShortUuid(0x2A05) }
     }
 
     /**
@@ -64,9 +66,9 @@ interface Characteristic<D: Descriptor> {
     val owner: Peer<*>?
 
     /**
-     * [UUID] of a characteristic.
+     * [Uuid] of a characteristic.
      */
-    val uuid: UUID
+    val uuid: Uuid
 
     /**
      * Instance id of a characteristic.

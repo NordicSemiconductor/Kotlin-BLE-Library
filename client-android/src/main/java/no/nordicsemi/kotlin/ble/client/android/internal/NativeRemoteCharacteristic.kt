@@ -54,7 +54,10 @@ import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteCharacteristic(
     parent: AnyRemoteService,
     private val gatt: BluetoothGatt,
@@ -62,17 +65,24 @@ internal class NativeRemoteCharacteristic(
     private val events: Flow<GattEvent>,
 ): RemoteCharacteristic {
     override val service: AnyRemoteService = parent
-    override val uuid: UUID = characteristic.uuid
+    override val uuid: Uuid = characteristic.uuid.toKotlinUuid
     override val instanceId: Int = characteristic.instanceId
     override val properties: List<CharacteristicProperty> = characteristic.properties.toList()
     override val descriptors: List<RemoteDescriptor> = characteristic.descriptors.map {
         NativeRemoteDescriptor(this, gatt, it, events)
     }
 
+    companion object {
+        /**
+         * The UUID of the Client Characteristic Configuration descriptor.
+         */
+        private val CLIENT_CHAR_CONF_UUID by lazy { UUID.fromString("00002902-0000-1000-8000-00805f9b34fb") }
+    }
+
     @Suppress("DEPRECATION")
     override val isNotifying: Boolean
         // Check the value of the CCCD descriptor, if such exists.
-        get() = owner != null && characteristic.getDescriptor(Descriptor.CLIENT_CHAR_CONF_UUID)
+        get() = owner != null && characteristic.getDescriptor(CLIENT_CHAR_CONF_UUID)
             ?.value
             // The CCCD value is 2 bytes long: 0x01-00 for notifications, 0x02-00 for indications.
             ?.let { it.size == 2 && it[0].toInt() and 0b11 != 0 }

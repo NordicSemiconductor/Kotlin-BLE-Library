@@ -49,8 +49,10 @@ import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteDescriptor(
     parent: RemoteCharacteristic,
     private val gatt: BluetoothGatt,
@@ -58,7 +60,7 @@ internal class NativeRemoteDescriptor(
     private val events: Flow<GattEvent>,
 ): RemoteDescriptor {
     override val characteristic: RemoteCharacteristic = parent
-    override val uuid: UUID = descriptor.uuid
+    override val uuid: Uuid = descriptor.uuid.toKotlinUuid
     override val instanceId: Int = descriptor.instanceId
 
     override suspend fun read(): ByteArray {

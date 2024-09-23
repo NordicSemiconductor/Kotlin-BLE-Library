@@ -35,7 +35,6 @@ package no.nordicsemi.kotlin.ble.client
 
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
-import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
@@ -47,7 +46,7 @@ import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
  */
 interface RemoteDescriptor: Descriptor {
     override val characteristic: RemoteCharacteristic
-    override val owner: GenericPeripheral<*, *>?
+    override val owner: Peripheral<*, *>?
         get() = characteristic.owner
 
     /**

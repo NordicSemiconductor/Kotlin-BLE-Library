@@ -39,7 +39,7 @@ import java.io.Closeable
 /**
  * A base interface for a manager.
  */
-interface Manager<E: Engine>: Closeable {
+interface Manager: Closeable {
 
     /**
      * A flow with the current state of the manager.

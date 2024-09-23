@@ -37,7 +37,7 @@ plugins {
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "client-core"
+    POM_ARTIFACT_ID = "client-core-android"
     POM_NAME = "Nordic Kotlin BLE library"
     POM_DESCRIPTION = "Nordic Kotlin BLE library"
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"

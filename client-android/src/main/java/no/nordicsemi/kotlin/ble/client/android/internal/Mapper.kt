@@ -56,6 +56,9 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.WriteType
+import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 import android.bluetooth.le.ScanResult as NativeScanResult
 
 internal fun Int.toState(): Manager.State = when (this) {
@@ -144,18 +147,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
 }
 
 private fun ScanRecord.toAdvertisementData(): AdvertisementData {
-    @Suppress("UNNECESSARY_SAFE_CALL", "USELESS_ELVIS")
-    return AdvertisementData(
-        name = deviceName,
-        serviceUuids = serviceUuids?.map { it.uuid } ?: emptyList(),
-        serviceSolicitationUuids =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                serviceSolicitationUuids?.map { it.uuid } ?: emptyList()
-            else emptyList(),
-        serviceData = serviceData?.mapKeys { it.key.uuid } ?: emptyMap(),
-        manufacturerData = manufacturerSpecificData?.toMap() ?: emptyMap(),
-        raw = bytes,
-    )
+    return AdvertisementData(raw = bytes)
 }
 
 private fun SparseArray<ByteArray>.toMap(): Map<Int, ByteArray> {
@@ -231,3 +223,7 @@ internal fun WriteType.toInt() = when (this) {
     WriteType.WITHOUT_RESPONSE -> BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
     WriteType.SIGNED -> BluetoothGattCharacteristic.WRITE_TYPE_SIGNED
 }
+
+@OptIn(ExperimentalUuidApi::class)
+internal val UUID.toKotlinUuid: Uuid
+    get() = Uuid.fromLongs(mostSignificantBits, leastSignificantBits)

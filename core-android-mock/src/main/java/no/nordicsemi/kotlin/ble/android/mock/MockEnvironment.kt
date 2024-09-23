@@ -33,16 +33,36 @@
 
 package no.nordicsemi.kotlin.ble.android.mock
 
+import no.nordicsemi.kotlin.ble.core.TxPowerLevel
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import org.jetbrains.annotations.Range
 
+/**
+ * The environment for the latest Android API.
+ */
+typealias LatestApi = no.nordicsemi.kotlin.ble.android.mock.MockEnvironment.Api31
+/**
+ * A type for a mock advertiser.
+ *
+ * This callback is called when the app requests the mock Bluetooth LE advertiser to advertise.
+ * It should return the TX power level used for mock advertising, in dBm.
+ * Valid values are from -127 to +1 dBm.
+ */
+typealias MockAdvertiser = (requestedTxPower: Int, advertisingData: AdvertisingData, scanResponse: AdvertisingData?) -> Result<Int>
+
 private const val DEFAULT_NAME = "Mock"
+private val DEFAULT_MOCK_ADVERTISER: MockAdvertiser = { requestedTxPower, _, _ ->
+    Result.success(requestedTxPower.coerceIn(TxPowerLevel.ULTRA_LOW..TxPowerLevel.HIGH))
+}
 
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
- * @property androidSdkVersion The Android SDK version.
  * @property deviceName The device name, by default set to "Mock".
  * @property isBluetoothSupported Whether Bluetooth is supported on the device.
+ * @property isBluetoothEnabled Whether Bluetooth is enabled.
+ * @property androidSdkVersion The Android SDK version.
  * @property isLocationRequiredForScanning Whether location is required to scan for Bluetooth devices.
  * @property isLocationPermissionGranted Whether the fine location permission is granted.
  * @property isLocationEnabled Whether location service is enabled on the device.
@@ -57,12 +77,14 @@ private const val DEFAULT_NAME = "Mock"
  * @property leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
  * if LE Extended Advertising feature is supported.
  * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
+ * @property advertiser A callback that will be called when the app requests to advertise.
+ * The callback should return the TX power level used for mock advertising.
  */
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
-    var deviceName: String,
-    val isBluetoothSupported: Boolean,
-    val isBluetoothEnabled: Boolean,
+    deviceName: String,
+    isBluetoothSupported: Boolean,
+    isBluetoothEnabled: Boolean,
     val isLocationRequiredForScanning: Boolean = false,
     val isLocationPermissionGranted: Boolean = false,
     val isLocationEnabled: Boolean = false,
@@ -75,7 +97,8 @@ sealed class MockEnvironment(
     val isLeExtendedAdvertisingSupported: Boolean = false,
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
     val isBluetoothAdvertisePermissionGranted: Boolean = false,
-) {
+    val advertiser: MockAdvertiser,
+): MockEnvironment(deviceName, isBluetoothSupported, isBluetoothEnabled) {
 
     /**
      * Android SDK versions.
@@ -96,18 +119,22 @@ sealed class MockEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
      */
     class Api21(
         deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
         isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
-    ): MockEnvironment(
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.LOLLIPOP,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
+        advertiser = advertiser,
     )
 
     /**
@@ -121,6 +148,8 @@ sealed class MockEnvironment(
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
      */
     class Api23(
         deviceName: String = DEFAULT_NAME,
@@ -129,7 +158,8 @@ sealed class MockEnvironment(
         isMultipleAdvertisementSupported: Boolean = true,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
-    ): MockEnvironment(
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion =AndroidSdkVersion.MARSHMALLOW,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
@@ -138,6 +168,7 @@ sealed class MockEnvironment(
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
+        advertiser = advertiser,
     )
 
     /**
@@ -160,6 +191,8 @@ sealed class MockEnvironment(
      * advertising on LE Coded PHY as Primary PHY.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
      */
     class Api26(
         deviceName: String = DEFAULT_NAME,
@@ -174,7 +207,8 @@ sealed class MockEnvironment(
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
-    ): MockEnvironment(
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.OREO,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
@@ -188,6 +222,7 @@ sealed class MockEnvironment(
         isLe2MPhySupported = isLe2MPhySupported,
         isLeCodedPhySupported = isLeCodedPhySupported,
         isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
+        advertiser = advertiser,
     )
 
     /**
@@ -219,6 +254,8 @@ sealed class MockEnvironment(
      * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
      */
     class Api31(
         deviceName: String = DEFAULT_NAME,
@@ -237,7 +274,8 @@ sealed class MockEnvironment(
         usesLeScanningForLocation: Boolean = false,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
-    ): MockEnvironment(
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.S,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
@@ -254,6 +292,13 @@ sealed class MockEnvironment(
         isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
         isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
         isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
+        advertiser = advertiser,
     )
 
+    /**
+     * Whether the device requires runtime permissions to use Bluetooth.
+     *
+     * See: [Bluetooth permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions)
+     */
+    val requiresBluetoothRuntimePermissions: Boolean = androidSdkVersion >= AndroidSdkVersion.S
 }

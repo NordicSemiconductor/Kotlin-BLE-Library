@@ -43,14 +43,14 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun <T: Enum<*>> ExposedDropdownMenu(
+fun <T> ExposedDropdownMenu(
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     text: String,
     enabled: Boolean,
     values: List<T>,
     modifier: Modifier = Modifier,
-    labels: List<String> = values.map { it.name },
+    labels: List<String> = values.map { it.toString() },
     selectedValue: T,
     onValueChanged: (T) -> Unit,
 ) {

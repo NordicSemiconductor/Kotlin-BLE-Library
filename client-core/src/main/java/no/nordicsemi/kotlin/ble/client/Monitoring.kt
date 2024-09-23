@@ -38,27 +38,27 @@ package no.nordicsemi.kotlin.ble.client
  *
  * @property peripheral The peripheral.
  */
-sealed class MonitoringEvent<P: GenericPeripheral<*, *>>(
+sealed class MonitoringEvent<P: Peripheral<*, *>>(
     val peripheral: P
 )
 
 /**
  * An event indicating that the scanning device entered region of the monitored peripheral.
  */
-class PeripheralEnteredRange<P: GenericPeripheral<*, *>>(peripheral: P): MonitoringEvent<P>(peripheral)
+class PeripheralEnteredRange<P: Peripheral<*, *>>(peripheral: P): MonitoringEvent<P>(peripheral)
 
 /**
  * An event indicating that the scanning device left region of the monitored peripheral
  * and no advertising packets were received.
  */
-class PeripheralLeftRange<P: GenericPeripheral<*, *>>(peripheral: P): MonitoringEvent<P>(peripheral)
+class PeripheralLeftRange<P: Peripheral<*, *>>(peripheral: P): MonitoringEvent<P>(peripheral)
 
 /**
  * An event indicating ranging events for the peripheral.
  *
  * @property peripheral The peripheral.
  */
-sealed class RangeEvent<P: GenericPeripheral<*, *>>(
+sealed class RangeEvent<P: Peripheral<*, *>>(
     val peripheral: P
 )
 
@@ -72,7 +72,7 @@ sealed class RangeEvent<P: GenericPeripheral<*, *>>(
  * @property previousProximity The previous proximity.
  * @property proximity The new recorded proximity.
  */
-class ProximityChanged<P: GenericPeripheral<*, *>>(
+class ProximityChanged<P: Peripheral<*, *>>(
     peripheral: P,
     val previousProximity: Proximity,
     val proximity: Proximity

@@ -38,21 +38,19 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingParametersValidator
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.android.TxPowerLevel
-import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Creates an instance of a mock [GenericBluetoothLeAdvertiser] for Android.
+ * Creates an instance of a mock [BluetoothLeAdvertiser] for Android.
  *
  * The behavior of a mock advertiser should mimic one from the same Android version.
  *
@@ -71,7 +69,9 @@ fun BluetoothLeAdvertiser.Factory.mock(
  *
  * Use this implementation to emulate Bluetooth LE advertising in tests.
  *
- * @property environment The mock environment.
+ * @property environment The mock environment. When advertising is requested,
+ * the [MockEnvironment.advertiser]callback will be invoked to obtain the TX power level.
+ * To emulate a failure, the callback should return a [Result.failure] with [AdvertisingNotStartedException].
  */
 class BluetoothLeAdvertiserMock internal constructor(
     private val environment: MockEnvironment,
@@ -80,29 +80,26 @@ class BluetoothLeAdvertiserMock internal constructor(
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
+        advertisingData: AdvertisingData,
+        scanResponse: AdvertisingData?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
     ) {
+        val result = environment.advertiser(parameters.txPowerLevel, advertisingData, scanResponse)
+        val mockedTxPower = result.getOrThrow()
+        logger.info("Advertising initiated")
+
         try {
             suspendCancellableCoroutine { continuation ->
                 // Mocking advertising has no impact on other features.
                 // Local advertising is not visible on scanner nor can be used to connect.
                 // Let's just pretend advertising has started.
-                logger.info("Advertising initiated")
-
-                fun TxPowerLevel.toDecibels() = when (this) {
-                    TxPowerLevel.TX_POWER_ULTRA_LOW -> -21
-                    TxPowerLevel.TX_POWER_LOW       -> -15
-                    TxPowerLevel.TX_POWER_MEDIUM    ->  -7
-                    TxPowerLevel.TX_POWER_HIGH      ->  +1
-                }
-                block?.invoke(parameters.txPowerLevel.toDecibels())
+                logger.info("Advertising started")
 
                 val duration = when {
                     timeout > Duration.ZERO && timeout != Duration.INFINITE -> timeout
-                    maxAdvertisingEvents > 0 -> parameters.interval.millis.milliseconds * maxAdvertisingEvents
+                    maxAdvertisingEvents > 0 -> parameters.interval * maxAdvertisingEvents
                     else -> Duration.INFINITE
                 }
 
@@ -115,6 +112,9 @@ class BluetoothLeAdvertiserMock internal constructor(
                         continuation.resume(Unit)
                     }
                 }
+
+                // The TX power used for advertising depends on the controller.
+                block?.invoke(mockedTxPower)
 
                 continuation.invokeOnCancellation {
                     logger.info("Advertising cancelled: stopping advertising")

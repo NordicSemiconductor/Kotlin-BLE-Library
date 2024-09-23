@@ -48,4 +48,5 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":advertiser-core"))
+    api(project(":core-android"))
 }

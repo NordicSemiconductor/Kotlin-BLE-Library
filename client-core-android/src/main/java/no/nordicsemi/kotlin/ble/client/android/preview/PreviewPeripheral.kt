@@ -77,7 +77,8 @@ import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * A stub implementation of [Peripheral.Executor] for Android.
@@ -186,8 +187,9 @@ private class StubExecutor(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-class StubRemoteService internal constructor(
-    override val uuid: UUID,
+@OptIn(ExperimentalUuidApi::class)
+private class StubRemoteService(
+    override val uuid: Uuid,
     override val instanceId: Int = 0,
     includedServices: List<ServiceDefinition> = emptyList(),
     characteristics: List<CharacteristicDefinition> = emptyList(),
@@ -224,9 +226,10 @@ class StubRemoteService internal constructor(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-class StubRemoteIncludedService internal constructor(
+@OptIn(ExperimentalUuidApi::class)
+private class StubRemoteIncludedService(
     override val service: AnyRemoteService,
-    override val uuid: UUID,
+    override val uuid: Uuid,
     override val instanceId: Int = 0,
     characteristics: List<CharacteristicDefinition> = emptyList(),
     includedServices: List<ServiceDefinition> = emptyList(),
@@ -263,9 +266,10 @@ class StubRemoteIncludedService internal constructor(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-class StubRemoteCharacteristic internal constructor(
+@OptIn(ExperimentalUuidApi::class)
+private class StubRemoteCharacteristic(
     override val service: AnyRemoteService,
-    override val uuid: UUID,
+    override val uuid: Uuid,
     override val instanceId: Int,
     override val properties: List<CharacteristicProperty> = emptyList(),
     private val permissions: List<Permission>,
@@ -331,9 +335,10 @@ class StubRemoteCharacteristic internal constructor(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-class StubRemoteDescriptor internal constructor(
+@OptIn(ExperimentalUuidApi::class)
+private class StubRemoteDescriptor(
     override val characteristic: RemoteCharacteristic,
-    override val uuid: UUID,
+    override val uuid: Uuid,
     override val instanceId: Int,
     private val permissions: List<Permission>,
 ): RemoteDescriptor {
@@ -373,6 +378,7 @@ class StubRemoteDescriptor internal constructor(
  * @param hasBondInformation `true` if the Android device has the bond information for the peripheral,
  * that is, if the peripheral is bonded to the device. Defaults to `false`.
  */
+@OptIn(ExperimentalUuidApi::class)
 open class PreviewPeripheral(
     scope: CoroutineScope,
     address: String = "00:11:22:33:44:55",
@@ -417,7 +423,8 @@ open class PreviewPeripheral(
         initialState = state,
         initialServices = ServerScopeImpl()
             .apply(services)
-            .services.mapIndexed { index, sd ->
+            .build()
+            .mapIndexed { index, sd ->
                 StubRemoteService(
                     uuid = sd.uuid,
                     instanceId = index,

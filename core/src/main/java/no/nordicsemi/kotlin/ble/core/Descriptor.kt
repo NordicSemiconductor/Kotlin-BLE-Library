@@ -33,27 +33,29 @@
 
 package no.nordicsemi.kotlin.ble.core
 
-import no.nordicsemi.kotlin.ble.core.util.BluetoothUuid
-import java.util.UUID
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Interface representing a Bluetooth GATT descriptor.
  */
+@OptIn(ExperimentalUuidApi::class)
 interface Descriptor {
 
     companion object {
         /** Characteristic Extended Properties descriptor UUID. */
-        val CHAR_EXT_PROP_UUID: UUID by lazy { BluetoothUuid.uuid(0x2900) }
+        val CHAR_EXT_PROP_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2900) }
         /** Characteristic User Description descriptor UUID. */
-        val CHAR_USER_DESC_UUID: UUID by lazy { BluetoothUuid.uuid(0x2901) }
+        val CHAR_USER_DESC_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2901) }
         /** Client Characteristic Configuration descriptor UUID. */
-        val CLIENT_CHAR_CONF_UUID: UUID by lazy { BluetoothUuid.uuid(0x2902) }
+        val CLIENT_CHAR_CONF_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2902) }
         /** Server Characteristic Configuration descriptor UUID. */
-        val SERVER_CHAR_CONF_UUID: UUID by lazy { BluetoothUuid.uuid(0x2903) }
+        val SERVER_CHAR_CONF_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2903) }
         /** Characteristic Presentation Format descriptor UUID. */
-        val CHAR_PRESENTATION_FORMAT_UUID: UUID by lazy { BluetoothUuid.uuid(0x2904) }
+        val CHAR_PRESENTATION_FORMAT_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2904) }
         /** Characteristic Aggregate Format descriptor UUID. */
-        val CHAR_AGGREGATE_FORMAT_UUID: UUID by lazy { BluetoothUuid.uuid(0x2905) }
+        val CHAR_AGGREGATE_FORMAT_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2905) }
     }
 
     /**
@@ -64,9 +66,9 @@ interface Descriptor {
     val owner: Peer<*>?
 
     /**
-     * [UUID] of the descriptor.
+     * [Uuid] of the descriptor.
      */
-    val uuid: UUID
+    val uuid: Uuid
 
     /**
      * Instance id of the descriptor.

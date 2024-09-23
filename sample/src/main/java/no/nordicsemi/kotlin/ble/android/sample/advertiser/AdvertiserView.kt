@@ -49,6 +49,7 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -56,16 +57,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.android.common.theme.NordicTheme
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingInterval
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.advertiser.android.Bluetooth5AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.advertiser.android.LegacyAdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.advertiser.android.TxPowerLevel
+import no.nordicsemi.kotlin.ble.core.AdvertisingInterval
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.android.sample.view.ExposedDropdownMenu
 import no.nordicsemi.kotlin.ble.android.sample.view.LabeledSwitch
 import no.nordicsemi.kotlin.ble.android.sample.view.Title
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun AdvertiserView(
@@ -84,9 +86,9 @@ fun AdvertiserView(
         var legacy by rememberSaveable { mutableStateOf(true) }
         var connectable by rememberSaveable { mutableStateOf(true) }
         var txPowerLevelMenuExpanded by rememberSaveable { mutableStateOf(false) }
-        var txPowerLevel by rememberSaveable { mutableStateOf(TxPowerLevel.TX_POWER_MEDIUM) }
+        var txPowerLevel by rememberSaveable { mutableIntStateOf(TxPowerLevel.MEDIUM) }
         var intervalMenuExpanded by rememberSaveable { mutableStateOf(false) }
-        var interval by rememberSaveable { mutableStateOf(AdvertisingInterval.INTERVAL_MEDIUM) }
+        var interval by rememberSaveable { mutableStateOf(AdvertisingInterval.MEDIUM.inWholeMilliseconds) }
         var anonymous by rememberSaveable { mutableStateOf(false) }
         var scannable by rememberSaveable { mutableStateOf(false) }
         var discoverable by rememberSaveable { mutableStateOf(false) }
@@ -142,7 +144,7 @@ fun AdvertiserView(
                         onExpandedChange = { txPowerLevelMenuExpanded = it },
                         text = "Tx Power Level",
                         enabled = !isAdvertising,
-                        values = TxPowerLevel.entries,
+                        values = listOf(TxPowerLevel.ULTRA_LOW, TxPowerLevel.LOW, TxPowerLevel.MEDIUM, TxPowerLevel.HIGH),
                         labels = listOf(
                             "Ultra Low (-21 dBm)",
                             "Low (-15 dBm)",
@@ -159,7 +161,11 @@ fun AdvertiserView(
                         onExpandedChange = { intervalMenuExpanded = it },
                         text = "Advertising Interval",
                         enabled = !isAdvertising,
-                        values = AdvertisingInterval.entries,
+                        values = listOf(
+                            AdvertisingInterval.LOW.inWholeMilliseconds,
+                            AdvertisingInterval.MEDIUM.inWholeMilliseconds,
+                            AdvertisingInterval.HIGH.inWholeMilliseconds
+                        ),
                         labels = listOf("Low (~100 ms)", "Medium (~250 ms)", "High (~1 sec)"),
                         selectedValue = interval,
                         onValueChanged = { interval = it },
@@ -272,12 +278,12 @@ fun AdvertiserView(
                     true -> LegacyAdvertisingSetParameters(
                         connectable = connectable,
                         txPowerLevel = txPowerLevel,
-                        interval = interval,
+                        interval = interval.milliseconds,
                     )
                     false -> Bluetooth5AdvertisingSetParameters(
                         connectable = connectable,
                         txPowerLevel = txPowerLevel,
-                        interval = interval,
+                        interval = interval.milliseconds,
                         anonymous = anonymous,
                         scannable = scannable,
                         discoverable = discoverable,

@@ -37,7 +37,7 @@ plugins {
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "server-mock"
+    POM_ARTIFACT_ID = "server-android-mock"
     POM_NAME = "Nordic Kotlin BLE library"
     POM_DESCRIPTION = "Nordic Android Kotlin BLE library"
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"

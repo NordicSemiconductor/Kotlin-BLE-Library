@@ -32,19 +32,24 @@
 package no.nordicsemi.kotlin.ble.core.internal
 
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.CharacteristicScope
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.Permission
-import no.nordicsemi.kotlin.ble.core.CharacteristicScope
 import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.ServiceScope
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 class ServerScopeImpl: ServerScope {
     private val _services = mutableListOf<ServiceDefinition>()
-    val services: List<ServiceDefinition>
-        get() = _services.toList()
 
-    override fun Service(uuid: UUID, builder: ServiceScope.() -> Unit) {
+    /**
+     * Builds the list of services from the scope.
+     */
+    fun build(): List<ServiceDefinition> = _services.toList()
+
+    override fun Service(uuid: Uuid, builder: ServiceScope.() -> Unit) {
         ServiceScopeImpl()
             .apply(builder)
             .let { scope ->
@@ -59,12 +64,13 @@ class ServerScopeImpl: ServerScope {
     }
 }
 
+@OptIn(ExperimentalUuidApi::class)
 private open class ServiceScopeImpl: ServiceScope {
     val characteristics = mutableListOf<CharacteristicDefinition>()
     val innerServices = mutableListOf<ServiceDefinition>()
 
     override fun Characteristic(
-        uuid: UUID,
+        uuid: Uuid,
         properties: List<CharacteristicProperty>,
         permissions: List<Permission>,
         builder: CharacteristicScope.() -> Unit
@@ -77,6 +83,7 @@ private open class ServiceScopeImpl: ServiceScope {
                 && scope.descriptors.none { it.uuid == Descriptor.CLIENT_CHAR_CONF_UUID }) {
                 scope.descriptors.add(CCCD())
             }
+            print("AAA Adding characteristic: $uuid")
             characteristics.add(
                 CharacteristicDefinition(
                     uuid = uuid,
@@ -88,7 +95,7 @@ private open class ServiceScopeImpl: ServiceScope {
         }
 
     override fun IncludedService(
-        uuid: UUID,
+        uuid: Uuid,
         builder: ServiceScope.() -> Unit
     ) {
         ServiceScopeImpl()
@@ -105,10 +112,11 @@ private open class ServiceScopeImpl: ServiceScope {
     }
 }
 
+@OptIn(ExperimentalUuidApi::class)
 private class CharacteristicScopeImpl: CharacteristicScope {
     val descriptors = mutableListOf<DescriptorDefinition>()
 
-    override fun Descriptor(uuid: UUID, permissions: List<Permission>) {
+    override fun Descriptor(uuid: Uuid, permissions: List<Permission>) {
         descriptors.add(DescriptorDefinition(uuid, permissions))
     }
 

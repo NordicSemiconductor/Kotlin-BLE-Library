@@ -39,12 +39,12 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import no.nordicsemi.kotlin.ble.advertiser.exception.GenericBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
 
 /**
- * Creates an instance of [GenericBluetoothLeAdvertiser] for Android.
+ * Creates an instance of [BluetoothLeAdvertiser] for Android.
  *
  * The implementation differs based on Android version.
  * Limited functionality is available prior to Android O.

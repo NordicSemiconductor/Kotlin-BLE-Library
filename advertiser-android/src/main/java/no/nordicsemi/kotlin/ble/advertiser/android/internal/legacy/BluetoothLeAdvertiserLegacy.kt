@@ -40,16 +40,17 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
-import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
 
 /**
@@ -66,7 +67,8 @@ internal class BluetoothLeAdvertiserLegacy(
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        payload: AdvertisingPayload,
+        advertisingData: AdvertisingData,
+        scanResponse: AdvertisingData?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?
@@ -118,8 +120,8 @@ internal class BluetoothLeAdvertiserLegacy(
                 try {
                     advertiser.startAdvertising(
                         parameters.toLegacy(timeout),
-                        payload.advertisingData.toNative(),
-                        payload.scanResponse?.toNative(),
+                        advertisingData.toNative(),
+                        scanResponse?.toNative(),
                         callback,
                     )
                     logger.info("Advertising initiated")
@@ -134,6 +136,10 @@ internal class BluetoothLeAdvertiserLegacy(
                     continuation.resumeWithReason(
                         reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
                     )
+                    return@suspendCancellableCoroutine
+                } catch (e: Exception) {
+                    logger.error("Failed to build advertising data", e)
+                    continuation.resumeWithException(e)
                     return@suspendCancellableCoroutine
                 }
 

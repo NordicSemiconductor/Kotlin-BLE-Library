@@ -40,7 +40,7 @@ import no.nordicsemi.kotlin.ble.core.PrimaryService
 /**
  * Interface representing a Bluetooth GATT service on the local GATT server.
  */
-interface AnyLocalService: AnyService<LocalCharacteristic> {
+sealed interface AnyLocalService: AnyService<LocalCharacteristic> {
     override val includedServices: List<LocalIncludedService>
     override val owner: Central<*>?
 }

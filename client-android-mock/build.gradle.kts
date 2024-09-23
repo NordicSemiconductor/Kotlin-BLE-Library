@@ -37,7 +37,7 @@ plugins {
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "client-mock"
+    POM_ARTIFACT_ID = "client-android-mock"
     POM_NAME = "Nordic Kotlin BLE library"
     POM_DESCRIPTION = "Nordic Kotlin BLE library"
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
@@ -47,6 +47,7 @@ nordicNexusPublishing {
 }
 
 dependencies {
+    api(project(":client-mock"))
     api(project(":client-core-android"))
     api(project(":core-android-mock"))
 

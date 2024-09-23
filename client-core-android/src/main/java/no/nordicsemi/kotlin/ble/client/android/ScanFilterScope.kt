@@ -33,14 +33,14 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
-import no.nordicsemi.kotlin.ble.client.GenericCentralManager
+import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
 import java.util.UUID
 
 /**
  * Android-specific scanning filters scope.
  */
-sealed interface ScanFiltersScope: GenericCentralManager.ScanFilterScope {
+sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
 
     /**
      * Adds a filter that requires at least one of the criteria to be satisfied.

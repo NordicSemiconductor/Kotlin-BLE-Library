@@ -33,11 +33,14 @@
 
 package no.nordicsemi.kotlin.ble.core
 
-import java.util.UUID
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Scope for building a GATT server.
  */
+@OptIn(ExperimentalUuidApi::class)
 interface ServerScope {
 
     /**
@@ -52,6 +55,8 @@ interface ServerScope {
      *       permission = Permission.READ,
      *    ) {
      *       // Note: Client Characteristic Configuration descriptor is added automatically.
+     *
+     *       CharacteristicUserDescriptionDescriptor("Some description")
      *    }
      *    Characteristic(...)
      *    IncludedService(<Some UUID>) {
@@ -65,14 +70,28 @@ interface ServerScope {
      */
     @Suppress("FunctionName")
     fun Service(
-        uuid: UUID,
+        uuid: Uuid,
         builder: ServiceScope.() -> Unit = {}
     )
+
+    /**
+     * Declares a service with the given 16 or 32 bit short UUID.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the service.
+     * @param builder Scope of the primary service.
+     * @see ServerScope.Service
+     */
+    @Suppress("FunctionName")
+    fun Service(
+        shortUuid: Int,
+        builder: ServiceScope.() -> Unit = {}
+    ) = Service(Uuid.fromShortUuid(shortUuid), builder)
 }
 
 /**
  * Scope of a GATT service.
  */
+@OptIn(ExperimentalUuidApi::class)
 interface ServiceScope {
 
     /**
@@ -85,7 +104,9 @@ interface ServiceScope {
      *    properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,
      *    permissions = Permission.READ and Permission.WRITE,
      * ) {
-     *    UserDescriptionDescriptor("Some description")
+     *    // Note: Client Characteristic Configuration descriptor is added automatically.
+     *
+     *    CharacteristicUserDescriptionDescriptor("Some description")
      * }
      * ```
      *
@@ -96,11 +117,28 @@ interface ServiceScope {
      */
     @Suppress("FunctionName")
     fun Characteristic(
-        uuid: UUID,
-        properties: List<CharacteristicProperty>,
-        permissions: List<Permission>,
+        uuid: Uuid,
+        properties: List<CharacteristicProperty> = emptyList(),
+        permissions: List<Permission> = emptyList(),
         builder: CharacteristicScope.() -> Unit = {}
     )
+
+    /**
+     * Declares a characteristic with the given 16 or 32 bit short UUID.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
+     * @param properties List of properties of the characteristic.
+     * @param permissions The permissions of the characteristic.
+     * @param builder Scope of the characteristic.
+     * @see ServiceScope.Characteristic
+     */
+    @Suppress("FunctionName")
+    fun Characteristic(
+        shortUuid: Int,
+        properties: List<CharacteristicProperty> = emptyList(),
+        permissions: List<Permission> = emptyList(),
+        builder: CharacteristicScope.() -> Unit = {}
+    ) = Characteristic(Uuid.fromShortUuid(shortUuid), properties, permissions, builder)
 
     /**
      * Declares a characteristic with the given UUID.
@@ -112,8 +150,9 @@ interface ServiceScope {
      *    property = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
      *    permission = Permission.READ,
      * ) {
-     *    ClientCharacteristicConfigurationDescriptor()
-     *    UserDescriptionDescriptor("Some description")
+     *    // Note: Client Characteristic Configuration descriptor is added automatically.
+     *
+     *    CharacteristicUserDescriptionDescriptor("Some description")
      * }
      * ```
      *
@@ -124,11 +163,28 @@ interface ServiceScope {
      */
     @Suppress("FunctionName")
     fun Characteristic(
-        uuid: UUID,
+        uuid: Uuid,
         properties: List<CharacteristicProperty>,
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
     ) = Characteristic(uuid, properties, listOf(permission), builder)
+
+    /**
+     * Declares a characteristic with the given 16 or 32 bit short UUID.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
+     * @param properties List of properties of the characteristic.
+     * @param permission The permission of the characteristic.
+     * @param builder Scope of the characteristic.
+     * @see ServiceScope.Characteristic
+     */
+    @Suppress("FunctionName")
+    fun Characteristic(
+        shortUuid: Int,
+        properties: List<CharacteristicProperty>,
+        permission: Permission,
+        builder: CharacteristicScope.() -> Unit = {}
+    ) = Characteristic(Uuid.fromShortUuid(shortUuid), properties, permission, builder)
 
     /**
      * Declares a characteristic with the given UUID.
@@ -149,11 +205,66 @@ interface ServiceScope {
      */
     @Suppress("FunctionName")
     fun Characteristic(
-        uuid: UUID,
+        uuid: Uuid,
         property: CharacteristicProperty,
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
     ) = Characteristic(uuid, listOf(property), listOf(permission), builder)
+
+    /**
+     * Declares a characteristic with the given 16 or 32 bit short UUID.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
+     * @param property List of properties of the characteristic.
+     * @param permission The permission of the characteristic.
+     * @param builder Scope of the characteristic.
+     * @see ServiceScope.Characteristic
+     */
+    @Suppress("FunctionName")
+    fun Characteristic(
+        shortUuid: Int,
+        property: CharacteristicProperty,
+        permission: Permission,
+        builder: CharacteristicScope.() -> Unit = {}
+    ) = Characteristic(Uuid.fromShortUuid(shortUuid), property, permission, builder)
+
+    /**
+     * Declares a characteristic with the given UUID without permission to read or write.
+     *
+     * Sample code:
+     * ```
+     * Characteristic(
+     *    uuid = <Some UUID>,
+     *    property = CharacteristicProperty.NOTIFY,
+     * )
+     * ```
+     *
+     * @param uuid The UUID of the characteristic.
+     * @param property List of properties of the characteristic.
+     * @param builder Scope of the characteristic.
+     */
+    @Suppress("FunctionName")
+    fun Characteristic(
+        uuid: Uuid,
+        property: CharacteristicProperty,
+        builder: CharacteristicScope.() -> Unit = {}
+    ) = Characteristic(uuid, listOf(property), emptyList(), builder)
+
+    /**
+     * Declares a characteristic with the given 16 or 32 bit short UUID
+     * without permission to read or write.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
+     * @param property List of properties of the characteristic.
+     * @param builder Scope of the characteristic.
+     * @see ServiceScope.Characteristic
+     */
+    @Suppress("FunctionName")
+    fun Characteristic(
+        shortUuid: Int,
+        property: CharacteristicProperty,
+        builder: CharacteristicScope.() -> Unit = {}
+    ) = Characteristic(Uuid.fromShortUuid(shortUuid), property, builder)
 
     /**
      * Declares an inner service with the given UUID.
@@ -174,12 +285,24 @@ interface ServiceScope {
      * @param builder Scope of the inner service.
      */
     @Suppress("FunctionName")
-    fun IncludedService(uuid: UUID, builder: ServiceScope.() -> Unit)
+    fun IncludedService(uuid: Uuid, builder: ServiceScope.() -> Unit)
+
+    /**
+     * Declares an inner service with the given 16 or 32 bit short UUID.
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the inner service.
+     * @param builder Scope of the inner service.
+     * @see ServiceScope.IncludedService
+     */
+    @Suppress("FunctionName")
+    fun IncludedService(shortUuid: Int, builder: ServiceScope.() -> Unit) =
+        IncludedService(Uuid.fromShortUuid(shortUuid), builder)
 }
 
 /**
  * Scope of a characteristic.
  */
+@OptIn(ExperimentalUuidApi::class)
 interface CharacteristicScope {
 
     /**
@@ -197,7 +320,16 @@ interface CharacteristicScope {
      * @param permissions List of permissions of the descriptor.
      */
     @Suppress("FunctionName")
-    fun Descriptor(uuid: UUID, permissions: List<Permission>)
+    fun Descriptor(uuid: Uuid, permissions: List<Permission> = emptyList())
+
+    /**
+     * Declares a descriptor with the given 16 or 32 bit short UUID.
+     *
+     * @see CharacteristicScope.Descriptor
+     */
+    @Suppress("FunctionName")
+    fun Descriptor(shortUuid: Int, permissions: List<Permission> = emptyList()) =
+        Descriptor(Uuid.fromShortUuid(shortUuid), permissions)
 
     /**
      * Declares a descriptor with the given UUID.
@@ -214,7 +346,16 @@ interface CharacteristicScope {
      * @param permission The permission of the descriptor.
      */
     @Suppress("FunctionName")
-    fun Descriptor(uuid: UUID, permission: Permission) = Descriptor(uuid, listOf(permission))
+    fun Descriptor(uuid: Uuid, permission: Permission) = Descriptor(uuid, listOf(permission))
+
+    /**
+     * Declares a descriptor with the given 16 or 32 bit short UUID.
+     *
+     * @see CharacteristicScope.Descriptor
+     */
+    @Suppress("FunctionName")
+    fun Descriptor(shortUuid: Int, permission: Permission) =
+        Descriptor(Uuid.fromShortUuid(shortUuid), permission)
 
     /**
      * Declares a Characteristic User Description descriptor.

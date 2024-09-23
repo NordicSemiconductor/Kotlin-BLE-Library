@@ -37,31 +37,37 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.and
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 class ServiceDefinition(
-    val uuid: UUID,
+    val uuid: Uuid,
     val characteristics: List<CharacteristicDefinition>,
     val innerServices: List<ServiceDefinition>,
 )
 
+@OptIn(ExperimentalUuidApi::class)
 class CharacteristicDefinition(
-    val uuid: UUID,
+    val uuid: Uuid,
     val properties: List<CharacteristicProperty>,
     val permissions: List<Permission>,
     val descriptors: List<DescriptorDefinition>,
 )
 
+@OptIn(ExperimentalUuidApi::class)
 open class DescriptorDefinition(
-    val uuid: UUID,
+    val uuid: Uuid,
     val permissions: List<Permission>,
 )
 
+@OptIn(ExperimentalUuidApi::class)
 class CCCD: DescriptorDefinition(
     uuid = Descriptor.CLIENT_CHAR_CONF_UUID,
     permissions = Permission.READ and Permission.WRITE
 )
 
+@OptIn(ExperimentalUuidApi::class)
 class CUD(
     val description: String,
     writable: Boolean,

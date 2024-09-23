@@ -47,5 +47,6 @@ nordicNexusPublishing {
 }
 
 dependencies {
-    api(project(":core"))
+    api(project(":core-mock"))
+    api(project(":core-android"))
 }

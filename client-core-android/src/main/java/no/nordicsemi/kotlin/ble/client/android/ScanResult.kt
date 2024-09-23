@@ -32,7 +32,7 @@
 package no.nordicsemi.kotlin.ble.client.android
 
 import kotlinx.datetime.Instant
-import no.nordicsemi.kotlin.ble.client.GenericScanResult
+import no.nordicsemi.kotlin.ble.client.ScanResult
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
@@ -45,7 +45,7 @@ class ScanResult(
     override val primaryPhy: PrimaryPhy,
     override val secondaryPhy: Phy?,
     override val timestamp: Instant
-) : GenericScanResult<Peripheral, AdvertisementData> {
+) : ScanResult<Peripheral, AdvertisementData> {
 
     override fun toString(): String {
         return "ScanResult(peripheral=$peripheral, isConnectable=$isConnectable, advertisementData=$advertisementData, rssi=$rssi, txPowerLevel=$txPowerLevel, primaryPhy=$primaryPhy, secondaryPhy=$secondaryPhy, timestamp=$timestamp)"

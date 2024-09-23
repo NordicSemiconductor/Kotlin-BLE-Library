@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.kotlin.ble.client.GattEvent
-import no.nordicsemi.kotlin.ble.client.GenericPeripheral
+import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.ReliableWriteScope
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.exception.BondingFailedException
@@ -70,10 +70,12 @@ import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
 import kotlin.math.min
 
+private typealias AndroidExecutor = no.nordicsemi.kotlin.ble.client.android.Peripheral.Executor
+
 /**
  * Android-specific implementation of a peripheral.
  *
- * This class extends [GenericPeripheral] and adds Android-specific methods.
+ * This class extends [Peripheral] and adds Android-specific methods.
  *
  * @param scope scope The coroutine scope.
  * @param impl The executor that provides methods to interact with the peripheral.
@@ -81,7 +83,7 @@ import kotlin.math.min
 open class Peripheral(
     scope: CoroutineScope,
     impl: Executor,
-): GenericPeripheral<String, Peripheral.Executor>(scope, impl) {
+): Peripheral<String, AndroidExecutor>(scope, impl) {
     private val logger = LoggerFactory.getLogger(Peripheral::class.java)
 
     /**
@@ -89,7 +91,7 @@ open class Peripheral(
      *
      * The implementation should initiate requests and report events using [events] flow.
      */
-    interface Executor: GenericExecutor<String> {
+    interface Executor: Peripheral.Executor<String> {
         /** MAC address of the device. */
         val address: String
             get() = identifier
