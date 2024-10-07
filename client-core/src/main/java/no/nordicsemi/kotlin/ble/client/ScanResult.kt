@@ -35,7 +35,6 @@ package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.datetime.Instant
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import org.jetbrains.annotations.Range
@@ -57,7 +56,7 @@ import kotlin.uuid.Uuid
  * packet or as AD type. `null` if not present.
  * @property primaryPhy The primary PHY used to transmit the advertisement.
  * @property secondaryPhy The secondary PHY used to transmit the advertisement, or `null` if not used.
- * @property timestamp The time when the advertisement was received.
+ * @property timestamp The timestamp since boot when the scan record was observed, in milliseconds.
  */
 interface ScanResult<P: Peripheral<*, *>, AD: AdvertisementData> {
     val peripheral: P
@@ -67,7 +66,7 @@ interface ScanResult<P: Peripheral<*, *>, AD: AdvertisementData> {
     val txPowerLevel: @Range(from = -127, to = 126) Int?
     val primaryPhy: PrimaryPhy
     val secondaryPhy: Phy?
-    val timestamp: Instant
+    val timestamp: Long
 }
 
 /**

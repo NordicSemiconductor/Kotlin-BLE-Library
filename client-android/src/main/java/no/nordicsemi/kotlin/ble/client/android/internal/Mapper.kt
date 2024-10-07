@@ -126,7 +126,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
                         null,
             primaryPhy = primaryPhy.toPrimaryPhy(),
             secondaryPhy = secondaryPhy.toPhy(),
-            timestamp = Clock.System.now()
+            timestamp = timestampNanos / 1000
         )
     } else {
         ScanResult(
@@ -141,7 +141,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
                     null,
             primaryPhy = PrimaryPhy.PHY_LE_1M,
             secondaryPhy = null,
-            timestamp = Clock.System.now()
+            timestamp = timestampNanos / 1000
         )
     }
 }
