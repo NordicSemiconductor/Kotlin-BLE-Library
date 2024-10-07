@@ -105,6 +105,7 @@ class ScannerViewModel @Inject constructor(
                     Name("Nordic_Buttonless")
                     Name("DFU2A16")
                     Name("Mesh Light")
+                    Name("nRFConnect")
                     // TODO Filtering by Regex and other runtime filters
                 }
             }
