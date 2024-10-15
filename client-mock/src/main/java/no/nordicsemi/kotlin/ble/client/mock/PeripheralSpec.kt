@@ -33,15 +33,13 @@
 
 package no.nordicsemi.kotlin.ble.client.mock
 
-import no.nordicsemi.kotlin.ble.core.AdvertisingInterval
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.ServerScope
-import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
+import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.mock.internal.AdvertisingDataScopeImpl
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
