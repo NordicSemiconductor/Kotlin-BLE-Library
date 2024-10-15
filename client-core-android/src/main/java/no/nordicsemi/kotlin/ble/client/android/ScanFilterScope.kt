@@ -35,11 +35,13 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * Android-specific scanning filters scope.
  */
+@OptIn(ExperimentalUuidApi::class)
 sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
 
     /**
@@ -77,19 +79,19 @@ sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
      * More than one service UUID can be added to the filter.
      */
     @Suppress("FunctionName")
-    fun ServiceUUID(uuid: UUID, mask: UUID? = null)
+    fun ServiceUUID(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service solicitation UUID.
      */
     @Suppress("FunctionName")
-    fun ServiceSolicitationUUID(uuid: UUID, mask: UUID? = null)
+    fun ServiceSolicitationUUID(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service data.
      */
     @Suppress("FunctionName")
-    fun ServiceData(uuid: UUID, data: ByteArray, mask: ByteArray? = null)
+    fun ServiceData(uuid: Uuid, data: ByteArray, mask: ByteArray? = null)
 
     /**
      * Filters devices by manufacturer data.

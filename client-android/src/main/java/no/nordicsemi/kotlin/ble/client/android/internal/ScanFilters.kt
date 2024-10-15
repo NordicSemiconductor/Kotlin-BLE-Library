@@ -37,11 +37,14 @@ import android.os.ParcelUuid
 import no.nordicsemi.kotlin.ble.client.android.ConjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.DisjunctionFilterScope
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlin.uuid.toJavaUuid
 
 /**
  * A filter that requires all the criteria to be satisfied.
  */
+@OptIn(ExperimentalUuidApi::class)
 internal class ConjunctionFilter: ConjunctionFilterScope {
     /**
      * The builder that will be used to build the [ScanFilter] set up using this filter.
@@ -152,16 +155,16 @@ internal class ConjunctionFilter: ConjunctionFilterScope {
         }
     }
 
-    override fun ServiceUUID(uuid: UUID, mask: UUID?) {
+    override fun ServiceUUID(uuid: Uuid, mask: Uuid?) {
         builder = (builder ?: ScanFilter.Builder()).also {
-            it.setServiceUuid(ParcelUuid(uuid), mask?.let { mask -> ParcelUuid(mask) })
+            it.setServiceUuid(ParcelUuid(uuid.toJavaUuid()), mask?.let { mask -> ParcelUuid(mask.toJavaUuid()) })
         }
     }
 
-    override fun ServiceSolicitationUUID(uuid: UUID, mask: UUID?) {
+    override fun ServiceSolicitationUUID(uuid: Uuid, mask: Uuid?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             builder = (builder ?: ScanFilter.Builder()).also {
-                it.setServiceSolicitationUuid(ParcelUuid(uuid), mask?.let { mask -> ParcelUuid(mask) })
+                it.setServiceSolicitationUuid(ParcelUuid(uuid.toJavaUuid()), mask?.let { mask -> ParcelUuid(mask.toJavaUuid()) })
             }
         } else {
             runtimeFilter = (runtimeFilter ?: RuntimeScanFilter()).also {
@@ -171,9 +174,9 @@ internal class ConjunctionFilter: ConjunctionFilterScope {
         }
     }
 
-    override fun ServiceData(uuid: UUID, data: ByteArray, mask: ByteArray?) {
+    override fun ServiceData(uuid: Uuid, data: ByteArray, mask: ByteArray?) {
         builder = (builder ?: ScanFilter.Builder()).also {
-            it.setServiceData(ParcelUuid(uuid), data, mask)
+            it.setServiceData(ParcelUuid(uuid.toJavaUuid()), data, mask)
         }
     }
 
@@ -219,6 +222,7 @@ internal class ConjunctionFilter: ConjunctionFilterScope {
 /**
  * A filter that requires at least one of the criteria to be satisfied.
  */
+@OptIn(ExperimentalUuidApi::class)
 internal class DisjunctionFilter: DisjunctionFilterScope {
     /**
      * A list of [ConjunctionFilter]s. Each filter will be applied separately.
@@ -289,15 +293,15 @@ internal class DisjunctionFilter: DisjunctionFilterScope {
         conjunctionFilters.add(ConjunctionFilter().apply { Address(address) })
     }
 
-    override fun ServiceUUID(uuid: UUID, mask: UUID?) {
+    override fun ServiceUUID(uuid: Uuid, mask: Uuid?) {
         conjunctionFilters.add(ConjunctionFilter().apply { ServiceUUID(uuid, mask) })
     }
 
-    override fun ServiceSolicitationUUID(uuid: UUID, mask: UUID?) {
+    override fun ServiceSolicitationUUID(uuid: Uuid, mask: Uuid?) {
         conjunctionFilters.add(ConjunctionFilter().apply { ServiceSolicitationUUID(uuid, mask) })
     }
 
-    override fun ServiceData(uuid: UUID, data: ByteArray, mask: ByteArray?) {
+    override fun ServiceData(uuid: Uuid, data: ByteArray, mask: ByteArray?) {
         conjunctionFilters.add(ConjunctionFilter().apply { ServiceData(uuid, data, mask) })
     }
 
@@ -320,15 +324,16 @@ internal class DisjunctionFilter: DisjunctionFilterScope {
  *
  * They are either not supported by the Android API, or are not supported on some Android versions.
  */
+@OptIn(ExperimentalUuidApi::class)
 internal class RuntimeScanFilter {
     /** Private or public MAC address. */
     var address: String? = null
     /** Regular expression for the device name. */
     var nameRegex: Regex? = null
     /** Service solicitation UUID. */
-    var serviceSolicitationUuid: UUID? = null
+    var serviceSolicitationUuid: Uuid? = null
     /** Service solicitation UUID mask. */
-    var serviceSolicitationUuidMask: UUID? = null
+    var serviceSolicitationUuidMask: Uuid? = null
     /** Custom advertising data type. */
     var customAdvertisingDataType: AdvertisingDataType? = null
     /** Custom advertising data. */
