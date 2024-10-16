@@ -12,6 +12,7 @@ android {
     flavorDimensions += listOf("mode")
     productFlavors {
         create("native") {
+            isDefault = true
             dimension = "mode"
         }
         create("mock") {
