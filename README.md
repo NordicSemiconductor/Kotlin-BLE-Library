@@ -20,7 +20,7 @@ Current status:
     - [ ] Obtaining list of connected devices
     - [x] Establishing connection
     - [x] Basic GATT operations
-    - [ ] Advanced GATT operations
+    - [x] Advanced GATT operations
     - [ ] Mock implementation
 - [ ] Peripheral role
     - [ ] Advertising
