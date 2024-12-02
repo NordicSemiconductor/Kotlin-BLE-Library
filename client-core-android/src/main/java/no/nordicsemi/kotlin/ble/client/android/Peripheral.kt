@@ -40,6 +40,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -585,7 +586,11 @@ open class Peripheral(
                     throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                 }
             }
+            // Skip the initial state. It should transition to BONDING quickly.
+            .dropWhile { it == BondState.NONE }
+            // Now, await for the next state after BONDING.
             .first { it != BondState.BONDING }
+            // And process it.
             .also {
                 when (it) {
                     BondState.BONDED -> logger.info("Bond created")
