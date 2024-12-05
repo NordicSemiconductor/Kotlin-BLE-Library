@@ -54,8 +54,8 @@ timber = "5.0.1"
 chart = "3.1.0"
 leakcanary = "2.14"
 mockk = "1.13.13"
-slf4j = "1.7.36" # don't update to 2.x, unless the next one is also updated
-slf4j-timber = "3.1" # <- this one
+slf4j = "2.0.13"
+slf4j-timber = "1.2"
 robolectric = "4.14.1"
 skydovesBallon = "1.6.11"
 moshiKotlin = "1.15.1"
@@ -182,7 +182,7 @@ leakcanary = { group = "com.squareup.leakcanary", name = "leakcanary-android", v
 slf4j = { group = "org.slf4j", name = "slf4j-api", version.ref = "slf4j" }
 slf4j-nop = { group = "org.slf4j", name = "slf4j-nop", version.ref = "slf4j" }
 slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
-slf4j-timber = { group = "com.arcao", name = "slf4j-timber", version.ref = "slf4j-timber" }
+slf4j-timber = { group = "uk.kulikov", name = "slf4j2-timber", version.ref = "slf4j-timber" }
 test-mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 test-robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
 skydoves-ballon = {group = "com.github.skydoves", name = "balloon-compose", version.ref = "skydovesBallon"}
