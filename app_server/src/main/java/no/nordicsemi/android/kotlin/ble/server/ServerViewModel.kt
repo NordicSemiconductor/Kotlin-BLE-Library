@@ -34,7 +34,6 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -157,7 +156,6 @@ class ServerViewModel @Inject constructor(
             advertiser.advertise(advertiserConfig) //Start advertising
                 .cancellable()
                 .catch { it.printStackTrace() }
-                .onEach { Log.d("ADVERTISER", "New event: $it") }
                 .onEach { //Observe advertiser lifecycle events
                     when (it) {
                         is OnAdvertisingSetStarted -> {
