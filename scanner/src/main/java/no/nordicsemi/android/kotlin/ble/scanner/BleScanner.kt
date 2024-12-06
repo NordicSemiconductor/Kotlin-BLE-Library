@@ -33,6 +33,7 @@ package no.nordicsemi.android.kotlin.ble.scanner
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
@@ -101,6 +102,7 @@ class BleScanner(
 
         if (settings.includeStoredBondedDevices) {
             bluetoothAdapter.bondedDevices
+                .filter { it.type != BluetoothDevice.DEVICE_TYPE_CLASSIC }
                 .map { RealServerDevice(it) }
                 .applyFilters(filters)
                 .forEach { trySend(BleScanResult(it)) }
