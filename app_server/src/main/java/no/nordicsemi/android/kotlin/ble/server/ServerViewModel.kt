@@ -102,32 +102,46 @@ class ServerViewModel @Inject constructor(
 
     private var advertisementJob: Job? = null
 
-    fun advertise() {
-        advertisementJob = viewModelScope.launch {
-            //Define led characteristic
-            val ledCharacteristic = ServerBleGattCharacteristicConfig(
-                BlinkySpecifications.UUID_LED_CHAR,
-                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
-                initialValue = DataByteArray.from(0x01)
-            )
+    init {
+        //Define led characteristic
+        val ledCharacteristic = ServerBleGattCharacteristicConfig(
+            BlinkySpecifications.UUID_LED_CHAR,
+            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
+            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
+            initialValue = DataByteArray.from(0x01)
+        )
 
-            //Define button characteristic
-            val buttonCharacteristic = ServerBleGattCharacteristicConfig(
-                BlinkySpecifications.UUID_BUTTON_CHAR,
-                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-            )
+        //Define button characteristic
+        val buttonCharacteristic = ServerBleGattCharacteristicConfig(
+            BlinkySpecifications.UUID_BUTTON_CHAR,
+            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
+            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+        )
 
-            //Put led and button characteristics inside a service
-            val serviceConfig = ServerBleGattServiceConfig(
-                BlinkySpecifications.UUID_SERVICE_DEVICE,
-                ServerBleGattServiceType.SERVICE_TYPE_PRIMARY,
-                listOf(ledCharacteristic, buttonCharacteristic)
-            )
+        //Put led and button characteristics inside a service
+        val serviceConfig = ServerBleGattServiceConfig(
+            BlinkySpecifications.UUID_SERVICE_DEVICE,
+            ServerBleGattServiceType.SERVICE_TYPE_PRIMARY,
+            listOf(ledCharacteristic, buttonCharacteristic)
+        )
 
+        viewModelScope.launch {
             val server = ServerBleGatt.create(context, viewModelScope, serviceConfig)
 
+            server.connectionEvents
+                .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
+                .map { it.connection }
+                .onEach {
+                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                        setUpServices(it)
+                    }
+                }
+                .collect()
+        }
+    }
+
+    fun advertise() {
+        advertisementJob = viewModelScope.launch {
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertisingConfig(
                 settings = BleAdvertisingSettings(
@@ -153,12 +167,6 @@ class ServerViewModel @Inject constructor(
                     }
                 }.launchIn(viewModelScope)
 
-            server.connectionEvents
-                .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
-                .map { it.connection }
-                .onEach {
-                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
-                        setUpServices(it)
                     }
                 }
                 .launchIn(this)
