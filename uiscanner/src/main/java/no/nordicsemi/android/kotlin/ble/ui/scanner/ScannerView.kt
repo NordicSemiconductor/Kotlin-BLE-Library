@@ -33,9 +33,16 @@ package no.nordicsemi.android.kotlin.ble.ui.scanner
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -90,6 +97,10 @@ fun ScannerView(
             val scope =  rememberCoroutineScope()
 
             Column(modifier = Modifier.fillMaxSize()) {
+                val insets = WindowInsets.displayCutout
+                    .union(WindowInsets.navigationBars)
+                    .only(WindowInsetsSides.Horizontal)
+
                 if (filters.isNotEmpty()) {
                     FilterView(
                         state = config,
@@ -97,6 +108,7 @@ fun ScannerView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(colorResource(id = R.color.appBarColor))
+                            .windowInsetsPadding(insets)
                             .padding(horizontal = 16.dp),
                         shape = filterShape,
                     )
@@ -115,7 +127,7 @@ fun ScannerView(
                         DevicesListView(
                             isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
                             state = state,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().windowInsetsPadding(insets),
                             onClick = { onResult(it) },
                             deviceItem = deviceItem,
                         )
