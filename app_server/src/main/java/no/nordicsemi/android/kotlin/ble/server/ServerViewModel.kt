@@ -145,7 +145,8 @@ class ServerViewModel @Inject constructor(
             val advertiserConfig = BleAdvertisingConfig(
                 settings = BleAdvertisingSettings(
                     legacyMode = true,
-                    scannable = true
+                    scannable = true,
+                    timeout = 5000, // Advertise for 5 seconds
                 ),
                 advertiseData = BleAdvertisingData(
                     ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE), //Advertise main service uuid.
@@ -183,13 +184,17 @@ class ServerViewModel @Inject constructor(
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
         val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
-        ledCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isLedOn = it != DataByteArray.from(0x00))
-        }.launchIn(viewModelScope)
+        ledCharacteristic.value
+            .onEach {
+                _state.value = _state.value.copy(isLedOn = it != DataByteArray.from(0x00))
+            }
+            .launchIn(viewModelScope)
 
-        buttonCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isButtonPressed = it != DataByteArray.from(0x00))
-        }.launchIn(viewModelScope)
+        buttonCharacteristic.value
+            .onEach {
+                _state.value = _state.value.copy(isButtonPressed = it != DataByteArray.from(0x00))
+            }
+            .launchIn(viewModelScope)
 
         this.ledCharacteristic = ledCharacteristic
         this.buttonCharacteristic = buttonCharacteristic
