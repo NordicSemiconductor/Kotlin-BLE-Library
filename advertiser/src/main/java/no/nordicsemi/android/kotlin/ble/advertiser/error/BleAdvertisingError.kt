@@ -49,7 +49,7 @@ enum class BleAdvertisingError(internal val value: Int) {
     ADVERTISE_FAILED_ALREADY_STARTED(AdvertiseCallback.ADVERTISE_FAILED_ALREADY_STARTED),
 
     /**
-     * Failed to start advertising as the advertise data to be broadcasted is larger than 31 bytes.
+     * Failed to start advertising as the advertise data to be broadcast is larger than 31 bytes.
      *
      * @see [AdvertiseCallback.ADVERTISE_FAILED_DATA_TOO_LARGE](https://developer.android.com/reference/android/bluetooth/le/AdvertiseCallback#ADVERTISE_FAILED_DATA_TOO_LARGE)
      */
@@ -78,7 +78,7 @@ enum class BleAdvertisingError(internal val value: Int) {
 
     companion object {
         fun create(value: Int): BleAdvertisingError {
-            return values().firstOrNull { it.value == value }
+            return entries.firstOrNull { it.value == value }
                 ?: throw IllegalArgumentException("Can't create an error for value: $value")
         }
     }
