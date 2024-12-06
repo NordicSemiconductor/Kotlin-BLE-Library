@@ -73,7 +73,9 @@ internal class BleAdvertiserOreo(
             trySend(it)
         }
 
-        bluetoothAdapter.name = config.settings.deviceName
+        config.settings.deviceName?.let {
+            bluetoothAdapter.name = it
+        }
 
         bluetoothLeAdvertiser.startAdvertisingSet(
             settings.toNative(),
