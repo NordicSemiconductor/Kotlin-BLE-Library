@@ -40,8 +40,11 @@ import android.bluetooth.le.BluetoothLeAdvertiser
 import android.content.Context
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingStatus
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
@@ -81,6 +84,17 @@ internal class BleAdvertiserLegacy(
                         BleAdvertisingStatus.ADVERTISE_SUCCESS
                     )
                 )
+
+                // Legacy API does not provide a callback when the advertising is stopped.
+                if (settings.timeout > 0) {
+                    launch {
+                        // Wait for the timeout and close the flow.
+                        delay(settings.timeout.toLong())
+                        if (isActive) {
+                            close()
+                        }
+                    }
+                }
             }
 
             override fun onStartFailure(errorCode: Int) {

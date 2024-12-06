@@ -44,6 +44,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingEvent
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.BleAdvertisingSetCallback
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingEnabled
 import no.nordicsemi.android.kotlin.ble.advertiser.data.toNative
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 
@@ -71,6 +72,9 @@ internal class BleAdvertiserOreo(
 
         val callback = BleAdvertisingSetCallback {
             trySend(it)
+            if (it is OnAdvertisingEnabled && !it.enable) {
+                close()
+            }
         }
 
         config.settings.deviceName?.let {
@@ -83,6 +87,8 @@ internal class BleAdvertiserOreo(
             scanResponseData?.toNative(),
             null,
             null,
+            config.settings.timeout / 10, // 10 ms units
+            0,
             callback
         )
 
