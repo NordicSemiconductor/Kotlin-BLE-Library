@@ -161,12 +161,13 @@ class ServerViewModel @Inject constructor(
                     it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
                         setUpServices(it)
                     }
-                }.launchIn(viewModelScope)
+                }
+                .launchIn(this)
         }
     }
 
     fun stopAdvertise() {
-        advertisementJob?.cancelChildren()
+        advertisementJob?.cancel()
         _state.value = _state.value.copy(isAdvertising = false)
     }
 
