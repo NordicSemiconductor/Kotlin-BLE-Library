@@ -34,32 +34,30 @@ package no.nordicsemi.android.kotlin.ble.server
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.ParcelUuid
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.main.ServerConnectionEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
@@ -67,7 +65,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharact
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceType
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 object BlinkySpecifications {
@@ -102,38 +100,52 @@ class ServerViewModel @Inject constructor(
 
     private var advertisementJob: Job? = null
 
-    fun advertise() {
-        advertisementJob = viewModelScope.launch {
-            //Define led characteristic
-            val ledCharacteristic = ServerBleGattCharacteristicConfig(
-                BlinkySpecifications.UUID_LED_CHAR,
-                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
-                initialValue = DataByteArray.from(0x01)
-            )
+    init {
+        //Define led characteristic
+        val ledCharacteristic = ServerBleGattCharacteristicConfig(
+            BlinkySpecifications.UUID_LED_CHAR,
+            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_WRITE),
+            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE),
+            initialValue = DataByteArray.from(0x01)
+        )
 
-            //Define button characteristic
-            val buttonCharacteristic = ServerBleGattCharacteristicConfig(
-                BlinkySpecifications.UUID_BUTTON_CHAR,
-                listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
-                listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
-            )
+        //Define button characteristic
+        val buttonCharacteristic = ServerBleGattCharacteristicConfig(
+            BlinkySpecifications.UUID_BUTTON_CHAR,
+            listOf(BleGattProperty.PROPERTY_READ, BleGattProperty.PROPERTY_NOTIFY),
+            listOf(BleGattPermission.PERMISSION_READ, BleGattPermission.PERMISSION_WRITE)
+        )
 
-            //Put led and button characteristics inside a service
-            val serviceConfig = ServerBleGattServiceConfig(
-                BlinkySpecifications.UUID_SERVICE_DEVICE,
-                ServerBleGattServiceType.SERVICE_TYPE_PRIMARY,
-                listOf(ledCharacteristic, buttonCharacteristic)
-            )
+        //Put led and button characteristics inside a service
+        val serviceConfig = ServerBleGattServiceConfig(
+            BlinkySpecifications.UUID_SERVICE_DEVICE,
+            ServerBleGattServiceType.SERVICE_TYPE_PRIMARY,
+            listOf(ledCharacteristic, buttonCharacteristic)
+        )
 
+        viewModelScope.launch {
             val server = ServerBleGatt.create(context, viewModelScope, serviceConfig)
 
+            server.connectionEvents
+                .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
+                .map { it.connection }
+                .onEach {
+                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
+                        setUpServices(it)
+                    }
+                }
+                .collect()
+        }
+    }
+
+    fun advertise() {
+        advertisementJob = viewModelScope.launch {
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertisingConfig(
                 settings = BleAdvertisingSettings(
-                    deviceName = "a", // Advertise a device name,
                     legacyMode = true,
-                    scannable = true
+                    scannable = true,
+                    timeout = 5000, // Advertise for 5 seconds
                 ),
                 advertiseData = BleAdvertisingData(
                     ParcelUuid(BlinkySpecifications.UUID_SERVICE_DEVICE), //Advertise main service uuid.
@@ -144,29 +156,23 @@ class ServerViewModel @Inject constructor(
             advertiser.advertise(advertiserConfig) //Start advertising
                 .cancellable()
                 .catch { it.printStackTrace() }
-                .onEach { Log.d("ADVERTISER", "New event: $it") }
                 .onEach { //Observe advertiser lifecycle events
-                    if (it is OnAdvertisingSetStarted) { //Handle advertising start event
-                        _state.value = _state.value.copy(isAdvertising = true)
+                    when (it) {
+                        is OnAdvertisingSetStarted -> {
+                            _state.value = _state.value.copy(isAdvertising = true)
+                        }
+                        else -> {}
                     }
-                    if (it is OnAdvertisingSetStopped) { //Handle advertising top event
-                        _state.value = _state.value.copy(isAdvertising = false)
-                    }
-                }.launchIn(viewModelScope)
-
-            server.connectionEvents
-                .mapNotNull { it as? ServerConnectionEvent.DeviceConnected }
-                .map { it.connection }
-                .onEach {
-                    it.services.findService(BlinkySpecifications.UUID_SERVICE_DEVICE)?.let {
-                        setUpServices(it)
-                    }
-                }.launchIn(viewModelScope)
+                }
+                .onCompletion {
+                    _state.value = _state.value.copy(isAdvertising = false)
+                }
+                .launchIn(this)
         }
     }
 
     fun stopAdvertise() {
-        advertisementJob?.cancelChildren()
+        advertisementJob?.cancel()
         _state.value = _state.value.copy(isAdvertising = false)
     }
 
@@ -174,13 +180,17 @@ class ServerViewModel @Inject constructor(
         val ledCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_LED_CHAR)!!
         val buttonCharacteristic = services.findCharacteristic(BlinkySpecifications.UUID_BUTTON_CHAR)!!
 
-        ledCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isLedOn = it != DataByteArray.from(0x00))
-        }.launchIn(viewModelScope)
+        ledCharacteristic.value
+            .onEach {
+                _state.value = _state.value.copy(isLedOn = it != DataByteArray.from(0x00))
+            }
+            .launchIn(viewModelScope)
 
-        buttonCharacteristic.value.onEach {
-            _state.value = _state.value.copy(isButtonPressed = it != DataByteArray.from(0x00))
-        }.launchIn(viewModelScope)
+        buttonCharacteristic.value
+            .onEach {
+                _state.value = _state.value.copy(isButtonPressed = it != DataByteArray.from(0x00))
+            }
+            .launchIn(viewModelScope)
 
         this.ledCharacteristic = ledCharacteristic
         this.buttonCharacteristic = buttonCharacteristic
