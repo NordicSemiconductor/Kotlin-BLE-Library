@@ -131,7 +131,6 @@ class ServerViewModel @Inject constructor(
             val advertiser = BleAdvertiser.create(context)
             val advertiserConfig = BleAdvertisingConfig(
                 settings = BleAdvertisingSettings(
-                    deviceName = "a", // Advertise a device name,
                     legacyMode = true,
                     scannable = true
                 ),
