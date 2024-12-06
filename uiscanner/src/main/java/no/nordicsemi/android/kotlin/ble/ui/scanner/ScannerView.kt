@@ -97,10 +97,11 @@ fun ScannerView(
             val scope =  rememberCoroutineScope()
 
             Column(modifier = Modifier.fillMaxSize()) {
+                val insets = WindowInsets.displayCutout
+                    .union(WindowInsets.navigationBars)
+                    .only(WindowInsetsSides.Horizontal)
+
                 if (filters.isNotEmpty()) {
-                    val insets = WindowInsets.displayCutout
-                        .union(WindowInsets.navigationBars)
-                        .only(WindowInsetsSides.Horizontal)
                     FilterView(
                         state = config,
                         onChanged = { viewModel.toggleFilter(it) },
@@ -126,7 +127,7 @@ fun ScannerView(
                         DevicesListView(
                             isLocationRequiredAndDisabled = isLocationRequiredAndDisabled,
                             state = state,
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier.fillMaxSize().windowInsetsPadding(insets),
                             onClick = { onResult(it) },
                             deviceItem = deviceItem,
                         )
