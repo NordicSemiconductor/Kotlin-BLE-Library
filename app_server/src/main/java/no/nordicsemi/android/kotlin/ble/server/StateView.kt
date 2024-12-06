@@ -33,7 +33,7 @@ fun StateView(state: ServerState, viewModel: ServerViewModel) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle(
                 icon = Icons.Default.Bluetooth,
-                title = stringResource(id = R.string.characteristics)
+                title = stringResource(id = R.string.title_control)
             )
 
             val interactionSource = remember { MutableInteractionSource() }

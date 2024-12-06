@@ -31,7 +31,8 @@
 
 <resources>
     <string name="app_name">Blinky Server</string>
-    <string name="characteristics">Characteristics</string>
+    <string name="title_advertising">Advertising</string>
+    <string name="title_control">Control</string>
     <string name="button">Button</string>
     <string name="stop">Stop</string>
     <string name="advertise">Advertise</string>

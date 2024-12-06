@@ -27,7 +27,7 @@ fun AdvertiseView(state: ServerState, viewModel: ServerViewModel) {
         Column(modifier = Modifier.padding(16.dp)) {
             SectionTitle(
                 painter = painterResource(id = R.drawable.ic_broadcast),
-                title = stringResource(id = R.string.characteristics)
+                title = stringResource(id = R.string.title_advertising)
             )
 
             Spacer(modifier = Modifier.size(8.dp))
