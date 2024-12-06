@@ -40,19 +40,18 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
-import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
+import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingEnabled
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
@@ -60,6 +59,7 @@ import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattPermission
 import no.nordicsemi.android.kotlin.ble.core.data.BleGattProperty
+import no.nordicsemi.android.kotlin.ble.core.data.util.DataByteArray
 import no.nordicsemi.android.kotlin.ble.server.main.ServerBleGatt
 import no.nordicsemi.android.kotlin.ble.server.main.ServerConnectionEvent
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharacteristic
@@ -159,14 +159,17 @@ class ServerViewModel @Inject constructor(
                 .catch { it.printStackTrace() }
                 .onEach { Log.d("ADVERTISER", "New event: $it") }
                 .onEach { //Observe advertiser lifecycle events
-                    if (it is OnAdvertisingSetStarted) { //Handle advertising start event
-                        _state.value = _state.value.copy(isAdvertising = true)
-                    }
-                    if (it is OnAdvertisingSetStopped) { //Handle advertising top event
-                        _state.value = _state.value.copy(isAdvertising = false)
-                    }
-                }.launchIn(viewModelScope)
-
+                    when (it) {
+                        is OnAdvertisingSetStarted -> {
+                            _state.value = _state.value.copy(isAdvertising = true)
+                        }
+                        is OnAdvertisingSetStopped -> {
+                            _state.value = _state.value.copy(isAdvertising = false)
+                        }
+                        is OnAdvertisingEnabled -> {
+                            _state.value = _state.value.copy(isAdvertising = it.enable)
+                        }
+                        else -> {}
                     }
                 }
                 .launchIn(this)
