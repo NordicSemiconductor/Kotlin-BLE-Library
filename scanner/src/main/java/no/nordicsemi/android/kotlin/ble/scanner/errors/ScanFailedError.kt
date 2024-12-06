@@ -43,6 +43,11 @@ import androidx.annotation.RequiresApi
 enum class ScanFailedError(val value: Int) {
 
     /**
+     * Fails to start scan as BLE is disabled on the device.
+     */
+    BLUETOOTH_DISABLED(-1),
+
+    /**
      * Helper value representing an unknown error.
      */
     UNKNOWN(0),
@@ -81,7 +86,7 @@ enum class ScanFailedError(val value: Int) {
 
     companion object {
         fun create(value: Int): ScanFailedError {
-            return values().firstOrNull { it.value == value } ?: UNKNOWN
+            return entries.firstOrNull { it.value == value } ?: UNKNOWN
         }
     }
 }

@@ -68,15 +68,10 @@ class BleScanner(
     context: Context,
 ) {
 
-    private val bluetoothManager: BluetoothManager
-    private val bluetoothAdapter: BluetoothAdapter
-    private val bluetoothLeScanner: BluetoothLeScanner
-
-    init {
-        bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager.adapter
-        bluetoothLeScanner = bluetoothAdapter.bluetoothLeScanner
-    }
+    private val bluetoothManager: BluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+    private val bluetoothAdapter: BluetoothAdapter = bluetoothManager.adapter
+    private val bluetoothLeScanner: BluetoothLeScanner?
+        get() = bluetoothAdapter.bluetoothLeScanner
 
     /**
      * Starts scanning and emit results in the [Flow].
@@ -92,6 +87,10 @@ class BleScanner(
         filters: List<BleScanFilter> = emptyList(),
         settings: BleScannerSettings = BleScannerSettings(),
     ): Flow<BleScanResult> = callbackFlow {
+        val bluetoothLeScanner = bluetoothLeScanner ?: run {
+            close(ScanningFailedException(ScanFailedError.BLUETOOTH_DISABLED))
+            return@callbackFlow
+        }
         launch {
             MockDevices.devices.collect {
                 it.filterKeys { it.isIncluded(filters) }
