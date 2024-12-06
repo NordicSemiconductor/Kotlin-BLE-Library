@@ -51,9 +51,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingEnabled
 import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStarted
-import no.nordicsemi.android.kotlin.ble.advertiser.callback.OnAdvertisingSetStopped
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingConfig
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingData
 import no.nordicsemi.android.kotlin.ble.core.advertiser.BleAdvertisingSettings
