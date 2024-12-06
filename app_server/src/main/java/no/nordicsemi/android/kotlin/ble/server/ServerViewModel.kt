@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import no.nordicsemi.android.kotlin.ble.advertiser.BleAdvertiser
@@ -66,7 +67,7 @@ import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattCharact
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattService
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceConfig
 import no.nordicsemi.android.kotlin.ble.server.main.service.ServerBleGattServiceType
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 object BlinkySpecifications {
@@ -162,14 +163,11 @@ class ServerViewModel @Inject constructor(
                         is OnAdvertisingSetStarted -> {
                             _state.value = _state.value.copy(isAdvertising = true)
                         }
-                        is OnAdvertisingSetStopped -> {
-                            _state.value = _state.value.copy(isAdvertising = false)
-                        }
-                        is OnAdvertisingEnabled -> {
-                            _state.value = _state.value.copy(isAdvertising = it.enable)
-                        }
                         else -> {}
                     }
+                }
+                .onCompletion {
+                    _state.value = _state.value.copy(isAdvertising = false)
                 }
                 .launchIn(this)
         }
