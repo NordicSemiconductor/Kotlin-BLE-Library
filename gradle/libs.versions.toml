@@ -1,38 +1,38 @@
 [versions]
-androidGradlePlugin = "8.7.1"
-androidxActivity = "1.9.2"
-androidxAnnotation = "1.8.2"
-androidxComposeBom = "2024.09.03" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidxCore = "1.13.1"
+androidGradlePlugin = "8.7.3"
+androidxActivity = "1.9.3"
+androidxAnnotation = "1.9.1"
+androidxComposeBom = "2024.12.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
+androidxCore = "1.15.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxEspresso = "3.6.1"
 androidxHiltNavigationCompose = "1.2.0"
-androidxLifecycle = "2.8.6"
-androidxNavigation = "2.8.2"
+androidxLifecycle = "2.8.7"
+androidxNavigation = "2.8.5"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
-hilt = "2.52"
+hilt = "2.53"
 junit4 = "4.13.2"
-kotlin = "2.0.21"
+kotlin = "2.1.0"
 kotlinxCoroutines = "1.9.0"
 kotlinxDatetime = "0.6.0"
 kotlinCompose = "1.6.11"
-ksp = "2.0.21-1.0.25"
+ksp = "2.1.0-1.0.29"
 publishPlugin = "1.2.2"
 leakcanary = "2.14"
-mockk = "1.13.10"
+mockk = "1.13.13"
 slf4j = "2.0.16"
 slf4j-timber = "1.2"
-robolectric = "4.12.2"
+robolectric = "4.14.1"
 
 # Nordic
 nordic-log = "2.5.0"
 nordic-data = "0.1.0"
-nordic-common = "2.1.0"
+nordic-common = "2.3.0"
 
 # Plugins
-nordicPlugins = "2.4"
+nordicPlugins = "2.5"
 dokkaPlugin = "1.9.20"
 
 [libraries]
