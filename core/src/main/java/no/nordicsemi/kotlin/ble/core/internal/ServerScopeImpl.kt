@@ -83,7 +83,6 @@ private open class ServiceScopeImpl: ServiceScope {
                 && scope.descriptors.none { it.uuid == Descriptor.CLIENT_CHAR_CONF_UUID }) {
                 scope.descriptors.add(CCCD())
             }
-            print("AAA Adding characteristic: $uuid")
             characteristics.add(
                 CharacteristicDefinition(
                     uuid = uuid,
