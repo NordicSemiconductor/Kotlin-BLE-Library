@@ -34,6 +34,7 @@
 package no.nordicsemi.kotlin.ble.core
 
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * This class specifies parameters for Bluetooth LE advertising.
@@ -43,7 +44,8 @@ import kotlin.time.Duration
  * scannable or connectable advertisement. By default, a connectable advertisements will be discoverable.
  * Devices connecting to non-discoverable advertisements cannot initiate bonding.
  * This flag is ignored for non-scannable and non-connectable advertisements.
- * @property interval The advertising interval.
+ * @param interval The advertising interval, in range 20 ms - 10.24 sec.
+ * Use [AdvertisingInterval] for recommended values.
  * @property txPowerLevel The requested TX power level for advertising. The actual TX power level
  * may be different, depending on the hardware and implementation.
  */
@@ -52,7 +54,16 @@ sealed class AdvertisingSetParameters(
     val discoverable: Boolean,
     val interval: Duration,
     val txPowerLevel: Int,
-)
+) {
+    init {
+        require(txPowerLevel > -128 && txPowerLevel <= 10) {
+            "TX power level must be in the range from -127 to 10 dBm"
+        }
+        require(interval >= 20.milliseconds && interval <= 10240.milliseconds) {
+            "Advertising interval must be in the range from 20 ms to 10.24 s"
+        }
+    }
+}
 
 /**
  * The advertising parameters for legacy advertising.
@@ -64,7 +75,8 @@ sealed class AdvertisingSetParameters(
  * scannable or connectable advertisement. By default, a connectable advertisements will be discoverable.
  * Devices connecting to non-discoverable advertisements cannot initiate bonding.
  * This flag is ignored for non-scannable and non-connectable advertisements.
- * @param interval The advertising interval. Use [AdvertisingInterval] for recommended values.
+ * @param interval The advertising interval, in range 20 ms - 10.24 sec.
+ * Use [AdvertisingInterval] for recommended values.
  * @param txPowerLevel The requested TX power level for advertising. The actual TX power level
  * may be different, depending on the hardware and implementation.
  * Use [TxPowerLevel] for recommended values.
@@ -92,10 +104,14 @@ class LegacyAdvertisingSetParameters(
  * @param discoverable Whether the _General Discoverable_ flag (in case advertising is started
  * without a timeout) or _Limited Discoverable_ flag (if a timeout is specified) should be added
  * to the scannable or connectable advertisement.
+ *
  * By default, a connectable advertisements will be discoverable.
+ *
  * Devices connecting to non-discoverable advertisements cannot initiate bonding.
+ *
  * This flag is ignored for non-scannable and non-connectable advertisements.
- * @param interval The advertising interval. Use [AdvertisingInterval] for recommended values.
+ * @param interval The advertising interval, in range 20 ms - 10.24 sec.
+ * Use [AdvertisingInterval] for recommended values.
  * @param txPowerLevel The requested TX power level for advertising. The actual TX power level
  * may be different, depending on the hardware and implementation.
  * Use [TxPowerLevel] for recommended values.
@@ -109,7 +125,7 @@ class LegacyAdvertisingSetParameters(
  */
 class Bluetooth5AdvertisingSetParameters(
     connectable: Boolean,
-    discoverable: Boolean = true,
+    discoverable: Boolean = connectable,
     interval: Duration = AdvertisingInterval.MEDIUM,
     txPowerLevel: Int = TxPowerLevel.MEDIUM,
     val includeTxPowerLevel: Boolean = false,
@@ -122,4 +138,10 @@ class Bluetooth5AdvertisingSetParameters(
     discoverable = discoverable,
     txPowerLevel = txPowerLevel,
     interval = interval,
-)
+) {
+    init {
+        require(!(anonymous && (connectable || scannable))) {
+            "Anonymous advertising cannot be connectable or scannable"
+        }
+    }
+}

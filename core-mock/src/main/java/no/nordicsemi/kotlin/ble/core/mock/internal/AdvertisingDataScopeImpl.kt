@@ -33,8 +33,10 @@
 
 package no.nordicsemi.kotlin.ble.core.mock.internal
 
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
+import no.nordicsemi.kotlin.ble.core.asFlags
 import no.nordicsemi.kotlin.ble.core.internal.AdvertisingDataScopeImpl
-import no.nordicsemi.kotlin.ble.core.mock.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import kotlin.uuid.ExperimentalUuidApi
@@ -45,15 +47,20 @@ import kotlin.uuid.Uuid
  *
  * This implementation extends the core implementation to add fields that cannot be advertised
  * on Android or iOS, but can by real Bluetooth LE peripherals, therefore can be mocked.
+ *
+ * @param txPowerLevel The simulated TX power level of the mock advertiser.
  */
 @OptIn(ExperimentalUuidApi::class)
-class AdvertisingDataScopeImpl: AdvertisingDataScopeImpl(), AdvertisingDataScope {
+class AdvertisingDataScopeImpl(
+    private val txPowerLevel: Int,
+): AdvertisingDataScopeImpl(), AdvertisingDataScope {
 
-    override fun build(): AdvertisingData =
-        AdvertisingData(
+    override fun build(): AdvertisingDataDefinition =
+        AdvertisingDataDefinition(
+            flags,
             completeLocalName,
             shortenedLocalName,
-            includeTxPowerLevel,
+            txPowerLevel.takeIf { includeTxPowerLevel },
             serviceUuids,
             serviceSolicitationUuids,
             serviceData,
@@ -63,6 +70,8 @@ class AdvertisingDataScopeImpl: AdvertisingDataScopeImpl(), AdvertisingDataScope
             meshBeacon,
         )
 
+    /** The set of flags to be advertised. If null or empty, no flags will be advertised. */
+    private var flags: Set<AdvertisingDataFlag>? = null
     /** The value of "Complete Local Name" AD type. */
     private var completeLocalName: String? = null
     /** The value of "Shortened Local Name" AD type. */
@@ -81,6 +90,14 @@ class AdvertisingDataScopeImpl: AdvertisingDataScopeImpl(), AdvertisingDataScope
     private var meshMessage: ByteArray? = null
     /** The Bluetooth Mesh Beacon field. */
     private var meshBeacon: ByteArray? = null
+
+    override fun Flags(vararg flags: AdvertisingDataFlag) {
+        this.flags = flags.toSet()
+    }
+
+    override fun Flags(bitfield: Int) {
+        this.flags = bitfield.asFlags()
+    }
 
     override fun CompleteLocalName(name: String) {
         completeLocalName = name

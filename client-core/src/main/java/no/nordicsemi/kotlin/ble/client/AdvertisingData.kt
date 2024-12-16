@@ -29,29 +29,29 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.client
 
-package no.nordicsemi.kotlin.ble.client.mock
-
-import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
- * The approximate mock device proximity.
+ * Advertising Data represents the data found in the Advertisement Packet and
+ * Scan Response combined.
+ *
+ * @property name The Complete Local Name or Shortened Local Name advertised, if present.
+ * @property serviceUuids A list of service UUIDs advertised.
+ * @property serviceSolicitationUuids A list of service solicitation UUIDs advertised.
+ * @property serviceData A map of service data advertised.
+ * @property txPowerLevel The transmission power level advertised, if present, in dBm.
+ * @property manufacturerData The manufacturer specific data advertised, where keys are the
+ * Company IDs, as registered in Adopted Numbers by Bluetooth SIG.
  */
-enum class Proximity {
-    /** The device will have RSSI values around -40 dBm. */
-    IMMEDIATE,
-    /** The device will have RSSI values around -70 dBm. */
-    NEAR,
-    /** The device is far, will have RSSI values around -100 dBm. */
-    FAR,
-    /** The device is out of range. */
-    OUT_OF_RANGE;
-
-    internal fun randomRssi(): Int = when (this) {
-        IMMEDIATE -> Random.nextInt(-50, -36)
-        NEAR -> Random.nextInt(-70, -50)
-        FAR -> Random.nextInt(-100, -80)
-        OUT_OF_RANGE -> -128
-    }
+@OptIn(ExperimentalUuidApi::class)
+interface AdvertisingData {
+    val name: String?
+    val serviceUuids: List<Uuid>
+    val serviceSolicitationUuids: List<Uuid>
+    val serviceData: Map<Uuid, ByteArray>
+    val txPowerLevel: Int?
+    val manufacturerData: Map<Int, ByteArray>
 }

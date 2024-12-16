@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android.mock
+package no.nordicsemi.kotlin.ble.advertiser.android.mock.internal
 
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -38,31 +38,16 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
-import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
-import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.time.Duration
-
-/**
- * Creates an instance of a mock [BluetoothLeAdvertiser] for Android.
- *
- * The behavior of a mock advertiser should mimic one from the same Android version.
- *
- * @param environment The mock environment to use.
- * @return A mock instance of the [BluetoothLeAdvertiser].
- */
-@Suppress("unused")
-fun BluetoothLeAdvertiser.Factory.mock(
-    environment: MockEnvironment = MockEnvironment.Api31(),
-): BluetoothLeAdvertiser = BluetoothLeAdvertiserMock(
-    environment = environment
-)
 
 /**
  * A mock implementation of Bluetooth LE advertiser.
@@ -73,15 +58,15 @@ fun BluetoothLeAdvertiser.Factory.mock(
  * the [MockEnvironment.advertiser]callback will be invoked to obtain the TX power level.
  * To emulate a failure, the callback should return a [Result.failure] with [AdvertisingNotStartedException].
  */
-class BluetoothLeAdvertiserMock internal constructor(
+internal class MockBluetoothLeAdvertiser(
     private val environment: MockEnvironment,
 ): BluetoothLeAdvertiser() {
-    private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserMock::class.java)
+    private val logger: Logger = LoggerFactory.getLogger(MockBluetoothLeAdvertiser::class.java)
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        advertisingData: AdvertisingData,
-        scanResponse: AdvertisingData?,
+        advertisingData: AdvertisingDataDefinition,
+        scanResponse: AdvertisingDataDefinition?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?

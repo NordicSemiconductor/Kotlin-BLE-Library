@@ -34,7 +34,7 @@
 package no.nordicsemi.kotlin.ble.android.mock
 
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import org.jetbrains.annotations.Range
 
@@ -49,7 +49,7 @@ typealias LatestApi = no.nordicsemi.kotlin.ble.android.mock.MockEnvironment.Api3
  * It should return the TX power level used for mock advertising, in dBm.
  * Valid values are from -127 to +1 dBm.
  */
-typealias MockAdvertiser = (requestedTxPower: Int, advertisingData: AdvertisingData, scanResponse: AdvertisingData?) -> Result<Int>
+typealias MockAdvertiser = (requestedTxPower: Int, advertisingData: AdvertisingDataDefinition, scanResponse: AdvertisingDataDefinition?) -> Result<Int>
 
 private const val DEFAULT_NAME = "Mock"
 private val DEFAULT_MOCK_ADVERTISER: MockAdvertiser = { requestedTxPower, _, _ ->

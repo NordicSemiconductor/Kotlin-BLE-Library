@@ -34,18 +34,25 @@
 package no.nordicsemi.kotlin.ble.client.mock
 
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.mock.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition
+import kotlin.time.Duration
 
 /**
  * The advertisement configuration for a mock peripheral.
  *
- * @property parameters The advertising parameters.
+ * @property delay The delay before the peripheral starts advertising.
+ * @property timeout The timeout after which the advertising set stops advertising.
+ * @property maxAdvertisingEvents The maximum number of advertising events.
  * @property isAdvertisingWhenConnected Whether the peripheral should advertise in the
  * connected state.
+ * @property parameters The advertising parameters.
  * @property advertisingData The advertising data.
  */
-internal class MockAdvertisementConfig(
-    val parameters: AdvertisingSetParameters,
+class MockAdvertisementConfig(
+    val delay: Duration,
+    val timeout: Duration,
+    val maxAdvertisingEvents: Int,
     val isAdvertisingWhenConnected: Boolean,
-    val advertisingData: AdvertisingData,
+    val parameters: AdvertisingSetParameters,
+    val advertisingData: AdvertisingDataDefinition,
 )

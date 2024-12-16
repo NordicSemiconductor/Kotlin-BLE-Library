@@ -38,57 +38,33 @@ import kotlinx.coroutines.flow.flow
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import org.jetbrains.annotations.Range
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 /**
- * A scan result represents a single advertisement found during the scan.
+ * A Scan Result represents a single advertisement found during the scan.
  *
- * The [advertisementData] contain combined data from the Advertisement Packet and Scan Response
+ * The [advertisingData] contain combined data from the Advertisement Packet and Scan Response
  * packet.
  *
  * @property peripheral The peripheral that was found.
  * @property isConnectable Whether the peripheral is connectable.
- * @property advertisementData The advertisement data (combined with scan response data,
+ * @property advertisingData The advertising data (combined with scan response data,
  * if applicable).
  * @property rssi The received signal strength (RSSI), in dBm.
  * @property txPowerLevel The transmission power level, as advertised in Extended Advertising
- * packet or as AD type. `null` if not present.
+ * packet. `null` if not present.
  * @property primaryPhy The primary PHY used to transmit the advertisement.
  * @property secondaryPhy The secondary PHY used to transmit the advertisement, or `null` if not used.
  * @property timestamp The timestamp since boot when the scan record was observed, in milliseconds.
  */
-interface ScanResult<P: Peripheral<*, *>, AD: AdvertisementData> {
+interface ScanResult<P: Peripheral<*, *>, AD: AdvertisingData> {
     val peripheral: P
     val isConnectable: Boolean
-    val advertisementData: AD
+    val advertisingData: AD
     val rssi: @Range(from = -127, to = 126) Int
     val txPowerLevel: @Range(from = -127, to = 126) Int?
     val primaryPhy: PrimaryPhy
     val secondaryPhy: Phy?
     val timestamp: Long
-}
-
-/**
- * Advertisement data represents the data found in the Advertisement Packet and
- * Scan Response combined.
- *
- * @property name The Complete Local Name or Shortened Local Name advertised, if present.
- * @property serviceUuids A list of service UUIDs advertised.
- * @property serviceSolicitationUuids A list of service solicitation UUIDs advertised.
- * @property serviceData A map of service data advertised.
- * @property txPowerLevel The transmission power level advertised, if present, in dBm.
- * @property manufacturerData The manufacturer specific data advertised, where keys are the
- * Company IDs, as registered in Adopted Numbers by Bluetooth SIG.
- */
-@OptIn(ExperimentalUuidApi::class)
-interface AdvertisementData {
-    val name: String?
-    val serviceUuids: List<Uuid>
-    val serviceSolicitationUuids: List<Uuid>
-    val serviceData: Map<Uuid, ByteArray>
-    val txPowerLevel: Int?
-    val manufacturerData: Map<Int, ByteArray>
 }
 
 /**

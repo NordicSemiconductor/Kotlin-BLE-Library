@@ -41,11 +41,10 @@ import android.os.Build
 import android.util.SparseArray
 import androidx.annotation.RequiresApi
 import androidx.core.util.forEach
-import kotlinx.datetime.Clock
-import no.nordicsemi.kotlin.ble.client.android.AdvertisementData
+import no.nordicsemi.kotlin.ble.client.android.AdvertisingData
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.client.android.PeripheralType
+import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -114,7 +113,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
             isConnectable =  isConnectable,
-            advertisementData = scanRecord.toAdvertisementData(),
+            advertisingData = scanRecord.toAdvertisementData(),
             rssi = rssi,
             txPowerLevel =
                 if (txPower != NativeScanResult.TX_POWER_NOT_PRESENT)
@@ -132,7 +131,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
             isConnectable =  true,
-            advertisementData = scanRecord.toAdvertisementData(),
+            advertisingData = scanRecord.toAdvertisementData(),
             rssi = rssi,
             txPowerLevel =
                 if (scanRecord.txPowerLevel != Int.MIN_VALUE)
@@ -146,8 +145,8 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
     }
 }
 
-private fun ScanRecord.toAdvertisementData(): AdvertisementData {
-    return AdvertisementData(raw = bytes)
+private fun ScanRecord.toAdvertisementData(): AdvertisingData {
+    return AdvertisingData(raw = bytes)
 }
 
 private fun SparseArray<ByteArray>.toMap(): Map<Int, ByteArray> {

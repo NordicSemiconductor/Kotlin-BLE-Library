@@ -29,29 +29,10 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.mock
 
-import kotlin.random.Random
+sealed class DisconnectionReason
 
-/**
- * The approximate mock device proximity.
- */
-enum class Proximity {
-    /** The device will have RSSI values around -40 dBm. */
-    IMMEDIATE,
-    /** The device will have RSSI values around -70 dBm. */
-    NEAR,
-    /** The device is far, will have RSSI values around -100 dBm. */
-    FAR,
-    /** The device is out of range. */
-    OUT_OF_RANGE;
+data object TerminateLocalHost: DisconnectionReason()
 
-    internal fun randomRssi(): Int = when (this) {
-        IMMEDIATE -> Random.nextInt(-50, -36)
-        NEAR -> Random.nextInt(-70, -50)
-        FAR -> Random.nextInt(-100, -80)
-        OUT_OF_RANGE -> -128
-    }
-}
+data object Timeout: DisconnectionReason()

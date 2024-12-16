@@ -31,41 +31,55 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.core.mock
+package no.nordicsemi.kotlin.ble.core.android
 
-import no.nordicsemi.kotlin.ble.core.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataDefinition
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
- * Advertising data packet container for mock Bluetooth LE advertising.
+ * Advertising data packet container for Bluetooth LE advertising.
  *
  * This represents the data to be advertised in the Advertising Data as well as the Scan Response
  * data.
  *
- * @property completeLocalName The value of "Complete Local Name" AD type.
- * @property shortenedLocalName The value of "Shortened Local Name" AD type.
- * @property includeTxPowerLevel Whether the TX power level should be included in the
+ * @constructor Creates an advertising data definition.
+ * @param includeDeviceName Whether the device name should be included in advertise packet.
+ * @param includeTxPowerLevel Whether the TX power level should be included in the
  * advertising packet.
- * @property serviceUuids A list of service UUID to advertise.
- * @property serviceSolicitationUuids Service solicitation UUID to advertise data.
- * @property serviceData Service data to be advertised.
- * @property manufacturerData Manufacturer specific data. The keys should be the Company ID as
+ * @param serviceUuids A list of service UUID to advertise.
+ * @param serviceSolicitationUuids Service solicitation UUID to advertise data.
+ * @param serviceData Service data to be advertised.
+ * @param manufacturerData Manufacturer specific data. The keys should be the Company ID as
  * defined in Assigned Numbers.
- * @property meshPbAdv The Bluetooth Mesh PB-ADV field.
- * @property meshMessage The Bluetooth Mesh Message field.
- * @property meshBeacon The Bluetooth Mesh Beacon field.
  */
 @OptIn(ExperimentalUuidApi::class)
-class AdvertisingData(
-    val completeLocalName: String? = null,
-    val shortenedLocalName: String? = null,
+class AdvertisingDataDefinition(
+    val includeDeviceName: Boolean = false,
     val includeTxPowerLevel: Boolean = false,
     serviceUuids: List<Uuid>? = null,
     val serviceSolicitationUuids: List<Uuid>? = null,
     val serviceData: Map<Uuid, ByteArray>? = null,
     val manufacturerData: Map<Int, ByteArray>? = null,
-    var meshPbAdv: ByteArray? = null,
-    var meshMessage: ByteArray? = null,
-    var meshBeacon: ByteArray? = null
-): AdvertisingData(serviceUuids)
+): AdvertisingDataDefinition(serviceUuids) {
+
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String = "AdvertisingDataDefinition(" +
+        "includeDeviceName=$includeDeviceName, " +
+        "includeTxPowerLevel=$includeTxPowerLevel, " +
+        "serviceUuids=$serviceUuids, " +
+        "serviceSolicitationUuids=$serviceSolicitationUuids, " +
+        "serviceData=${serviceData?.map { entry -> 
+            "${entry.key} -> 0x${entry.value.toHexString(HexFormat.UpperCase)}"}}, " +
+        "manufacturerData=${manufacturerData?.map { entry -> 
+            "${entry.key.toHexString(
+                HexFormat { 
+                    number { 
+                        prefix = "0x"
+                        minLength = 4
+                        removeLeadingZeros = true
+                    }
+                }
+            )} -> 0x${entry.value.toHexString(HexFormat.UpperCase)}"}}, " +
+        ")"
+}

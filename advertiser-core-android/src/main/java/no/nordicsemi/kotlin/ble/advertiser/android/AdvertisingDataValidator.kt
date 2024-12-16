@@ -38,7 +38,7 @@ import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.util.is16BitUuid
 import no.nordicsemi.kotlin.ble.core.util.is32BitUuid
 import org.jetbrains.annotations.Range
@@ -83,7 +83,7 @@ class AdvertisingDataValidator(
      * @param scanResponse The optional scan response data.
      * @throws ValidationException If the parameters or payload are invalid.
      */
-    fun validate(parameters: AdvertisingSetParameters, advertisingData: AdvertisingData, scanResponse: AdvertisingData?) {
+    fun validate(parameters: AdvertisingSetParameters, advertisingData: AdvertisingDataDefinition, scanResponse: AdvertisingDataDefinition?) {
         // Android adds flags automatically when advertising is connectable and discoverable.
         val isConnectable = parameters.connectable
         val isDiscoverable = parameters.discoverable
@@ -137,7 +137,7 @@ class AdvertisingDataValidator(
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    private fun totalBytes(data: AdvertisingData?, isFlagsIncluded: Boolean): Int {
+    private fun totalBytes(data: AdvertisingDataDefinition?, isFlagsIncluded: Boolean): Int {
         if (data == null) {
             return 0
         }

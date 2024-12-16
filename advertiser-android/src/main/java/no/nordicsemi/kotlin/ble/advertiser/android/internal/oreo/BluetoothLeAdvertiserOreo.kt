@@ -36,15 +36,14 @@ import android.bluetooth.le.AdvertisingSetCallback
 import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.kotlin.ble.advertiser.android.NativeBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.NativeBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toNative
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
@@ -68,8 +67,8 @@ internal class BluetoothLeAdvertiserOreo(
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        advertisingData: AdvertisingData,
-        scanResponse: AdvertisingData?,
+        advertisingData: AdvertisingDataDefinition,
+        scanResponse: AdvertisingDataDefinition?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?

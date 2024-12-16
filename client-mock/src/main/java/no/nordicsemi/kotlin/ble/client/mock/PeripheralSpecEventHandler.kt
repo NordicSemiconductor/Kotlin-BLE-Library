@@ -29,15 +29,39 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package no.nordicsemi.kotlin.ble.client.mock
 
+import no.nordicsemi.kotlin.ble.core.Phy
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+
+@OptIn(ExperimentalUuidApi::class)
 interface PeripheralSpecEventHandler {
 
-    fun onConnectionRequest(peripheralSpec: PeripheralSpec<*>): Result<Unit> {
+    fun onConnectionRequest(): Result<Unit> {
         return Result.success(Unit)
     }
 
-    fun onMtuRequest(mtu: Int): Result<Int>
-}
+    fun onConnectionLost(status: Int) {
+        // no-op
+    }
 
-class MtuRequest(val mtu: Int, val callback: (Result<Int>) -> Unit)
+    fun onReset() {
+        // no-op
+    }
+
+    fun onServiceDiscoveryRequest(filter: List<Uuid>): Result<Unit> {
+        return Result.success(Unit)
+    }
+
+    fun onMtuRequest(mtu: Int): Result<Int> {
+        return Result.success(mtu.coerceIn(23, 515))
+    }
+
+    fun onPhyRequest(phy: Phy): Result<Phy> {
+        return Result.success(phy)
+    }
+
+}

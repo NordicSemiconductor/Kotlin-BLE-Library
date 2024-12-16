@@ -33,14 +33,14 @@
 
 package no.nordicsemi.kotlin.ble.core.internal
 
-import no.nordicsemi.kotlin.ble.core.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
- * Implementation of the advertising data scope used to build the [AdvertisingData].
+ * Implementation of the advertising data scope used to build the [AdvertisingDataDefinition].
  */
 @OptIn(ExperimentalUuidApi::class)
 open class AdvertisingDataScopeImpl: AdvertisingDataScope {
@@ -50,7 +50,7 @@ open class AdvertisingDataScopeImpl: AdvertisingDataScope {
      *
      * If the Service UUIDs were not specified, this method will return `null`.
      */
-    open fun build(): AdvertisingData = AdvertisingData(serviceUuids)
+    open fun build(): AdvertisingDataDefinition = AdvertisingDataDefinition(serviceUuids)
 
     /**
      * The list of service UUIDs to be advertised.

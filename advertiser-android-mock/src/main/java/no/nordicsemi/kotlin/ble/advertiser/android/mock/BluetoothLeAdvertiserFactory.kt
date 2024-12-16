@@ -29,29 +29,23 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
-package no.nordicsemi.kotlin.ble.client.mock
-
-import kotlin.random.Random
+import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.advertiser.android.mock.internal.MockBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 
 /**
- * The approximate mock device proximity.
+ * Creates an instance of a mock [BluetoothLeAdvertiser] for Android.
+ *
+ * The behavior of a mock advertiser should mimic one from the same Android version.
+ *
+ * @param environment The mock environment to use.
+ * @return A mock instance of the [BluetoothLeAdvertiser].
  */
-enum class Proximity {
-    /** The device will have RSSI values around -40 dBm. */
-    IMMEDIATE,
-    /** The device will have RSSI values around -70 dBm. */
-    NEAR,
-    /** The device is far, will have RSSI values around -100 dBm. */
-    FAR,
-    /** The device is out of range. */
-    OUT_OF_RANGE;
-
-    internal fun randomRssi(): Int = when (this) {
-        IMMEDIATE -> Random.nextInt(-50, -36)
-        NEAR -> Random.nextInt(-70, -50)
-        FAR -> Random.nextInt(-100, -80)
-        OUT_OF_RANGE -> -128
-    }
-}
+@Suppress("unused")
+fun BluetoothLeAdvertiser.Factory.mock(
+    environment: MockEnvironment = MockEnvironment.Api31(),
+): BluetoothLeAdvertiser = MockBluetoothLeAdvertiser(
+    environment = environment
+)

@@ -33,6 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.core.mock
 
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataScope
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -43,7 +44,21 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 interface AdvertisingDataScope: AdvertisingDataScope {
 
-    // TODO add Flags
+    /**
+     * Adds "Flags" AD type to the advertising data.
+     *
+     * @param flags The flags to be advertised.
+     */
+    @Suppress("FunctionName")
+    fun Flags(vararg flags: AdvertisingDataFlag)
+
+    /**
+     * Adds "Flags" AD type to the advertising data.
+     *
+     * @param bitfield The flags as a bitfield.
+     */
+    @Suppress("FunctionName")
+    fun Flags(bitfield: Int)
 
     /**
      * Adds "Complete Local Name" AD type to the advertising data.
@@ -127,8 +142,7 @@ interface AdvertisingDataScope: AdvertisingDataScope {
     // Fields for Bluetooth Mesh.
     //
     // Note!
-    // As these fields are not available on iOS, this platform will  not report them in the
-    // scan results. On Android it is possible to read them from the Raw Data.
+    // Due to iOS API limitation these fields are not available on iOS.
 
     /**
      * Sets the Bluetooth Mesh PB ADV field in the advertising data.

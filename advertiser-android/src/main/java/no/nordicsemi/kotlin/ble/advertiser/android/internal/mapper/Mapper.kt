@@ -42,7 +42,7 @@ import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import java.util.UUID
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.INFINITE
@@ -117,7 +117,7 @@ internal fun AdvertisingSetParameters.toLegacy(timeout: Duration): NativeAdverti
         .build()
 
 @OptIn(ExperimentalUuidApi::class)
-internal fun AdvertisingData.toNative(): NativeAdvertiseData =
+internal fun AdvertisingDataDefinition.toNative(): NativeAdvertiseData =
     NativeAdvertiseData.Builder()
         .setIncludeDeviceName(includeDeviceName)
         .setIncludeTxPowerLevel(includeTxPowerLevel)

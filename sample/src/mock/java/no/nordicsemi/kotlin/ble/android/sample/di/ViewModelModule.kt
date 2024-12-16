@@ -31,13 +31,11 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.di
 
-import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.ViewModelLifecycle
 import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
@@ -46,11 +44,68 @@ import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
-import no.nordicsemi.kotlin.ble.client.android.native
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
+import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.Permission
+import timber.log.Timber
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 @Module
 @InstallIn(ViewModelComponent::class)
 object ViewModelModule {
+
+    private val blinkyImpl: PeripheralSpecEventHandler = object: PeripheralSpecEventHandler {
+
+        override fun onConnectionRequest(): Result<Unit> {
+            Timber.i("Connection request received")
+            return Result.success(Unit)
+        }
+
+    }
+
+    private val blinky = PeripheralSpec
+        .simulatePeripheral("AA:BB:CC:DD:EE:FF") {
+            advertising(
+                parameters = LegacyAdvertisingSetParameters(
+                    connectable = true
+                ),
+                isAdvertisingWhenConnected = false,
+            ) {
+                CompleteLocalName("Nordic_LBS")
+                ServiceUuid(Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123"))
+                IncludeTxPowerLevel()
+            }
+            connectable(
+                name = "Nordic_Blinky",
+                maxMtu = 247,
+                eventHandler = blinkyImpl,
+            ) {
+                Service(
+                    uuid = Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123")
+                ) {
+                    Characteristic(
+                        uuid = Uuid.parse("00001524-1212-EFDE-1523-785FEABCD123"),
+                        properties = listOf(CharacteristicProperty.READ, CharacteristicProperty.WRITE),
+                        permissions = listOf(Permission.READ, Permission.WRITE),
+                    ) {
+                        // CCCD is added automatically
+                        CharacteristicUserDescriptionDescriptor("Button 1")
+                    }
+                    Characteristic(
+                        uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
+                        properties = listOf(CharacteristicProperty.READ, CharacteristicProperty.NOTIFY),
+                        permissions = listOf(Permission.READ),
+                    ) {
+                        // CCCD is added automatically
+                        CharacteristicUserDescriptionDescriptor("LED 1")
+                    }
+                }
+            }
+        }
 
     @Provides
     fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
@@ -68,6 +123,9 @@ object ViewModelModule {
     @Provides
     fun provideCentralManager(scope: CoroutineScope): CentralManager {
         return CentralManager.Factory.mock(scope)
+            .apply {
+                simulatePeripherals(listOf(blinky))
+            }
     }
 
 }

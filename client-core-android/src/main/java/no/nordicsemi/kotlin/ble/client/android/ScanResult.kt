@@ -38,15 +38,22 @@ import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 class ScanResult(
     override val peripheral: Peripheral,
     override val isConnectable: Boolean,
-    override val advertisementData: AdvertisementData,
+    override val advertisingData: AdvertisingData,
     override val rssi: Int,
     override val txPowerLevel: Int?,
     override val primaryPhy: PrimaryPhy,
     override val secondaryPhy: Phy?,
     override val timestamp: Long,
-) : ScanResult<Peripheral, AdvertisementData> {
+) : ScanResult<Peripheral, AdvertisingData> {
 
-    override fun toString(): String {
-        return "ScanResult(peripheral=$peripheral, isConnectable=$isConnectable, advertisementData=$advertisementData, rssi=$rssi, txPowerLevel=$txPowerLevel, primaryPhy=$primaryPhy, secondaryPhy=$secondaryPhy, timestamp=$timestamp)"
-    }
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String = "ScanResult(" +
+            "peripheral=${peripheral.identifier}, " +
+            "isConnectable=$isConnectable, " +
+            "advertisingData=0x${advertisingData.raw.toHexString(HexFormat.UpperCase)}, " +
+            "rssi=$rssi, " +
+            "txPowerLevel=$txPowerLevel, " +
+            "primaryPhy=$primaryPhy, " +
+            "secondaryPhy=$secondaryPhy, " +
+            "timestamp=$timestamp)"
 }

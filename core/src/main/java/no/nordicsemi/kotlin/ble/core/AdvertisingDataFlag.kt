@@ -31,20 +31,46 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.core
+package no.nordicsemi.kotlin.ble.core;
 
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
+import kotlin.experimental.or
 
 /**
- * Advertising data packet container for Bluetooth LE advertising.
+ * An enum with AD Flag values.
  *
- * This represents the data to be advertised in the Advertising Data as well as the Scan Response
- * data.
- *
- * @property serviceUuids A list of service UUID to advertise.
+ * @property value The flag bit mask.
  */
-@OptIn(ExperimentalUuidApi::class)
-open class AdvertisingData(
-    val serviceUuids: List<Uuid>? = null,
-)
+enum class AdvertisingDataFlag(val mask: Byte) {
+    LE_LIMITED_DISCOVERABLE_MODE(0b00000001),
+    LE_GENERAL_DISCOVERABLE_MODE(0b00000010),
+    BR_EDR_NOT_SUPPORTED(0b00000100),
+    SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER(0b00001000),
+    @Deprecated("Deprecated in Bluetooth 6")
+    SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST(0b00010000);
+
+    @Suppress("DEPRECATION")
+    override fun toString(): String = when (this) {
+        LE_LIMITED_DISCOVERABLE_MODE -> "LE Limited Discoverable Mode"
+        LE_GENERAL_DISCOVERABLE_MODE -> "LE General Discoverable Mode"
+        BR_EDR_NOT_SUPPORTED -> "BR/EDR Not Supported"
+        SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER -> "Simultaneous LE and BR/EDR to Same Device Capable (Controller)"
+        SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST -> "Simultaneous LE and BR/EDR to Same Device Capable (Host)"
+    }
+}
+
+/**
+ * Returns the value of the flags as a bitfield.
+ */
+val Set<AdvertisingDataFlag>.value: Byte
+    get() = fold(0) { acc, flag -> acc or flag.mask }
+
+/**
+ * Parses the AD type value as flags.
+ */
+fun Int.asFlags(): Set<AdvertisingDataFlag> =
+    AdvertisingDataFlag.entries.filter { (this and it.mask.toInt()) != 0 }.toSet()
+
+/**
+ * Parses the AD type value as flags.
+ */
+fun Byte.asFlags(): Set<AdvertisingDataFlag> = toInt().asFlags()

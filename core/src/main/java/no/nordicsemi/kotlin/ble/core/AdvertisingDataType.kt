@@ -45,47 +45,47 @@ enum class AdvertisingDataType(val type: Int) {
      * Data type is Incomplete List of 16-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for the details.
      */
-    SERVICE_UUIDS_16_BIT_PARTIAL(0x02),
+    INCOMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS(0x02),
 
     /**
      * Data type is Complete List of 16-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_UUIDS_16_BIT_COMPLETE(0x03),
+    COMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS(0x03),
 
     /**
      * Data type is Incomplete List of 32-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for the details.
      */
-    SERVICE_UUIDS_32_BIT_PARTIAL(0x04),
+    INCOMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS(0x04),
 
     /**
      * Data type is Complete List of 32-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_UUIDS_32_BIT_COMPLETE(0x05),
+    COMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS(0x05),
 
     /**
      * Data type is Incomplete List of 128-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for the details.
      */
-    SERVICE_UUIDS_128_BIT_PARTIAL(0x06),
+    INCOMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS(0x06),
 
     /**
      * Data type is Complete List of 128-bit Service Class UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_UUIDS_128_BIT_COMPLETE(0x07),
+    COMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS(0x07),
 
     /**
      * Data type is Shortened Local Name, see the Bluetooth Generic Access Profile for more details.
      */
-    LOCAL_NAME_SHORT(0x08),
+    SHORTENED_LOCAL_NAME(0x08),
 
     /**
      * Data type is Complete Local Name, see the Bluetooth Generic Access Profile for more details.
      */
-    LOCAL_NAME_COMPLETE(0x09),
+    COMPLETE_LOCAL_NAME(0x09),
 
     /**
      * Data type is Tx Power Level, see the Bluetooth Generic Access Profile for more details.
@@ -121,22 +121,22 @@ enum class AdvertisingDataType(val type: Int) {
     SECURITY_MANAGER_OUT_OF_BAND_FLAGS(0x11),
 
     /**
-     * Data type is Slave Connection Interval Range, see the Bluetooth Generic Access Profile for
+     * Data type is Peripheral Connection Interval Range, see the Bluetooth Generic Access Profile for
      * more details.
      */
-    SLAVE_CONNECTION_INTERVAL_RANGE(0x12),
+    PERIPHERAL_CONNECTION_INTERVAL_RANGE(0x12),
 
     /**
      * Data type is List of 16-bit Service Solicitation UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_SOLICITATION_UUIDS_16_BIT(0x14),
+    LIST_OF_16_BIT_SERVICE_SOLICITATION_UUIDS(0x14),
 
     /**
      * Data type is List of 128-bit Service Solicitation UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_SOLICITATION_UUIDS_128_BIT(0x15),
+    LIST_OF_128_BIT_SERVICE_SOLICITATION_UUIDS(0x15),
 
     /**
      * Data type is Service Data - 16-bit UUID, see the Bluetooth Generic Access Profile for more
@@ -193,7 +193,7 @@ enum class AdvertisingDataType(val type: Int) {
      * Data type is List of 32-bit Service Solicitation UUIDs, see the Bluetooth Generic Access
      * Profile for more details.
      */
-    SERVICE_SOLICITATION_UUIDS_32_BIT(0x1F),
+    LIST_OF_32_BIT_SERVICE_SOLICITATION_UUIDS(0x1F),
 
     /**
      * Data type is Service Data - 32-bit UUID, see the Bluetooth Generic Access Profile for more

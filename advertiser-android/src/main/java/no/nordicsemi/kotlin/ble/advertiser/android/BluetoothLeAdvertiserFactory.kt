@@ -29,29 +29,28 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.advertiser.android
 
-package no.nordicsemi.kotlin.ble.client.mock
-
-import kotlin.random.Random
+import android.content.Context
+import android.os.Build
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
+import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
 
 /**
- * The approximate mock device proximity.
+ * Creates an instance of [BluetoothLeAdvertiser] for Android.
+ *
+ * The implementation differs based on Android version.
+ * Limited functionality is available prior to Android O.
+ *
+ * @param context An application context.
+ * @param forceLegacy If set to true, the legacy implementation will be used on Android O and newer.
+ * @return Instance of [BluetoothLeAdvertiser].
  */
-enum class Proximity {
-    /** The device will have RSSI values around -40 dBm. */
-    IMMEDIATE,
-    /** The device will have RSSI values around -70 dBm. */
-    NEAR,
-    /** The device is far, will have RSSI values around -100 dBm. */
-    FAR,
-    /** The device is out of range. */
-    OUT_OF_RANGE;
-
-    internal fun randomRssi(): Int = when (this) {
-        IMMEDIATE -> Random.nextInt(-50, -36)
-        NEAR -> Random.nextInt(-70, -50)
-        FAR -> Random.nextInt(-100, -80)
-        OUT_OF_RANGE -> -128
-    }
+@Suppress("unused")
+fun BluetoothLeAdvertiser.Factory.native(
+    context: Context,
+    forceLegacy: Boolean = false
+): BluetoothLeAdvertiser = when {
+    !forceLegacy && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> BluetoothLeAdvertiserOreo(context)
+    else -> BluetoothLeAdvertiserLegacy(context)
 }

@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.advertiser.android
+package no.nordicsemi.kotlin.ble.advertiser.android.internal
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
@@ -39,24 +39,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
-import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
-import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
-import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
-
-/**
- * Creates an instance of [BluetoothLeAdvertiser] for Android.
- *
- * The implementation differs based on Android version.
- * Limited functionality is available prior to Android O.
- *
- * @param context An application context.
- * @return Instance of [BluetoothLeAdvertiser].
- */
-@Suppress("unused")
-fun BluetoothLeAdvertiser.Factory.native(context: Context): BluetoothLeAdvertiser = when {
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> BluetoothLeAdvertiserOreo(context)
-    else -> BluetoothLeAdvertiserLegacy(context)
-}
+import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
+import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 
 internal abstract class NativeBluetoothLeAdvertiser(
     private val context: Context,

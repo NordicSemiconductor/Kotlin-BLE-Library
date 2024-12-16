@@ -38,7 +38,7 @@ import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedExcept
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.android.internal.AdvertisingDataScopeImpl
 import org.jetbrains.annotations.Range
 import kotlin.coroutines.resumeWithException
@@ -167,8 +167,8 @@ abstract class BluetoothLeAdvertiser: BluetoothLeAdvertiser<AdvertisingPayload> 
      */
     protected abstract suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
-        advertisingData: AdvertisingData,
-        scanResponse: AdvertisingData?,
+        advertisingData: AdvertisingDataDefinition,
+        scanResponse: AdvertisingDataDefinition?,
         timeout: Duration,
         maxAdvertisingEvents: Int,
         block: ((txPower: Int) -> Unit)?

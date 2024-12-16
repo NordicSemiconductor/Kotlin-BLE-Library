@@ -33,7 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.core.android.internal
 
-import no.nordicsemi.kotlin.ble.core.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.internal.AdvertisingDataScopeImpl
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
@@ -41,7 +41,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
- * Implementation of the advertising data scope used to build the [AdvertisingData].
+ * Implementation of the advertising data scope used to build the [AdvertisingDataDefinition].
  *
  * This implementation extends the core implementation by adding fields that can be advertised
  * on Android.
@@ -49,8 +49,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class AdvertisingDataScopeImpl: AdvertisingDataScopeImpl(), AdvertisingDataScope {
 
-    override fun build(): AdvertisingData =
-        AdvertisingData(
+    override fun build(): AdvertisingDataDefinition =
+        AdvertisingDataDefinition(
             includeLocalName,
             includeTxPowerLevel,
             serviceUuids,

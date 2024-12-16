@@ -31,7 +31,7 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.client.android
+package no.nordicsemi.kotlin.ble.core
 
 /**
  * The Bluetooth device type of the remote device.

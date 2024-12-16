@@ -133,10 +133,32 @@ fun Uuid.Companion.fromShortUuid(shortUuid: Int): Uuid = baseUuid.toLongs { msb,
     )
 }
 
+/**
+ * Returns a string representation of the UUID.
+ *
+ * If the UUID is a 16-bit or 32-bit UUID, the string will be in the form of `ABCD` or `ABCDEFGH`,
+ * otherwise it will be in the form of standard UUID with dashes.
+ */
 @OptIn(ExperimentalUuidApi::class)
-fun Uuid.toShortString(): String = shortUuid?.let {
-    "0x${it.toString(16).padStart(4, '0').uppercase(Locale.US)}"
-} ?: toString()
+fun Uuid.toShortString(): String = shortUuid
+    ?.toString(16)
+    ?.padStart((if (is16BitUuid) 4 else 8), '0')?.uppercase(Locale.US)
+    ?: toString().uppercase(Locale.US)
+
+/**
+ * Returns the UUID as Byte Array, in Little Endian.
+ *
+ * UUID matching the [baseUuid] are returned as 2 or 4 bytes, depending on the type.
+ */
+@OptIn(ExperimentalUuidApi::class)
+fun Uuid.toShortByteArray(): ByteArray {
+    val bytes = toByteArray()
+    return when {
+        is16BitUuid -> bytes.sliceArray(2..3).reversedArray()
+        is32BitUuid -> bytes.sliceArray(0..3).reversedArray()
+        else -> bytes
+    }
+}
 
 /**
  * Converts 2, 4 or 16 byte array to a UUID using Little Endian byte order.

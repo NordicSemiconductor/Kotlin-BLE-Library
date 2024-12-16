@@ -33,67 +33,32 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
-import no.nordicsemi.kotlin.ble.client.AdvertisementData
+import no.nordicsemi.kotlin.ble.client.AdvertisingData
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
 import no.nordicsemi.kotlin.ble.core.util.fromBytes
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-// Numbers are taken from Assigned Numbers: 2.3 Common Data Types:
-// https://www.bluetooth.com/specifications/assigned-numbers/
-private const val AD_TYPE_FLAGS = 0x01
-private const val AD_TYPE_INCOMPLETE_LIST_16_BIT_SERVICE_UUIDS = 0x02
-private const val AD_TYPE_COMPLETE_LIST_16_BIT_SERVICE_UUIDS = 0x03
-private const val AD_TYPE_INCOMPLETE_LIST_32_BIT_SERVICE_UUIDS = 0x04
-private const val AD_TYPE_COMPLETE_LIST_32_BIT_SERVICE_UUIDS = 0x05
-private const val AD_TYPE_INCOMPLETE_LIST_128_BIT_SERVICE_UUIDS = 0x06
-private const val AD_TYPE_COMPLETE_LIST_128_BIT_SERVICE_UUIDS = 0x07
-private const val AD_TYPE_SHORT_LOCAL_NAME = 0x08
-private const val AD_TYPE_COMPLETE_LOCAL_NAME = 0x09
-private const val AD_TYPE_TX_POWER_LEVEL = 0x0A
-private const val AD_TYPE_LIST_16_BIT_SOLICITATION_SERVICE_UUIDS = 0x14
-private const val AD_TYPE_LIST_32_BIT_SOLICITATION_SERVICE_UUIDS = 0x1F
-private const val AD_TYPE_LIST_128_BIT_SOLICITATION_SERVICE_UUIDS = 0x15
-private const val AD_TYPE_SERVICE_DATA_16_BITS = 0x16
-private const val AD_TYPE_SERVICE_DATA_32_BITS = 0x20
-private const val AD_TYPE_SERVICE_DATA_128_BITS = 0x21
-private const val AD_TYPE_MANUFACTURER_SPECIFIC_DATA = 0xFF
-private const val AD_TYPE_MESH_PB_ADV  = 0x29
-private const val AD_TYPE_MESH_MESSAGE = 0x2A
-private const val AD_TYPE_MESH_BEACON  = 0x2B
-
 /**
- * Android-specific class of Bluetooth LE advertisement data.
+ * Android-specific class of Bluetooth LE advertising data.
  *
  * @property raw The raw advertisement data.
+ * @property flags The set of flags from the "Flags" AD type.
+ * @property completeLocalName The value of "Complete Local Name" AD type.
+ * @property shortenedLocalName The value of "Shortened Local Name" AD type.
  * @property meshPbAdv The Bluetooth Mesh Provisioning PDU, if present.
  * @property meshMessage The Bluetooth Mesh Network PDU, if present.
  * @property meshBeacon The Bluetooth Mesh Beacon, if present.
  */
 @OptIn(ExperimentalUuidApi::class)
-class AdvertisementData(
+class AdvertisingData(
     val raw: ByteArray
-) : AdvertisementData {
-
-    enum class Flag {
-        LIMITED_DISCOVERABLE_MODE,
-        GENERAL_DISCOVERABLE_MODE,
-        BR_EDR_NOT_SUPPORTED,
-        SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER,
-        @Deprecated("Deprecated in Bluetooth 6")
-        SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST;
-
-        @Suppress("DEPRECATION")
-        override fun toString(): String = when (this) {
-            LIMITED_DISCOVERABLE_MODE -> "Limited Discoverable Mode"
-            GENERAL_DISCOVERABLE_MODE -> "General Discoverable Mode"
-            BR_EDR_NOT_SUPPORTED -> "BR/EDR Not Supported"
-            SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER -> "Simultaneous LE and BR/EDR to Same Device Capable (Controller)"
-            SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST -> "Simultaneous LE and BR/EDR to Same Device Capable (Host)"
-        }
-    }
-
-    val flags: Set<Flag>?
+) : AdvertisingData {
+    val flags: Set<AdvertisingDataFlag>?
     override val name: String?
+    val completeLocalName: String?
+    val shortenedLocalName: String?
     override val serviceUuids: List<Uuid>
     override val serviceSolicitationUuids: List<Uuid>
     override val serviceData: Map<Uuid, ByteArray>
@@ -103,9 +68,11 @@ class AdvertisementData(
     val meshMessage: ByteArray?
     val meshBeacon: ByteArray?
 
+    // Note: This init is a copy of no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition.
     init {
-        var flags: MutableSet<Flag>? = null
-        var name: String? = null
+        var flags: MutableSet<AdvertisingDataFlag>? = null
+        var completeName: String? = null
+        var shortenedName: String? = null
         var serviceUuids: MutableList<Uuid>? = null
         var serviceSolicitationUuids: MutableList<Uuid>? = null
         var serviceData: MutableMap<Uuid, ByteArray>? = null
@@ -119,115 +86,122 @@ class AdvertisementData(
         var i = 0
         while (raw.size > i + 3) {
             // The first byte is the length of the AD structure.
-            val length = (raw[i++].toInt() and 0xFF) - 1 // deduct 1 for the type byte
+            val length = (raw[i++].toInt() and 0xFF) - 1 // minus 1 as the length includes the type byte.
 
             // The data must be at least 1 byte and must not be longer than the remaining data.
             if (length < 1 || length >= raw.size - i) break
 
             // The second byte is the AD type, as specified in Assigned Numbers: 2.3 Common Data Types
             // https://www.bluetooth.com/specifications/assigned-numbers/
-            val type = raw[i++].toInt() and 0xFF
+            val rawType = raw[i++].toInt() and 0xFF
+            val type = AdvertisingDataType.createOrNull(rawType)
 
             when (type) {
-                AD_TYPE_FLAGS -> {
+                AdvertisingDataType.FLAGS -> {
                     flags = (flags ?: mutableSetOf()).apply {
                         val value = raw[i].toInt()
-                        if (value and 0x01 != 0) add(Flag.LIMITED_DISCOVERABLE_MODE)
-                        if (value and 0x02 != 0) add(Flag.GENERAL_DISCOVERABLE_MODE)
-                        if (value and 0x04 != 0) add(Flag.BR_EDR_NOT_SUPPORTED)
-                        if (value and 0x08 != 0) add(Flag.SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER)
+                        if (value and 0x01 != 0) add(AdvertisingDataFlag.LE_LIMITED_DISCOVERABLE_MODE)
+                        if (value and 0x02 != 0) add(AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE)
+                        if (value and 0x04 != 0) add(AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED)
+                        if (value and 0x08 != 0) add(AdvertisingDataFlag.SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_CONTROLLER)
                         @Suppress("DEPRECATION")
-                        if (value and 0x10 != 0) add(Flag.SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST)
+                        if (value and 0x10 != 0) add(AdvertisingDataFlag.SIMULTANEOUS_LE_BR_EDR_TO_SAME_DEVICE_CAPABLE_HOST)
+                        // Other bits are reserved.
                     }
                 }
-                AD_TYPE_SHORT_LOCAL_NAME,
-                AD_TYPE_COMPLETE_LOCAL_NAME -> {
-                    name = String(raw, i, length)
+                AdvertisingDataType.COMPLETE_LOCAL_NAME -> {
+                    completeName = String(raw, i, length)
                 }
-                AD_TYPE_INCOMPLETE_LIST_16_BIT_SERVICE_UUIDS,
-                AD_TYPE_COMPLETE_LIST_16_BIT_SERVICE_UUIDS -> {
+                AdvertisingDataType.SHORTENED_LOCAL_NAME -> {
+                    shortenedName = String(raw, i, length)
+                }
+                AdvertisingDataType.INCOMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS,
+                AdvertisingDataType.COMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 2) {
                             add(Uuid.fromBytes(raw, j, 2))
                         }
                     }
                 }
-                AD_TYPE_INCOMPLETE_LIST_32_BIT_SERVICE_UUIDS,
-                AD_TYPE_COMPLETE_LIST_32_BIT_SERVICE_UUIDS -> {
+                AdvertisingDataType.INCOMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS,
+                AdvertisingDataType.COMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 4) {
                             add(Uuid.fromBytes(raw, j, 4))
                         }
                     }
                 }
-                AD_TYPE_INCOMPLETE_LIST_128_BIT_SERVICE_UUIDS,
-                AD_TYPE_COMPLETE_LIST_128_BIT_SERVICE_UUIDS -> {
+                AdvertisingDataType.INCOMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS,
+                AdvertisingDataType.COMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 16) {
                             add(Uuid.fromBytes(raw, j, 16))
                         }
                     }
                 }
-                AD_TYPE_SERVICE_DATA_16_BITS -> {
+                AdvertisingDataType.SERVICE_DATA_16_BIT -> {
                     val uuid = Uuid.fromBytes(raw, i, 2)
                     val data = raw.copyOfRange(i + 2, i + length)
                     serviceData = (serviceData ?: mutableMapOf()).apply {
                         put(uuid, data)
                     }
                 }
-                AD_TYPE_SERVICE_DATA_32_BITS -> {
+                AdvertisingDataType.SERVICE_DATA_32_BIT -> {
                     val uuid = Uuid.fromBytes(raw, i, 4)
                     val data = raw.copyOfRange(i + 4, i + length)
                     serviceData = (serviceData ?: mutableMapOf()).apply {
                         put(uuid, data)
                     }
                 }
-                AD_TYPE_SERVICE_DATA_128_BITS -> {
+                AdvertisingDataType.SERVICE_DATA_128_BIT -> {
                     val uuid = Uuid.fromBytes(raw, i, 16)
                     val data = raw.copyOfRange(i + 16, i + length)
                     serviceData = (serviceData ?: mutableMapOf()).apply {
                         put(uuid, data)
                     }
                 }
-                AD_TYPE_TX_POWER_LEVEL -> {
+                AdvertisingDataType.TX_POWER_LEVEL -> {
                     txPowerLevel = raw[i].toInt()
                 }
-                AD_TYPE_LIST_16_BIT_SOLICITATION_SERVICE_UUIDS -> {
+                AdvertisingDataType.LIST_OF_16_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 2) {
                             add(Uuid.fromBytes(raw, j, 2))
                         }
                     }
                 }
-                AD_TYPE_LIST_32_BIT_SOLICITATION_SERVICE_UUIDS -> {
+                AdvertisingDataType.LIST_OF_32_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 4) {
                             add(Uuid.fromBytes(raw, j, 4))
                         }
                     }
                 }
-                AD_TYPE_LIST_128_BIT_SOLICITATION_SERVICE_UUIDS -> {
+                AdvertisingDataType.LIST_OF_128_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
                         for (j in i until i + length step 16) {
                             add(Uuid.fromBytes(raw, j, 16))
                         }
                     }
                 }
-                AD_TYPE_MANUFACTURER_SPECIFIC_DATA -> {
+                AdvertisingDataType.MANUFACTURER_SPECIFIC_DATA -> {
                     val companyId = (raw[i].toInt() and 0xFF) or (raw[i + 1].toInt() and 0xFF shl 8)
                     val data = raw.copyOfRange(i + 2, i + length)
                     manufacturerData = (manufacturerData ?: mutableMapOf()).apply {
                         put(companyId, data)
                     }
                 }
-                AD_TYPE_MESH_PB_ADV -> {
+                AdvertisingDataType.PB_ADV -> {
                     meshPbAdv = raw.copyOfRange(i, i + length)
                 }
-                AD_TYPE_MESH_MESSAGE -> {
+                AdvertisingDataType.MESH_MESSAGE -> {
                     meshMessage = raw.copyOfRange(i, i + length)
                 }
-                AD_TYPE_MESH_BEACON -> {
+                AdvertisingDataType.MESH_BEACON -> {
                     meshBeacon = raw.copyOfRange(i, i + length)
+                }
+                else -> {
+                    // Ignore unknown AD types.
                 }
             }
 
@@ -235,7 +209,8 @@ class AdvertisementData(
         }
 
         this.flags = flags
-        this.name = name
+        this.completeLocalName = completeName
+        this.shortenedLocalName = shortenedName
         this.serviceUuids = serviceUuids ?: emptyList()
         this.serviceSolicitationUuids = serviceSolicitationUuids?: emptyList()
         this.serviceData = serviceData ?: emptyMap()
@@ -244,5 +219,7 @@ class AdvertisementData(
         this.meshPbAdv = meshPbAdv
         this.meshMessage = meshMessage
         this.meshBeacon = meshBeacon
+        // The name is the Complete Local Name, if present, or the Shortened Local Name.
+        this.name = completeName ?: shortenedName
     }
 }

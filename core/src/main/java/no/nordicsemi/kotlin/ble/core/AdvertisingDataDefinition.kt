@@ -31,27 +31,20 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.client.mock
+package no.nordicsemi.kotlin.ble.core
 
-import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
- * The approximate mock device proximity.
+ * Advertising data packet container for Bluetooth LE advertising.
+ *
+ * This represents the data to be advertised in the Advertising Data as well as the Scan Response
+ * data.
+ *
+ * @param serviceUuids A list of service UUID to advertise.
  */
-enum class Proximity {
-    /** The device will have RSSI values around -40 dBm. */
-    IMMEDIATE,
-    /** The device will have RSSI values around -70 dBm. */
-    NEAR,
-    /** The device is far, will have RSSI values around -100 dBm. */
-    FAR,
-    /** The device is out of range. */
-    OUT_OF_RANGE;
-
-    internal fun randomRssi(): Int = when (this) {
-        IMMEDIATE -> Random.nextInt(-50, -36)
-        NEAR -> Random.nextInt(-70, -50)
-        FAR -> Random.nextInt(-100, -80)
-        OUT_OF_RANGE -> -128
-    }
-}
+@OptIn(ExperimentalUuidApi::class)
+open class AdvertisingDataDefinition(
+    val serviceUuids: List<Uuid>? = null,
+)
