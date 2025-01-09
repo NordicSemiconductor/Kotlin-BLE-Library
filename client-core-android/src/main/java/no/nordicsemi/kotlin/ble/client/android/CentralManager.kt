@@ -89,6 +89,10 @@ interface CentralManager:
      */
     suspend fun connect(peripheral: Peripheral, options: ConnectionOptions)
 
+    // TODO Add scanning with scan mode, PHY and legacy settings
+
+    // TODO Add scan with Pending Intent (Android 8+, or for compat for legacy?)
+
     companion object Factory
     
     /**
