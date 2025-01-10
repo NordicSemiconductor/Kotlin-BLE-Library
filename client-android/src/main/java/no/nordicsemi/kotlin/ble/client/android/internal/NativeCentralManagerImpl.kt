@@ -58,9 +58,9 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
+import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
@@ -191,6 +191,9 @@ internal class NativeCentralManagerImpl(
         // Ensure the central manager has not been closed.
         ensureOpen()
 
+        // Verify the BLUETOOTH_CONNECT permission is granted (Android 12+).
+        checkConnectPermission()
+
         val adapter = manager?.adapter ?: throw BluetoothUnavailableException()
         val ids = adapter.bondedDevices?.map { it.address } ?: return emptyList()
         return getPeripheralsById(ids)
@@ -272,17 +275,18 @@ internal class NativeCentralManagerImpl(
             }
 
             override fun onScanFailed(errorCode: Int) {
-                logger.error("Scan failed, error code: {}", errorCode)
-                close(ScanningFailedToStartException(errorCode.errorCodeToReason()))
+                with (ScanningFailedToStartException(errorCode.errorCodeToReason())) {
+                    logger.error(message)
+                    close(this)
+                }
             }
         }
 
         // Finally, start the scan.
-        val scanFilters = filters?.toNative()
-        scanFilters?.let {
+        filters?.let {
             logger.trace("Starting scanning with filters: {}", it)
         } ?: logger.trace("Starting scanning with no filters")
-        scanner.startScan(scanFilters, settings, callback)
+        scanner.startScan(filters?.toNative(), settings, callback)
 
         // Set a timeout to stop the scan.
         if (timeout > 0.milliseconds) {

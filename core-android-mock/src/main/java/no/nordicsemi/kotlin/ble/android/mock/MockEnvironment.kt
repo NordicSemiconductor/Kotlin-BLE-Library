@@ -57,6 +57,23 @@ private val DEFAULT_MOCK_ADVERTISER: MockAdvertiser = { requestedTxPower, _, _ -
 }
 
 /**
+ * A type for a mock scanner.
+ *
+ * This callback is called when the mock central manager requests a scan for Bluetooth LE devices.
+ *
+ * Return [Result.success] with `true` to indicate that the scan was successful and that results
+ * will be reported, or `false` to start the scan but not report any results.
+ * This is useful, as some devices don't report scan error in any way, but just don't report
+ * any results.
+ *
+ * [Result.failure] with `ScanningFailedToStartException` exception will be thrown from the
+ * `scan` method of a `CentralManager` as if `ScanCallback.onScanFailed(errorCode)` was called.
+ */
+typealias MockScanner = () -> Result<Boolean>
+
+private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
+
+/**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
  * @property deviceName The device name, by default set to "Mock".
@@ -79,6 +96,8 @@ private val DEFAULT_MOCK_ADVERTISER: MockAdvertiser = { requestedTxPower, _, _ -
  * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
  * @property advertiser A callback that will be called when the app requests to advertise.
  * The callback should return the TX power level used for mock advertising.
+ * @property scanner A callback that will be called when the mock central manager requests to scan
+ * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
  */
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
@@ -98,6 +117,7 @@ sealed class MockEnvironment(
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
     val isBluetoothAdvertisePermissionGranted: Boolean = false,
     val advertiser: MockAdvertiser,
+    val scanner: MockScanner,
 ): MockEnvironment(deviceName, isBluetoothSupported, isBluetoothEnabled) {
 
     /**
@@ -125,6 +145,8 @@ sealed class MockEnvironment(
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
      */
     class Api21(
         deviceName: String = DEFAULT_NAME,
@@ -132,6 +154,7 @@ sealed class MockEnvironment(
         isBluetoothEnabled: Boolean = true,
         isMultipleAdvertisementSupported: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.LOLLIPOP,
         deviceName = deviceName,
@@ -139,6 +162,7 @@ sealed class MockEnvironment(
         isBluetoothEnabled = isBluetoothEnabled,
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         advertiser = advertiser,
+        scanner = scanner,
     )
 
     /**
@@ -154,6 +178,8 @@ sealed class MockEnvironment(
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
      */
     class Api23(
         deviceName: String = DEFAULT_NAME,
@@ -163,6 +189,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion =AndroidSdkVersion.MARSHMALLOW,
         deviceName = deviceName,
@@ -173,6 +200,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
         advertiser = advertiser,
+        scanner = scanner,
     )
 
     /**
@@ -197,6 +225,8 @@ sealed class MockEnvironment(
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
      */
     class Api26(
         deviceName: String = DEFAULT_NAME,
@@ -212,6 +242,7 @@ sealed class MockEnvironment(
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.OREO,
         deviceName = deviceName,
@@ -227,6 +258,7 @@ sealed class MockEnvironment(
         isLeCodedPhySupported = isLeCodedPhySupported,
         isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
         advertiser = advertiser,
+        scanner = scanner,
     )
 
     /**
@@ -235,7 +267,7 @@ sealed class MockEnvironment(
      * Since Android 12, the `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` permissions are required to
      * scan and connect to Bluetooth devices. When `BLUETOOTH_SCAN` permission is set using
      * `neverForLocation` flag, the location is not required to scan for Bluetooth devices.
-     * Scan results won't contain iBeacons and Eddystone beacons.
+     * In that case scan results won't contain beacons.
      *
      * See:
      * * [Bluetooth Permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions)
@@ -253,13 +285,15 @@ sealed class MockEnvironment(
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
      * advertising on LE Coded PHY as Primary PHY.
      * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
-     * @param usesLeScanningForLocation Whether the app is using results of Bluetooth LE scanning
+     * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
      * to estimate device location. By default, `neverForLocation` flag is assumed.
      * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
      */
     class Api31(
         deviceName: String = DEFAULT_NAME,
@@ -275,10 +309,11 @@ sealed class MockEnvironment(
         isBluetoothScanPermissionGranted: Boolean = true,
         isBluetoothConnectPermissionGranted: Boolean = true,
         isBluetoothAdvertisePermissionGranted: Boolean = true,
-        usesLeScanningForLocation: Boolean = false,
+        isNeverForLocationFlagSet: Boolean = true,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.S,
         deviceName = deviceName,
@@ -287,7 +322,7 @@ sealed class MockEnvironment(
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
-        isLocationRequiredForScanning = !usesLeScanningForLocation,
+        isLocationRequiredForScanning = !isNeverForLocationFlagSet,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
         isLe2MPhySupported = isLe2MPhySupported,
@@ -297,6 +332,7 @@ sealed class MockEnvironment(
         isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
         isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
         advertiser = advertiser,
+        scanner = scanner,
     )
 
     /**

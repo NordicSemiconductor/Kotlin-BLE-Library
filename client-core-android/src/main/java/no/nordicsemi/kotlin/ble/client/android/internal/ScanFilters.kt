@@ -36,6 +36,7 @@ import no.nordicsemi.kotlin.ble.client.android.DisjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
 import no.nordicsemi.kotlin.ble.core.util.and
+import no.nordicsemi.kotlin.ble.core.util.toShortString
 import kotlin.experimental.and
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -246,21 +247,28 @@ class ScanFilter {
     class ServiceUuid(val uuid: Uuid, val mask: Uuid?) {
         operator fun component1(): Uuid = uuid
         operator fun component2(): Uuid? = mask
+        override fun toString() = "${uuid.toShortString()}${mask?.let { " (mask: ${it.toShortString()})" } ?: ""}"
     }
     class ServiceData(val uuid: Uuid, val data: ByteArray, val mask: ByteArray?) {
         operator fun component1(): Uuid = uuid
         operator fun component2(): ByteArray = data
         operator fun component3(): ByteArray? = mask
+        @OptIn(ExperimentalStdlibApi::class)
+        override fun toString() = "${uuid.toShortString()}, data: ${data.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
     class ManufacturerData(val companyId: Int, val data: ByteArray, val mask: ByteArray?) {
         operator fun component1(): Int = companyId
         operator fun component2(): ByteArray = data
         operator fun component3(): ByteArray? = mask
+        @OptIn(ExperimentalStdlibApi::class)
+        override fun toString() = "$companyId, data: ${data.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
     class Custom(val type: AdvertisingDataType, val data: ByteArray?, val mask: ByteArray?) {
         operator fun component1() = type
         operator fun component2() = data
         operator fun component3() = mask
+        @OptIn(ExperimentalStdlibApi::class)
+        override fun toString() = "$type, data: ${data?.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
 
     /** Private or public MAC address. */
@@ -335,6 +343,20 @@ class ScanFilter {
             } ?: return false
         }
         return true
+    }
+
+    override fun toString() = buildString {
+        append("ScanFilter: (")
+        if (address != null) append("Address: $address, ")
+        if (name != null) append("Name: $name, ")
+        if (nameRegex != null) append("Name Regex: $nameRegex, ")
+        if (serviceUuid != null) append("Service UUID: $serviceUuid, ")
+        if (serviceSolicitationUuid != null) append("Service Solicitation UUID: $serviceSolicitationUuid, ")
+        if (serviceData != null) append("Service Data: $serviceData, ")
+        if (manufacturerData != null) append("Manufacturer Data: $manufacturerData, ")
+        if (customAdvertisingData != null) append("Custom: $customAdvertisingData, ")
+        if (length > 14) setLength(length - 2)
+        append(")")
     }
 }
 

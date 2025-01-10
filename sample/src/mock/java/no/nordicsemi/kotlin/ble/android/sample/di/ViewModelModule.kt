@@ -46,10 +46,19 @@ import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
+import no.nordicsemi.kotlin.ble.client.mock.Proximity
+import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
+import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Permission
+import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import no.nordicsemi.kotlin.ble.core.TxPowerLevel
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import timber.log.Timber
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -68,16 +77,37 @@ object ViewModelModule {
     }
 
     private val blinky = PeripheralSpec
-        .simulatePeripheral("AA:BB:CC:DD:EE:FF") {
+        .simulatePeripheral("AA:BB:CC:DD:EE:FF", proximity = Proximity.FAR) {
             advertising(
                 parameters = LegacyAdvertisingSetParameters(
-                    connectable = true
+                    connectable = true,
+                    interval = 500.milliseconds,
                 ),
                 isAdvertisingWhenConnected = false,
+                delay = 1.seconds,
+                // timeout = 10.seconds,
+                maxAdvertisingEvents = 30,
             ) {
                 CompleteLocalName("Nordic_LBS")
                 ServiceUuid(Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123"))
                 IncludeTxPowerLevel()
+            }
+            advertising(
+                parameters = Bluetooth5AdvertisingSetParameters(
+                    connectable = true,
+                    interval = 1.seconds,
+                    primaryPhy = PrimaryPhy.PHY_LE_CODED,
+                    secondaryPhy = Phy.PHY_LE_CODED,
+                    txPowerLevel = TxPowerLevel.HIGH,
+                    includeTxPowerLevel = true,
+                ),
+                delay = 4.seconds,
+                timeout = 10.seconds,
+            ) {
+                Flags(AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE, AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED)
+                CompleteLocalName("HR Sensor")
+                ServiceUuid(Uuid.fromShortUuid(0x1809))
+                ServiceUuid(Uuid.fromShortUuid(0x180A))
             }
             connectable(
                 name = "Nordic_Blinky",

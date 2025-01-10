@@ -39,6 +39,7 @@ class MockScanResult<ID>(
     val peripheralSpec: PeripheralSpec<ID>,
     val isConnectable: Boolean,
     val advertisingData: ByteArray,
+    val isBeacon: Boolean,
     val rssi: Int,
     val txPowerLevel: Int?,
     val primaryPhy: PrimaryPhy,
@@ -49,6 +50,7 @@ class MockScanResult<ID>(
     override fun toString(): String = "MockScanResult(" +
             "id=${peripheralSpec.identifier}, " +
             "isConnectable=$isConnectable, " +
+            "isBeacon=$isBeacon, " +
             "rssi=$rssi dBm, txPowerLevel=$txPowerLevel dBm, " +
             "primaryPhy=$primaryPhy, " +
             "secondaryPhy=$secondaryPhy, " +

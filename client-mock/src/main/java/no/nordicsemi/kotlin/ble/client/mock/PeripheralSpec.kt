@@ -209,6 +209,9 @@ class PeripheralSpec<ID> private constructor(
          * @param delay The delay before the advertising starts.
          * @param timeout The advertising timeout, since the start of advertising. By default set to infinite.
          * @param isAdvertisingWhenConnected Whether the device should advertise when connected.
+         * @param isBeacon Whether the device is a beacon which can reveal user's location, that is
+         * an iBeacon or Eddystone beacon. On Android 12+ such advertisements require location
+         * permission granted or are excluded from the scan results.
          * @param advertisingData The builder for the advertising data.
          */
         fun advertising(
@@ -216,6 +219,7 @@ class PeripheralSpec<ID> private constructor(
             delay: Duration = Duration.ZERO,
             timeout: Duration = Duration.INFINITE,
             isAdvertisingWhenConnected: Boolean = false,
+            isBeacon: Boolean = false,
             advertisingData: AdvertisingDataScope.() -> Unit,
         ): Builder<ID> = addAdvertisingSet(
             parameters = parameters,
@@ -223,6 +227,7 @@ class PeripheralSpec<ID> private constructor(
             timeout = timeout,
             maxAdvertisingEvents = Int.MAX_VALUE,
             isAdvertisingWhenConnected = isAdvertisingWhenConnected,
+            isBeacon = isBeacon,
             builder = advertisingData
         )
 
@@ -233,6 +238,9 @@ class PeripheralSpec<ID> private constructor(
          * @param delay The delay before the advertising starts.
          * @param maxAdvertisingEvents The maximum number of advertising events, in range 1..255.
          * @param isAdvertisingWhenConnected Whether the device should advertise when connected.
+         * @param isBeacon Whether the device is a beacon which can reveal user's location, that is
+         * an iBeacon or Eddystone beacon. On Android 12+ such advertisements require location
+         * permission granted or are excluded from the scan results.
          * @param advertisingData The builder for the advertising data.
          */
         fun advertising(
@@ -240,6 +248,7 @@ class PeripheralSpec<ID> private constructor(
             delay: Duration = Duration.ZERO,
             maxAdvertisingEvents: @Range(from = 1L, to = 255L) Int,
             isAdvertisingWhenConnected: Boolean = false,
+            isBeacon: Boolean = false,
             advertisingData: AdvertisingDataScope.() -> Unit,
         ): Builder<ID> = addAdvertisingSet(
             parameters = parameters,
@@ -247,6 +256,7 @@ class PeripheralSpec<ID> private constructor(
             timeout = Duration.INFINITE,
             maxAdvertisingEvents = maxAdvertisingEvents,
             isAdvertisingWhenConnected = isAdvertisingWhenConnected,
+            isBeacon = isBeacon,
             builder = advertisingData
         )
 
@@ -368,7 +378,8 @@ class PeripheralSpec<ID> private constructor(
             delay: Duration,
             timeout: Duration,
             maxAdvertisingEvents: Int,
-            isAdvertisingWhenConnected: Boolean = false,
+            isAdvertisingWhenConnected: Boolean,
+            isBeacon: Boolean,
             builder: AdvertisingDataScope.() -> Unit,
         ): Builder<ID> = apply {
             val advertisingData =
@@ -379,7 +390,8 @@ class PeripheralSpec<ID> private constructor(
                 maxAdvertisingEvents = maxAdvertisingEvents,
                 isAdvertisingWhenConnected = isAdvertisingWhenConnected,
                 parameters = parameters,
-                advertisingData = advertisingData
+                advertisingData = advertisingData,
+                isBeacon = isBeacon,
             )
             advertisements = advertisements?.plus(advertisement) ?: listOf(advertisement)
 

@@ -39,6 +39,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
@@ -48,17 +49,17 @@ import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
-import no.nordicsemi.kotlin.ble.client.android.internal.ConjunctionFilter
 import no.nordicsemi.kotlin.ble.client.android.ConjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
+import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import no.nordicsemi.kotlin.ble.client.android.internal.CentralManagerImpl
+import no.nordicsemi.kotlin.ble.client.android.internal.ConjunctionFilter
 import no.nordicsemi.kotlin.ble.client.android.internal.match
 import no.nordicsemi.kotlin.ble.client.android.mock.MockCentralManager
 import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
@@ -172,6 +173,9 @@ open class MockCentralManagerImpl(
         // Ensure the central manager has not been closed.
         ensureOpen()
 
+        // Verify the BLUETOOTH_CONNECT permission is granted (Android 12+).
+        checkConnectPermission()
+
         // Here we need to concatenate two lists:
         // - known peripherals with bond information
         // - peripherals that have not been scanned yet, but are bonded (PeripheralSpec.isBonded == true)
@@ -218,27 +222,54 @@ open class MockCentralManagerImpl(
         } ?: logger.trace("Starting scanning with no filters")
 
         return flow {
+            val reportResult = environment.scanner().getOrThrow()
+
             // Emit all scan results until the timeout.
             withTimeoutOrNull<Nothing>(timeout) {
                 mockAdvertiser.events.collect { result ->
+                    // Some (most?) Android devices do not report scan error using `onScanFailed`
+                    // callback, but instead don't return any results.
+                    // Re
+                    if (!reportResult) {
+                        return@collect
+                    }
+
+                    // Starting from Android 6 Location permission and Location service are required
+                    // to scan for BLE devices. Since Android 12, apps can set a `neverForLocation`
+                    // flag to claim that they won't estimate user's location from scan results.
+                    if (environment.isLocationRequiredForScanning &&
+                        (!environment.isLocationPermissionGranted || !environment.isLocationEnabled)) {
+                        return@collect
+                    }
+
+                    // If the `neverForLocation` flag is set, check if the device is a beacon.
+                    if (!environment.isLocationRequiredForScanning &&
+                        environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.S &&
+                        result.isBeacon) {
+                        return@collect
+                    }
+
                     // If PHY LE Coded is not supported, ignore results sent with LE Coded PHY.
                     if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED &&
-                        (!environment.isLeCodedPhySupported || !environment.isScanningOnLeCodedPhySupported))
+                        (!environment.isLeCodedPhySupported || !environment.isScanningOnLeCodedPhySupported)
+                    ) {
                         return@collect
-                    if (result.secondaryPhy == Phy.PHY_LE_CODED && !environment.isLeCodedPhySupported)
+                    }
+                    if (result.secondaryPhy == Phy.PHY_LE_CODED && !environment.isLeCodedPhySupported) {
                         return@collect
+                    }
 
                     // If PHY LE 2M is not supported, ignore results sent with LE 2M PHY as secondary PHY.
-                    if (result.secondaryPhy == Phy.PHY_LE_2M && !environment.isLe2MPhySupported)
+                    if (result.secondaryPhy == Phy.PHY_LE_2M && !environment.isLe2MPhySupported) {
                         return@collect
+                    }
 
                     // TODO We're assuming that we scan with "ALL_SUPPORTED" PHYs, as this is not configurable in Native scanner yet.
 
                     // The mock scanner found the device and cached its MAC address.
                     result.peripheralSpec.simulateCaching()
 
-                    // A result matches the filter. Convert it to a ScanResult and emit.
-                    val scanResult = result.toScanResult { peripheralSpec, name->
+                    val scanResult = result.toScanResult { peripheralSpec, name ->
                         peripheral(peripheralSpec.identifier) {
                             Peripheral(
                                 scope = scope,
@@ -254,6 +285,10 @@ open class MockCentralManagerImpl(
                 }
             }
             logger.trace("Scanning timed out after {}", timeout)
+        }.catch { throwable ->
+            (throwable as? ScanningFailedToStartException)?.let {
+                logger.error(it.message)
+            }
         }.onCompletion {
             logger.trace("Scanning stopped")
         }

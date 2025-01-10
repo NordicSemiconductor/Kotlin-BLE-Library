@@ -69,6 +69,8 @@ sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
 
     /**
      * Filters devices by MAC address.
+     *
+     * The MAC address should be in the format `01:23:45:67:89:AB`.
      */
     @Suppress("FunctionName")
     fun Address(address: String)

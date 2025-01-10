@@ -47,6 +47,8 @@ import kotlin.time.Duration
  * connected state.
  * @property parameters The advertising parameters.
  * @property advertisingData The advertising data.
+ * @property isBeacon Whether the advertisement can reveal user's location, therfore requires
+ * Location permission granted.
  */
 class MockAdvertisementConfig(
     val delay: Duration,
@@ -55,4 +57,5 @@ class MockAdvertisementConfig(
     val isAdvertisingWhenConnected: Boolean,
     val parameters: AdvertisingSetParameters,
     val advertisingData: AdvertisingDataDefinition,
+    val isBeacon: Boolean,
 )

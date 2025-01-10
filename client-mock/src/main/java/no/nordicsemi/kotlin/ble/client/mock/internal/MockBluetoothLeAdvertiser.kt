@@ -95,6 +95,7 @@ class MockBluetoothLeAdvertiser<ID: Any>(
                                             peripheralSpec = peripheralSpec,
                                             isConnectable = advertisementConfig.parameters.connectable,
                                             advertisingData = rawAdvertisingData,
+                                            isBeacon = advertisementConfig.isBeacon,
                                             rssi = peripheralSpec.proximity.randomRssi(),
                                             txPowerLevel = txPowerLevel,
                                             primaryPhy = primaryPhy,
