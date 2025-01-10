@@ -121,8 +121,8 @@ object ViewModelModule {
     }
 
     @Provides
-    fun provideCentralManager(scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.mock(scope)
+    fun provideCentralManager(scope: CoroutineScope, environment: MockEnvironment): CentralManager {
+        return CentralManager.Factory.mock(scope, environment)
             .apply {
                 simulatePeripherals(listOf(blinky))
             }
