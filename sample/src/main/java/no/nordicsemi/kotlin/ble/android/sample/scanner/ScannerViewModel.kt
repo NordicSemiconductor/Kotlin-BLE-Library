@@ -35,6 +35,7 @@ import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -59,11 +60,13 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -94,19 +97,23 @@ class ScannerViewModel @Inject constructor(
 
     private var connectionScopeMap = mutableMapOf<Peripheral, CoroutineScope>()
 
+    private var scanningJob: Job? = null
+
+    @OptIn(ExperimentalUuidApi::class)
     fun onScanRequested() {
         _isScanning.update { true }
-        centralManager
-            .scan(1250.milliseconds) {
+        scanningJob = centralManager
+            .scan(5000.milliseconds) {
+                ServiceUuid(Uuid.fromShortUuid(0x1809))
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")
                     Name("Nordic_LBS")
                     Name("Nordic_Buttonless")
-                    Name("DFU2A16")
+                    Name("DFU1A06")
                     Name("Mesh Light")
                     Name("nRFConnect")
-                    // TODO Filtering by Regex and other runtime filters
+                    Name("HR Sensor")
                 }
             }
             .distinctByPeripheral()
@@ -134,6 +141,10 @@ class ScannerViewModel @Inject constructor(
                 _isScanning.update { false }
             }
             .launchIn(scope)
+    }
+
+    fun onStopScanRequested() {
+        scanningJob?.cancel()
     }
 
     fun onPeripheralSelected(peripheral: Peripheral) {

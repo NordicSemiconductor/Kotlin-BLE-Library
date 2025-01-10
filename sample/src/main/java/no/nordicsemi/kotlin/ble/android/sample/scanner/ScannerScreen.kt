@@ -83,7 +83,12 @@ fun ScannerScreen() {
                 ScannerView(
                     devices = devices,
                     isScanning = isScanning,
-                    onStartScan = { vm.onScanRequested() },
+                    onStartScan = {
+                        if (!isScanning)
+                            vm.onScanRequested()
+                        else
+                            vm.onStopScanRequested()
+                    },
                     onPeripheralClicked = vm::onPeripheralSelected,
                     onBondRequested = vm::onBondRequested,
                     onRemoveBondRequested = vm::onRemoveBondRequested,
@@ -115,10 +120,10 @@ fun ScannerView(
         ) {
             Button(
                 onClick = onStartScan,
-                enabled = !isScanning,
+                enabled = true,//!isScanning,
                 modifier = Modifier.weight(1f),
             ) {
-                Text(text = "Start scan")
+                Text(text = if (isScanning) "Stop scan" else "Start scan")
             }
 
             AnimatedVisibility(visible = isScanning) {
