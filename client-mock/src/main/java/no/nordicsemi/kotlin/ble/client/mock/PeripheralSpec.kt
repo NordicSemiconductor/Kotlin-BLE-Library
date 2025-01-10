@@ -48,8 +48,29 @@ import org.jetbrains.annotations.Range
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
+/**
+ * A specification of a peripheral that can be simulated.
+ *
+ * Use [PeripheralSpec.simulatePeripheral] to create a new peripheral specification.
+ *
+ * @property identifier The peripheral identifier.
+ * @property type The peripheral type.
+ * @property proximity The proximity of the peripheral.
+ * @property advertisement List of advertisement configurations.
+ * @property name The name of the peripheral, exposed with Device Name characteristic.
+ * @property services The services available after service discovery.
+ * @property eventHandler The event handler that will be called for every event emulating
+ * a real peripheral.
+ * @property connectionInterval The connection interval when connected.
+ * @property maxMtu The maximum supported MTU size.
+ * @property supportedPhy The set of supported PHYs.
+ * @property isConnected Whether the peripheral is connected.
+ * @property isKnown Whether the peripheral has been scanned before and its address type is cached.
+ * It is not possible to connect to an unknown device without scanning.
+ * @property isBonded Whether the peripheral is bonded.
+ */
 class PeripheralSpec<ID> private constructor(
-    val identifier: ID,
+    identifier: ID,
     val type: PeripheralType,
     initialProximity: Proximity,
     val advertisement: List<MockAdvertisementConfig>?,
@@ -63,6 +84,9 @@ class PeripheralSpec<ID> private constructor(
     isKnown: Boolean,
     isBonded: Boolean,
 ) {
+    var identifier: ID = identifier
+        private set
+
     var proximity: Proximity = initialProximity
         private set
 
@@ -109,6 +133,16 @@ class PeripheralSpec<ID> private constructor(
     }
 
     /**
+     * Simulates the situation when the device is scanned and advertisement data is received.
+     *
+     * If the device is not known, the device will be marked as known and will be allowed
+     * for connection.
+     */
+    fun simulateCaching() {
+        isKnown = true
+    }
+
+    /**
      * Simulates the situation when another application on the device
      * connects to the device.
      *
@@ -134,6 +168,7 @@ class PeripheralSpec<ID> private constructor(
     }
 
     fun simulateMacChange(newIdentifier: ID) {
+        identifier = newIdentifier
         isKnown = false
     }
 

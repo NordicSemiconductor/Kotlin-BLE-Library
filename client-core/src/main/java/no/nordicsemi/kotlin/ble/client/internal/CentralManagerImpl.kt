@@ -65,7 +65,7 @@ abstract class CentralManagerImpl<
     /**
      * A list of peripherals managed by this Central Manager instance.
      */
-    private val managedPeripherals = mutableMapOf<ID, P>()
+    protected val managedPeripherals = mutableMapOf<ID, P>()
 
     /**
      * Checks whether the given peripheral was obtained using this instance
@@ -95,12 +95,16 @@ abstract class CentralManagerImpl<
                 state
                     .filter { it != Manager.State.POWERED_ON }
                     .onEach {
+                        // Close the peripheral when the manager is closed.
                         newPeripheral.forceClose()
                     }
                     .onCompletion {
+                        // Close the peripheral when the scope is cancelled.
                         newPeripheral.forceClose()
                     }
                     .launchIn(scope)
+
+                // TODO what if the manager gets closed? We should cancel the job and clear managed peripherals.
             }
         }
     }
@@ -124,5 +128,6 @@ abstract class CentralManagerImpl<
 
     override fun close() {
         isOpen = false
+        // TODO should we clear managed peripherals? They are still observing the manager's state.
     }
 }

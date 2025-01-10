@@ -93,7 +93,7 @@ sealed class MockEnvironment(
     val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val isBluetoothScanPermissionGranted: Boolean = false,
     val isBluetoothConnectPermissionGranted: Boolean = false,
-    val isMultipleAdvertisementSupported: Boolean,
+    val isMultipleAdvertisementSupported: Boolean, // TODO this is not used
     val isLeExtendedAdvertisingSupported: Boolean = false,
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
     val isBluetoothAdvertisePermissionGranted: Boolean = false,
@@ -105,15 +105,19 @@ sealed class MockEnvironment(
      */
     class AndroidSdkVersion {
         companion object {
+            /** Android 5.0 */
             const val LOLLIPOP = 21
+            /** Android 6.0 */
             const val MARSHMALLOW = 23
+            /** Android 8.0 */
             const val OREO = 26
+            /** Android 12 */
             const val S = 31
         }
     }
 
     /**
-     * A mock environment for Android API 21 (Lollipop).
+     * A mock environment for Android 5.0 (Lollipop).
      *
      * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
@@ -138,7 +142,7 @@ sealed class MockEnvironment(
     )
 
     /**
-     * A mock environment for Android API 23 (Marshmallow).
+     * A mock environment for Android 6.0 (Marshmallow).
      *
      * Since Android 6.0, location is required to scan for Bluetooth devices.
      *
@@ -172,7 +176,7 @@ sealed class MockEnvironment(
     )
 
     /**
-     * A mock environment for Android API 26 (Oreo).
+     * A mock environment for Android 8.0 (Oreo).
      *
      * Since Android 8.0, LE 2M and LE Coded PHY are supported by the API, but not necessarily by
      * the device. Also, some devices may not support scanning for Bluetooth LE devices advertising
@@ -226,7 +230,7 @@ sealed class MockEnvironment(
     )
 
     /**
-     * A mock environment for Android API 31 (S).
+     * A mock environment for Android 12 (S).
      *
      * Since Android 12, the `BLUETOOTH_SCAN` and `BLUETOOTH_CONNECT` permissions are required to
      * scan and connect to Bluetooth devices. When `BLUETOOTH_SCAN` permission is set using

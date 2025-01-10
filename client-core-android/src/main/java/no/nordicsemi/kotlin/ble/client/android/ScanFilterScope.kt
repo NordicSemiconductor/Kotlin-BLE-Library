@@ -42,7 +42,7 @@ import kotlin.uuid.Uuid
  * Android-specific scanning filters scope.
  */
 @OptIn(ExperimentalUuidApi::class)
-sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
+sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
 
     /**
      * Adds a filter that requires at least one of the criteria to be satisfied.
@@ -79,13 +79,13 @@ sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
      * More than one service UUID can be added to the filter.
      */
     @Suppress("FunctionName")
-    fun ServiceUUID(uuid: Uuid, mask: Uuid? = null)
+    fun ServiceUuid(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service solicitation UUID.
      */
     @Suppress("FunctionName")
-    fun ServiceSolicitationUUID(uuid: Uuid, mask: Uuid? = null)
+    fun ServiceSolicitationUuid(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service data.
@@ -130,7 +130,7 @@ sealed interface ScanFiltersScope: CentralManager.ScanFilterScope {
  * }
  * ```
  */
-interface DisjunctionFilterScope: ScanFiltersScope
+interface DisjunctionFilterScope: ScanFilterScope
 
 /**
  * Android-specific scanning filters scope that requires all of the criteria to be satisfied.
@@ -192,4 +192,4 @@ interface DisjunctionFilterScope: ScanFiltersScope
  * The above filter will scan for devices that advertise the Service UUID and any of the names and
  * either the service data or manufacturer data.
  */
-interface ConjunctionFilterScope: ScanFiltersScope
+interface ConjunctionFilterScope: ScanFilterScope

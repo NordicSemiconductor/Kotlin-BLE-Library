@@ -36,6 +36,7 @@ package no.nordicsemi.kotlin.ble.core.util
 import java.util.Locale
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import kotlin.uuid.Uuid.Companion.fromLongs
 
 /**
  * Bluetooth UUIDs are 128-bit values used to uniquely identify services, characteristics, and
@@ -159,6 +160,18 @@ fun Uuid.toShortByteArray(): ByteArray {
         else -> bytes
     }
 }
+
+/**
+ * Creates a new UUID by doing a binary AND operation on bits of both UUIDs.
+ *
+ * @param other The UUID to do binary AND operation with.
+ * @return The result of merging UUIDs using binary AND.
+ */
+@OptIn(ExperimentalUuidApi::class)
+infix fun Uuid.and(other: Uuid): Uuid = fromLongs(
+    toLongs { msb, _ -> msb } and other.toLongs { msb, _ -> msb },
+    toLongs { _, lsb -> lsb } and other.toLongs { _, lsb -> lsb }
+)
 
 /**
  * Converts 2, 4 or 16 byte array to a UUID using Little Endian byte order.

@@ -50,6 +50,9 @@ import kotlin.uuid.Uuid
  * @property meshPbAdv The Bluetooth Mesh Provisioning PDU, if present.
  * @property meshMessage The Bluetooth Mesh Network PDU, if present.
  * @property meshBeacon The Bluetooth Mesh Beacon, if present.
+ * @property adStructures A map of AD structures found in the advertisement data. This map contains
+ * all AD structures found in the raw data that have a matching [AdvertisingDataType],
+ * including those that are available with dedicated properties.
  */
 @OptIn(ExperimentalUuidApi::class)
 class AdvertisingData(
@@ -67,6 +70,7 @@ class AdvertisingData(
     val meshPbAdv: ByteArray?
     val meshMessage: ByteArray?
     val meshBeacon: ByteArray?
+    val adStructures: Map<AdvertisingDataType, List<ByteArray>>
 
     // Note: This init is a copy of no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition.
     init {
@@ -81,6 +85,7 @@ class AdvertisingData(
         var meshPbAdv: ByteArray? = null
         var meshMessage: ByteArray? = null
         var meshBeacon: ByteArray? = null
+        var adStructures: MutableMap<AdvertisingDataType, MutableList<ByteArray>>? = null
 
         // Advertisement data is a list of AD structures.
         var i = 0
@@ -204,6 +209,12 @@ class AdvertisingData(
                     // Ignore unknown AD types.
                 }
             }
+            // Store the raw data for the AD structure.
+            if (type != null) {
+                adStructures = (adStructures ?: mutableMapOf()).apply {
+                    getOrPut(type) { mutableListOf() }.add(raw.copyOfRange(i, i + length))
+                }
+            }
 
             i += length
         }
@@ -219,6 +230,7 @@ class AdvertisingData(
         this.meshPbAdv = meshPbAdv
         this.meshMessage = meshMessage
         this.meshBeacon = meshBeacon
+        this.adStructures = adStructures ?: emptyMap()
         // The name is the Complete Local Name, if present, or the Shortened Local Name.
         this.name = completeName ?: shortenedName
     }

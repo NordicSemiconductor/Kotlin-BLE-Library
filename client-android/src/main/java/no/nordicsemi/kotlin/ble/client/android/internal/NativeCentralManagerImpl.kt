@@ -175,7 +175,7 @@ internal class NativeCentralManagerImpl(
             peripheral(id) {
                 Peripheral(
                     scope = scope,
-                    impl = NativeExecutor(applicationContext, adapter.getRemoteDevice(it))
+                    impl = NativeExecutor(applicationContext, adapter.getRemoteDevice(it), null)
                         .apply {
                             _bondState
                                 .filter { (address, _) -> address == id }
@@ -226,11 +226,12 @@ internal class NativeCentralManagerImpl(
         }
 
         // Build the filter based on the provided builder
-        val filters = ConjunctionFilter().apply(filter)
+        val filters = ConjunctionFilter().apply(filter).filters
 
         // Use the most optimal scan mode for low latency immediate scanning.
         val settings = NativeScanSettings.Builder()
             .apply {
+                // TODO Scan settings could be configurable.
                 setScanMode(NativeScanSettings.SCAN_MODE_LOW_LATENCY)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     setLegacy(false)
@@ -242,6 +243,7 @@ internal class NativeCentralManagerImpl(
         // Define the callback that will emit scan results.
         val callback: NativeScanCallback = object : NativeScanCallback() {
             override fun onScanResult(callbackType: Int, result: NativeScanResult) {
+                // A result matching the offloaded filter was found, convert it to ScanResult.
                 val scanResult = result.toScanResult(
                     peripheral = { device, name ->
                         peripheral(device.address) {
@@ -258,7 +260,10 @@ internal class NativeCentralManagerImpl(
                         }
                     }
                 ) ?: return
-                // TODO apply runtime filters
+
+                // Check other filters that cannot be checked by the controller.
+                if (filters?.match(scanResult) == false) return
+
                 trySend(scanResult)
             }
 
@@ -273,7 +278,7 @@ internal class NativeCentralManagerImpl(
         }
 
         // Finally, start the scan.
-        val scanFilters = filters.filters
+        val scanFilters = filters?.toNative()
         scanFilters?.let {
             logger.trace("Starting scanning with filters: {}", it)
         } ?: logger.trace("Starting scanning with no filters")
@@ -291,8 +296,8 @@ internal class NativeCentralManagerImpl(
             }
         }
         awaitClose {
-            logger.trace("Stopping scanning")
             scanner.stopScan(callback)
+            logger.trace("Scanning stopped")
         }
     }
 

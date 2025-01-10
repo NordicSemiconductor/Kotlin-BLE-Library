@@ -40,7 +40,8 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.client.android.PeripheralType
+import no.nordicsemi.kotlin.ble.core.PeripheralType
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
@@ -49,37 +50,37 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 /**
  * A mock implementation of [Peripheral] for Android.
  *
- * @param address The MAC address of the peripheral.
- * @param name An optional name of the peripheral.
- * @param type The type of the peripheral, defaults to [PeripheralType.LE].
- * @param initialBondState The initial bond state of the peripheral, defaults to [BondState.NONE].
+ * @param peripheralSpec The peripheral specification.
+ * @param name Name of the peripheral read from the advertisement data or peripheral spec
+ * when it was connected / bonded before.
  */
 open class MockExecutor(
-    address: String,
-    name: String? = null,
-    override val type: PeripheralType = PeripheralType.UNKNOWN,
-    override val initialState: ConnectionState = ConnectionState.Closed,
-    override val initialServices: List<RemoteService> = emptyList(),
-    initialBondState: BondState = BondState.NONE,
+    private val peripheralSpec: PeripheralSpec<String>,
+    name: String?,
 ): Peripheral.Executor {
+    override val type: PeripheralType = peripheralSpec.type
+    override val initialState: ConnectionState = ConnectionState.Closed
+    override val initialServices: List<RemoteService> = emptyList()
 
-    init {
-        // Validate the MAC address.
-        require(address.matches(Regex("([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})"))) {
-            "Invalid MAC address: $address"
-        }
-    }
-
-    override val identifier: String = address
+    override val identifier: String = peripheralSpec.identifier
 
     /** The current bond state. */
-    private val _bondState = MutableStateFlow(initialBondState)
+    private val _bondState = MutableStateFlow(
+        if (peripheralSpec.isBonded) BondState.BONDED else BondState.NONE
+    )
     override val bondState = _bondState.asStateFlow()
+
+    /**
+     * A flag set when the phone connects to the peripheral.
+     *
+     * We assume, that the Device Name characteristic is read during service discovery.
+     */
+    private var isNameCached = false
 
     /** The peripheral name. */
     private var _name: String? = name
     override val name: String?
-        get() = _name
+        get() = if (isNameCached) peripheralSpec.name else _name
 
     // Implementation
 
@@ -95,6 +96,8 @@ open class MockExecutor(
 
     override fun discoverServices(): Boolean {
         TODO("Not yet implemented")
+
+        // TODO set isNameCached to true when service discovery finished
     }
 
     override fun createBond(): Boolean {

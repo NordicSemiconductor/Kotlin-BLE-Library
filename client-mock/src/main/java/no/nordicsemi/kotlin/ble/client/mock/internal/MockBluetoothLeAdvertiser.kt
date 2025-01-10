@@ -40,7 +40,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import no.nordicsemi.kotlin.ble.client.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.Proximity
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
@@ -93,7 +92,7 @@ class MockBluetoothLeAdvertiser<ID: Any>(
                                     if (peripheralSpec.proximity != Proximity.OUT_OF_RANGE) {
                                         // Emit the advertising event.
                                         val scanResult = MockScanResult(
-                                            identifier = peripheralSpec.identifier,
+                                            peripheralSpec = peripheralSpec,
                                             isConnectable = advertisementConfig.parameters.connectable,
                                             advertisingData = rawAdvertisingData,
                                             rssi = peripheralSpec.proximity.randomRssi(),

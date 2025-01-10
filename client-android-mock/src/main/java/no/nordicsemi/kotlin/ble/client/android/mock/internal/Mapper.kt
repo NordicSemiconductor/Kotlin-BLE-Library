@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,35 +29,26 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
-package no.nordicsemi.kotlin.ble.core
+import no.nordicsemi.kotlin.ble.client.android.AdvertisingData
+import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.ScanResult
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockScanResult
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 
-/**
- * Primary PHY for an advertisement.
- *
- * The primary PHY of an advertisement can only be LE 1M, for regular advertisement,
- * or LE Coded for long range applications.
- * @see [Phy]
- */
-enum class PrimaryPhy {
-
-    /**
-     * Bluetooth LE 1M PHY.
-     *
-     * Used to refer to LE 1M Physical Channel for advertising, scanning or connection.
-     */
-    PHY_LE_1M,
-
-    /**
-     * Bluetooth LE Coded PHY.
-     *
-     * Used to refer to LE Coded Physical Channel for advertising, scanning or connection.
-     */
-    PHY_LE_CODED;
-
-    override fun toString(): String = when (this) {
-        PHY_LE_1M -> "LE 1M"
-        PHY_LE_CODED -> "LE Coded"
-    }
+internal fun MockScanResult<String>.toScanResult(
+    peripheral: (peripheralSpec: PeripheralSpec<String>, name: String?) -> Peripheral,
+): ScanResult {
+    val advertisingData = AdvertisingData(advertisingData)
+    return ScanResult(
+        peripheral = peripheral(peripheralSpec, advertisingData.name),
+        isConnectable = isConnectable,
+        advertisingData = advertisingData,
+        rssi = rssi,
+        txPowerLevel = txPowerLevel,
+        primaryPhy = primaryPhy,
+        secondaryPhy = secondaryPhy,
+        timestamp = timestamp
+    )
 }

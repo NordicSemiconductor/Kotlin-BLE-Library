@@ -29,13 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.mock
+package no.nordicsemi.kotlin.ble.client.mock.internal
 
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
 class MockScanResult<ID>(
-    val identifier: ID,
+    val peripheralSpec: PeripheralSpec<ID>,
     val isConnectable: Boolean,
     val advertisingData: ByteArray,
     val rssi: Int,
@@ -43,4 +44,14 @@ class MockScanResult<ID>(
     val primaryPhy: PrimaryPhy,
     val secondaryPhy: Phy?,
     val timestamp: Long,
-)
+) {
+    @OptIn(ExperimentalStdlibApi::class)
+    override fun toString(): String = "MockScanResult(" +
+            "id=${peripheralSpec.identifier}, " +
+            "isConnectable=$isConnectable, " +
+            "rssi=$rssi dBm, txPowerLevel=$txPowerLevel dBm, " +
+            "primaryPhy=$primaryPhy, " +
+            "secondaryPhy=$secondaryPhy, " +
+            "timestamp=$timestamp, " +
+            "advertisingData=${advertisingData.toHexString()})"
+}

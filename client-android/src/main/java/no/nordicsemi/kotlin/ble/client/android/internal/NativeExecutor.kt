@@ -54,19 +54,14 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
  *
  * This class uses the Android Bluetooth API to connect to the device.
  *
- * @param context the application context.
- * @param bluetoothDevice the Bluetooth device to connect to.
- * @param name the name of the device, defaults to [BluetoothDevice.getName].
+ * @param context The application context.
+ * @param bluetoothDevice The Bluetooth device to connect to.
+ * @param name The name of the device from the advertisement data.
  */
 internal class NativeExecutor(
     private val context: Context,
     private val bluetoothDevice: BluetoothDevice,
-    override val name: String? = try {
-        // This may throw Security Exception if Bluetooth Connect permission isn't granted.
-        bluetoothDevice.name
-    } catch (e: SecurityException) {
-        null
-    },
+    name: String?
 ): Peripheral.Executor {
     override val identifier: String = bluetoothDevice.address
     override val type: PeripheralType = try {
@@ -74,6 +69,12 @@ internal class NativeExecutor(
         bluetoothDevice.type.toPeripheralType()
     } catch (e: SecurityException) {
         PeripheralType.UNKNOWN
+    }
+    override val name: String? = try {
+        // This may throw Security Exception if Bluetooth Connect permission isn't granted.
+        bluetoothDevice.name ?: name
+    } catch (e: SecurityException) {
+        name
     }
     override val initialState: ConnectionState = ConnectionState.Closed
     override val initialServices: List<RemoteService> = emptyList()

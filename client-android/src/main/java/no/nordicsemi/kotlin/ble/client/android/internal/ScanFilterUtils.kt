@@ -31,60 +31,84 @@
 
 package no.nordicsemi.kotlin.ble.client.android.internal
 
-import android.bluetooth.le.ScanFilter
-import android.bluetooth.le.ScanRecord
+import android.bluetooth.le.ScanFilter as NativeScanFilter
 import android.os.Build
+import android.os.ParcelUuid
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.toJavaUuid
 
 /**
- * Merges two [ScanFilter]s into one, with the receiver having higher priority.
+ * Converts the list of [ScanFilter] to a list of native [ScanFilter][NativeScanFilter].
  *
- * That means, that if the receiver's filter has a property set, it will be used, otherwise
- * the property from the [other] filter will be used.
+ * This method may return an empty list if none of the filters contain any criteria that can be
+ * offloaded to the Bluetooth controller.
  */
-internal fun ScanFilter.merged(other: ScanFilter): ScanFilter {
-    val builder = ScanFilter.Builder()
-    builder.setDeviceName(deviceName ?: other.deviceName)
-    builder.setDeviceAddress(deviceAddress ?: other.deviceAddress)
-    if (serviceUuid != null) {
-        builder.setServiceUuid(serviceUuid, serviceUuidMask)
-    } else if (other.serviceUuid != null) {
-        builder.setServiceUuid(other.serviceUuid, other.serviceUuidMask)
+internal fun List<ScanFilter>.toNative(): List<NativeScanFilter> = mapNotNull { it.toNative() }
+
+/**
+ * Converts the [ScanFilter] to a native [ScanFilter][NativeScanFilter].
+ *
+ * This method may return null if the filter doesn't contain any criteria that can be offloaded
+ * to the Bluetooth controller.
+ *
+ * See also [link](https://developer.android.com/reference/android/bluetooth/le/ScanFilter.Builder)
+ */
+@OptIn(ExperimentalUuidApi::class)
+internal fun ScanFilter.toNative(): NativeScanFilter? {
+    if (name == null &&
+        serviceUuid == null &&
+        serviceData == null &&
+        manufacturerData == null &&
+        // Offloaded filtering with service solicitation UUIDs was added in Android 10.
+        // https://developer.android.com/reference/android/bluetooth/le/ScanFilter.Builder#setServiceSolicitationUuid(android.os.ParcelUuid,%20android.os.ParcelUuid)
+        (serviceSolicitationUuid == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) &&
+        // Offloaded filtering with custom advertising data was added in Android 13.
+        // https://developer.android.com/reference/android/bluetooth/le/ScanFilter.Builder#setAdvertisingDataType(int)
+        (customAdvertisingData == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)) {
+        return null
     }
-    if (serviceDataUuid != null) {
-        builder.setServiceData(serviceDataUuid, serviceData, serviceDataMask)
-    } else if (other.serviceDataUuid != null) {
-        builder.setServiceData(other.serviceDataUuid, other.serviceData, other.serviceDataMask)
-    }
-    if (manufacturerId != -1) {
-        builder.setManufacturerData(manufacturerId, manufacturerData, manufacturerDataMask)
-    } else if (other.manufacturerId != -1) {
-        builder.setManufacturerData(
-            other.manufacturerId,
-            other.manufacturerData,
-            other.manufacturerDataMask
-        )
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-        if (serviceSolicitationUuid != null) {
-            builder.setServiceSolicitationUuid(serviceSolicitationUuid, serviceSolicitationUuidMask)
-        } else if (other.serviceSolicitationUuid != null) {
-            builder.setServiceSolicitationUuid(other.serviceSolicitationUuid, other.serviceSolicitationUuidMask)
-        }
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        if (advertisingDataType != ScanRecord.DATA_TYPE_NONE) {
-            if (advertisingData == null) {
-                builder.setAdvertisingDataType(advertisingDataType)
-            } else {
-                builder.setAdvertisingDataTypeWithData(advertisingDataType, advertisingData!!, advertisingDataMask!!)
+    return NativeScanFilter.Builder()
+        .apply {
+            // Note, that we are not setting the device address here.
+            // This is because the address filter requires the device to be PUBLIC (registered in IEEE).
+            // Instead, when address is set, we will filter the results in the library when results
+            // are returned.
+            //
+            // address?.let { setDeviceAddress(it) }
+
+            name?.let { setDeviceName(it) }
+            serviceUuid?.let { (uuid, mask) ->
+                setServiceUuid(
+                    ParcelUuid(uuid.toJavaUuid()),
+                    mask?.let { ParcelUuid(it.toJavaUuid()) }
+                )
             }
-        } else if (other.advertisingDataType != ScanRecord.DATA_TYPE_NONE) {
-            if (other.advertisingData == null) {
-                builder.setAdvertisingDataType(other.advertisingDataType)
-            } else {
-                builder.setAdvertisingDataTypeWithData(other.advertisingDataType, other.advertisingData!!, other.advertisingDataMask!!)
+            serviceData?.let { (uuid, data, mask) ->
+                setServiceData(ParcelUuid(uuid.toJavaUuid()), data, mask)
+            }
+            manufacturerData?.let { (companyId, data, mask) ->
+                setManufacturerData(companyId, data, mask)
+            }
+            // Offloaded filtering with service solicitation UUIDs was added in Android 10.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                serviceSolicitationUuid?.let { (uuid, mask) ->
+                    setServiceSolicitationUuid(
+                        ParcelUuid(uuid.toJavaUuid()),
+                        mask?.let { ParcelUuid(it.toJavaUuid()) }
+                    )
+                }
+            }
+            // Offloaded filtering with custom advertising data was added in Android 13.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                customAdvertisingData?.let { (type, data, mask) ->
+                    data?.let {
+                        // Due to a bug in Android API, the mask is declared as @NonNull.
+                        // However, it should be perfectly fine to pass null here.
+                        // Instead, we will pass a mask with all zeros, which should have the same effect.
+                        setAdvertisingDataTypeWithData(type.type, it, mask ?: ByteArray(it.size) { 0 })
+                    } ?: setAdvertisingDataType(type.type)
+                }
             }
         }
-    }
-    return builder.build()
+        .build()
 }

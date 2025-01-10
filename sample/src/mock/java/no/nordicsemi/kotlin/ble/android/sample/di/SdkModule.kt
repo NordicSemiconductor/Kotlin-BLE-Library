@@ -69,8 +69,8 @@ class SdkModule {
             in 23..25 -> MockEnvironment.Api23(advertiser = advertiser)
             in 26..30 -> MockEnvironment.Api26(advertiser = advertiser)
             else -> MockEnvironment.Api31(
-                isLeCodedPhySupported = false,
-                isScanningOnLeCodedPhySupported = false,
+//                isLeCodedPhySupported = false,
+//                isScanningOnLeCodedPhySupported = false,
                 advertiser = advertiser,
             )
         }

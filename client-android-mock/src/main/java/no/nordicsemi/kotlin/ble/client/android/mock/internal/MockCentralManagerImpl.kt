@@ -35,23 +35,33 @@ package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeoutOrNull
 import no.nordicsemi.kotlin.ble.android.mock.LatestApi
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
+import no.nordicsemi.kotlin.ble.client.android.internal.ConjunctionFilter
 import no.nordicsemi.kotlin.ble.client.android.ConjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.internal.CentralManagerImpl
+import no.nordicsemi.kotlin.ble.client.android.internal.match
 import no.nordicsemi.kotlin.ble.client.android.mock.MockCentralManager
 import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
@@ -69,17 +79,31 @@ open class MockCentralManagerImpl(
     private val logger = LoggerFactory.getLogger(MockCentralManagerImpl::class.java)
 
     // Simulation methods
+    private var peripheralSpecs = mutableListOf<PeripheralSpec<String>>()
+    private val mockAdvertiser = MockBluetoothLeAdvertiser<String>(scope, environment)
 
     override fun simulatePowerOn() = simulateStateChange(Manager.State.POWERED_ON)
 
     override fun simulatePowerOff() = simulateStateChange(Manager.State.POWERED_OFF)
 
     override fun simulatePeripherals(peripherals: List<PeripheralSpec<String>>) {
-
+        require(peripheralSpecs.isEmpty()) {
+            "Peripherals have already been added to the simulation"
+        }
+        peripherals.forEach {
+            // Validate the MAC address.
+            require(it.identifier.matches(Regex("([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})"))) {
+                "Invalid MAC address: ${it.identifier}"
+            }
+        }
+        peripheralSpecs.addAll(peripherals)
+        managedPeripherals
+        mockAdvertiser.simulateAdvertising(peripherals)
     }
 
     override fun tearDownSimulation() {
-        TODO("Not yet implemented")
+        mockAdvertiser.cancel()
+        peripheralSpecs.clear()
     }
 
     /**
@@ -104,6 +128,7 @@ open class MockCentralManagerImpl(
     }
 
     // Implementation
+    private val _advertisingEvents = MutableSharedFlow<ScanResult>()
 
     private val _state = MutableStateFlow(
         when {
@@ -131,28 +156,107 @@ open class MockCentralManagerImpl(
         // Ensure the central manager has not been closed.
         ensureOpen()
 
-        TODO("Not yet implemented")
-//        return ids.map { id ->
-//            peripheral(id) {
-//                Peripheral(
-//                    scope = scope,
-//                    impl = MockExecutor(
-//                        address = id,
-//                    )
-//                )
-//            }
-//        }
+        return peripheralSpecs
+            .filter { it.identifier in ids }
+            .map { peripheralSpec ->
+                peripheral(peripheralSpec.identifier) {
+                    Peripheral(
+                        scope = scope,
+                        impl = MockExecutor(peripheralSpec, null)
+                    )
+                }
+            }
     }
 
     override fun getBondedPeripherals(): List<Peripheral> {
-        TODO("Not yet implemented")
+        // Ensure the central manager has not been closed.
+        ensureOpen()
+
+        // Here we need to concatenate two lists:
+        // - known peripherals with bond information
+        // - peripherals that have not been scanned yet, but are bonded (PeripheralSpec.isBonded == true)
+        // Should we just iterate over peripheral specs, we would miss those that were bonded
+        // in in runtime and would make all specs "known" (available for retrieval).
+        // Should we iterate only managed, we would miss devices that were defined as bonded,
+        // but were not scanned yet.
+        val managedBondedPeripherals = managedPeripherals.values
+            .filter { it.hasBondInformation }
+        val otherBondedPeripherals = peripheralSpecs
+            .filter { it.isBonded }
+            .filter { it.identifier !in managedPeripherals.keys }
+            .map { peripheralSpec ->
+                peripheral(peripheralSpec.identifier) {
+                    Peripheral(
+                        scope = scope,
+                        impl = MockExecutor(peripheralSpec, peripheralSpec.name)
+                    )
+                }
+            }
+        // TODO any order?
+        return managedBondedPeripherals + otherBondedPeripherals
     }
 
     override fun scan(
         timeout: Duration,
         filter: ConjunctionFilterScope.() -> Unit
     ): Flow<ScanResult> {
-        TODO("Not yet implemented")
+        // Ensure the central manager has not been closed.
+        ensureOpen()
+
+        // Ensure Bluetooth is supported.
+        check(environment.isBluetoothSupported && environment.isBluetoothEnabled) {
+            throw BluetoothUnavailableException()
+        }
+
+        // Verify the BLUETOOTH_SCAN permission is granted (Android 12+).
+        checkScanningPermission()
+
+        // Build the filter based on the provided builder
+        val filters = ConjunctionFilter().apply(filter).filters
+        filters?.let {
+            logger.trace("Starting scanning with filters: {}", it)
+        } ?: logger.trace("Starting scanning with no filters")
+
+        return flow {
+            // Emit all scan results until the timeout.
+            withTimeoutOrNull<Nothing>(timeout) {
+                mockAdvertiser.events.collect { result ->
+                    // If PHY LE Coded is not supported, ignore results sent with LE Coded PHY.
+                    if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED &&
+                        (!environment.isLeCodedPhySupported || !environment.isScanningOnLeCodedPhySupported))
+                        return@collect
+                    if (result.secondaryPhy == Phy.PHY_LE_CODED && !environment.isLeCodedPhySupported)
+                        return@collect
+
+                    // If PHY LE 2M is not supported, ignore results sent with LE 2M PHY as secondary PHY.
+                    if (result.secondaryPhy == Phy.PHY_LE_2M && !environment.isLe2MPhySupported)
+                        return@collect
+
+                    // TODO We're assuming that we scan with "ALL_SUPPORTED" PHYs, as this is not configurable in Native scanner yet.
+
+                    // The mock scanner found the device and cached its MAC address.
+                    result.peripheralSpec.simulateCaching()
+
+                    // A result matches the filter. Convert it to a ScanResult and emit.
+                    val scanResult = result.toScanResult { peripheralSpec, name->
+                        peripheral(peripheralSpec.identifier) {
+                            Peripheral(
+                                scope = scope,
+                                impl = MockExecutor(peripheralSpec, name)
+                            )
+                        }
+                    }
+
+                    // Apply the filters if set.
+                    if (filters?.match(scanResult) == false) return@collect
+
+                    emit(scanResult)
+                }
+            }
+            logger.trace("Scanning timed out after {}", timeout)
+        }.onCompletion {
+            logger.trace("Scanning stopped")
+        }
     }
 
     override fun monitor(
