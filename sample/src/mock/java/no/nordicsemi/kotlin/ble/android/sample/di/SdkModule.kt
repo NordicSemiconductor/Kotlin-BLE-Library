@@ -38,6 +38,7 @@ import dagger.hilt.components.SingletonComponent
 // import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.android.mock.MockAdvertiser
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+// import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import timber.log.Timber
 import javax.inject.Named
 
@@ -47,7 +48,7 @@ class SdkModule {
 
     @Provides
     @Named("sdkVersion")
-    fun provideSdkVersion() = 34//Build.VERSION.SDK_INT
+    fun provideSdkVersion() = 34 // Build.VERSION.SDK_INT
 
     @Provides
     fun providesEnvironment(@Named("sdkVersion") sdkVersion: Int): MockEnvironment {
@@ -69,9 +70,22 @@ class SdkModule {
             in 23..25 -> MockEnvironment.Api23(advertiser = advertiser)
             in 26..30 -> MockEnvironment.Api26(advertiser = advertiser)
             else -> MockEnvironment.Api31(
-//                isLeCodedPhySupported = false,
-//                isScanningOnLeCodedPhySupported = false,
                 advertiser = advertiser,
+
+                // Uncomment to disable LE Coded PHY support.
+                // isLeCodedPhySupported = false,
+
+                // If LE Coded PHY is supported, uncommenting this will make the scanner NOT
+                // return packets sent on Coded PHY as primary PHY. Some phones can't scan on
+                // Coded PHY, but can receive packets sent on Coded PHY when connected.
+                // isScanningOnLeCodedPhySupported = false,
+
+                // Uncomment to make the scanner throw an exception as if ScanCallback.onScanFailed was called.
+                // scanner = { Result.failure(ScanningFailedToStartException(ScanningFailedToStartException.Reason.ScanningTooFrequently)) }
+
+                // Uncomment to pretend the scanner has started (onScanFailed not called), but
+                // the scanner won't return any results.
+                // scanner = { Result.success(false) }
             )
         }
         return sdkVersion.toMockEnvironment()
