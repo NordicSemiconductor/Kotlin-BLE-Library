@@ -37,10 +37,12 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothStatusCodes
 import android.os.Build
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
@@ -61,7 +63,7 @@ internal class NativeRemoteCharacteristic(
     parent: AnyRemoteService,
     private val gatt: BluetoothGatt,
     private val characteristic: BluetoothGattCharacteristic,
-    private val events: Flow<GattEvent>,
+    private val events: SharedFlow<GattEvent>,
 ): RemoteCharacteristic {
     override val service: AnyRemoteService = parent
     override val uuid: Uuid = characteristic.uuid.toKotlinUuid
@@ -139,18 +141,19 @@ internal class NativeRemoteCharacteristic(
         }
 
         return NativeOperationMutex.withLock {
-            // Read the characteristic value.
-            val success = try {
-                gatt.readCharacteristic(characteristic)
-            } catch (e: Exception) {
-                throw BluetoothException(e)
-            }
-            check(success) {
-                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-            }
-
             // Await the response.
             events
+                .onSubscription {
+                    // Read the characteristic value.
+                    val success = try {
+                        gatt.readCharacteristic(characteristic)
+                    } catch (e: Exception) {
+                        throw BluetoothException(e)
+                    }
+                    check(success) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
+                }
                 .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicRead::class)
                 .filter { it.characteristic == characteristic }
@@ -179,35 +182,36 @@ internal class NativeRemoteCharacteristic(
 
         // Write the characteristic value.
         NativeOperationMutex.withLock {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                val result = try {
-                    gatt.writeCharacteristic(characteristic, data, writeType.toInt())
-                } catch (e: Exception) {
-                    throw BluetoothException(e)
-                }
-                when (result) {
-                    BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
-                    BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
-                        throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
-                    BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                        throw OperationFailedException(OperationStatus.BUSY)
-                    else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                }
-            } else {
-                val success = try {
-                    characteristic.value = data
-                    characteristic.writeType = writeType.toInt()
-                    gatt.writeCharacteristic(characteristic)
-                } catch (e: Exception) {
-                    throw BluetoothException(e)
-                }
-                check(success) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                }
-            }
-
             // Await the write operation result.
             events
+                .onSubscription {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        val result = try {
+                            gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+                        } catch (e: Exception) {
+                            throw BluetoothException(e)
+                        }
+                        when (result) {
+                            BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
+                            BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
+                                throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+                            BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
+                                throw OperationFailedException(OperationStatus.BUSY)
+                            else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        }
+                    } else {
+                        val success = try {
+                            characteristic.value = data
+                            characteristic.writeType = writeType.toInt()
+                            gatt.writeCharacteristic(characteristic)
+                        } catch (e: Exception) {
+                            throw BluetoothException(e)
+                        }
+                        check(success) {
+                            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        }
+                    }
+                }
                 .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicWrite::class)
                 .filter { it.characteristic == characteristic }
@@ -227,8 +231,10 @@ internal class NativeRemoteCharacteristic(
             throw InvalidAttributeException()
         }
 
-        setNotifying(true)
         return events
+            .onSubscription {
+                setNotifying(true)
+            }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)
             .filter { it.characteristic == characteristic }

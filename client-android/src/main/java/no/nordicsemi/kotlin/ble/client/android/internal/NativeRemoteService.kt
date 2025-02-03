@@ -33,7 +33,7 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattService
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
@@ -46,7 +46,7 @@ import kotlin.uuid.Uuid
 internal class NativeRemoteService(
     gatt: BluetoothGatt,
     service: BluetoothGattService,
-    events: Flow<GattEvent>,
+    events: SharedFlow<GattEvent>,
 ): RemoteService() {
     // NOTE: The owner is set by the GenericPeripheral when handling ServicesChanged event.
     override val uuid: Uuid = service.uuid.toKotlinUuid
@@ -65,7 +65,7 @@ internal class NativeRemoteIncludedService(
     parent: AnyRemoteService,
     gatt: BluetoothGatt,
     service: BluetoothGattService,
-    events: Flow<GattEvent>,
+    events: SharedFlow<GattEvent>,
 ): RemoteIncludedService {
     override val service: AnyRemoteService = parent
     override val uuid: Uuid = service.uuid.toKotlinUuid
