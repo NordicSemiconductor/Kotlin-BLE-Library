@@ -201,6 +201,11 @@ class ClientBleGatt(
     suspend fun requestMtu(mtu: Int): Int {
         mutex.lock(RequestedLockedFeature.MTU)
         return suspendCancellableCoroutine { continuation ->
+            val onFinish = {
+                mtuCallback = null
+                mutex.unlock(RequestedLockedFeature.MTU)
+            }
+            continuation.invokeOnCancellation { onFinish() }
             logger.trace("Requesting MTU, mtu: {}", mtu)
             mtuCallback = { (mtu, status) ->
                 if (status.isSuccess) {
@@ -214,8 +219,7 @@ class ClientBleGatt(
                 mtuCallback = null
             }
             if (!gatt.requestMtu(mtu)) {
-                mtuCallback = null
-                mutex.unlock(RequestedLockedFeature.MTU)
+                onFinish()
             }
         }
     }
