@@ -41,7 +41,9 @@ Current status:
     - [ ] GATT operations
     - [ ] Mock implementation
 
-## Usage
+## Documentation
+
+Dokka documentation can be found [here](https://nordicsemiconductor.github.io/Kotlin-BLE-Library/html/index.html).
 
 ### Scanning
 
@@ -143,7 +145,7 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
 }
 ```
 
-#### Subscibing to value changes
+#### Subscribing to value changes
 
 ```kotlin
 remoteService.characteristics.forEach { remoteCharacteristic ->
