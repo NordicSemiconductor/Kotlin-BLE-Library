@@ -57,12 +57,16 @@ sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
 
     /**
      * Filters devices by name.
+     *
+     * @param name The name to match exactly.
      */
     @Suppress("FunctionName")
     fun Name(name: String)
 
     /**
      * Filters devices by name using a regular expression.
+     *
+     * @param regex The regular expression to match against the device name.
      */
     @Suppress("FunctionName")
     fun Name(regex: Regex)
@@ -70,7 +74,7 @@ sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
     /**
      * Filters devices by MAC address.
      *
-     * The MAC address should be in the format `01:23:45:67:89:AB`.
+     * @param address The MAC address in the format `01:23:45:67:89:AB`.
      */
     @Suppress("FunctionName")
     fun Address(address: String)
@@ -78,25 +82,37 @@ sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
     /**
      * Filters devices by service UUID.
      *
-     * More than one service UUID can be added to the filter.
+     * @param uuid the service UUID to match.
+     * @param mask optional mask to apply to the UUID.
      */
     @Suppress("FunctionName")
     fun ServiceUuid(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service solicitation UUID.
+     *
+     * @param uuid the service UUID to match.
+     * @param mask optional mask to apply to the UUID.
      */
     @Suppress("FunctionName")
     fun ServiceSolicitationUuid(uuid: Uuid, mask: Uuid? = null)
 
     /**
      * Filters devices by service data.
+     *
+     * @param uuid the service UUID to match.
+     * @param data the service data to match.
+     * @param mask optional mask to apply to the data.
      */
     @Suppress("FunctionName")
     fun ServiceData(uuid: Uuid, data: ByteArray, mask: ByteArray? = null)
 
     /**
      * Filters devices by manufacturer data.
+     *
+     * @param companyId the company ID as defined by the Bluetooth SIG.
+     * @param data the manufacturer data to match.
+     * @param mask optional mask to apply to the data.
      */
     @Suppress("FunctionName")
     fun ManufacturerData(companyId: Int, data: ByteArray, mask: ByteArray? = null)
