@@ -231,10 +231,9 @@ internal class NativeRemoteCharacteristic(
             throw InvalidAttributeException()
         }
 
+        // Suspend until the notifications are enabled.
+        setNotifying(true)
         return events
-            .onSubscription {
-                setNotifying(true)
-            }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)
             .filter { it.characteristic == characteristic }
