@@ -117,6 +117,7 @@ class ScannerViewModel @Inject constructor(
                     Name("Mesh Light")
                     Name("nRFConnect")
                     Name("HR Sensor")
+                    Name(Regex("Mesh.*"))
                 }
             }
             .distinctByPeripheral()

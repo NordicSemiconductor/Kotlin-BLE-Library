@@ -325,7 +325,7 @@ class ScanFilter {
             }
         }
         nameRegex?.let { nameRegex ->
-            if (advertisingData.name?.matches(nameRegex) == false) {
+            if (advertisingData.name?.matches(nameRegex) != true) {
                 return false
             }
         }
