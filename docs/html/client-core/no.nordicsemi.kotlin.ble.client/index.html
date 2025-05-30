@@ -1,0 +1,456 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>no.nordicsemi.kotlin.ble.client</title>
+<link href="../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+    <nav class="navigation theme-dark" id="navigation-wrapper">
+<a class="library-name--link" href="../../index.html">
+                    Kotlin-BLE-Library
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">1.0.15
+        </div>
+        <div class="navigation-controls">
+        <div class="filter-section filter-section_loading" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":client-core/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
+                    <div class="dropdown--header"><span>Platform filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":client-core/main" data-filter=":client-core/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </div>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
+                        <div class="dropdown--header">
+                            <span>
+                                    Kotlin-BLE-Library
+                            </span>
+                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                            </button>
+                        </div>
+                        <div class="sidebar--inner" id="sideMenu"></div>
+                    </ul>
+                    <div class="dropdown--overlay"></div>
+                </div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="client-core::no.nordicsemi.kotlin.ble.client////PointingToDeclaration//1264259343">
+  <div class="breadcrumbs"><a href="../index.html">client-core</a><span class="delimiter">/</span><span class="current">no.nordicsemi.kotlin.ble.client</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="21046861%2FClasslikes%2F1264259343" anchor-label="AdvertisingData" id="21046861%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-advertising-data/index.html"><span>Advertising</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="21046861%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-advertising-data/index.html">AdvertisingData</a></div><div class="brief "><p class="paragraph">Advertising Data represents the data found in the Advertisement Packet and Scan Response combined.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="673195652%2FClasslikes%2F1264259343" anchor-label="AnyRemoteService" id="673195652%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-any-remote-service/index.html"><span>Any</span><wbr><span>Remote</span><wbr><span><span>Service</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="673195652%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-any-remote-service/index.html">AnyRemoteService</a> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-any-service/index.html">AnyService</a><span class="token operator">&lt;</span><a href="-remote-characteristic/index.html">RemoteCharacteristic</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A GATT service on a remote connected peripheral device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1915375151%2FClasslikes%2F1264259343" anchor-label="CentralManager" id="1915375151%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-central-manager/index.html"><span>Central</span><wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1915375151%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-central-manager/index.html">CentralManager</a><span class="token operator">&lt;</span><a href="-central-manager/index.html">ID</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><a href="-central-manager/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><a href="-central-manager/index.html">ID</a><span class="token punctuation">, </span><a href="-central-manager/index.html">EX</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="-central-manager/index.html">EX</a><span class="token operator"> : </span><a href="-peripheral/-executor/index.html">Peripheral.Executor</a><span class="token operator">&lt;</span><a href="-central-manager/index.html">ID</a><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="-central-manager/index.html">F</a><span class="token operator"> : </span><a href="-central-manager/-scan-filter-scope/index.html">CentralManager.ScanFilterScope</a><span class="token punctuation">, </span><a href="-central-manager/index.html">SR</a><span class="token operator"> : </span><a href="-scan-result/index.html">ScanResult</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-manager/index.html">Manager</a></div><div class="brief "><p class="paragraph">A central manager is responsible for scanning, monitoring and connecting to Bluetooth LE devices.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1610164762%2FClasslikes%2F1264259343" anchor-label="ConnectionStateChanged" id="-1610164762%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-connection-state-changed/index.html"><span>Connection</span><wbr><span>State</span><wbr><span><span>Changed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1610164762%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-connection-state-changed/index.html">ConnectionStateChanged</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>newState<span class="token operator">: </span><a href="../../core/no.nordicsemi.kotlin.ble.core/-connection-state/index.html">ConnectionState</a></span></span><span class="token punctuation">)</span> : <a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">Event indicating that the connection state has changed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-359115493%2FClasslikes%2F1264259343" anchor-label="GattEvent" id="-359115493%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-gatt-event/index.html"><span>Gatt</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-359115493%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">A base class for all GATT events.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-169503821%2FClasslikes%2F1264259343" anchor-label="ImplSpecificEvent" id="-169503821%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-impl-specific-event/index.html"><span>Impl</span><wbr><span>Specific</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-169503821%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-impl-specific-event/index.html">ImplSpecificEvent</a> : <a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">Event type used by implementations.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1083230071%2FClasslikes%2F1264259343" anchor-label="MonitoringEvent" id="-1083230071%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-monitoring-event/index.html"><span>Monitoring</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1083230071%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-monitoring-event/index.html">MonitoringEvent</a><span class="token operator">&lt;</span><a href="-monitoring-event/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">An event indicating that the scanning device entered region of the monitored peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="250543275%2FClasslikes%2F1264259343" anchor-label="Peripheral" id="250543275%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-peripheral/index.html"><span><span>Peripheral</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="250543275%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><a href="-peripheral/index.html">ID</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-any/index.html">Any</a><span class="token punctuation">, </span><a href="-peripheral/index.html">EX</a><span class="token operator"> : </span><a href="-peripheral/-executor/index.html">Peripheral.Executor</a><span class="token operator">&lt;</span><a href="-peripheral/index.html">ID</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scope<span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines/CoroutineScope///PointingToDeclaration/">CoroutineScope</span><span class="token punctuation">, </span></span><span class="parameter ">impl<span class="token operator">: </span><a href="-peripheral/index.html">EX</a></span></span><span class="token punctuation">)</span> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-peer/index.html">Peer</a><span class="token operator">&lt;</span><a href="-peripheral/index.html">ID</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Class representing a Bluetooth LE peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1401354821%2FClasslikes%2F1264259343" anchor-label="PeripheralEnteredRange" id="1401354821%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-peripheral-entered-range/index.html"><span>Peripheral</span><wbr><span>Entered</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1401354821%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-peripheral-entered-range/index.html">PeripheralEnteredRange</a><span class="token operator">&lt;</span><a href="-peripheral-entered-range/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">peripheral<span class="token operator">: </span><a href="-peripheral-entered-range/index.html">P</a></span></span><span class="token punctuation">)</span> : <a href="-monitoring-event/index.html">MonitoringEvent</a><span class="token operator">&lt;</span><a href="-peripheral-entered-range/index.html">P</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">An event indicating that the scanning device entered region of the monitored peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1858154593%2FClasslikes%2F1264259343" anchor-label="PeripheralLeftRange" id="1858154593%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-peripheral-left-range/index.html"><span>Peripheral</span><wbr><span>Left</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1858154593%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-peripheral-left-range/index.html">PeripheralLeftRange</a><span class="token operator">&lt;</span><a href="-peripheral-left-range/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">peripheral<span class="token operator">: </span><a href="-peripheral-left-range/index.html">P</a></span></span><span class="token punctuation">)</span> : <a href="-monitoring-event/index.html">MonitoringEvent</a><span class="token operator">&lt;</span><a href="-peripheral-left-range/index.html">P</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">An event indicating that the scanning device left region of the monitored peripheral and no advertising packets were received.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="159389330%2FClasslikes%2F1264259343" anchor-label="ProximityChanged" id="159389330%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-proximity-changed/index.html"><span>Proximity</span><wbr><span><span>Changed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="159389330%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-proximity-changed/index.html">ProximityChanged</a><span class="token operator">&lt;</span><a href="-proximity-changed/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">peripheral<span class="token operator">: </span><a href="-proximity-changed/index.html">P</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>previousProximity<span class="token operator">: </span><a href="-proximity-changed/-proximity/index.html">ProximityChanged.Proximity</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>proximity<span class="token operator">: </span><a href="-proximity-changed/-proximity/index.html">ProximityChanged.Proximity</a></span></span><span class="token punctuation">)</span> : <a href="-range-event/index.html">RangeEvent</a><span class="token operator">&lt;</span><a href="-proximity-changed/index.html">P</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">An event indicating that the proximity of the peripheral has changed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1583294954%2FClasslikes%2F1264259343" anchor-label="RangeEvent" id="1583294954%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-range-event/index.html"><span>Range</span><wbr><span><span>Event</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1583294954%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-range-event/index.html">RangeEvent</a><span class="token operator">&lt;</span><a href="-range-event/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">An event indicating ranging events for the peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1306132456%2FClasslikes%2F1264259343" anchor-label="ReliableWriteScope" id="1306132456%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-reliable-write-scope/index.html"><span>Reliable</span><wbr><span>Write</span><wbr><span><span>Scope</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1306132456%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-reliable-write-scope/index.html">ReliableWriteScope</a></div><div class="brief "><p class="paragraph">A scope of reliable write operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="51049158%2FClasslikes%2F1264259343" anchor-label="RemoteCharacteristic" id="51049158%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-remote-characteristic/index.html"><span>Remote</span><wbr><span><span>Characteristic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="51049158%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-remote-characteristic/index.html">RemoteCharacteristic</a> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-characteristic/index.html">Characteristic</a><span class="token operator">&lt;</span><a href="-remote-descriptor/index.html">RemoteDescriptor</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A GATT characteristic of a service on a remote connected peripheral device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1243545458%2FClasslikes%2F1264259343" anchor-label="RemoteDescriptor" id="1243545458%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-remote-descriptor/index.html"><span>Remote</span><wbr><span><span>Descriptor</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1243545458%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-remote-descriptor/index.html">RemoteDescriptor</a> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-descriptor/index.html">Descriptor</a></div><div class="brief "><p class="paragraph">A GATT descriptor of a characteristic on a remote connected peripheral device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="915929640%2FClasslikes%2F1264259343" anchor-label="RemoteIncludedService" id="915929640%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-remote-included-service/index.html"><span>Remote</span><wbr><span>Included</span><wbr><span><span>Service</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="915929640%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-remote-included-service/index.html">RemoteIncludedService</a> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-included-service/index.html">IncludedService</a><span class="token operator">&lt;</span><a href="-remote-characteristic/index.html">RemoteCharacteristic</a><span class="token operator">&gt; </span>, <a href="-any-remote-service/index.html">AnyRemoteService</a></div><div class="brief "><p class="paragraph">A GATT service that is included in another service on a remote connected peripheral device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1673254220%2FClasslikes%2F1264259343" anchor-label="RemoteService" id="1673254220%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-remote-service/index.html"><span>Remote</span><wbr><span><span>Service</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1673254220%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="-remote-service/index.html">RemoteService</a> : <a href="../../core/no.nordicsemi.kotlin.ble.core/-primary-service/index.html">PrimaryService</a><span class="token operator">&lt;</span><a href="-remote-characteristic/index.html">RemoteCharacteristic</a><span class="token operator">&gt; </span>, <a href="-any-remote-service/index.html">AnyRemoteService</a></div><div class="brief "><p class="paragraph">A GATT service on a remote connected peripheral device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2041974214%2FClasslikes%2F1264259343" anchor-label="RssiRead" id="-2041974214%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-rssi-read/index.html"><span>Rssi</span><wbr><span><span>Read</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2041974214%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-rssi-read/index.html">RssiRead</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>rssi<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">Event indicating that the RSSI value has been read.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1000465133%2FClasslikes%2F1264259343" anchor-label="ScanResult" id="1000465133%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-scan-result/index.html"><span>Scan</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1000465133%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-scan-result/index.html">ScanResult</a><span class="token operator">&lt;</span><a href="-scan-result/index.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">, </span><a href="-scan-result/index.html">AD</a><span class="token operator"> : </span><a href="-advertising-data/index.html">AdvertisingData</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A Scan Result represents a single advertisement found during the scan.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="826168261%2FClasslikes%2F1264259343" anchor-label="ServicesChanged" id="826168261%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-services-changed/index.html"><span>Services</span><wbr><span><span>Changed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="826168261%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="-services-changed/index.html">ServicesChanged</a> : <a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">Event indicating that the services have changed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="319841825%2FClasslikes%2F1264259343" anchor-label="ServicesDiscovered" id="319841825%2FClasslikes%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-services-discovered/index.html"><span>Services</span><wbr><span><span>Discovered</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="319841825%2FClasslikes%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-services-discovered/index.html">ServicesDiscovered</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>services<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-remote-service/index.html">RemoteService</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="-gatt-event/index.html">GattEvent</a></div><div class="brief "><p class="paragraph">Event indicating that the services have changed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-241812873%2FFunctions%2F1264259343" anchor-label="distinctByPeripheral" id="-241812873%2FFunctions%2F1264259343" data-filterable-set=":client-core/main"></a>
+          <div class="table-row" data-filterable-current=":client-core/main" data-filterable-set=":client-core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="distinct-by-peripheral.html"><span>distinct</span><wbr><span>By</span><wbr><span><span>Peripheral</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-241812873%2FFunctions%2F1264259343"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="distinct-by-peripheral.html">ID</a><span class="token punctuation">, </span><a href="distinct-by-peripheral.html">P</a><span class="token operator"> : </span><a href="-peripheral/index.html">Peripheral</a><span class="token operator">&lt;</span><a href="distinct-by-peripheral.html">ID</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt; </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="-scan-result/index.html">ScanResult</a><span class="token operator">&lt;</span><a href="distinct-by-peripheral.html">P</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="distinct-by-peripheral.html"><span class="token function">distinctByPeripheral</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/Flow///PointingToDeclaration/">Flow</span><span class="token operator">&lt;</span><a href="-scan-result/index.html">ScanResult</a><span class="token operator">&lt;</span><a href="distinct-by-peripheral.html">P</a><span class="token punctuation">, </span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A flow which emits only one (first found) Scan Result from each discovered peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+        <span>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</span>
+        <span class="pull-right">
+            <span>Generated by </span>
+            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                <span>dokka</span>
+            </a>
+        </span>
+    </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

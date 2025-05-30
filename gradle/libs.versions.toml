@@ -103,6 +103,7 @@ nordic-kotlin-android = { id = "no.nordicsemi.android.plugin.kotlin", version.re
 nordic-kotlin-jvm = { id = "no.nordicsemi.jvm.plugin.kotlin", version.ref = "nordicPlugins" }
 nordic-nexus-android = { id = "no.nordicsemi.android.plugin.nexus", version.ref = "nordicPlugins" }
 nordic-nexus-jvm = { id = "no.nordicsemi.jvm.plugin.nexus", version.ref = "nordicPlugins" }
+nordic-dokka = { id = "no.nordicsemi.plugin.dokka", version.ref = "nordicPlugins" }
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 android-test = { id = "com.android.test", version.ref = "androidGradlePlugin" }
