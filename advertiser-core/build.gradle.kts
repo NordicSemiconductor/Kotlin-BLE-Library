@@ -49,3 +49,9 @@ nordicNexusPublishing {
 dependencies {
     api(project(":core"))
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
+}

@@ -50,3 +50,13 @@ dependencies {
     api(project(":advertiser-core"))
     api(project(":core-android"))
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+        perPackageOption {
+            matchingRegex.set("no.nordicsemi.kotlin.ble.advertiser.android.internal")
+            suppress.set(true)
+        }
+    }
+}

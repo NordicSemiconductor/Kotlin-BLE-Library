@@ -60,3 +60,9 @@ dependencies {
 
     implementation(libs.slf4j)
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
+}

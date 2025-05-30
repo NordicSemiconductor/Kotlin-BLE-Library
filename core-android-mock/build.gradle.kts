@@ -50,3 +50,9 @@ dependencies {
     api(project(":core-mock"))
     api(project(":core-android"))
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
+}
