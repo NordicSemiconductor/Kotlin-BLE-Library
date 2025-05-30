@@ -1,14 +1,14 @@
 [versions]
-androidGradlePlugin = "8.7.3"
-androidxActivity = "1.9.3"
+androidGradlePlugin = "8.10.1"
+androidxActivity = "1.10.1"
 androidxAnnotation = "1.9.1"
-androidxComposeBom = "2024.12.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
-androidxCore = "1.15.0"
+androidxComposeBom = "2025.05.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
+androidxCore = "1.16.0"
 androidxCoreSplashscreen = "1.0.1"
 androidxEspresso = "3.6.1"
 androidxHiltNavigationCompose = "1.2.0"
-androidxLifecycle = "2.8.7"
-androidxNavigation = "2.8.5"
+androidxLifecycle = "2.9.0"
+androidxNavigation = "2.9.0"
 androidxTestExt = "1.2.1"
 androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
@@ -32,7 +32,7 @@ nordic-data = "0.1.0"
 nordic-common = "2.4.0"
 
 # Plugins
-nordicPlugins = "2.6.1"
+nordicPlugins = "2.7"
 dokkaPlugin = "2.0.0"
 
 [libraries]
