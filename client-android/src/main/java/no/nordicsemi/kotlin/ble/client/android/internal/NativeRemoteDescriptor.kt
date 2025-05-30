@@ -141,6 +141,10 @@ internal class NativeRemoteDescriptor(
                 .filter { it.descriptor == descriptor }
                 .firstOrNull()
                 ?.let {
+                    // Store the newly written value in the descriptor despite this field is
+                    // deprecated and not used. The value is checked in 'characteristic.isNotifying`.
+                    descriptor.value = data
+
                     check(it.status.isSuccess) {
                         throw OperationFailedException(it.status)
                     }

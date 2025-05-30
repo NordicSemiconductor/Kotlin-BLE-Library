@@ -84,6 +84,8 @@ internal class NativeRemoteCharacteristic(
     override val isNotifying: Boolean
         // Check the value of the CCCD descriptor, if such exists.
         get() = owner != null && characteristic.getDescriptor(CLIENT_CHAR_CONF_UUID)
+            // Note: The value here is not read from the descriptor. Instead, it is stored
+            //       when the descriptor is read or written, despite it being deprecated.
             ?.value
             // The CCCD value is 2 bytes long: 0x01-00 for notifications, 0x02-00 for indications.
             ?.let { it.size == 2 && it[0].toInt() and 0b11 != 0 }
