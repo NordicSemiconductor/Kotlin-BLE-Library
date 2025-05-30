@@ -339,6 +339,7 @@ class ScannerViewModel @Inject constructor(
                                     Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
                                 }
                                 .launchIn(scope)
+                            Timber.i("Notifications for ${remoteCharacteristic.uuid} are now ${if (remoteCharacteristic.isNotifying) "enabled" else "disabled"}")
                         } catch (e: Exception) {
                             Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
                         }
