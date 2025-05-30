@@ -143,6 +143,12 @@ class ConjunctionFilter: ConjunctionFilterScope {
         }
     }
 
+    override fun ManufacturerData(companyId: Int) {
+        filter = (filter ?: ScanFilter()).also {
+            it.manufacturerData = ScanFilter.ManufacturerData(companyId, byteArrayOf(), null)
+        }
+    }
+
     override fun Custom(type: AdvertisingDataType) {
         filter = (filter ?: ScanFilter()).also {
             it.customAdvertisingData = ScanFilter.Custom(type, null, null)
@@ -222,6 +228,10 @@ class DisjunctionFilter: DisjunctionFilterScope {
             require(data.size == mask.size) { "Data and mask must have the same length" }
         }
         conjunctionFilters.add(ConjunctionFilter().apply { ManufacturerData(companyId, data, mask) })
+    }
+
+    override fun ManufacturerData(companyId: Int) {
+        conjunctionFilters.add(ConjunctionFilter().apply { ManufacturerData(companyId) })
     }
 
     override fun Custom(type: AdvertisingDataType) {
@@ -369,14 +379,19 @@ private fun Uuid.matches(uuid: Uuid, mask: Uuid?): Boolean {
 }
 
 private fun ByteArray.matches(data: ByteArray, mask: ByteArray?): Boolean {
-    if (mask == null) {
-        return contentEquals(data)
-    }
-    if (size != mask.size || size != data.size) {
+    if (size < data.size) {
         return false
     }
-    for (i in indices) {
-        if (this[i] and mask[i] != data[i] and mask[i]) {
+    if (mask == null) {
+        for (i in data.indices) {
+            if (this[i] != data[i]) {
+                return false
+            }
+        }
+        return true
+    }
+    for (i in data.indices) {
+        if ((mask[i] and this[i]) != (mask[i] and data[i])) {
             return false
         }
     }

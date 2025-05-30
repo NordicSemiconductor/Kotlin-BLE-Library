@@ -104,7 +104,10 @@ class ScannerViewModel @Inject constructor(
         _isScanning.update { true }
         scanningJob = centralManager
             .scan(5000.milliseconds) {
-                ServiceUuid(Uuid.fromShortUuid(0x1809))
+                Any {
+                    ManufacturerData(0x0059)
+                    ServiceUuid(Uuid.fromShortUuid(0x1809))
+                }
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")

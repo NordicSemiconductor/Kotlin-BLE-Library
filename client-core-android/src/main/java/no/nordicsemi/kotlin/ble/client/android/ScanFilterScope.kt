@@ -102,6 +102,14 @@ sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
     fun ManufacturerData(companyId: Int, data: ByteArray, mask: ByteArray? = null)
 
     /**
+     * Filters devices by any manufacturer data defined by a company with given ID.
+     *
+     * @param companyId the company ID as defined by the Bluetooth SIG.
+     */
+    @Suppress("FunctionName")
+    fun ManufacturerData(companyId: Int)
+
+    /**
      * Filters devices advertising a specific AD type.
      */
     @Suppress("FunctionName")
