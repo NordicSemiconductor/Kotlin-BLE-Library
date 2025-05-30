@@ -13,8 +13,8 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
-          distribution: 'corretto'
-          java-version: '17'
+          distribution: 'jetbrains'
+          java-version: '21'
       - shell: bash
         env:
           # The following env variables are used by gradle/publish-module.gradle
