@@ -56,6 +56,7 @@ internal fun List<ScanFilter>.toNative(): List<NativeScanFilter> = mapNotNull { 
 @OptIn(ExperimentalUuidApi::class)
 internal fun ScanFilter.toNative(): NativeScanFilter? {
     if (name == null &&
+        nameRegex == null &&
         serviceUuid == null &&
         serviceData == null &&
         manufacturerData == null &&
