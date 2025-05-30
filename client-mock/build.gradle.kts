@@ -49,7 +49,7 @@ nordicNexusPublishing {
 dependencies {
     api(project(":core-mock"))
     api(project(":client-core"))
-    api(project(":server-core"))
+    //api(project(":server-core"))
 
     implementation(libs.slf4j)
 }
