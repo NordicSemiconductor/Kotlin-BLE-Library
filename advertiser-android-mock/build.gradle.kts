@@ -38,8 +38,8 @@ group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "advertiser-android-mock"
-    POM_NAME = "Nordic Kotlin BLE library"
-    POM_DESCRIPTION = "Nordic Kotlin BLE library"
+    POM_NAME = "Mock Android Advertiser Mocule"
+    POM_DESCRIPTION = "A part of Kotlin BLE Library providing functionality for Bluetooth LE advertising on mock Android devices."
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"

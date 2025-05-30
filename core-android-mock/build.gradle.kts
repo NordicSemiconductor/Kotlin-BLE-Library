@@ -38,8 +38,8 @@ group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "core-android-mock"
-    POM_NAME = "Nordic Kotlin BLE library"
-    POM_DESCRIPTION = "Nordic Kotlin BLE library"
+    POM_NAME = "Core Android Mock Module"
+    POM_DESCRIPTION = "Set of common Android-related types for mocking Bluetooth LE devices."
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"

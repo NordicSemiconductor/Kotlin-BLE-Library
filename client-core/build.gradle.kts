@@ -38,8 +38,8 @@ group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "client-core"
-    POM_NAME = "Nordic Kotlin BLE library"
-    POM_DESCRIPTION = "Nordic Kotlin BLE library"
+    POM_NAME = "Core Client Module"
+    POM_DESCRIPTION = "A part of Kotlin BLE Library providing core, platform-independent functionality for Bluetooth LE client operations."
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
