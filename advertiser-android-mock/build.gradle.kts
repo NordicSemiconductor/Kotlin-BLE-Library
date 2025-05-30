@@ -37,7 +37,7 @@ plugins {
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "advertiser-mock"
+    POM_ARTIFACT_ID = "advertiser-android-mock"
     POM_NAME = "Nordic Kotlin BLE library"
     POM_DESCRIPTION = "Nordic Kotlin BLE library"
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
@@ -51,4 +51,10 @@ dependencies {
     api(project(":core-android-mock"))
 
     implementation(libs.slf4j)
+}
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
 }

@@ -34,7 +34,7 @@ package no.nordicsemi.kotlin.ble.core.mock
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
- * @property deviceName The device name, by default set to "Mock".
+ * @property deviceName The device local device name.
  * @property isBluetoothSupported Whether Bluetooth is supported on the device.
  * @property isBluetoothEnabled Whether Bluetooth is enabled.
  */

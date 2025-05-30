@@ -49,3 +49,13 @@ nordicNexusPublishing {
 dependencies {
     api(libs.kotlinx.coroutines.core)
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+        perPackageOption {
+            matchingRegex.set("no.nordicsemi.kotlin.ble.core.internal")
+            suppress.set(true)
+        }
+    }
+}

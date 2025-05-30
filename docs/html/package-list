@@ -10,12 +10,10 @@ no.nordicsemi.kotlin.ble.advertiser
 no.nordicsemi.kotlin.ble.advertiser.exception
 module:advertiser-core-android
 no.nordicsemi.kotlin.ble.advertiser.android
-no.nordicsemi.kotlin.ble.advertiser.android.internal
 module:client-android
 no.nordicsemi.kotlin.ble.client.android
 module:client-android-mock
 no.nordicsemi.kotlin.ble.client.android.mock
-no.nordicsemi.kotlin.ble.client.android.mock.internal
 module:client-core
 no.nordicsemi.kotlin.ble.client
 no.nordicsemi.kotlin.ble.client.exception
@@ -23,7 +21,6 @@ no.nordicsemi.kotlin.ble.client.internal
 module:client-core-android
 no.nordicsemi.kotlin.ble.client.android
 no.nordicsemi.kotlin.ble.client.android.exception
-no.nordicsemi.kotlin.ble.client.android.internal
 no.nordicsemi.kotlin.ble.client.android.preview
 module:client-mock
 no.nordicsemi.kotlin.ble.client.mock
@@ -31,11 +28,9 @@ no.nordicsemi.kotlin.ble.client.mock.internal
 module:core
 no.nordicsemi.kotlin.ble.core
 no.nordicsemi.kotlin.ble.core.exception
-no.nordicsemi.kotlin.ble.core.internal
 no.nordicsemi.kotlin.ble.core.util
 module:core-android
 no.nordicsemi.kotlin.ble.core.android
-no.nordicsemi.kotlin.ble.core.android.internal
 module:core-android-mock
 no.nordicsemi.kotlin.ble.android.mock
 module:core-mock

@@ -51,3 +51,13 @@ dependencies {
 
     implementation(libs.slf4j)
 }
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+        perPackageOption {
+            matchingRegex.set("no.nordicsemi.kotlin.ble.client.android.internal")
+            suppress.set(true)
+        }
+    }
+}
