@@ -7,7 +7,9 @@ android {
     namespace = "no.nordicsemi.kotlin.ble.android.sample"
     defaultConfig {
         applicationId = "no.nordicsemi.kotlin.ble.android.sample"
-        resourceConfigurations.add("en")
+    }
+    androidResources {
+        localeFilters += listOf("en")
     }
     flavorDimensions += listOf("mode")
     productFlavors {
