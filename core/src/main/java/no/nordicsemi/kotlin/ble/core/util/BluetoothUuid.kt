@@ -210,28 +210,28 @@ fun Uuid.Companion.fromBytes(uuidBytes: ByteArray, offset: Int, length: Int): Uu
     require(uuidBytes.size >= offset + length) { "Byte array too short: ${uuidBytes.size}, offset: $offset, length: $length" }
     if (length == 2) {
         val uuidVal =
-            (uuidBytes[offset].toInt() and 0xFF) or
+            (uuidBytes[offset + 0].toInt() and 0xFF) or
             (uuidBytes[offset + 1].toInt() and 0xFF shl 8)
         return fromShortUuid(uuidVal)
     }
     if (length == 4) {
         val uuidVal =
-            (uuidBytes[offset].toInt() and 0xFF) or
+            (uuidBytes[offset + 0].toInt() and 0xFF) or
             (uuidBytes[offset + 1].toInt() and 0xFF shl 8) or
             (uuidBytes[offset + 2].toInt() and 0xFF shl 16) or
             (uuidBytes[offset + 3].toInt() and 0xFF shl 24)
         return fromShortUuid(uuidVal)
     }
-    return fromLongs(uuidBytes.toLong(startIndex = offset), uuidBytes.toLong(startIndex = offset + 8))
+    return fromLongs(uuidBytes.toLong(startIndex = offset + 8), uuidBytes.toLong(startIndex = offset))
 }
 
 private fun ByteArray.toLong(startIndex: Int): Long {
-    return ((this[startIndex + 0].toLong() and 0xFF) shl 56) or
-           ((this[startIndex + 1].toLong() and 0xFF) shl 48) or
-           ((this[startIndex + 2].toLong() and 0xFF) shl 40) or
-           ((this[startIndex + 3].toLong() and 0xFF) shl 32) or
-           ((this[startIndex + 4].toLong() and 0xFF) shl 24) or
-           ((this[startIndex + 5].toLong() and 0xFF) shl 16) or
-           ((this[startIndex + 6].toLong() and 0xFF) shl 8) or
-            (this[startIndex + 7].toLong() and 0xFF)
+    return (this[startIndex + 0].toLong() and 0xFF) or
+           (this[startIndex + 1].toLong() and 0xFF shl 8) or
+           (this[startIndex + 2].toLong() and 0xFF shl 16) or
+           (this[startIndex + 3].toLong() and 0xFF shl 24) or
+           (this[startIndex + 4].toLong() and 0xFF shl 32) or
+           (this[startIndex + 5].toLong() and 0xFF shl 40) or
+           (this[startIndex + 6].toLong() and 0xFF shl 48) or
+           (this[startIndex + 7].toLong() and 0xFF shl 56)
 }
