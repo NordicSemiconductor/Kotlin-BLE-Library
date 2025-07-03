@@ -228,7 +228,7 @@ internal class NativeCentralManagerImpl(
             return@callbackFlow
         }
 
-        // Build the filter based on the provided builder
+        // Build the filter based on the provided builder.
         val filters = ConjunctionFilter().apply(filter).filters
 
         // Use the most optimal scan mode for low latency immediate scanning.
