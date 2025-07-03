@@ -70,7 +70,7 @@ interface ScanResult<P: Peripheral<*, *>, AD: AdvertisingData> {
 /**
  * A flow which emits only one (first found) Scan Result from each discovered peripheral.
  */
-fun <ID, P: Peripheral<ID, *>> Flow<ScanResult<P, *>>.distinctByPeripheral(): Flow<ScanResult<P, *>> = flow {
+fun <ID, P: Peripheral<ID, *>, SR: ScanResult<P, *>> Flow<SR>.distinctByPeripheral(): Flow<SR> = flow {
     val peripherals = mutableSetOf<ID>()
     collect { result ->
         if (peripherals.add(result.peripheral.identifier)) {
