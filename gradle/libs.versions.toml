@@ -32,7 +32,7 @@ nordic-data = "0.4.0"
 nordic-common = "2.4.0"
 
 # Plugins
-nordicPlugins = "2.7"
+nordicPlugins = "2.8"
 dokkaPlugin = "2.0.0"
 
 [libraries]
