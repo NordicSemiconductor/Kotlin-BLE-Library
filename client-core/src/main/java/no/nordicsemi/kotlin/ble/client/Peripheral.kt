@@ -463,6 +463,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         // Check if the peripheral isn't already disconnected or has a pending disconnection.
         state.value.let { currentState ->
             if (currentState is ConnectionState.Disconnected) {
+                // Make sure the AutoConnect also gets cancelled if the peripheral is currently disconnected.
+                close()
                 return
             }
             if (currentState is ConnectionState.Disconnecting) {
