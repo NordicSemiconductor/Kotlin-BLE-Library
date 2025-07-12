@@ -76,7 +76,7 @@ import kotlin.time.Duration
 open class MockCentralManagerImpl(
     scope: CoroutineScope,
     private val environment: MockEnvironment = LatestApi(),
-): MockCentralManager, CentralManagerImpl<Unit>(scope, Unit) {
+): MockCentralManager, CentralManagerImpl(scope) {
     private val logger = LoggerFactory.getLogger(MockCentralManagerImpl::class.java)
 
     // Simulation methods

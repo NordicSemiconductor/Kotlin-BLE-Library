@@ -89,7 +89,7 @@ import android.bluetooth.le.ScanSettings as NativeScanSettings
 internal class NativeCentralManagerImpl(
     context: Context,
     scope: CoroutineScope,
-): CentralManagerImpl<Context>(scope) {
+): CentralManagerImpl(scope) {
     private val logger = LoggerFactory.getLogger(NativeCentralManagerImpl::class.java)
 
     /**
