@@ -43,6 +43,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
@@ -309,6 +310,7 @@ class ScannerViewModel @Inject constructor(
     @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.services()
+            .filterNotNull()
             .onEach {
                 Timber.i("Services changed: $it")
 
