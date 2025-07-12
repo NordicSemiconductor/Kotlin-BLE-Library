@@ -45,10 +45,9 @@ import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 /**
  * Android-specific implementation of a central manager interface.
  *
- * @param C The context type.
  * @param scope The coroutine scope.
  */
-abstract class CentralManagerImpl<C: Any>(
+abstract class CentralManagerImpl(
     scope: CoroutineScope,
 ): CentralManagerImpl<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope),
     CentralManager {
