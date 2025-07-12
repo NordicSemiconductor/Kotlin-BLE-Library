@@ -61,6 +61,7 @@ import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.Manager.State.UNKNOWN
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
@@ -307,11 +308,10 @@ open class MockCentralManagerImpl(
 
     override fun close() {
         // Ignore if already closed.
-        if (!isOpen)
-            return
+        if (!isOpen) return
+        super.close()
 
         // Set the state to unknown.
-        _state.update { Manager.State.UNKNOWN }
-        super.close()
+        _state.update { UNKNOWN }
     }
 }
