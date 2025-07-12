@@ -59,6 +59,7 @@ import no.nordicsemi.kotlin.ble.client.android.internal.match
 import no.nordicsemi.kotlin.ble.client.android.mock.MockCentralManager
 import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.client.mock.Proximity
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Manager.State.UNKNOWN
@@ -158,16 +159,24 @@ open class MockCentralManagerImpl(
         // Ensure the central manager has not been closed.
         ensureOpen()
 
-        return peripheralSpecs
-            .filter { it.identifier in ids }
-            .map { peripheralSpec ->
-                peripheral(peripheralSpec.identifier) {
-                    Peripheral(
-                        scope = scope,
-                        impl = MockExecutor(peripheralSpec, null)
+        return ids.map { id ->
+            require(checkBluetoothAddress(id)) { "$id + is not a valid Bluetooth address" }
+            peripheral(id) {
+                Peripheral(
+                    scope = scope,
+                    impl = MockExecutor(
+                        peripheralSpec = peripheralSpecs.firstOrNull { it.identifier == id }
+                            // If the peripheral is not found, simulate it as out of range.
+                            // Use `PeripheralSpec.simulatePeripheral` to create a mock peripheral spec.
+                            ?: PeripheralSpec.simulatePeripheral(
+                                identifier = id,
+                                proximity = Proximity.OUT_OF_RANGE
+                            ),
+                        name = null
                     )
-                }
+                )
             }
+        }
     }
 
     override fun getBondedPeripherals(): List<Peripheral> {
@@ -313,5 +322,37 @@ open class MockCentralManagerImpl(
 
         // Set the state to unknown.
         _state.update { UNKNOWN }
+    }
+
+    // ---- Private implementation ----
+
+    companion object {
+        private const val ADDRESS_LENGTH = 17
+
+        // This implementation is copied from BluetoothAdapter.checkBluetoothAddress(address)..
+        private fun checkBluetoothAddress(address: String): Boolean {
+            if (address.length != ADDRESS_LENGTH) {
+                return false
+            }
+            for (i in 0..<ADDRESS_LENGTH) {
+                val c = address[i]
+                when (i % 3) {
+                    0, 1 -> {
+                        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+                            // hex character, OK
+                            break
+                        }
+                        return false
+                    }
+                    2 -> {
+                        if (c == ':') {
+                            break // OK
+                        }
+                        return false
+                    }
+                }
+            }
+            return true
+        }
     }
 }

@@ -58,23 +58,25 @@ interface CentralManager<
 >: Manager {
 
     /**
-     * Returns a list of peripherals discovered by this instance of the Central Manager.
+     * A list of peripherals that the central manager is able to match to the provided identifiers.
      *
      * @param ids List of peripheral identifiers.
      * @return List of peripherals. The list may have a smaller size than the input list.
      * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws IllegalArgumentException If any of the identifiers is not valid.
      * @see [Peer.identifier]
      */
     fun getPeripheralsById(ids: List<ID>): List<P>
 
     /**
-     * Returns a list of peripherals discovered by this instance of the Central Manager.
+     * A peripheral that the central manager is able to match to the provided identifier.
      *
      * @param id The peripheral identifier.
      * @return A peripheral associated with the given UUID, if found.
      * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
+     * @throws IllegalArgumentException If the identifier is not valid.
      * @see [Peer.identifier]
      */
     fun getPeripheralById(id: ID): P? = getPeripheralsById(listOf(id)).firstOrNull()
