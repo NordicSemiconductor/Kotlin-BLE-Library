@@ -218,16 +218,18 @@ internal class NativeExecutor(
     }
 
     override fun close() {
-        try {
-            gatt?.disconnect()
-        } catch (_: Exception) {
-            // Ignore
+        gatt?.let { gatt ->
+            this.gatt = null
+            try {
+                gatt.disconnect()
+            } catch (_: Exception) {
+                // Ignore
+            }
+            try {
+                gatt.close()
+            } catch (_: Exception) {
+                // Ignore
+            }
         }
-        try {
-            gatt?.close()
-        } catch (_: Exception) {
-            // Ignore
-        }
-        gatt = null
     }
 }
