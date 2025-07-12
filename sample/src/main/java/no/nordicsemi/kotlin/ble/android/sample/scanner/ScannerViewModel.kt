@@ -346,9 +346,6 @@ class ScannerViewModel @Inject constructor(
                     }
                 }
             }
-            .onEmpty {
-                Timber.w("No services found")
-            }
             .onCompletion {
                 Timber.d("Service collection completed")
             }
