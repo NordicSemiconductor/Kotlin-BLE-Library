@@ -220,12 +220,12 @@ internal class NativeExecutor(
     override fun close() {
         try {
             gatt?.disconnect()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Ignore
         }
         try {
             gatt?.close()
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             // Ignore
         }
         gatt = null
