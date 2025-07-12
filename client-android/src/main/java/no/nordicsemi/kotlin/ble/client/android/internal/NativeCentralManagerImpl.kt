@@ -319,14 +319,18 @@ internal class NativeCentralManagerImpl(
     override fun close() {
         // Ignore if already closed.
         if (!isOpen) return
+        super.close()
 
         // Release resources.
-        applicationContext.unregisterReceiver(stateBroadcastReceiver)
-        applicationContext.unregisterReceiver(bondStateBroadcastReceiver)
+        try {
+            applicationContext.unregisterReceiver(stateBroadcastReceiver)
+            applicationContext.unregisterReceiver(bondStateBroadcastReceiver)
+        } catch (_: Exception) {
+            // Ignore
+        }
 
         // Set the state to unknown.
         _state.update { UNKNOWN }
-        super.close()
     }
 
     // ---- Private implementation ----
