@@ -82,12 +82,6 @@ fun DeviceList(
         verticalArrangement = verticalArrangement,
         contentPadding = contentPadding,
     ) {
-        if (devices.isNotEmpty()) {
-            stickyHeader {
-                Text(text = "Tap on a device to connect")
-            }
-        }
-
         items(devices) { device ->
             DeviceItem(
                 device = device,

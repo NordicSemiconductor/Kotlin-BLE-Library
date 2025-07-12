@@ -135,6 +135,12 @@ fun ScannerView(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        if (devices.isNotEmpty()) {
+            Text(text = "Tap on a device to connect.")
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+
         DeviceList(
             modifier = Modifier.fillMaxWidth(),
             devices = devices,
