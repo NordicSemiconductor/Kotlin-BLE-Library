@@ -103,8 +103,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     val state = _state.asStateFlow()
 
     /** Current list of GATT services. */
-    private var _services: MutableStateFlow<List<RemoteService>> = MutableStateFlow(
-        value = impl.takeIf { it.initialState == ConnectionState.Connected }?.initialServices ?: emptyList()
+    private var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
+        value = impl.takeIf { it.initialState == ConnectionState.Connected }?.initialServices
     )
 
     /**
@@ -280,8 +280,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Invalidates current GATT services.
      */
     private fun invalidateServices() {
-        _services.value.onEach { it.owner = null }
-        _services.update { emptyList() }
+        _services.value?.onEach { it.owner = null }
+        _services.update { null }
         servicesDiscovered = false
         // Note!
         // Don't clear the serviceDiscoveryRequested flag here.
@@ -368,15 +368,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     /**
      * Returns a flow with a list of services discovered on the device.
      *
-     * Initially, the flow will emit an empty list. The list will be updated when the services
-     * are discovered. The flow will be closed when the device disconnects.
+     * The flow emits `null` when the device is not connected. The list will be updated when the
+     * services are discovered.
      *
      * @param uuids An optional list of service UUID to filter the results. If empty, all services
      *        will be returned. Some platforms may do partial service discovery and return only
      *        services with given UUIDs.
      */
     @OptIn(ExperimentalUuidApi::class)
-    fun services(uuids: List<Uuid> = emptyList()): StateFlow<List<RemoteService>> {
+    fun services(uuids: List<Uuid> = emptyList()): StateFlow<List<RemoteService>?> {
         // Mark that service discovery was requested. This is useful when the peripheral
         // reconnects but the services observer was already set.
         serviceDiscoveryRequested = true
@@ -397,9 +397,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         }
 
         // If there is a filter, create a new flow that will emit filtered services only.
-        val filteredServices = _services.value.filterBy(uuids)
+        val filteredServices = _services.value?.filterBy(uuids)
         return _services
-            .map { it.filterBy(uuids) }
+            .map { it?.filterBy(uuids) }
             .stateIn(scope, SharingStarted.Lazily, filteredServices)
     }
 
