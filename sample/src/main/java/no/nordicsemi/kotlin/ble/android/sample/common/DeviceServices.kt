@@ -39,10 +39,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -124,12 +124,13 @@ private fun Descriptor(descriptor: RemoteDescriptor) {
 /**
  * A modifier that draws a vertical line on the left side of the content.
  */
-private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color) = composed(
-    factory = {
-        val density = LocalDensity.current
-        val strokeWidthPx = density.run { strokeWidth.toPx() }
+@Composable
+private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color): Modifier {
+    val density = LocalDensity.current
+    val strokeWidthPx = density.run { strokeWidth.toPx() }
 
-        Modifier.drawBehind {
+    return this then Modifier
+        .drawBehind {
             val margin = strokeWidthPx / 8
             val offset = strokeWidthPx / 2
 
@@ -138,11 +139,11 @@ private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color) = composed(
                 start = Offset(x = margin + offset, y = offset),
                 end = Offset(x = margin + offset , y = size.height - offset),
                 strokeWidth = strokeWidthPx,
-                cap = androidx.compose.ui.graphics.StrokeCap.Round,
+                cap = StrokeCap.Round,
             )
         }
-    }
-).padding(start = strokeWidth * 1.25f)
+        .padding(start = strokeWidth * 1.25f)
+}
 
 @Preview(showBackground = true)
 @Composable
