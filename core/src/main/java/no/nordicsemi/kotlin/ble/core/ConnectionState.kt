@@ -93,6 +93,10 @@ sealed class ConnectionState {
              * @property duration The duration of the timeout.
              */
             data class Timeout(val duration: Duration): Reason()
+
+            /** A quick check whether the disconnection was initiated by the user. */
+            val isUserInitiated: Boolean
+                get() = this is Success || this is Cancelled
         }
     }
 

@@ -32,10 +32,15 @@
 package no.nordicsemi.kotlin.ble.client.internal
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.ScanResult
@@ -61,6 +66,18 @@ abstract class CentralManagerImpl<
 >(
     protected val scope: CoroutineScope,
 ): CentralManager<ID, P, EX, F, SR> {
+    private var closeJob: Job
+    private lateinit var internalScope: CoroutineScope
+
+    init {
+        // Make sure the Central Manager gets closed when its scope gets cancelled.
+        // This coroutine gets cancelled when close() is called or when the scope gets cancelled.
+        closeJob = scope.launch {
+            internalScope = this
+            try { awaitCancellation() }
+            finally { withContext(NonCancellable) { close() } }
+        }
+    }
 
     /**
      * A list of peripherals managed by this Central Manager instance.
@@ -102,9 +119,7 @@ abstract class CentralManagerImpl<
                         // Close the peripheral when the scope is cancelled.
                         newPeripheral.forceClose()
                     }
-                    .launchIn(scope)
-
-                // TODO what if the manager gets closed? We should cancel the job and clear managed peripherals.
+                    .launchIn(internalScope)
             }
         }
     }
@@ -128,6 +143,6 @@ abstract class CentralManagerImpl<
 
     override fun close() {
         isOpen = false
-        // TODO should we clear managed peripherals? They are still observing the manager's state.
+        closeJob.cancel()
     }
 }
