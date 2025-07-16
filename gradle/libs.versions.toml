@@ -1,5 +1,5 @@
 [versions]
-androidGradlePlugin = "8.11.0"
+androidGradlePlugin = "8.11.1"
 androidxActivity = "1.10.1"
 androidxAnnotation = "1.9.1"
 androidxComposeBom = "2025.06.01" # https://developer.android.com/jetpack/compose/bom/bom-mapping
@@ -16,7 +16,7 @@ hilt = "2.56.2"
 junit4 = "4.13.2"
 kotlin = "2.2.0"
 kotlinxCoroutines = "1.10.2"
-kotlinxDatetime = "0.7.0"
+kotlinxDatetime = "0.7.1"
 kotlinCompose = "1.8.2"
 ksp = "2.2.0-2.0.2"
 publishPlugin = "1.3.1"
@@ -82,14 +82,6 @@ test-robolectric = { group = "org.robolectric", name = "robolectric", version.re
 nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nordic-log" }
 nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
 nordic-kotlin-data = { group = "no.nordicsemi.kotlin", name = "data", version.ref = "nordic-data" }
-nordic-core = { group = "no.nordicsemi.android.common", name = "core", version.ref = "nordic-common" }
-nordic-ui = { group = "no.nordicsemi.android.common", name = "ui", version.ref = "nordic-common" }
-nordic-theme = { group = "no.nordicsemi.android.common", name = "theme", version.ref = "nordic-common" }
-nordic-analytics = { group = "no.nordicsemi.android.common", name = "analytics", version.ref = "nordic-common" }
-nordic-navigation = { group = "no.nordicsemi.android.common", name = "navigation", version.ref = "nordic-common" }
-nordic-logger = { group = "no.nordicsemi.android.common", name = "logger", version.ref = "nordic-common" }
-nordic-permissions-ble = { group = "no.nordicsemi.android.common", name = "permissions-ble", version.ref = "nordic-common" }
-# nordic-scanner = { group = "no.nordicsemi.android.common", name = "scanner", version.ref = "nordic-common" }
 
 [plugins]
 nordic-application = { id = "no.nordicsemi.android.plugin.application", version.ref = "nordicPlugins" }
