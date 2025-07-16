@@ -52,9 +52,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
-import no.nordicsemi.android.common.permissions.ble.RequireLocation
-import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
@@ -76,26 +73,22 @@ fun ScannerScreen() {
     ) {
         Text(text = "Bluetooth state: $state")
 
-        RequireBluetooth {
-            RequireLocation {
-                // Both Bluetooth and Location permissions are granted.
-                // We can now start scanning.
-                ScannerView(
-                    devices = devices,
-                    isScanning = isScanning,
-                    onStartScan = {
-                        if (!isScanning)
-                            vm.onScanRequested()
-                        else
-                            vm.onStopScanRequested()
-                    },
-                    onPeripheralClicked = vm::onPeripheralSelected,
-                    onBondRequested = vm::onBondRequested,
-                    onRemoveBondRequested = vm::onRemoveBondRequested,
-                    onClearCacheRequested = vm::onClearCacheRequested,
-                )
-            }
-        }
+        // Both Bluetooth and Location permissions are granted.
+        // We can now start scanning.
+        ScannerView(
+            devices = devices,
+            isScanning = isScanning,
+            onStartScan = {
+                if (!isScanning)
+                    vm.onScanRequested()
+                else
+                    vm.onStopScanRequested()
+            },
+            onPeripheralClicked = vm::onPeripheralSelected,
+            onBondRequested = vm::onBondRequested,
+            onRemoveBondRequested = vm::onRemoveBondRequested,
+            onClearCacheRequested = vm::onClearCacheRequested,
+        )
     }
 }
 
@@ -155,25 +148,23 @@ fun ScannerView(
 @Preview
 @Composable
 fun ScannerScreenPreview() {
-    NordicTheme {
-        val scope = rememberCoroutineScope()
-        ScannerView(
-            devices = listOf(
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "00:11:22:33:44:55",
-                    name = "Device 1",
-                    state = ConnectionState.Connected,
-                ),
-                PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
-                PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
+    val scope = rememberCoroutineScope()
+    ScannerView(
+        devices = listOf(
+            PreviewPeripheral(
+                scope = scope,
+                address = "00:11:22:33:44:55",
+                name = "Device 1",
+                state = ConnectionState.Connected,
             ),
-            isScanning = true,
-            onStartScan = {},
-            onPeripheralClicked = {},
-            onBondRequested = {},
-            onRemoveBondRequested = {},
-            onClearCacheRequested = {},
-        )
-    }
+            PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
+            PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
+        ),
+        isScanning = true,
+        onStartScan = {},
+        onPeripheralClicked = {},
+        onBondRequested = {},
+        onRemoveBondRequested = {},
+        onClearCacheRequested = {},
+    )
 }

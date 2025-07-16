@@ -22,7 +22,7 @@
         android:supportsRtl="true"
         android:name=".TestApplication"
         android:enableOnBackInvokedCallback="true"
-        android:theme="@style/Theme.SplashScreen"
+        android:theme="@style/Theme.AppTheme"
         tools:targetApi="tiramisu">
         <activity
             android:name=".MainActivity"

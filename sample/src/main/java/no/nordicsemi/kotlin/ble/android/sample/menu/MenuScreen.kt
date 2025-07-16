@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.kotlin.ble.android.sample.NAV_ADVERTISER
 import no.nordicsemi.kotlin.ble.android.sample.NAV_SCANNER
 
@@ -77,9 +76,7 @@ fun MenuScreen(
 @Preview
 @Composable
 fun PreviewMenuScreen() {
-    NordicTheme {
-        MenuScreen(
-            onMenuClicked = { },
-        )
-    }
+    MenuScreen(
+        onMenuClicked = { },
+    )
 }

@@ -56,17 +56,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.android.common.theme.NordicTheme
+import no.nordicsemi.kotlin.ble.android.sample.view.ExposedDropdownMenu
+import no.nordicsemi.kotlin.ble.android.sample.view.LabeledSwitch
+import no.nordicsemi.kotlin.ble.android.sample.view.Title
 import no.nordicsemi.kotlin.ble.core.AdvertisingInterval
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.TxPowerLevel
-import no.nordicsemi.kotlin.ble.android.sample.view.ExposedDropdownMenu
-import no.nordicsemi.kotlin.ble.android.sample.view.LabeledSwitch
-import no.nordicsemi.kotlin.ble.android.sample.view.Title
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -313,12 +312,10 @@ fun AdvertiserView(
 @Preview
 @Composable
 private fun PreviewAdvertiserScreen() {
-    NordicTheme {
-        AdvertiserView(
-            isAdvertising = false,
-            onStartClicked = { },
-            onStopClicked = { },
-            errorMessage = "Error!"
-        )
-    }
+    AdvertiserView(
+        isAdvertising = false,
+        onStartClicked = { },
+        onStopClicked = { },
+        errorMessage = "Error!"
+    )
 }

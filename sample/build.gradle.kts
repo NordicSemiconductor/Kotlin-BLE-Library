@@ -29,10 +29,6 @@ dependencies {
     implementation(project(":client-android"))
     implementation(project(":client-android-mock"))
 
-    implementation(libs.nordic.ui)
-    implementation(libs.nordic.theme)
-    implementation(libs.nordic.permissions.ble)
-
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)

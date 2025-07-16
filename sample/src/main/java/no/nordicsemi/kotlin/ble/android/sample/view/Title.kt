@@ -84,7 +84,6 @@ fun Title(
     }
 }
 
-// Generate preview
 @Preview
 @Composable
 fun TitlePreview() {
