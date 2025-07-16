@@ -58,7 +58,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.android.common.theme.NordicTheme
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -154,34 +153,32 @@ fun DeviceItem(
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    NordicTheme {
-        val scope = rememberCoroutineScope()
-        DeviceList(
-            modifier = Modifier.fillMaxWidth(),
-            devices = listOf(
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "AA:BB:CC:DD:EE:FF",
-                    name = "Mock device 1",
-                    state = ConnectionState.Connected
-                ),
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "00:11:22:33:44:55",
-                    name = "Mock device 2",
-                    state = ConnectionState.Connecting
-                ),
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "AA:BB:CC:DD:EE:00",
-                    name = "Mock device 3"
-                ),
+    val scope = rememberCoroutineScope()
+    DeviceList(
+        modifier = Modifier.fillMaxWidth(),
+        devices = listOf(
+            PreviewPeripheral(
+                scope = scope,
+                address = "AA:BB:CC:DD:EE:FF",
+                name = "Mock device 1",
+                state = ConnectionState.Connected
             ),
-            onItemClick = {},
-            onBondRequested = {},
-            onRemoveBondRequested = {},
-            onClearCacheRequested = {},
-            contentPadding = PaddingValues(16.dp),
-        )
-    }
+            PreviewPeripheral(
+                scope = scope,
+                address = "00:11:22:33:44:55",
+                name = "Mock device 2",
+                state = ConnectionState.Connecting
+            ),
+            PreviewPeripheral(
+                scope = scope,
+                address = "AA:BB:CC:DD:EE:00",
+                name = "Mock device 3"
+            ),
+        ),
+        onItemClick = {},
+        onBondRequested = {},
+        onRemoveBondRequested = {},
+        onClearCacheRequested = {},
+        contentPadding = PaddingValues(16.dp),
+    )
 }

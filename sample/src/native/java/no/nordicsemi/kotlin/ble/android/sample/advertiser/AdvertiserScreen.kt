@@ -41,7 +41,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import no.nordicsemi.android.common.permissions.ble.RequireBluetooth
 
 @Composable
 fun AdvertiserScreen() {
@@ -52,17 +51,15 @@ fun AdvertiserScreen() {
     // Native implementation requires Bluetooth.
     // Switch to 'mock' flavor to use the mock implementation, where no native Bluetooth
     // is required, and the SDK version can be customized.
-    RequireBluetooth {
-        AdvertiserView(
-            isAdvertising = state,
-            onStartClicked = vm::startAdvertising,
-            onStopClicked = vm::stopAdvertising,
-            errorMessage = error,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-                .padding(top = 16.dp, bottom = 32.dp),
-        )
-    }
+    AdvertiserView(
+        isAdvertising = state,
+        onStartClicked = vm::startAdvertising,
+        onStopClicked = vm::stopAdvertising,
+        errorMessage = error,
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
+            .padding(top = 16.dp, bottom = 32.dp),
+    )
 }
