@@ -31,7 +31,7 @@ nordic-log = "2.5.0"
 nordic-data = "0.4.0"
 
 # Plugins
-nordicPlugins = "2.8.1"
+nordicPlugins = "2.9"
 dokkaPlugin = "2.0.0"
 
 [libraries]
