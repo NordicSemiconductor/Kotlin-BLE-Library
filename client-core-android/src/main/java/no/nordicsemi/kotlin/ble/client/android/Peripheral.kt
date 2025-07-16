@@ -228,7 +228,7 @@ open class Peripheral(
         when (options) {
             // In case of auto connect, the connection attempt does not time out.
             // Cancel the coroutine to abort.
-            CentralManager.ConnectionOptions.AutoConnect -> {
+            is CentralManager.ConnectionOptions.AutoConnect -> {
                 impl.connect(true, emptyList())
                 try {
                     val state = waitUntil { it.isConnected || it.isDisconnected }
@@ -237,11 +237,15 @@ open class Peripheral(
                             logger.info("Connected to {}", this)
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
-                            _phy.update {  PhyInUse.PHY_LE_1M }
+                            _phy.update { PhyInUse.PHY_LE_1M }
                             // Since we're connected, let's start collecting GATT events, including
                             // connection state changes. The device may disconnect and reconnect at
                             // any time. To stop collecting the events one needs to call disconnect().
                             startCollectingGattEvents(closeWhenDisconnected = false)
+                            if (options.automaticallyRequestHighestValueLength) {
+                                mtuRequested = true
+                            }
+                            initiateConnection()
                         }
                         is ConnectionState.Disconnected -> {
                             // RPA (Resolvable Private Address) can rotate, causing address to "expire" in the
@@ -288,12 +292,16 @@ open class Peripheral(
                             // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.
                             startCollectingGattEvents()
+                            if (options.automaticallyRequestHighestValueLength) {
+                                mtuRequested = true
+                            }
+                            initiateConnection()
                         }
                         is ConnectionState.Disconnected -> {
                             check(options.retry > 0) {
                                 logger.warn("Connection attempt failed (reason: {})", state.reason)
                                 _state.update { state }
-                                throw ConnectionFailedException(state.reason ?: Reason.Success)
+                                throw ConnectionFailedException(state.reason)
                             }
                             logger.warn("Connection attempt failed (reason: {}), retrying in {}...",
                                 state.reason, options.retryDelay)
@@ -317,27 +325,38 @@ open class Peripheral(
         }
     }
 
-    /**
-     * Handles GATT events.
-     *
-     * @param event The GATT event to process.
-     */
-    override fun handle(event: GattEvent) = when (event) {
+    override suspend fun handle(event: GattEvent) = when (event) {
         is MtuChanged -> mtu = event.mtu
         is PhyChanged -> _phy.update { event.phy }
         is ConnectionParametersChanged -> _connectionParameters.update { event.newParameters }
         else -> super.handle(event)
     }
 
-    /**
-     * Resets connection properties in case of disconnection.
-     */
+    override suspend fun initiateConnection() {
+        // Request high MTU before service discovery.
+        if (mtuRequested) {
+            try {
+                requestHighestValueLength()
+            } catch (e: Exception) {
+                logger.warn("Failed to request MTU: {}", e.message)
+            }
+        }
+        // Super implementation will start service discovery it the services are observed.
+        super.initiateConnection()
+    }
+
     override fun handleDisconnection() {
         super.handleDisconnection()
         mtu = ATT_MTU_DEFAULT
-        mtuRequested = false
         _phy.update { null }
         _connectionParameters.update { null }
+        // Note!
+        // Do not reset the mtuRequested flag here. MTU will be requested again once
+        // the device gets connected, or will be cleared when the peripheral is closed, below.
+    }
+
+    override fun handleClose() {
+        mtuRequested = false
     }
 
     /**
@@ -436,8 +455,11 @@ open class Peripheral(
     /**
      * Requests the highest possible MTU ([517][ATT_MTU_MAX]).
      *
-     * The MTU is negotiated between the client and the server. The server may reject the
-     * request and set a lower value.
+     * The MTU will be automatically requested when the peripheral is reconnected
+     * when connected using [AutoConnect][CentralManager.ConnectionOptions.AutoConnect].
+     *
+     * The MTU is negotiated between the client and the server and set to the highest value supported
+     * by both devices.
      *
      * Although it was possible to request any MTU from 23 to 517, since Android 14 the
      * system will always request value 517 ignoring the requested value. Hence, this method
@@ -458,7 +480,7 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        if (mtuRequested) {
+        if (mtu > ATT_MTU_DEFAULT) {
             logger.warn("MTU has been already requested")
             return
         }

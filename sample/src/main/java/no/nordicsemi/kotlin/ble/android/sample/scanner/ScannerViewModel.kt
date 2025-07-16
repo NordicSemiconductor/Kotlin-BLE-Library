@@ -239,7 +239,7 @@ class ScannerViewModel @Inject constructor(
         centralManager.connect(
             peripheral = peripheral,
             options = if (autoConnect) {
-                CentralManager.ConnectionOptions.AutoConnect
+                CentralManager.ConnectionOptions.AutoConnect()
             } else {
                 CentralManager.ConnectionOptions.Direct(
                     timeout = 3.seconds,
