@@ -29,7 +29,6 @@ robolectric = "4.15.1"
 # Nordic
 nordic-log = "2.5.0"
 nordic-data = "0.4.0"
-nordic-common = "2.4.0"
 
 # Plugins
 nordicPlugins = "2.8.1"
