@@ -97,8 +97,13 @@ interface CentralManager:
     
     /**
      * Android-specific connection options.
+     *
+     * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
+     * the highest MTU supported by the remote device immediately after establishing the connection.
      */
-    sealed class ConnectionOptions {
+    sealed class ConnectionOptions(
+        open val automaticallyRequestHighestValueLength: Boolean
+    ) {
         companion object {
             /**
              * Default connection options.
@@ -117,7 +122,9 @@ interface CentralManager:
          * In general, the first ever connection to a device should be direct and subsequent connections
          * to known devices should be invoked with the this option.
          */
-        data object AutoConnect: ConnectionOptions()
+        data class AutoConnect(
+            override val automaticallyRequestHighestValueLength: Boolean = false
+        ): ConnectionOptions(automaticallyRequestHighestValueLength)
 
         /**
          * Connection options for direct connection.
@@ -125,11 +132,11 @@ interface CentralManager:
          * Direct connection has a maximum timeout which depends on the device manufacturer and is
          * usually 30 seconds or less. It may be shortened using the [timeout] parameter.
          *
-         * @param timeout The connection timeout. 0 to default to system timeout.
+         * @property timeout The connection timeout. 0 to default to system timeout.
          * Default timeout is 10 seconds.
-         * @param retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
-         * @param retryDelay The delay between connection retries, defaults to 300 ms.
-         * @param preferredPhy Preferred PHY for connections to remote LE device. Note that this is
+         * @property retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
+         * @property retryDelay The delay between connection retries, defaults to 300 ms.
+         * @property preferredPhy Preferred PHY for connections to remote LE device. Note that this is
          * just a recommendation, whether the PHY change will happen depends on other applications
          * preferences, local and remote controller capabilities. Controller can override these settings.
          */
@@ -137,8 +144,9 @@ interface CentralManager:
             val timeout: Duration = 10.seconds,
             val retry: Int = 2,
             val retryDelay: Duration = 300.milliseconds,
-            val preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M)
-        ): ConnectionOptions() {
+            val preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
+            override val automaticallyRequestHighestValueLength: Boolean = false
+        ): ConnectionOptions(automaticallyRequestHighestValueLength) {
 
             /**
              * Connection options for direct connection.
@@ -150,14 +158,17 @@ interface CentralManager:
              * Default timeout is 10 seconds.
              * @param retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
              * @param retryDelay The delay between connection retries, defaults to 300 ms.
-             * @param phy The preferred PHY for connections to remote LE device.
+             * @param preferredPhy The preferred PHY for connections to remote LE device.
+             * @param automaticallyRequestHighestMtu If true, the manager will automatically request
+             * the highest MTU supported by the remote device immediately after establishing the connection.
              */
             constructor(
                 timeout: Duration = 10.seconds,
                 retry: Int = 3,
                 retryDelay: Duration = 300.milliseconds,
-                vararg phy: Phy
-            ): this(timeout, retry, retryDelay, preferredPhy = phy.toList())
+                vararg preferredPhy: Phy,
+                automaticallyRequestHighestMtu: Boolean = false
+            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestMtu)
         }
     }
 }

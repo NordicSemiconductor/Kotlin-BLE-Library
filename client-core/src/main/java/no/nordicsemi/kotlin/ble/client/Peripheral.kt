@@ -261,6 +261,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         // If the collector was already cancelled or wasn't started, close the executor.
         gattEventCollector?.cancel() ?: run {
             handleDisconnection()
+            handleClose()
             serviceDiscoveryRequested = false
             impl.close()
             _state.update { ConnectionState.Closed }
@@ -274,6 +275,14 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      */
     protected open fun handleDisconnection() {
         invalidateServices()
+    }
+
+    /**
+     * This method is called when the peripheral is closed, that is it is disconnected
+     * and will not try to reconnect.
+     */
+    protected open fun handleClose() {
+        // Empty default implementation.
     }
 
     /**
@@ -295,17 +304,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * @param event The GATT event to process.
      */
-    protected open fun handle(event: GattEvent) {
+    protected open suspend fun handle(event: GattEvent) {
         when (event) {
             is ConnectionStateChanged -> {
                 _state.update { event.newState }
                 when (event.newState) {
                     is ConnectionState.Connected -> {
-                        // If services are observed, start service discovery.
-                        // This may happen when services() was called before the peripheral connected.
-                        if (serviceDiscoveryRequested) {
-                            discoverServices()
-                        }
+                        initiateConnection()
                     }
                     is ConnectionState.Disconnected -> {
                         handleDisconnection()
@@ -329,6 +334,17 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             else -> { /* Ignore */ }
+        }
+    }
+
+    /**
+     * This method is called when the peripheral is connected.
+     */
+    protected open suspend fun initiateConnection() {
+        // If services are observed, start service discovery.
+        // This may happen when services() was called before the peripheral connected.
+        if (serviceDiscoveryRequested) {
+            discoverServices()
         }
     }
 
