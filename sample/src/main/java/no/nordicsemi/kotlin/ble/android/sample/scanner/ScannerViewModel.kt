@@ -102,7 +102,6 @@ class ScannerViewModel @Inject constructor(
 
     @OptIn(ExperimentalUuidApi::class)
     fun onScanRequested() {
-        _isScanning.update { true }
         scanningJob = centralManager
             .scan(5000.milliseconds) {
                 Any {
@@ -121,10 +120,11 @@ class ScannerViewModel @Inject constructor(
                     Name(Regex("Mesh.*"))
                 }
             }
-            .distinctByPeripheral()
-            .map {
-                it.peripheral
+            .onStart {
+                _isScanning.update { true }
             }
+            .distinctByPeripheral()
+            .map { it.peripheral }
             .filterNot { _devices.value.contains(it) }
             //.distinct()
             .onEach { newPeripheral ->
