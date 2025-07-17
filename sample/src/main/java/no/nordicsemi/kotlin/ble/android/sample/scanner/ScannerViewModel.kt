@@ -185,6 +185,7 @@ class ScannerViewModel @Inject constructor(
                             observerServices(peripheral, this)
                         } catch (e: Exception) {
                             Timber.e(e, "Connection attempt failed")
+                            connectionScopeMap.remove(peripheral)?.cancel()
                         }
                     }
                 }
