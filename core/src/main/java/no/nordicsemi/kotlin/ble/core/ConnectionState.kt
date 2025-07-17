@@ -50,9 +50,11 @@ sealed class ConnectionState {
     data object Disconnecting: ConnectionState()
 
     /**
-     * Device is disconnected.
+     * Device has disconnected.
      *
-     * @param reason Reason of disconnection, or _null_ if no connection attempt was made.
+     * This state may be immediately followed by [Closed] state.
+     *
+     * @param reason Reason of disconnection.
      */
     data class Disconnected(val reason: Reason): ConnectionState() {
 
@@ -89,7 +91,7 @@ sealed class ConnectionState {
              * background connection list. RPA is allowed for direct connection, as such request
              * times out after a short period of time.
              *
-             * See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
+             * See: [Source code](https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1498)
              */
             data object UnsupportedAddress: Reason()
             /**
