@@ -50,9 +50,11 @@ sealed class ConnectionState {
     data object Disconnecting: ConnectionState()
 
     /**
-     * Device is disconnected.
+     * Device has disconnected.
      *
-     * @param reason Reason of disconnection, or _null_ if no connection attempt was made.
+     * This state may be immediately followed by [Closed] state.
+     *
+     * @param reason Reason of disconnection.
      */
     data class Disconnected(val reason: Reason): ConnectionState() {
 
@@ -68,8 +70,16 @@ sealed class ConnectionState {
             data class Unknown(val status: Int): Reason()
             /** The local device initiated disconnection.  */
             data object TerminateLocalHost: Reason()
-            /** The remote device initiated graceful disconnection.  */
+            /** The remote device initiated graceful disconnection. */
             data object TerminatePeerUser: Reason()
+            /**
+             * Insufficient authentication.
+             *
+             * This error is returned when the Android device tries to enable security on a
+             * device that had its bond information removed. Remove bond information on the phone
+             * and retry.
+             */
+            data object InsufficientAuthentication: Reason()
             /** The device got out of range or has turned off. */
             data object LinkLoss: Reason()
             /** Connection attempt was cancelled.  */
@@ -81,7 +91,7 @@ sealed class ConnectionState {
              * background connection list. RPA is allowed for direct connection, as such request
              * times out after a short period of time.
              *
-             * See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
+             * See: [Source code](https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1498)
              */
             data object UnsupportedAddress: Reason()
             /**

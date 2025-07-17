@@ -85,6 +85,7 @@ internal fun Int.toConnectionState(status: Int): ConnectionState = when (this) {
 private fun Int.toDisconnectionReason(): ConnectionState.Disconnected.Reason = when (this) {
     BluetoothGatt.GATT_SUCCESS -> ConnectionState.Disconnected.Reason.Success
     0x08 /* GATT_CONN_TIMEOUT */ -> ConnectionState.Disconnected.Reason.LinkLoss
+    0x05 /* GATT_INSUFFICIENT_AUTHENTICATION */ -> ConnectionState.Disconnected.Reason.InsufficientAuthentication
     0x13 /* GATT_CONN_TERMINATE_PEER_USER */ -> ConnectionState.Disconnected.Reason.TerminatePeerUser
     0x16 /* GATT_CONN_TERMINATE_LOCAL_HOST */ -> ConnectionState.Disconnected.Reason.TerminateLocalHost
     else -> ConnectionState.Disconnected.Reason.Unknown(this)
