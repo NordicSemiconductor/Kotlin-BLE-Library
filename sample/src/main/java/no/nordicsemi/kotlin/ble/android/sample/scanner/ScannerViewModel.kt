@@ -41,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
@@ -49,6 +50,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -61,13 +63,11 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
-import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -104,20 +104,18 @@ class ScannerViewModel @Inject constructor(
     fun onScanRequested() {
         scanningJob = centralManager
             .scan(5000.milliseconds) {
-                Any {
-                    ManufacturerData(0x0059)
-                    ServiceUuid(Uuid.fromShortUuid(0x1809))
-                }
+//                Any {
+//                    ManufacturerData(0x0059)
+//                    ServiceUuid(Uuid.fromShortUuid(0x1809))
+//                }
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")
-                    Name("Nordic_LBS")
-                    Name("Nordic_Buttonless")
                     Name("DFU1A06")
-                    Name("Mesh Light")
                     Name("nRFConnect")
                     Name("HR Sensor")
                     Name(Regex("Mesh.*"))
+                    Name(Regex("Nordic.*"))
                 }
             }
             .onStart {
