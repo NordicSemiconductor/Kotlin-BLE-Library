@@ -356,6 +356,7 @@ class ScannerViewModel @Inject constructor(
 
     private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.state
+            .buffer()
             .onEach {
                 Timber.i("State of $peripheral: $it")
 
