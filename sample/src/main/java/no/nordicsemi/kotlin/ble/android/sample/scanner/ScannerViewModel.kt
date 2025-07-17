@@ -41,6 +41,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
@@ -49,6 +50,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
@@ -61,13 +63,11 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
-import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -102,29 +102,27 @@ class ScannerViewModel @Inject constructor(
 
     @OptIn(ExperimentalUuidApi::class)
     fun onScanRequested() {
-        _isScanning.update { true }
         scanningJob = centralManager
             .scan(5000.milliseconds) {
-                Any {
-                    ManufacturerData(0x0059)
-                    ServiceUuid(Uuid.fromShortUuid(0x1809))
-                }
+//                Any {
+//                    ManufacturerData(0x0059)
+//                    ServiceUuid(Uuid.fromShortUuid(0x1809))
+//                }
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")
-                    Name("Nordic_LBS")
-                    Name("Nordic_Buttonless")
                     Name("DFU1A06")
-                    Name("Mesh Light")
                     Name("nRFConnect")
                     Name("HR Sensor")
                     Name(Regex("Mesh.*"))
+                    Name(Regex("Nordic.*"))
                 }
             }
-            .distinctByPeripheral()
-            .map {
-                it.peripheral
+            .onStart {
+                _isScanning.update { true }
             }
+            .distinctByPeripheral()
+            .map { it.peripheral }
             .filterNot { _devices.value.contains(it) }
             //.distinct()
             .onEach { newPeripheral ->
@@ -185,6 +183,7 @@ class ScannerViewModel @Inject constructor(
                             observerServices(peripheral, this)
                         } catch (e: Exception) {
                             Timber.e(e, "Connection attempt failed")
+                            connectionScopeMap.remove(peripheral)?.cancel()
                         }
                     }
                 }
@@ -356,6 +355,7 @@ class ScannerViewModel @Inject constructor(
 
     private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.state
+            .buffer()
             .onEach {
                 Timber.i("State of $peripheral: $it")
 
