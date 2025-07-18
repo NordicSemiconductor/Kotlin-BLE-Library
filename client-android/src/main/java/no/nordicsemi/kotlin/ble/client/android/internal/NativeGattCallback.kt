@@ -60,13 +60,27 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     private val _events: MutableSharedFlow<GattEvent> = MutableSharedFlow(extraBufferCapacity = 64)
     val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
+    /**
+     * Older Android versions don't return status=8 (GATT_CONN_TIMEOUT) when the connection
+     * drops due to a link loss. By checking whether it was the user who requested disconnection
+     * we can improve the status.
+     */
+    var disconnectRequest = false
+
     // Handling connection state updates
 
     // TODO Remove all debug logs
 
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         logger.debug("onConnectionStateChange: status=$status, newState=$newState")
-        _events.tryEmit(ConnectionStateChanged(newState.toConnectionState(status)))
+        // Pixel 4 with Android 12 does returns status 0 when link is lost to a device.
+        // Newer versions (Pixel 7 with Android 16) report status 8 (timeout) in the same case.
+        val betterStatus = if (
+                newState == BluetoothGatt.STATE_DISCONNECTED &&
+                status == BluetoothGatt.GATT_SUCCESS &&
+                !disconnectRequest
+            ) 0x08 /* GATT_CONN_TIMEOUT */ else status
+        _events.tryEmit(ConnectionStateChanged(newState.toConnectionState(betterStatus)))
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {

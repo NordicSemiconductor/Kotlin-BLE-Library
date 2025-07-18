@@ -211,6 +211,7 @@ internal class NativeExecutor(
 
     override fun disconnect(): Boolean {
         gatt?.let { gatt ->
+            gattCallback.disconnectRequest = true
             gatt.disconnect()
             return true
         }
@@ -220,6 +221,7 @@ internal class NativeExecutor(
     override fun close() {
         gatt?.let { gatt ->
             this.gatt = null
+            gattCallback.disconnectRequest = false
             try {
                 gatt.disconnect()
             } catch (_: Exception) {
