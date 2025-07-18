@@ -212,7 +212,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic
     ) {
-        onCharacteristicChanged(gatt, characteristic, characteristic.value.clone())
+        onCharacteristicChanged(gatt, characteristic, characteristic.value?.clone() ?: byteArrayOf())
     }
 
     @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
@@ -221,7 +221,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         characteristic: BluetoothGattCharacteristic,
         status: Int
     ) {
-        onCharacteristicRead(gatt, characteristic, characteristic.value.clone(), status)
+        onCharacteristicRead(gatt, characteristic, characteristic.value?.clone() ?: byteArrayOf(), status)
     }
 
     @Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
@@ -230,6 +230,6 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         descriptor: BluetoothGattDescriptor,
         status: Int
     ) {
-        onDescriptorRead(gatt, descriptor, status, descriptor.value.clone())
+        onDescriptorRead(gatt, descriptor, status, descriptor.value?.clone() ?: byteArrayOf())
     }
 }
