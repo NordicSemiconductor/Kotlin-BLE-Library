@@ -263,21 +263,18 @@ class ScanFilter {
         operator fun component1(): Uuid = uuid
         operator fun component2(): ByteArray = data
         operator fun component3(): ByteArray? = mask
-        @OptIn(ExperimentalStdlibApi::class)
         override fun toString() = "${uuid.toShortString()}, data: ${data.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
     class ManufacturerData(val companyId: Int, val data: ByteArray, val mask: ByteArray?) {
         operator fun component1(): Int = companyId
         operator fun component2(): ByteArray = data
         operator fun component3(): ByteArray? = mask
-        @OptIn(ExperimentalStdlibApi::class)
         override fun toString() = "$companyId, data: ${data.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
     class Custom(val type: AdvertisingDataType, val data: ByteArray?, val mask: ByteArray?) {
         operator fun component1() = type
         operator fun component2() = data
         operator fun component3() = mask
-        @OptIn(ExperimentalStdlibApi::class)
         override fun toString() = "$type, data: ${data?.toHexString()}${mask?.let { " (mask: ${it.toHexString()})" } ?: ""}"
     }
 

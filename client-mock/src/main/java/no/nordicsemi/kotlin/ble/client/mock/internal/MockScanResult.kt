@@ -46,7 +46,6 @@ class MockScanResult<ID>(
     val secondaryPhy: Phy?,
     val timestamp: Long,
 ) {
-    @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String = "MockScanResult(" +
             "id=${peripheralSpec.identifier}, " +
             "isConnectable=$isConnectable, " +

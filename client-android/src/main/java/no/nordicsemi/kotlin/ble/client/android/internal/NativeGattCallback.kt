@@ -86,7 +86,6 @@ internal class NativeGattCallback: BluetoothGattCallback() {
 
     // Handling value changes.
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristicChanged(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -96,7 +95,6 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         _events.tryEmit(CharacteristicChanged(characteristic, value))
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun onCharacteristicRead(
         gatt: BluetoothGatt,
         characteristic: BluetoothGattCharacteristic,
@@ -116,7 +114,6 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         _events.tryEmit(CharacteristicWrite(characteristic, status.toOperationStatus()))
     }
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun onDescriptorRead(
         gatt: BluetoothGatt,
         descriptor: BluetoothGattDescriptor,

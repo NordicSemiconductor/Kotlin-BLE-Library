@@ -46,7 +46,6 @@ class ScanResult(
     override val timestamp: Long,
 ) : ScanResult<Peripheral, AdvertisingData> {
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String = "ScanResult(" +
             "peripheral=${peripheral.identifier}, " +
             "isConnectable=$isConnectable, " +

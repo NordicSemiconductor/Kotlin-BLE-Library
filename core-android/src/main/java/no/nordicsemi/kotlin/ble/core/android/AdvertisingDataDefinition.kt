@@ -63,7 +63,6 @@ class AdvertisingDataDefinition(
     val manufacturerData: Map<Int, ByteArray>? = null,
 ): AdvertisingDataDefinition(serviceUuids) {
 
-    @OptIn(ExperimentalStdlibApi::class)
     override fun toString(): String = "AdvertisingDataDefinition(" +
         "includeDeviceName=$includeDeviceName, " +
         "includeTxPowerLevel=$includeTxPowerLevel, " +
