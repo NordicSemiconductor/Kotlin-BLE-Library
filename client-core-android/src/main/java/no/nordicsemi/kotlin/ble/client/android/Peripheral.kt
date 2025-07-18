@@ -71,6 +71,8 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
 import kotlin.math.min
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 private typealias AndroidExecutor = no.nordicsemi.kotlin.ble.client.android.Peripheral.Executor
 
@@ -269,6 +271,13 @@ open class Peripheral(
                         }
                         else -> {}
                     }
+                } catch (e: TimeoutCancellationException) {
+                    // Although the connection using AutoConnect does not time out on its own,
+                    // it's still possible to wrap it in withTimeout. Report this as a timeout, not cancellation.
+                    logger.warn(e.message)
+                    _state.update { ConnectionState.Disconnected(Reason.Timeout(e.timeout ?: Duration.ZERO)) }
+                    close()
+                    throw e
                 } catch (e: CancellationException) {
                     logger.warn("Connection attempt cancelled")
                     _state.update { ConnectionState.Disconnected(Reason.Cancelled) }
@@ -671,4 +680,14 @@ open class Peripheral(
      */
     val bondState: StateFlow<BondState>
         get() = impl.bondState
+
+    /**
+     * A helper property to extract the timeout from the [TimeoutCancellationException] message.
+     */
+    private val TimeoutCancellationException.timeout: Duration?
+        get() = message?.let { message ->
+            val regex = Regex("""\d+""")
+            val match = regex.find(message)
+            return match?.value?.toLongOrNull()?.milliseconds
+        }
 }
