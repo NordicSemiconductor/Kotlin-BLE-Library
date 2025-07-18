@@ -95,6 +95,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * This is not-null when the device is connected or was connected using auto connect,
      * that is when any GATT event for the device, including connection state change, is expected.
+     *
+     * It's set to `null` when the peripheral is closed.
      */
     private var gattEventCollector: Job? = null
 
@@ -266,6 +268,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             impl.close()
             _state.update { ConnectionState.Closed }
         }
+        gattEventCollector = null
     }
 
     /**
