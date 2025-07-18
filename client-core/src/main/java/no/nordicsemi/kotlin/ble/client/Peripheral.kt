@@ -481,36 +481,47 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun disconnect() {
-        // Check if the peripheral isn't already disconnected or has a pending disconnection.
-        state.value.let { currentState ->
-            if (currentState is ConnectionState.Disconnected) {
-                // Make sure the AutoConnect also gets cancelled if the peripheral is currently disconnected.
+        // Depending on the state...
+        when (state.value) {
+            is ConnectionState.Closed -> {
+                // Do nothing when already closed.
+                return
+            }
+            is ConnectionState.Disconnected -> {
+                // Make sure auto-connection is closed.
                 close()
                 return
             }
-            if (currentState is ConnectionState.Disconnecting) {
-                waitUntil { it is ConnectionState.Disconnected }
-                return
+            is ConnectionState.Disconnecting -> {
+                // Skip..
+            }
+            is ConnectionState.Connecting -> {
+                // Cancel the connection attempt.
+                logger.trace("Cancelling connection to {}", this)
+                _state.update { ConnectionState.Disconnecting }
+                impl.disconnect()
+            }
+            is ConnectionState.Connected -> {
+                // Disconnect from the peripheral.
+                logger.trace("Disconnecting from {}", this)
+                _state.update { ConnectionState.Disconnecting }
+                impl.disconnect()
             }
         }
 
-        // Disconnect from the peripheral.
-        logger.trace("Disconnecting from {}", this)
-        _state.update { ConnectionState.Disconnecting }
-        if (impl.disconnect()) {
-            try {
-                waitUntil(500.milliseconds) { it is ConnectionState.Disconnected }
-            } catch (e: TimeoutCancellationException) {
+        // If the peripheral is disconnecting, wait until it is disconnected and close.
+        try {
+            if (!impl.isClosed) {
+                waitUntil(500.milliseconds) { it.isDisconnected }
+            }
+        } catch (e: TimeoutCancellationException) {
+            if (!isDisconnected) {
                 logger.warn("Disconnection takes longer than expected, closing")
             }
-        } else {
-            // Update the state if disconnect() returned false.
-            _state.update {
-                ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.Success)
-            }
+        } finally {
+            close()
+            logger.info("Disconnected from {}", this)
         }
-        close()
-        logger.info("Disconnected from {}", this)
     }
 
     // Other
