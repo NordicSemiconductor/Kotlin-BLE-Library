@@ -306,7 +306,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-    @OptIn(ExperimentalStdlibApi::class, ExperimentalUuidApi::class)
+    @OptIn(ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.services()
             .filterNotNull()
