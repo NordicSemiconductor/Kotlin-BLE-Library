@@ -196,15 +196,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Returns `true` if the peripheral is currently connected.
      */
     val isConnected: Boolean
-        get() = state.value is ConnectionState.Connected
+        get() = state.value.isConnected
 
     /**
      * Returns `true` if the peripheral is disconnected of getting disconnected.
      */
     val isDisconnected: Boolean
-        get() = state.value is ConnectionState.Disconnected ||
-                state.value is ConnectionState.Disconnecting ||
-                state.value is ConnectionState.Closed
+        get() = state.value.isDisconnected
 
     /**
      * Waits until the given condition is met.

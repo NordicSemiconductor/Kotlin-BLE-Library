@@ -36,14 +36,14 @@ package no.nordicsemi.kotlin.ble.core
 import kotlin.time.Duration
 
 /**
- * Connection state of a Bluetooth LE device.
+ * Connection state of a Bluetooth LE peripheral.
  */
 sealed class ConnectionState {
 
     /** Connection has been initiated. */
     data object Connecting: ConnectionState()
 
-    /** Device is connected. */
+    /** The peripheral is connected. */
     data object Connected: ConnectionState()
 
     /** Disconnection has been initiated. */
@@ -110,14 +110,14 @@ sealed class ConnectionState {
         }
     }
 
-    /**
-     * The connection is closed.
-     */
+    /** The connection is closed. */
     data object Closed: ConnectionState()
 
+    /** Whether the connection is open. */
     val isConnected: Boolean
         get() = this is Connected
 
+    /** Whether the connection closed or getting closed. */
     val isDisconnected: Boolean
-        get() = this is Disconnected || this is Closed
+        get() = this is Disconnected || this is Disconnecting || this is Closed
 }
