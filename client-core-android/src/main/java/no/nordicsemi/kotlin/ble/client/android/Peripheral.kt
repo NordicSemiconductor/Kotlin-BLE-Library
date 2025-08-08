@@ -416,8 +416,8 @@ open class Peripheral(
      */
     suspend fun setPreferredPhy(
         txPhy: Phy,
-        rxPhy: Phy,
-        phyOptions: PhyOption,
+        rxPhy: Phy = txPhy,
+        phyOptions: PhyOption = PhyOption.NO_PREFERRED,
     ): PhyInUse {
         check(isConnected) {
             throw PeripheralNotConnectedException()
