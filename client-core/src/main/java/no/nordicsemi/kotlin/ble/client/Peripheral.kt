@@ -105,7 +105,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     val state = _state.asStateFlow()
 
     /** Current list of GATT services. */
-    private var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
+    protected var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
         value = impl.takeIf { it.initialState == ConnectionState.Connected }?.initialServices
     )
 

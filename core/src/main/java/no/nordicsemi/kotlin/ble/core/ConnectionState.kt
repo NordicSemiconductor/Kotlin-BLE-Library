@@ -95,6 +95,18 @@ sealed class ConnectionState {
              */
             data object UnsupportedAddress: Reason()
             /**
+             * Connection attempt was aborted due PHY negotiations failure.
+             *
+             * Some phones fail to respond properly to a PHY request sent immediately after establishing
+             * the connection (i.e. Samsung S8 with Android 9 responds with Instant from the past).
+             * The peripheral drops the connection when a valid response is not received before
+             * the timeout. A solution may be to remove the PHY LE2M request from the peripheral side,
+             * i.e. by setting `CONFIG_BT_CTLR_PHY_2M=n` in Zephyr.
+             *
+             * This bug seems to be non-existent on other Android devices we tested.
+             */
+            data object UnsupportedConfiguration: Reason()
+            /**
              * The connection attempt timed out.
              *
              * The device might have reboot, is out of range, turned off  or doesn't respond

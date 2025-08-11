@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.ReliableWriteScope
@@ -338,6 +339,13 @@ open class Peripheral(
         is MtuChanged -> mtu = event.mtu
         is PhyChanged -> _phy.update { event.phy }
         is ConnectionParametersChanged -> _connectionParameters.update { event.newParameters }
+        is ConnectionStateChanged -> {
+            if (event.isPhyRequestError) {
+                super.handle(ConnectionStateChanged(ConnectionState.Disconnected(reason = Reason.UnsupportedConfiguration)))
+            } else {
+                super.handle(event)
+            }
+        }
         else -> super.handle(event)
     }
 
@@ -693,4 +701,21 @@ open class Peripheral(
             val match = regex.find(message)
             return match?.value?.toLongOrNull()?.milliseconds
         }
+
+    /**
+     * Checks if the disconnection event is caused by a PHY request error.
+     *
+     * Samsung S8 with Android 9 fails to reconnect to a peripheral that requested PHY LE 2M
+     * immediately after establishing the connection. It replies with PhyResponse with Instant
+     * from the past, causing the peripheral to drop the connection.
+     */
+    private val ConnectionStateChanged.isPhyRequestError: Boolean
+        get() = (newState as? ConnectionState.Disconnected)?.let {
+            // Returned error is 0x08 (TIMEOUT).
+            it.reason == Reason.LinkLoss &&
+            // This happens before the services are discovered, so the services list is empty,
+            _services.value.isNullOrEmpty() &&
+            // ...but after the app is notified about change to PHY LE 2M.
+            phy.value?.txPhy == Phy.PHY_LE_2M
+        } ?: false
 }
