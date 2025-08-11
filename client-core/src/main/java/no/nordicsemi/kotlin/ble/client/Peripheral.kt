@@ -329,6 +329,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             is ServicesDiscovered -> {
+                if (event.services.isEmpty()) {
+                    logger.warn("Service discovery failed")
+                    invalidateServices()
+                    return
+                }
                 logger.info("Services discovered")
                 _services.update {
                     // Assign the owner to each service, making them valid.

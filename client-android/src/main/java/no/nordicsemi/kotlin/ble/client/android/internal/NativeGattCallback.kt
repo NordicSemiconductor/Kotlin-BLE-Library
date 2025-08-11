@@ -85,12 +85,16 @@ internal class NativeGattCallback: BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         logger.debug("onServicesDiscovered: status=$status")
-        if (status != BluetoothGatt.GATT_SUCCESS) {
+        // Expect status to be GATT_SUCCESS (0) and at least 2 services:
+        // - Generic Access
+        // - Generic Attribute
+        val services = gatt.services
+        if (status != BluetoothGatt.GATT_SUCCESS || services.size < 2) {
             logger.warn("Services discovery failed with status $status")
             _events.tryEmit(ServicesDiscovered(emptyList()))
             return
         }
-        _events.tryEmit(ServicesDiscovered(gatt.services.map { NativeRemoteService(gatt, it, events) }))
+        _events.tryEmit(ServicesDiscovered(services.map { NativeRemoteService(gatt, it, events) }))
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
