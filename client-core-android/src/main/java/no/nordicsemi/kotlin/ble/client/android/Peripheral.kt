@@ -346,6 +346,9 @@ open class Peripheral(
         if (mtuRequested) {
             try {
                 requestHighestValueLength()
+            } catch (_: PeripheralNotConnectedException) {
+                // Skip service discovery if the peripheral got disconnected.
+                return
             } catch (e: Exception) {
                 logger.warn("Failed to request MTU: {}", e.message)
             }
