@@ -43,13 +43,13 @@ data class PhyInUse(
     val txPhy: Phy,
     val rxPhy: Phy,
 ) {
-
     companion object {
         /**
          * A constant for legacy LE 1M PHY.
          */
         val PHY_LE_1M = PhyInUse(Phy.PHY_LE_1M, Phy.PHY_LE_1M)
     }
+
     override fun toString(): String {
         return "TX PHY=$txPhy, RX PHY=$rxPhy"
     }

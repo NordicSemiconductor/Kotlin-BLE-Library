@@ -67,13 +67,13 @@ internal class NativeExecutor(
     override val type: PeripheralType = try {
         // This may throw Security Exception if Bluetooth Connect permission isn't granted.
         bluetoothDevice.type.toPeripheralType()
-    } catch (e: SecurityException) {
+    } catch (_: SecurityException) {
         PeripheralType.UNKNOWN
     }
     override val name: String? = try {
         // This may throw Security Exception if Bluetooth Connect permission isn't granted.
         bluetoothDevice.name ?: name
-    } catch (e: SecurityException) {
+    } catch (_: SecurityException) {
         name
     }
     override val initialState: ConnectionState = ConnectionState.Closed
@@ -131,7 +131,7 @@ internal class NativeExecutor(
         try {
             val method = BluetoothDevice::class.java.getMethod("removeBond")
             return method.invoke(bluetoothDevice) as Boolean
-        } catch (e: ReflectiveOperationException) {
+        } catch (_: ReflectiveOperationException) {
             return false
         }
     }
@@ -141,7 +141,7 @@ internal class NativeExecutor(
             val result = try {
                 val method = BluetoothGatt::class.java.getMethod("refresh")
                 method.invoke(gatt) as Boolean
-            } catch (e: ReflectiveOperationException) {
+            } catch (_: ReflectiveOperationException) {
                 false
             }
             if (!result) {

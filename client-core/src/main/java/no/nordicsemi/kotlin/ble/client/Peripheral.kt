@@ -105,7 +105,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     val state = _state.asStateFlow()
 
     /** Current list of GATT services. */
-    private var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
+    protected var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
         value = impl.takeIf { it.initialState == ConnectionState.Connected }?.initialServices
     )
 
@@ -196,15 +196,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Returns `true` if the peripheral is currently connected.
      */
     val isConnected: Boolean
-        get() = state.value is ConnectionState.Connected
+        get() = state.value.isConnected
 
     /**
      * Returns `true` if the peripheral is disconnected of getting disconnected.
      */
     val isDisconnected: Boolean
-        get() = state.value is ConnectionState.Disconnected ||
-                state.value is ConnectionState.Disconnecting ||
-                state.value is ConnectionState.Closed
+        get() = state.value.isDisconnected
 
     /**
      * Waits until the given condition is met.
@@ -331,6 +329,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             is ServicesDiscovered -> {
+                if (event.services.isEmpty()) {
+                    logger.warn("Service discovery failed")
+                    invalidateServices()
+                    return
+                }
                 logger.info("Services discovered")
                 _services.update {
                     // Assign the owner to each service, making them valid.

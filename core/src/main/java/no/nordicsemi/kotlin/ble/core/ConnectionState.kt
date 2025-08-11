@@ -36,14 +36,14 @@ package no.nordicsemi.kotlin.ble.core
 import kotlin.time.Duration
 
 /**
- * Connection state of a Bluetooth LE device.
+ * Connection state of a Bluetooth LE peripheral.
  */
 sealed class ConnectionState {
 
     /** Connection has been initiated. */
     data object Connecting: ConnectionState()
 
-    /** Device is connected. */
+    /** The peripheral is connected. */
     data object Connected: ConnectionState()
 
     /** Disconnection has been initiated. */
@@ -95,6 +95,18 @@ sealed class ConnectionState {
              */
             data object UnsupportedAddress: Reason()
             /**
+             * Connection attempt was aborted due PHY negotiations failure.
+             *
+             * Some phones fail to respond properly to a PHY request sent immediately after establishing
+             * the connection (i.e. Samsung S8 with Android 9 responds with Instant from the past).
+             * The peripheral drops the connection when a valid response is not received before
+             * the timeout. A solution may be to remove the PHY LE2M request from the peripheral side,
+             * i.e. by setting `CONFIG_BT_CTLR_PHY_2M=n` in Zephyr.
+             *
+             * This bug seems to be non-existent on other Android devices we tested.
+             */
+            data object UnsupportedConfiguration: Reason()
+            /**
              * The connection attempt timed out.
              *
              * The device might have reboot, is out of range, turned off  or doesn't respond
@@ -110,14 +122,14 @@ sealed class ConnectionState {
         }
     }
 
-    /**
-     * The connection is closed.
-     */
+    /** The connection is closed. */
     data object Closed: ConnectionState()
 
+    /** Whether the connection is open. */
     val isConnected: Boolean
         get() = this is Connected
 
+    /** Whether the connection closed or getting closed. */
     val isDisconnected: Boolean
         get() = this is Disconnected || this is Closed
 }
