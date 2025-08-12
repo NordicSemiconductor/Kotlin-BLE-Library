@@ -2,8 +2,8 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>isUserInitiated</title>
-<link href="../../../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../../../";</script>
+    <title>UnsupportedConfiguration</title>
+<link href="../../../../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../../../../";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
@@ -19,29 +19,29 @@
     }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
-<script type="text/javascript" src="../../../../../scripts/sourceset_dependencies.js" async></script>
-<link href="../../../../../styles/style.css" rel="Stylesheet">
-<link href="../../../../../styles/main.css" rel="Stylesheet">
-<link href="../../../../../styles/prism.css" rel="Stylesheet">
-<link href="../../../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
-<link href="../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../../../scripts/clipboard.js" async></script>
-<script type="text/javascript" src="../../../../../scripts/navigation-loader.js" async></script>
-<script type="text/javascript" src="../../../../../scripts/platform-content-handler.js" async></script>
-<script type="text/javascript" src="../../../../../scripts/main.js" defer></script>
-<script type="text/javascript" src="../../../../../scripts/prism.js" async></script>
-<script type="text/javascript" src="../../../../../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../../../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<link href="../../../../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../../../ui-kit/ui-kit.min.js" defer></script>
+<script type="text/javascript" src="../../../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
 <body>
     <div class="root">
     <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../../../../../index.html">
+<a class="library-name--link" href="../../../../../../index.html">
                     Kotlin-BLE-Library
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha05
+        <div class="library-version" id="library-version">2.0.0-alpha07
         </div>
         <div class="navigation-controls">
         <div class="filter-section filter-section_loading" id="filter-section">
@@ -90,12 +90,16 @@
                 </div>
             </div>
             <div id="main">
-<div class="main-content" data-page-type="member" id="content" pageids="core::no.nordicsemi.kotlin.ble.core/ConnectionState.Disconnected.Reason/isUserInitiated/#/PointingToDeclaration//-431355489">
-  <div class="breadcrumbs"><a href="../../../../index.html">core</a><span class="delimiter">/</span><a href="../../../index.html">no.nordicsemi.kotlin.ble.core</a><span class="delimiter">/</span><a href="../../index.html">ConnectionState</a><span class="delimiter">/</span><a href="../index.html">Disconnected</a><span class="delimiter">/</span><a href="index.html">Reason</a><span class="delimiter">/</span><span class="current">isUserInitiated</span></div>
+<div class="main-content" data-page-type="classlike" id="content" pageids="core::no.nordicsemi.kotlin.ble.core/ConnectionState.Disconnected.Reason.UnsupportedConfiguration///PointingToDeclaration//-431355489">
+  <div class="breadcrumbs"><a href="../../../../../index.html">core</a><span class="delimiter">/</span><a href="../../../../index.html">no.nordicsemi.kotlin.ble.core</a><span class="delimiter">/</span><a href="../../../index.html">ConnectionState</a><span class="delimiter">/</span><a href="../../index.html">Disconnected</a><span class="delimiter">/</span><a href="../index.html">Reason</a><span class="delimiter">/</span><span class="current">UnsupportedConfiguration</span></div>
   <div class="cover ">
-    <h1 class="cover"><span>is</span><wbr><span>User</span><wbr><span><span>Initiated</span></span></h1>
+    <h1 class="cover"><span>Unsupported</span><wbr><span><span>Configuration</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">object </span><a href="index.html">UnsupportedConfiguration</a> : <a href="../index.html">ConnectionState.Disconnected.Reason</a></div><p class="paragraph">Connection attempt was aborted due PHY negotiations failure.</p><p class="paragraph">Some phones fail to respond properly to a PHY request sent immediately after establishing the connection (i.e. Samsung S8 with Android 9 responds with Instant from the past). The peripheral drops the connection when a valid response is not received before the timeout. A solution may be to remove the PHY LE2M request from the peripheral side, i.e. by setting <code class="lang-kotlin">CONFIG_BT_CTLR_PHY_2M=n</code> in Zephyr.</p><p class="paragraph">This bug seems to be non-existent on other Android devices we tested.</p></div></div>
   </div>
-  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-user-initiated.html">isUserInitiated</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><p class="paragraph">A quick check whether the disconnection was initiated by the user.</p></div></div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"></div>
+    <div class="tabs-section-body"></div>
+  </div>
 </div>
     <div class="footer">
         <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>

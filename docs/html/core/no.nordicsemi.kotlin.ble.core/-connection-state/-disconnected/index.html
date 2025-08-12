@@ -41,7 +41,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha05
+        <div class="library-version" id="library-version">2.0.0-alpha07
         </div>
         <div class="navigation-controls">
         <div class="filter-section filter-section_loading" id="filter-section">
@@ -94,24 +94,24 @@
   <div class="breadcrumbs"><a href="../../../index.html">core</a><span class="delimiter">/</span><a href="../../index.html">no.nordicsemi.kotlin.ble.core</a><span class="delimiter">/</span><a href="../index.html">ConnectionState</a><span class="delimiter">/</span><span class="current">Disconnected</span></div>
   <div class="cover ">
     <h1 class="cover"><span><span>Disconnected</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Disconnected</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>reason<span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a></span></span><span class="token punctuation">)</span> : <a href="../index.html">ConnectionState</a></div><p class="paragraph">Device has disconnected.</p><p class="paragraph">This state may be immediately followed by <a href="../-closed/index.html">Closed</a> state.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>reason</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Reason of disconnection.</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="index.html">Disconnected</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>reason<span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="../index.html">ConnectionState</a></div><p class="paragraph">Device has disconnected.</p><p class="paragraph">If the <a href="reason.html">reason</a> is null, it means that no connection attempt was made. This is the initial state of the peripheral.</p><p class="paragraph">Note, that it doesn't mean that the peripheral is not connected, it may be connected using another <a href="../../-manager/index.html">Manager</a>.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>reason</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Reason of disconnection or <code class="lang-kotlin">null</code> if the connection was never initiated. This is the initial state of the peripheral.</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
-        <div class="table"><a data-name="1947674076%2FConstructors%2F-431355489" anchor-label="Disconnected" id="1947674076%2FConstructors%2F-431355489" data-filterable-set=":core/main"></a>
+        <div class="table"><a data-name="1280748679%2FConstructors%2F-431355489" anchor-label="Disconnected" id="1280748679%2FConstructors%2F-431355489" data-filterable-set=":core/main"></a>
           <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-disconnected.html"><span><span>Disconnected</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1947674076%2FConstructors%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1280748679%2FConstructors%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reason<span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reason<span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -149,7 +149,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../is-connected.html">isConnected</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../is-connected.html">isConnected</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the connection is open.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -164,7 +164,22 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../is-disconnected.html">isDisconnected</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../is-disconnected.html">isDisconnected</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the connection closed or getting closed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="141619274%2FProperties%2F-431355489" anchor-label="isUserInitiated" id="141619274%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-user-initiated.html"><span>is</span><wbr><span>User</span><wbr><span><span>Initiated</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="141619274%2FProperties%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-user-initiated.html">isUserInitiated</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">A quick check whether the disconnection was initiated by the user.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -179,7 +194,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="reason.html">reason</a><span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="reason.html">reason</a><span class="token operator">: </span><a href="-reason/index.html">ConnectionState.Disconnected.Reason</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div></div>
                 </div>
               </div>
             </div>
