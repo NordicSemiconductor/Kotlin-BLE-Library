@@ -33,6 +33,8 @@
 
 package no.nordicsemi.kotlin.ble.core
 
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason.Cancelled
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason.Success
 import kotlin.time.Duration
 
 /**
@@ -40,23 +42,45 @@ import kotlin.time.Duration
  */
 sealed class ConnectionState {
 
-    /** Connection has been initiated. */
+    /**
+     * The client is trying to connect to the peripheral.
+     *
+     * When connected, the state will change to [Connected].
+     *
+     * On timeout or cancellation, the state will change to [Disconnected] with the correct reason.
+     */
     data object Connecting: ConnectionState()
 
-    /** The peripheral is connected. */
+    /**
+     * The peripheral is connected.
+     *
+     * When the connection terminates, the state will change to [Disconnected]
+     * or [Connecting] if the client will try to reconnect.
+     */
     data object Connected: ConnectionState()
 
-    /** Disconnection has been initiated. */
+    /**
+     * Disconnection has been initiated.
+     *
+     * This state is set when the `disconnect()` method is called on the peripheral.
+     *
+     * This is followed by [Disconnected] state with reason [Success][Disconnected.Reason.Success].
+     */
     data object Disconnecting: ConnectionState()
 
     /**
      * Device has disconnected.
      *
-     * This state may be immediately followed by [Closed] state.
+     * If the [reason] is null, it means that no connection attempt was made. This is
+     * the initial state of the peripheral.
      *
-     * @param reason Reason of disconnection.
+     * Note, that it doesn't mean that the peripheral is not connected, it may be connected
+     * using another [Manager].
+     *
+     * @param reason Reason of disconnection or `null` if the connection was never initiated.
+     * This is the initial state of the peripheral.
      */
-    data class Disconnected(val reason: Reason): ConnectionState() {
+    data class Disconnected(val reason: Reason? = null): ConnectionState() {
 
         /** Reason of disconnection. */
         sealed class Reason {
@@ -115,15 +139,16 @@ sealed class ConnectionState {
              * @property duration The duration of the timeout.
              */
             data class Timeout(val duration: Duration): Reason()
-
-            /** A quick check whether the disconnection was initiated by the user. */
-            val isUserInitiated: Boolean
-                get() = this is Success || this is Cancelled
         }
-    }
 
-    /** The connection is closed. */
-    data object Closed: ConnectionState()
+        /**
+         * A quick check whether the disconnection was initiated by the user.
+         *
+         * This returns `false` in the initial state, that is before the connection attempt was started.
+         */
+        val isUserInitiated: Boolean
+            get() = reason is Success || reason is Cancelled
+    }
 
     /** Whether the connection is open. */
     val isConnected: Boolean
@@ -131,5 +156,5 @@ sealed class ConnectionState {
 
     /** Whether the connection closed or getting closed. */
     val isDisconnected: Boolean
-        get() = this is Disconnected || this is Closed
+        get() = this is Disconnected
 }

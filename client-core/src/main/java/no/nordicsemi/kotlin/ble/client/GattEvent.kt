@@ -57,10 +57,10 @@ sealed class GattEvent {
 data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
 
     /**
-     * Returns whether the new state is [ConnectionState.Disconnected] or [ConnectionState.Closed].
+     * Returns whether the new state is [ConnectionState.Disconnected].
      */
     val disconnected: Boolean
-        get() = newState is ConnectionState.Disconnected || newState is ConnectionState.Closed
+        get() = newState is ConnectionState.Disconnected
 }
 
 /**

@@ -386,7 +386,7 @@ open class PreviewPeripheral(
     type: PeripheralType = PeripheralType.LE,
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.PHY_LE_1M,
-    state: ConnectionState = ConnectionState.Closed,
+    state: ConnectionState = ConnectionState.Disconnected(),
     services: ServerScope.() -> Unit = {
         Service(Service.GENERIC_ACCESS_UUID) {
             Characteristic(

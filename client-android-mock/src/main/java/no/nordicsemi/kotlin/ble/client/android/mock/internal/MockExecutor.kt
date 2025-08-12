@@ -59,7 +59,7 @@ open class MockExecutor(
     name: String?,
 ): Peripheral.Executor {
     override val type: PeripheralType = peripheralSpec.type
-    override val initialState: ConnectionState = ConnectionState.Closed
+    override val initialState: ConnectionState = ConnectionState.Disconnected()
     override val initialServices: List<RemoteService> = emptyList()
 
     override val identifier: String = peripheralSpec.identifier

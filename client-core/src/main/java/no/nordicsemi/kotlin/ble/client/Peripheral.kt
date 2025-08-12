@@ -41,7 +41,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
@@ -239,14 +238,28 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
 
         gattEventCollector = impl.events
             // Handle each GATT event.
-            .onEach { handle(it) }
-            // In case of a Connection State Changed event...
-            .filterIsInstance(ConnectionStateChanged::class)
-            // ...when the device got disconnected and the closeWhenDisconnected flag was set...
-            .filter { closeWhenDisconnected && it.newState is ConnectionState.Disconnected }
-            // ...cancel the collector. This will call...
-            .onEach { gattEventCollector?.cancel() }
-            // ...the onCompletion method.
+            .onEach { event ->
+                when {
+                    // In case of a disconnection event...
+                    event is ConnectionStateChanged && event.newState is ConnectionState.Disconnected -> {
+                        // ...when the connection was terminated using disconnect() or cancelled,
+                        // or the closeWhenDisconnected flag was set (no automatic reconnection)
+                        // process the event and cancel the collector.
+                        if (event.newState.isUserInitiated || closeWhenDisconnected) {
+                            handle(event)
+                            // This will call the onCompletion method below.
+                            gattEventCollector?.cancel()
+                        } else {
+                            // If the connection will be retried, switch immediately to Connecting state.
+                            // Note: This changes state Connected -> Connecting, without going through
+                            //       Disconnected state.
+                            handle(ConnectionStateChanged(ConnectionState.Connecting))
+                        }
+                    }
+                    // Handle other events.
+                    else -> handle(event)
+                }
+            }
             .onCompletion {
                 gattEventCollector = null
                 close()
@@ -266,7 +279,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             handleClose()
             serviceDiscoveryRequested = false
             impl.close()
-            _state.update { ConnectionState.Closed }
         }
         gattEventCollector = null
     }
@@ -315,6 +327,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     is ConnectionState.Connected -> {
                         initiateConnection()
                     }
+                    // When the link is lost, a peripheral state may transition from Connected
+                    // to Connecting or Disconnected.
+                    is ConnectionState.Connecting,
                     is ConnectionState.Disconnected -> {
                         handleDisconnection()
                     }
@@ -486,10 +501,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     suspend fun disconnect() {
         // Depending on the state...
         when (state.value) {
-            is ConnectionState.Closed -> {
-                // Do nothing when already closed.
-                return
-            }
             is ConnectionState.Disconnected -> {
                 // Make sure auto-connection is closed.
                 close()
