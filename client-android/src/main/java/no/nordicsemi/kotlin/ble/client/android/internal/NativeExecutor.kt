@@ -76,7 +76,7 @@ internal class NativeExecutor(
     } catch (_: SecurityException) {
         name
     }
-    override val initialState: ConnectionState = ConnectionState.Closed
+    override val initialState: ConnectionState = ConnectionState.Disconnected()
     override val initialServices: List<RemoteService> = emptyList()
 
     /**

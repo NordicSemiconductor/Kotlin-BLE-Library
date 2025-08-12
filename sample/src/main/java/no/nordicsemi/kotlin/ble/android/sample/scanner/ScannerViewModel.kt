@@ -41,7 +41,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
@@ -355,7 +354,6 @@ class ScannerViewModel @Inject constructor(
 
     private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.state
-            .buffer()
             .onEach {
                 Timber.i("State of $peripheral: $it")
 
@@ -367,7 +365,7 @@ class ScannerViewModel @Inject constructor(
                         }
                     }
 
-                    is ConnectionState.Closed -> {
+                    is ConnectionState.Disconnected -> {
                         // Just for testing, wait with cancelling the scope to get all the logs.
                         delay(500)
                         // Cancel connection scope, so that previously launched jobs are cancelled.

@@ -260,15 +260,15 @@ open class Peripheral(
                             // direct connection.
                             //
                             // See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
-                            val reason = state.reason
+                            val reason = state.reason!!
                             if (reason is Reason.Unknown && (reason.status == 133 || reason.status == 135)) {
                                 logger.warn("Connection attempt failed (reason: {})", Reason.UnsupportedAddress)
                                 _state.update { ConnectionState.Disconnected(Reason.UnsupportedAddress) }
                                 throw ConnectionFailedException(Reason.UnsupportedAddress)
                             }
-                            logger.warn("Connection attempt failed (reason: {})", state.reason)
+                            logger.warn("Connection attempt failed (reason: {})", reason)
                             _state.update { state }
-                            throw ConnectionFailedException(state.reason)
+                            throw ConnectionFailedException(reason)
                         }
                         else -> {}
                     }
@@ -309,9 +309,10 @@ open class Peripheral(
                         }
                         is ConnectionState.Disconnected -> {
                             check(options.retry > 0) {
-                                logger.warn("Connection attempt failed (reason: {})", state.reason)
+                                val reason = state.reason!!
+                                logger.warn("Connection attempt failed (reason: {})", reason)
                                 _state.update { state }
-                                throw ConnectionFailedException(state.reason)
+                                throw ConnectionFailedException(reason)
                             }
                             logger.warn("Connection attempt failed (reason: {}), retrying in {}...",
                                 state.reason, options.retryDelay)
@@ -581,7 +582,6 @@ open class Peripheral(
      * by [services] will emit an empty list of services following by updated list of services
      * when the new service discovery is complete.
      *
-     * The peripheral must be in any state other then [ConnectionState.Closed].
      * It is safe to call this method when the peripheral is connected, connecting, or disconnecting.
      * It may be called when the device is disconnected but only when the connection was made using
      * [AutoConnect][CentralManager.ConnectionOptions.AutoConnect] option in which case the system
@@ -590,9 +590,9 @@ open class Peripheral(
      * A connection made using [Direct][CentralManager.ConnectionOptions.Direct] option closes
      * automatically immediately after disconnection.
      *
-     * When invoked when closed the method throws [PeripheralClosedException].
+     * When invoked on a closed connection the method throws [PeripheralClosedException].
      *
-     * @throws PeripheralClosedException If the peripheral is in [Closed][ConnectionState.Closed] state.
+     * @throws PeripheralClosedException If the peripheral is closed.
      * @throws OperationFailedException If cache could not be refreshed.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
