@@ -32,9 +32,23 @@
 pluginManagement {
     repositories {
         mavenLocal()
-        google()
+        exclusiveContent { // First type of filter
+            forRepository { google() } // Specify the repository this applies to
+            filter { // Start specifying what dependencies are *only* found in this repo
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroup("com.google.testing.platform")
+            }
+        }
+        exclusiveContent {
+            forRepository { gradlePluginPortal() }
+            filter {
+                includeGroupAndSubgroups("com.gradle")
+                includeGroupAndSubgroups("no.nordicsemi")
+                includeGroupAndSubgroups("org.jetbrains")
+            }
+        }
         mavenCentral()
-        gradlePluginPortal()
     }
 }
 
@@ -42,7 +56,14 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
-        google()
+        exclusiveContent { // First type of filter
+            forRepository { google() } // Specify the repository this applies to
+            filter { // Start specifying what dependencies are *only* found in this repo
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroup("com.google.testing.platform")
+            }
+        }
         mavenCentral()
     }
 }
