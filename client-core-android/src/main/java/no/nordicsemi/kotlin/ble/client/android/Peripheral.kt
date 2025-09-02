@@ -358,7 +358,7 @@ open class Peripheral(
             } catch (_: PeripheralNotConnectedException) {
                 // Skip service discovery if the peripheral got disconnected.
                 return
-            } catch (e: Exception) {
+            } catch (e: OperationFailedException) {
                 logger.warn("Failed to request MTU: {}", e.message)
             }
         }
