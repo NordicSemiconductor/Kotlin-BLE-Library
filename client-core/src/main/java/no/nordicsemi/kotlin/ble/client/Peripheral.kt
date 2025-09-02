@@ -534,6 +534,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
         } finally {
             close()
+            // If before calling disconnect() the state was not Connected (i.e. Connecting),
+            // the state at this point will be Disconnecting. Change it to Disconnected manually.
+            _state.compareAndSet(ConnectionState.Disconnecting, ConnectionState.Disconnected())
             logger.info("Disconnected from {}", this)
         }
     }
