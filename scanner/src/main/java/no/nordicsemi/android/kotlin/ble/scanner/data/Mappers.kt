@@ -74,7 +74,7 @@ internal fun ScanResult.toDomain(): BleScanResultData {
             this.scanRecord?.toDomain(),
             getAdvertisingSid(this),
             BleGattPrimaryPhy.createOrNull(this.primaryPhy),
-            getSecondaryPhy(this),
+            BleGattPhy.createOrNull(this.secondaryPhy),
             getTxPower(this),
             getPeriodicAdvertisingInterval(this),
             this.isLegacy,
@@ -103,15 +103,6 @@ private fun getAdvertisingSid(scanResult: ScanResult): Int? {
 private fun getPeriodicAdvertisingInterval(scanResult: ScanResult): Int? {
     return if (scanResult.periodicAdvertisingInterval != ScanResult.PERIODIC_INTERVAL_NOT_PRESENT) {
         scanResult.periodicAdvertisingInterval
-    } else {
-        null
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-private fun getSecondaryPhy(scanResult: ScanResult): BleGattPhy? {
-    return if (scanResult.secondaryPhy != ScanResult.PHY_UNUSED) {
-        BleGattPhy.create(scanResult.secondaryPhy)
     } else {
         null
     }
