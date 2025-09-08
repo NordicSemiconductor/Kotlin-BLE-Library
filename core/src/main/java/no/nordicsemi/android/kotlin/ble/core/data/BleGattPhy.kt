@@ -65,5 +65,9 @@ enum class BleGattPhy(val value: Int) {
             return values().find { it.value == value }
                 ?: throw IllegalArgumentException("Cannot create BleGattPhy for value: $value")
         }
+
+        fun createOrNull(value: Int): BleGattPhy? {
+            return values().find { it.value == value }
+        }
     }
 }
