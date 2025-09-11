@@ -243,9 +243,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     // In case of a disconnection event...
                     event is ConnectionStateChanged && event.newState is ConnectionState.Disconnected -> {
                         // ...when the connection was terminated using disconnect() or cancelled,
-                        // or the closeWhenDisconnected flag was set (no automatic reconnection)
+                        // or the closeWhenDisconnected flag was set (no automatic reconnection),
+                        // or connection failed due to insufficient authentication (bond info removed from peer),
                         // process the event and cancel the collector.
-                        if (event.newState.isUserInitiated || closeWhenDisconnected) {
+                        if (closeWhenDisconnected ||
+                            event.newState.isUserInitiated ||
+                            event.newState.reason is ConnectionState.Disconnected.Reason.InsufficientAuthentication) {
                             handle(event)
                             // This will call the onCompletion method below.
                             gattEventCollector?.cancel()
