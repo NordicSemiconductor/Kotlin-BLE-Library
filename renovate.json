@@ -19,7 +19,7 @@
     },
     {
       "matchPackageNames": [
-        "org.slf4j:slf4j-simple"
+        "/androidx.hilt/"
       ],
       "enabled": false
     }
