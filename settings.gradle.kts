@@ -29,20 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@Suppress("UnstableApiUsage")
 pluginManagement {
     repositories {
         mavenLocal()
-        exclusiveContent { // First type of filter
-            forRepository { google() } // Specify the repository this applies to
-            filter { // Start specifying what dependencies are *only* found in this repo
-                includeGroupAndSubgroups("androidx")
+        google {
+            content {
                 includeGroupAndSubgroups("com.android")
-                includeGroup("com.google.testing.platform")
+                includeGroupAndSubgroups("com.google")
+                includeGroupAndSubgroups("androidx")
             }
         }
-        exclusiveContent {
-            forRepository { gradlePluginPortal() }
-            filter {
+        gradlePluginPortal {
+            content {
                 includeGroupAndSubgroups("com.gradle")
                 includeGroupAndSubgroups("no.nordicsemi")
                 includeGroupAndSubgroups("org.jetbrains")
@@ -52,22 +51,36 @@ pluginManagement {
     }
 }
 
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         mavenLocal()
-        exclusiveContent { // First type of filter
-            forRepository { google() } // Specify the repository this applies to
-            filter { // Start specifying what dependencies are *only* found in this repo
-                includeGroupAndSubgroups("androidx")
+        google {
+            content {
                 includeGroupAndSubgroups("com.android")
-                includeGroup("com.google.testing.platform")
+                includeGroupAndSubgroups("com.google")
+                includeGroupAndSubgroups("androidx")
             }
         }
         mavenCentral()
     }
+    versionCatalogs {
+        // Use Nordic Gradle Version Catalog with common external libraries versions.
+        create("libs") {
+            from("no.nordicsemi.android.gradle:version-catalog:2.10-1")
+        }
+        // Fixed versions for Nordic libraries.
+        create("nordic") {
+            from(files("gradle/nordic.versions.toml"))
+        }
+        // Nordic Version Catalog is released after library releases, so cannot be used internally in libs.
+        // create("nordic") {
+        //    from("no.nordicsemi.android:version-catalog:2025.10.00")
+        // }
+    }
 }
-rootProject.name = "Kotlin-BLE-Library"
+rootProject.name = "Kotlin BLE Library"
 
 include(":core")
 include(":core-mock")
@@ -95,7 +108,8 @@ include(":client-android-mock")
 //include(":profile")
 //include(":test")
 
+include(":sample")
+
 //if (file("../Android-Common-Libraries").exists()) {
 //    includeBuild("../Android-Common-Libraries")
 //}
-include(":sample")

@@ -1,0 +1,13 @@
+# Versions of Nordic libraries used in this project.
+
+# This is a subset of the Version Catalog available at https://github.com/NordicSemiconductor/Android-Version-Catalog
+# The version catalog can be updated independently of this project after the release of this library.
+
+[versions]
+nordic-log = "2.5.0"
+nordic-data = "0.4.0"
+
+[libraries]
+nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nordic-log" }
+nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
+nordic-kotlin-data = { group = "no.nordicsemi.kotlin", name = "data", version.ref = "nordic-data" }
