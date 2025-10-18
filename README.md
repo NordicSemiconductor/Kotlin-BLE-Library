@@ -4,10 +4,20 @@ The library simplifies usage of Android Bluetooth Low Energy on Android. It is a
 native API and uses Kotlin Coroutines for asynchronous operations. The usage is designed to be more
 natural according to the BLE specification.
 
-> [!WARNING]
-> This library is in early development stage and is not recommended for production use.
-> The API is subject to change.
+> [!Important]
+> This library is in still under construction. Scanning and client should work, but the API may still change.
 > Any feedback is welcome.
+>
+> Expected changes:
+> * Logging
+>    * Migrating from SLF4J to log delegates to allow logging for different devices separately.
+>    * Improving logged events
+> * Native vs Mock
+>    * Instead of `.native(Context, Scope)` and `.mock(Environment, Scope)` there will be one method taking
+>      `Environment` as parameter. The distinction will be made based on the environment instead.
+> * Higher level API
+>    * We found the library to be difficult to use with multiple independent services. We are trying to
+>      come up with a solution that would allow use single `Peripheral` with different service implementations.
 
 ## Version 2
 
