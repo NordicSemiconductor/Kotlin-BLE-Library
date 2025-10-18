@@ -87,9 +87,9 @@ class AdvertisingData(
         var meshBeacon: ByteArray? = null
         var adStructures: MutableMap<AdvertisingDataType, MutableList<ByteArray>>? = null
 
-        // Advertisement data is a list of AD structures.
+        // Advertisement data is a list of AD structures: LENGTH (1B) | TYPE (1B) | DATA (1+B)
         var i = 0
-        while (raw.size > i + 3) {
+        while (raw.size >= i + 3) {
             // The first byte is the length of the AD structure.
             val length = (raw[i++].toInt() and 0xFF) - 1 // minus 1 as the length includes the type byte.
 
@@ -123,7 +123,7 @@ class AdvertisingData(
                 AdvertisingDataType.INCOMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS,
                 AdvertisingDataType.COMPLETE_LIST_OF_16_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 2) {
+                        for (j in i until (i + length - 1) step 2) {
                             add(Uuid.fromBytes(raw, j, 2))
                         }
                     }
@@ -131,7 +131,7 @@ class AdvertisingData(
                 AdvertisingDataType.INCOMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS,
                 AdvertisingDataType.COMPLETE_LIST_OF_32_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 4) {
+                        for (j in i until (i + length - 3) step 4) {
                             add(Uuid.fromBytes(raw, j, 4))
                         }
                     }
@@ -139,7 +139,7 @@ class AdvertisingData(
                 AdvertisingDataType.INCOMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS,
                 AdvertisingDataType.COMPLETE_LIST_OF_128_BIT_SERVICE_UUIDS -> {
                     serviceUuids = (serviceUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 16) {
+                        for (j in i until (i + length - 15) step 16) {
                             add(Uuid.fromBytes(raw, j, 16))
                         }
                     }
@@ -170,21 +170,21 @@ class AdvertisingData(
                 }
                 AdvertisingDataType.LIST_OF_16_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 2) {
+                        for (j in i until (i + length - 1) step 2) {
                             add(Uuid.fromBytes(raw, j, 2))
                         }
                     }
                 }
                 AdvertisingDataType.LIST_OF_32_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 4) {
+                        for (j in i until (i + length - 3) step 4) {
                             add(Uuid.fromBytes(raw, j, 4))
                         }
                     }
                 }
                 AdvertisingDataType.LIST_OF_128_BIT_SERVICE_SOLICITATION_UUIDS -> {
                     serviceSolicitationUuids = (serviceSolicitationUuids ?: mutableListOf()).apply {
-                        for (j in i until i + length step 16) {
+                        for (j in i until (i + length - 15) step 16) {
                             add(Uuid.fromBytes(raw, j, 16))
                         }
                     }

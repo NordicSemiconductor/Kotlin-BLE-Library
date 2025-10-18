@@ -50,6 +50,9 @@ dependencies {
     api(project(":client-core"))
 
     implementation(libs.slf4j)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.truth)
 }
 
 dokka {
