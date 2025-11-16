@@ -33,8 +33,20 @@
 
 package no.nordicsemi.kotlin.ble.client.mock
 
-sealed class DisconnectionReason
+sealed class DisconnectionReason {
 
-data object TerminateLocalHost: DisconnectionReason()
+    /**
+     * The disconnection was initiated by the mock peripheral.
+     */
+    data object TerminateLocalHost: DisconnectionReason()
 
-data object Timeout: DisconnectionReason()
+    /**
+     * The disconnection was initiated by the client.
+     */
+    data object TerminatePeerUser: DisconnectionReason()
+
+    /**
+     * The disconnection occurred due to a timeout.
+     */
+    data object Timeout: DisconnectionReason()
+}

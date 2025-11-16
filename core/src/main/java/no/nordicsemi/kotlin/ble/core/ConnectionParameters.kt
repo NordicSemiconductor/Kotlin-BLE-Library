@@ -33,6 +33,8 @@
 
 package no.nordicsemi.kotlin.ble.core
 
+import org.jetbrains.annotations.Range
+
 /**
  * Bluetooth LE connection parameters.
  */
@@ -82,21 +84,21 @@ sealed class ConnectionParameters {
      *        Valid range is from 10 (0.1s) to 3200 (32s)
      */
     data class Connected(
-        val connectionInterval: Int,
-        val slaveLatency: Int,
-        val supervisionTimeout: Int
+        val connectionInterval: @Range(from = 6L, to = 3200L) Int,
+        val slaveLatency: @Range(from = 0, to = 499) Int,
+        val supervisionTimeout: @Range(from = 10, to = 3200) Int,
     ) : ConnectionParameters() {
         /**
          * Returns the connection interval in milliseconds.
          */
-        val connectionIntervalMillis: Int
-            get() = connectionInterval * 125 / 100
+        val connectionIntervalMillis: Long
+            get() = connectionInterval * 125L / 100
 
         /**
          * Returns the supervision timeout in milliseconds.
          */
-        val supervisionTimeoutMillis: Int
-            get() = supervisionTimeout * 10
+        val supervisionTimeoutMillis: Long
+            get() = supervisionTimeout * 10L
 
         override fun toString(): String {
             return "Interval=$connectionInterval ($connectionIntervalMillis ms), Latency=$slaveLatency, Timeout=$supervisionTimeout ($supervisionTimeoutMillis ms)"

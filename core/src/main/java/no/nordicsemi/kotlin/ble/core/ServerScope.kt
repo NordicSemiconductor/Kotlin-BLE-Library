@@ -47,9 +47,9 @@ interface ServerScope {
      * Declares a service with the given UUID.
      *
      * Sample code:
-     * ```
+     * ```kotlin
      * Service(<Some UUID>) {
-     *    Characteristic(
+     *    val handle = Characteristic(
      *       uuid = <Some UUID>,
      *       properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
      *       permission = Permission.READ,
@@ -77,7 +77,26 @@ interface ServerScope {
     /**
      * Declares a service with the given 16 or 32 bit short UUID.
      *
-     * @param shortUuid The 16 or 32 bit short UUID of the service.
+     * Sample code:
+     * ```kotlin
+     * Service(<16 or 32-bit UUID>) {
+     *    val handle = Characteristic(
+     *       uuid = <Some UUID>,
+     *       properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+     *       permission = Permission.READ,
+     *    ) {
+     *       // Note: Client Characteristic Configuration descriptor is added automatically.
+     *
+     *       CharacteristicUserDescriptionDescriptor("Some description")
+     *    }
+     *    Characteristic(...)
+     *    IncludedService(<Some UUID>) {
+     *       Characteristic(...)
+     *    }
+     * }
+     * ```
+     *
+     * @param shortUuid The 16 or 32 bit short UUID of the service, i.e. 0x1809.
      * @param builder Scope of the primary service.
      * @see ServerScope.Service
      */
@@ -99,44 +118,53 @@ interface ServiceScope {
      *
      * Sample code:
      * ```
-     * Characteristic(
+     * val handle = Characteristic(
      *    uuid = <Some UUID>,
      *    properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,
      *    permissions = Permission.READ and Permission.WRITE,
      * ) {
-     *    // Note: Client Characteristic Configuration descriptor is added automatically.
-     *
      *    CharacteristicUserDescriptionDescriptor("Some description")
      * }
      * ```
      *
      * @param uuid The UUID of the characteristic.
-     * @param properties List of properties of the characteristic.
+     * @param properties Set of properties of the characteristic.
      * @param permissions The permissions of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
     fun Characteristic(
         uuid: Uuid,
-        properties: List<CharacteristicProperty> = emptyList(),
-        permissions: List<Permission> = emptyList(),
+        properties: Set<CharacteristicProperty> = emptySet(),
+        permissions: Set<Permission> = emptySet(),
         builder: CharacteristicScope.() -> Unit = {}
-    )
+    ): Int
 
     /**
      * Declares a characteristic with the given 16 or 32 bit short UUID.
      *
+     * Sample code:
+     * ```kotlin
+     * val handle = Characteristic(
+     *    shortUuid = <16 or 32-bit UUID>,
+     *    properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,
+     *    permissions = Permission.READ and Permission.WRITE,
+     * )
+     * ```
+     *
      * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
-     * @param properties List of properties of the characteristic.
+     * @param properties Set of properties of the characteristic.
      * @param permissions The permissions of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
     fun Characteristic(
         shortUuid: Int,
-        properties: List<CharacteristicProperty> = emptyList(),
-        permissions: List<Permission> = emptyList(),
+        properties: Set<CharacteristicProperty> = emptySet(),
+        permissions: Set<Permission> = emptySet(),
         builder: CharacteristicScope.() -> Unit = {}
     ) = Characteristic(Uuid.fromShortUuid(shortUuid), properties, permissions, builder)
 
@@ -144,10 +172,10 @@ interface ServiceScope {
      * Declares a characteristic with the given UUID.
      *
      * Sample code:
-     * ```
-     * Characteristic(
+     * ```kotlin
+     * val handle = Characteristic(
      *    uuid = <Some UUID>,
-     *    property = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+     *    properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
      *    permission = Permission.READ,
      * ) {
      *    // Note: Client Characteristic Configuration descriptor is added automatically.
@@ -157,31 +185,46 @@ interface ServiceScope {
      * ```
      *
      * @param uuid The UUID of the characteristic.
-     * @param properties List of properties of the characteristic.
+     * @param properties Set of properties of the characteristic.
      * @param permission The permission of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
     fun Characteristic(
         uuid: Uuid,
-        properties: List<CharacteristicProperty>,
+        properties: Set<CharacteristicProperty>,
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
-    ) = Characteristic(uuid, properties, listOf(permission), builder)
+    ) = Characteristic(uuid, properties, setOf(permission), builder)
 
     /**
      * Declares a characteristic with the given 16 or 32 bit short UUID.
      *
+     * Sample code:
+     * ```kotlin
+     * val handle = Characteristic(
+     *    shortUuid = <16 pr 32-bit UUID>,
+     *    properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+     *    permission = Permission.READ,
+     * ) {
+     *    // Note: Client Characteristic Configuration descriptor is added automatically.
+     *
+     *    CharacteristicUserDescriptionDescriptor("Some description")
+     * }
+     * ```
+     *
      * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
-     * @param properties List of properties of the characteristic.
+     * @param properties Set of properties of the characteristic.
      * @param permission The permission of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
     fun Characteristic(
         shortUuid: Int,
-        properties: List<CharacteristicProperty>,
+        properties: Set<CharacteristicProperty>,
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
     ) = Characteristic(Uuid.fromShortUuid(shortUuid), properties, permission, builder)
@@ -190,8 +233,8 @@ interface ServiceScope {
      * Declares a characteristic with the given UUID.
      *
      * Sample code:
-     * ```
-     * Characteristic(
+     * ```kotlin
+     * val handle = Characteristic(
      *    uuid = <Some UUID>,
      *    property = CharacteristicProperty.READ,
      *    permission = Permission.READ,
@@ -199,9 +242,10 @@ interface ServiceScope {
      * ```
      *
      * @param uuid The UUID of the characteristic.
-     * @param property List of properties of the characteristic.
+     * @param property Set of properties of the characteristic.
      * @param permission The permission of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
     fun Characteristic(
@@ -209,15 +253,25 @@ interface ServiceScope {
         property: CharacteristicProperty,
         permission: Permission,
         builder: CharacteristicScope.() -> Unit = {}
-    ) = Characteristic(uuid, listOf(property), listOf(permission), builder)
+    ) = Characteristic(uuid, setOf(property), setOf(permission), builder)
 
     /**
      * Declares a characteristic with the given 16 or 32 bit short UUID.
      *
+     * Sample code:
+     * ```kotlin
+     * val handle = Characteristic(
+     *    shortUuid = <16 or 32-bit UUID>,
+     *    property = CharacteristicProperty.WRITE,
+     *    permission = Permission.WRITE_ENCRYPTED,
+     * )
+     * ```
+     *
      * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
-     * @param property List of properties of the characteristic.
+     * @param property Set of properties of the characteristic.
      * @param permission The permission of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
@@ -232,31 +286,41 @@ interface ServiceScope {
      * Declares a characteristic with the given UUID without permission to read or write.
      *
      * Sample code:
-     * ```
-     * Characteristic(
+     * ```kotlin
+     * val handle = Characteristic(
      *    uuid = <Some UUID>,
      *    property = CharacteristicProperty.NOTIFY,
      * )
      * ```
      *
      * @param uuid The UUID of the characteristic.
-     * @param property List of properties of the characteristic.
+     * @param property Set of properties of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
     fun Characteristic(
         uuid: Uuid,
         property: CharacteristicProperty,
         builder: CharacteristicScope.() -> Unit = {}
-    ) = Characteristic(uuid, listOf(property), emptyList(), builder)
+    ) = Characteristic(uuid, setOf(property), emptySet(), builder)
 
     /**
      * Declares a characteristic with the given 16 or 32 bit short UUID
      * without permission to read or write.
      *
+     * Sample code:
+     * ```kotlin
+     * val handle = Characteristic(
+     *    shortUuid = <16 or 32-bit UUID>,
+     *    property = CharacteristicProperty.READ,
+     * )
+     * ```
+     *
      * @param shortUuid The 16 or 32 bit short UUID of the characteristic.
-     * @param property List of properties of the characteristic.
+     * @param property Set of properties of the characteristic.
      * @param builder Scope of the characteristic.
+     * @return The handle number of the characteristic.
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
@@ -272,7 +336,7 @@ interface ServiceScope {
      * Inner services are services that are included in the primary service.
      *
      * Sample code:
-     * ```
+     * ```kotlin
      * Service(<Some UUID>) {
      *    Characteristic(...)
      *    InnerService(<Some UUID>) {
@@ -289,6 +353,17 @@ interface ServiceScope {
 
     /**
      * Declares an inner service with the given 16 or 32 bit short UUID.
+     *
+     * Sample code:
+     * ```kotlin
+     * Service(<16 or 32-bit UUID>) {
+     *    Characteristic(...)
+     *    InnerService(<Some UUID>) {
+     *       Characteristic(...)
+     *       Characteristic(...)
+     *    )
+     * )
+     * ```
      *
      * @param shortUuid The 16 or 32 bit short UUID of the inner service.
      * @param builder Scope of the inner service.
@@ -309,33 +384,45 @@ interface CharacteristicScope {
      * Declares a descriptor with the given UUID.
      *
      * Sample code:
-     * ```
-     * Descriptor(
+     * ```kotlin
+     * val handle = Descriptor(
      *    uuid = <Some UUID>,
      *    permissions = Permission.READ and Permission.WRITE,
      * )
      * ```
      *
      * @param uuid The UUID of the descriptor.
-     * @param permissions List of permissions of the descriptor.
+     * @param permissions Set of permissions of the descriptor.
+     * @return The handle number of the descriptor.
      */
     @Suppress("FunctionName")
-    fun Descriptor(uuid: Uuid, permissions: List<Permission> = emptyList())
+    fun Descriptor(uuid: Uuid, permissions: Set<Permission> = emptySet()): Int
 
     /**
      * Declares a descriptor with the given 16 or 32 bit short UUID.
      *
+     * Sample code:
+     * ```kotlin
+     * val handle = Descriptor(
+     *    shortUuid = <16 or 32-bit UUID>,
+     *    permissions = Permission.READ and Permission.WRITE,
+     * )
+     * ```
+     *
+     * @param shortUuid 16 or 32-bit UUID of the descriptor.
+     * @param permissions Set of permissions of the descriptor.
+     * @return The handle number of the descriptor.
      * @see CharacteristicScope.Descriptor
      */
     @Suppress("FunctionName")
-    fun Descriptor(shortUuid: Int, permissions: List<Permission> = emptyList()) =
+    fun Descriptor(shortUuid: Int, permissions: Set<Permission> = emptySet()) =
         Descriptor(Uuid.fromShortUuid(shortUuid), permissions)
 
     /**
      * Declares a descriptor with the given UUID.
      *
      * Sample code:
-     * ```
+     * ```kotlin
      * Descriptor(
      *    uuid = <Some UUID>,
      *    permission = Permission.READ,
@@ -344,13 +431,26 @@ interface CharacteristicScope {
      *
      * @param uuid The UUID of the descriptor.
      * @param permission The permission of the descriptor.
+     * @return The handle number of the descriptor.
      */
     @Suppress("FunctionName")
-    fun Descriptor(uuid: Uuid, permission: Permission) = Descriptor(uuid, listOf(permission))
+    fun Descriptor(uuid: Uuid, permission: Permission) =
+        Descriptor(uuid, setOf(permission))
 
     /**
      * Declares a descriptor with the given 16 or 32 bit short UUID.
      *
+     * Sample code:
+     * ```kotlin
+     * Descriptor(
+     *    shortUuid = <16 or 32-bit UUID>,
+     *    permission = Permission.READ,
+     * )
+     * ```
+     *
+     * @param shortUuid 16 or 32-bit UUID of the descriptor.
+     * @param permission The permission of the descriptor.
+     * @return The handle number of the descriptor.
      * @see CharacteristicScope.Descriptor
      */
     @Suppress("FunctionName")
@@ -361,13 +461,52 @@ interface CharacteristicScope {
      * Declares a Characteristic User Description descriptor.
      *
      * This descriptor is used to provide a human-readable description of the characteristic.
+     *
      * Although the CUDD is usually read-only, it may be writable. In that case, the
-     * [CharacteristicProperty.EXTENDED_PROPERTIES] property and Characteristic Extended Properties
-     * descriptor with `WRITABLE_AUXILIARIES` flag will be added automatically.
+     * [CharacteristicProperty.EXTENDED_PROPERTIES] property and [CharacteristicExtendedPropertiesDescriptor]
+     * with `writableAuxiliaries` flag will be added automatically.
      *
      * @param description The human-readable description of the characteristic.
      * @param writable Whether the descriptor is writable.
      */
     @Suppress("FunctionName")
-    fun CharacteristicUserDescriptionDescriptor(description: String, writable: Boolean = false)
+    fun CharacteristicUserDescriptionDescriptor(
+        description: String,
+        writable: Boolean = false
+    ): Int
+
+    /**
+     * Declares a Client Characteristic Configuration descriptor.
+     *
+     * This descriptor is used to enable or disable notifications and indications
+     * for the characteristic.
+     *
+     * Unless you want to customize its initial value, you do not need to add this descriptor
+     * manually. It is added automatically when the characteristic
+     * has `NOTIFY` or `INDICATE` property.
+     *
+     * @param enabled Whether notifications/indications are enabled initially.
+     */
+    @Suppress("FunctionName")
+    fun ClientCharacteristicConfigurationDescriptor(enabled: Boolean = false): Int
+
+    /**
+     * Declares a Characteristic Extended Properties descriptor.
+     *
+     * This descriptor is used to define additional properties of the characteristic,
+     * such as reliable writes and writable auxiliaries.
+     *
+     * Unless you need to customize [reliableWrite], you do not need to add this descriptor
+     * manually. It is added automatically when the characteristic has
+     * `EXTENDED_PROPERTIES` property and the [CharacteristicUserDescriptionDescriptor] is
+     * writable.
+     *
+     * @param reliableWrite Whether reliable writes are supported.
+     * @param writableAuxiliaries Whether writable auxiliaries are supported.
+     */
+    @Suppress("FunctionName")
+    fun CharacteristicExtendedPropertiesDescriptor(
+        reliableWrite: Boolean = false,
+        writableAuxiliaries: Boolean = false
+    ): Int
 }

@@ -52,13 +52,16 @@ dependencies {
     api(libs.kotlinx.datetime)
 
     implementation(libs.slf4j)
+
+    // Adds @hide annotation to exclude internal classes from the documentation.
+    dokkaPlugin(libs.dokka.android.gradlePlugin)
 }
 
 dokka {
     dokkaSourceSets.named("main") {
         includes.from("Module.md")
         perPackageOption {
-            matchingRegex.set("no.nordicsemi.kotlin.ble.client.mock.internal")
+            matchingRegex.set("no.nordicsemi.kotlin.ble.client.internal")
             suppress.set(true)
         }
     }

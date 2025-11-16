@@ -34,6 +34,7 @@ package no.nordicsemi.kotlin.ble.android.sample.scanner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,6 +43,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -61,13 +63,13 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 fun ScannerScreen() {
     val vm = hiltViewModel<ScannerViewModel>()
     val state by vm.state.collectAsStateWithLifecycle()
-    val devices by vm.devices.collectAsStateWithLifecycle()
+    val devices by vm.peripherals.collectAsStateWithLifecycle()
     val isScanning by vm.isScanning.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -126,26 +128,29 @@ fun ScannerView(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
         if (devices.isNotEmpty()) {
-            Text(text = "Tap on a device to connect.")
-
             Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = "Tap on a device to connect.")
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalDivider()
+
         DeviceList(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
             devices = devices,
             onItemClick = onPeripheralClicked,
             onBondRequested = onBondRequested,
             onRemoveBondRequested = onRemoveBondRequested,
             onClearCacheRequested = onClearCacheRequested,
+            contentPadding = PaddingValues(bottom = 56.dp, top = 16.dp),
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ScannerScreenPreview() {
     val scope = rememberCoroutineScope()

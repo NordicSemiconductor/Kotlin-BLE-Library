@@ -56,5 +56,9 @@ dependencies {
 dokka {
     dokkaSourceSets.named("main") {
         includes.from("Module.md")
+        perPackageOption {
+            matchingRegex.set("no.nordicsemi.kotlin.ble.advertiser.android.mock.internal")
+            suppress.set(true)
+        }
     }
 }

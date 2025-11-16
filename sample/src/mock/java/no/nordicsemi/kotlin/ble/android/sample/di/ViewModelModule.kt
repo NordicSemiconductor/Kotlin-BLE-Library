@@ -44,17 +44,24 @@ import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
+import no.nordicsemi.kotlin.ble.client.mock.ConnectionResult
+import no.nordicsemi.kotlin.ble.client.mock.DisconnectionReason
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
 import no.nordicsemi.kotlin.ble.client.mock.Proximity
+import no.nordicsemi.kotlin.ble.client.mock.ReadResponse
+import no.nordicsemi.kotlin.ble.client.mock.WriteResponse
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
+import no.nordicsemi.kotlin.ble.core.and
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
@@ -66,18 +73,81 @@ import kotlin.uuid.Uuid
 @Module
 @InstallIn(ViewModelComponent::class)
 object ViewModelModule {
+    /** Handle of the Button characteristic. */
+    private var buttonHandle: Int? = null
+    /** Handle of the LED characteristic. */
+    private var ledHandle: Int? = null
 
+    /**
+     * Implementation of the Blinky peripheral behavior.
+     *
+     * This is based on the [Peripheral LBS](https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/samples/bluetooth/peripheral_lbs/README.html)
+     * (LED Button Service) from Nordic SDK.
+     *
+     * The device has one characteristic for the Button (read/notify) and one for the LED (read/write).
+     */
     private val blinkyImpl: PeripheralSpecEventHandler = object: PeripheralSpecEventHandler {
+        /** Checks whether the byte array represents "ON" state. */
+        private fun ByteArray.isOn() = isNotEmpty() && this[0] != 0.toByte()
+        /** Converts the Boolean to a byte array. */
+        private fun Boolean.toBytes(): ByteArray = if (this) byteArrayOf(0x01) else byteArrayOf(0x00)
 
-        override fun onConnectionRequest(): Result<Unit> {
-            Timber.i("Connection request received")
-            return Result.success(Unit)
+        /** Current state of the LED. */
+        private var isLedOn: Boolean = false
+        /**
+         * Current state of the Button.
+         *
+         * Changing the state will simulate a notification being sent to the connected clients.
+         */
+        private var isButtonPressed = false
+            set(value) {
+                buttonHandle?.let {
+                    Timber.i("[Blinky]: Simulating Button ${if (value) "clicked" else "released"}")
+                    blinky.simulateValueUpdate(it, value.toBytes())
+                }
+            }
+
+        // Event handlers implementation
+
+        override fun onConnectionRequest(preferredPhy: List<Phy>): ConnectionResult {
+            Timber.i("[Blinky] Connection request received")
+            return ConnectionResult.Accept
         }
+
+        override fun onConnectionLost(reason: DisconnectionReason) {
+            Timber.i("[Blinky] Connection terminated")
+            super.onConnectionLost(reason)
+        }
+
+        override fun onWriteRequest(
+            characteristic: MockRemoteCharacteristic,
+            value: ByteArray
+        ): WriteResponse {
+            val on = value.isOn()
+            isLedOn = on
+            Timber.i("[Blinky]: LED ${if (on) "ON" else "OFF"}")
+
+            // Send a Button notification when LED characteristic is written to.
+            isButtonPressed = on
+
+            return WriteResponse.Success
+        }
+
+        override fun onReadRequest(characteristic: MockRemoteCharacteristic): ReadResponse =
+            when (characteristic.instanceId) {
+                buttonHandle -> ReadResponse.Success(isButtonPressed.toBytes())
+                ledHandle -> ReadResponse.Success(isLedOn.toBytes())
+                else -> ReadResponse.Failure(OperationStatus.READ_NOT_PERMITTED)
+            }
 
     }
 
+    /** Definition of the Blinky device. */
     private val blinky = PeripheralSpec
-        .simulatePeripheral("AA:BB:CC:DD:EE:FF", proximity = Proximity.FAR) {
+        .simulatePeripheral(
+            identifier = "AA:BB:CC:DD:EE:FF",
+            proximity = Proximity.FAR
+        ) {
             advertising(
                 parameters = LegacyAdvertisingSetParameters(
                     connectable = true,
@@ -86,7 +156,7 @@ object ViewModelModule {
                 isAdvertisingWhenConnected = false,
                 delay = 1.seconds,
                 // timeout = 10.seconds,
-                maxAdvertisingEvents = 30,
+                // maxAdvertisingEvents = 30,
             ) {
                 CompleteLocalName("Nordic_LBS")
                 ServiceUuid(Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123"))
@@ -111,24 +181,44 @@ object ViewModelModule {
             }
             connectable(
                 name = "Nordic_Blinky",
-                maxMtu = 247,
+                maxAttMtu = 247,
+                maxL2capMtu = 251,
+                // Uncommenting this line switches to a different "connectable" method, which
+                // makes the peripheral "cached" (there's additional param "cachedServices" to provide).
+                // In that case, the mock impl assumes, that the peripheral was connected before
+                // and services were cached, i.e. the Device Name was read. Hence, the scanner
+                // will switch from "Nordic_LBS" to "Nordic_Blinky".
+                //
+                // isBonded = false,
                 eventHandler = blinkyImpl,
             ) {
+                GenericAccessService()
+                GenericAttributeService()
+                // Add LED Button Service (Blinky)
                 Service(
                     uuid = Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123")
                 ) {
-                    Characteristic(
+                    buttonHandle = Characteristic(
                         uuid = Uuid.parse("00001524-1212-EFDE-1523-785FEABCD123"),
-                        properties = listOf(CharacteristicProperty.READ, CharacteristicProperty.WRITE),
-                        permissions = listOf(Permission.READ, Permission.WRITE),
+                        properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+                        permission = Permission.READ,
                     ) {
                         // CCCD is added automatically
-                        CharacteristicUserDescriptionDescriptor("Button 1")
+                        CharacteristicUserDescriptionDescriptor("Button 1", writable = true)
+                        // Adding Characteristic Extended Properties Descriptor (CEPD) manually
+                        // allows to set Reliable Write property.
+                        // The Writable Auxiliaries property is added automatically if CUD is writable.
+                        CharacteristicExtendedPropertiesDescriptor(
+                            reliableWrite = true,
+                            writableAuxiliaries = true
+                        )
+                        // A custom descriptor with write-only property. Just for fun.
+                        Descriptor(Uuid.random(), permission = Permission.WRITE)
                     }
-                    Characteristic(
+                    ledHandle = Characteristic(
                         uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
-                        properties = listOf(CharacteristicProperty.READ, CharacteristicProperty.NOTIFY),
-                        permissions = listOf(Permission.READ),
+                        properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,
+                        permissions = Permission.READ and Permission.WRITE,
                     ) {
                         // CCCD is added automatically
                         CharacteristicUserDescriptionDescriptor("LED 1")

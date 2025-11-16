@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
@@ -89,6 +90,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     override val identifier: ID
         get() = impl.identifier
 
+    internal val executor = this.impl
+
     /**
      * A job that collects GATT events from the peripheral.
      *
@@ -121,6 +124,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     private var serviceDiscoveryRequested = false
 
     /**
+     * The list of service UUIDs requested for discovery.
+     *
+     * @see discoverServices
+     * TODO Should and when this list be cleared?
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    private var requestedServiceUuids: List<Uuid> = emptyList()
+
+    /**
      * An interface that provides methods to interact with the peripheral.
      *
      * The implementation should initiate requests and report events using [events] flow.
@@ -148,30 +160,39 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         /** Returns true if the connection is closed. */
         val isClosed: Boolean
 
+        /** Returns true it reliable write is in progress. */
+        var isReliableWriteEnabled: Boolean
+
         /**
          * Makes a connection to the peripheral.
+         *
+         * This method may be called multiple times in case of a retry (when [autoConnect] is `false`).
          *
          * @param autoConnect True to use auto connect feature, false to use direct connection.
          * @param preferredPhy The preferred PHYs for connection.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
+        suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
 
         /**
          * Initiates GATT services discovery.
          *
          * The result should be reported by emitting [ServicesDiscovered] event to [events] flow.
+         * @param uuids An optional list of service UUIDs to filter the results.
+         * @return True if service discovery was requested successfully; false otherwise.
          */
-        fun discoverServices(): Boolean
+        @OptIn(ExperimentalUuidApi::class)
+        suspend fun discoverServices(uuids: List<Uuid>): Boolean
 
         /**
          * Initiates a read of the RSSI value from the peripheral.
          *
          * The result should be reported by emitting [RssiRead] event to [events] flow.
          *
+         * @return True if RSSI was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun readRssi(): Boolean
+        suspend fun readRssi(): Boolean
 
         /**
          * Disconnects from the peripheral.
@@ -179,9 +200,10 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * The result should be reported by emitting [ConnectionStateChanged] event
          * to [events] flow.
          *
+         * @return True if disconnection was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun disconnect(): Boolean
+        suspend fun disconnect(): Boolean
 
         /**
          * Closes the connection to the peripheral.
@@ -210,11 +232,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param condition The condition to meet, which takes the current state as an argument.
      * @throws TimeoutCancellationException If the timeout is set and the condition is not met.
      */
-    protected suspend fun waitUntil(
+    protected suspend fun await(
+        action: suspend () -> Unit,
+        condition: suspend (ConnectionState) -> Boolean,
         timeout: Duration = Duration.INFINITE,
-        condition: suspend (ConnectionState) -> Boolean
     ): ConnectionState = withTimeout(timeout) {
         impl.events
+            .onSubscription { action() }
             .filterIsInstance(ConnectionStateChanged::class)
             .map { it.newState }
             .first { condition(it) }
@@ -322,9 +346,14 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * @param event The GATT event to process.
      */
+    @OptIn(ExperimentalUuidApi::class)
     protected open suspend fun handle(event: GattEvent) {
         when (event) {
             is ConnectionStateChanged -> {
+                // If the state didn't change, ignore the event.
+                if (_state.value == event.newState) {
+                    return
+                }
                 _state.update { event.newState }
                 when (event.newState) {
                     is ConnectionState.Connected -> {
@@ -343,7 +372,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             ServicesChanged -> {
                 logger.info("Services invalidated")
                 invalidateServices()
-                discoverServices()
+                discoverServices(requestedServiceUuids)
             }
 
             is ServicesDiscovered -> {
@@ -366,11 +395,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     /**
      * This method is called when the peripheral is connected.
      */
+    @OptIn(ExperimentalUuidApi::class)
     protected open suspend fun initiateConnection() {
         // If services are observed, start service discovery.
         // This may happen when services() was called before the peripheral connected.
         if (serviceDiscoveryRequested) {
-            discoverServices()
+            discoverServices(requestedServiceUuids)
         }
     }
 
@@ -379,11 +409,14 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * This method does nothing if [servicesDiscovered] is `true`.
      */
-    private fun discoverServices() {
+    @OptIn(ExperimentalUuidApi::class)
+    private fun discoverServices(uuids: List<Uuid>) {
         if (!servicesDiscovered) {
             servicesDiscovered = true
             logger.trace("Discovering services")
-            impl.discoverServices()
+            scope.launch {
+                impl.discoverServices(uuids)
+            }
         }
     }
 
@@ -422,10 +455,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         // Mark that service discovery was requested. This is useful when the peripheral
         // reconnects but the services observer was already set.
         serviceDiscoveryRequested = true
+        requestedServiceUuids = (requestedServiceUuids + uuids).distinct()
 
         // First call to this method triggers service discovery.
         if (isConnected) {
-            discoverServices()
+            discoverServices(uuids)
         }
 
         // If there is no filter, return the original flow.
@@ -446,14 +480,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
-     * The maximum amount of data, in bytes, you can send to a characteristic in a single write
-     * request.
+     * The maximum amount of data, in bytes, that can be send to a characteristic in a single write
+     * operation.
      *
-     * Maximum size for [WriteType.WITH_RESPONSE] type is *512 bytes* or to *ATT MTU - 5 bytes*
-     * when writing reliably (see [ReliableWriteScope]).
-     * For [WriteType.WITHOUT_RESPONSE] it is equal to *ATT MTU - 3 bytes*.
-     *
-     * The ATT MTU value can be negotiated during the connection setup.
+     * Maximum value length depends on [WriteType] and is calculated as:
+     * * *512 bytes* for [WriteType.WITH_RESPONSE],
+     * * *ATT MTU - 3 bytes* for [WriteType.WITHOUT_RESPONSE],
+     * * *ATT MTU - 15 bytes* for [WriteType.SIGNED] (additional 12 bytes for the signature).
      *
      * @throws PeripheralNotConnectedException if the peripheral is not connected.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
@@ -484,6 +517,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
             .takeWhile { !it.isDisconnectionEvent }
             .filterIsInstance(RssiRead::class)
+            // TODO add .timeout(...)?
             .firstOrNull()?.rssi
             ?.also { logger.info("RSSI read: {} dBm", it) }
             ?: throw PeripheralNotConnectedException()
@@ -516,20 +550,22 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 // Cancel the connection attempt.
                 logger.trace("Cancelling connection to {}", this)
                 _state.update { ConnectionState.Disconnecting }
-                impl.disconnect()
             }
             is ConnectionState.Connected -> {
                 // Disconnect from the peripheral.
                 logger.trace("Disconnecting from {}", this)
                 _state.update { ConnectionState.Disconnecting }
-                impl.disconnect()
             }
         }
 
-        // If the peripheral is disconnecting, wait until it is disconnected and close.
+        // Disconnect and wait until it is disconnected, then close.
         try {
             if (!impl.isClosed) {
-                waitUntil(500.milliseconds) { it.isDisconnected }
+                await(
+                    action = { impl.disconnect() },
+                    condition = { it.isDisconnected },
+                    timeout = 500.milliseconds
+                )
             }
         } catch (e: TimeoutCancellationException) {
             if (!isDisconnected) {

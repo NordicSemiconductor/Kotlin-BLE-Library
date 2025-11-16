@@ -41,4 +41,4 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
  */
 data class OperationFailedException(
     val reason: OperationStatus
-): GattException("Operation failed, reason: $reason")
+): GattException("Operation failed: $reason")

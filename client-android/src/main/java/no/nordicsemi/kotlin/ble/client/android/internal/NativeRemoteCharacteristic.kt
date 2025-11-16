@@ -33,28 +33,19 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothStatusCodes
 import android.os.Build
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onSubscription
-import kotlinx.coroutines.flow.takeWhile
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
-import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
-import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
-import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -64,223 +55,65 @@ internal class NativeRemoteCharacteristic(
     private val gatt: BluetoothGatt,
     private val characteristic: BluetoothGattCharacteristic,
     private val events: SharedFlow<GattEvent>,
-): RemoteCharacteristic {
-    override val service: AnyRemoteService = parent
+): BaseRemoteCharacteristic(parent, events) {
     override val uuid: Uuid = characteristic.uuid.toKotlinUuid
     override val instanceId: Int = characteristic.instanceId
-    override val properties: List<CharacteristicProperty> = characteristic.properties.toList()
+    override val properties: Set<CharacteristicProperty> = characteristic.properties.toSet()
     override val descriptors: List<RemoteDescriptor> = characteristic.descriptors.map {
         NativeRemoteDescriptor(this, gatt, it, events)
     }
 
-    companion object {
-        /**
-         * The UUID of the Client Characteristic Configuration descriptor.
-         */
-        private val CLIENT_CHAR_CONF_UUID by lazy { UUID.fromString("00002902-0000-1000-8000-00805f9b34fb") }
-    }
-
-    @Suppress("DEPRECATION")
-    override val isNotifying: Boolean
-        // Check the value of the CCCD descriptor, if such exists.
-        get() = owner != null && characteristic.getDescriptor(CLIENT_CHAR_CONF_UUID)
-            // Note: The value here is not read from the descriptor. Instead, it is stored
-            //       when the descriptor is read or written, despite it being deprecated.
-            ?.value
-            // The CCCD value is 2 bytes long: 0x01-00 for notifications, 0x02-00 for indications.
-            ?.let { it.size == 2 && it[0].toInt() and 0b11 != 0 }
-            // If the CCCD does not exist, notifications or indications cannot be enabled.
-            ?: false
-
-    override suspend fun setNotifying(enabled: Boolean) {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        // If the current state of notifications is the same as the requested state, return.
-        if (enabled == isNotifying)
-            return
-
-        // Verify that the characteristic can be subscribed to.
-        require(properties.intersect(listOf(CharacteristicProperty.NOTIFY, CharacteristicProperty.INDICATE)).isNotEmpty()) {
-            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
-        }
-
-        // Check if the CCCD descriptor exists.
-        val descriptor = descriptors
-            .firstOrNull { it.isClientCharacteristicConfiguration }
-            ?: throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
-
-        // Enable handling of notifications or indications locally.
-        val success = try {
-            gatt.setCharacteristicNotification(characteristic, enabled)
-        } catch (e: Exception) {
-            throw BluetoothException(e)
-        }
+    override fun setCharacteristicNotification(enabled: Boolean) {
+        val success = gatt.setCharacteristicNotification(characteristic, enabled)
         check(success) {
             throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
         }
-
-        // Enable notifications or indications by writing to the CCCD descriptor.
-        val value = when {
-            enabled && CharacteristicProperty.INDICATE in properties -> BluetoothGattDescriptor.ENABLE_INDICATION_VALUE
-            enabled -> BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-            else -> BluetoothGattDescriptor.DISABLE_NOTIFICATION_VALUE
-        }
-        descriptor.write(value)
     }
 
-    override suspend fun read(): ByteArray {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        // Verify that the characteristic can be read.
-        require(CharacteristicProperty.READ in properties) {
-            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
-        }
-
-        return NativeOperationMutex.withLock {
-            // Await the response.
-            events
-                .onSubscription {
-                    // Read the characteristic value.
-                    val success = try {
-                        gatt.readCharacteristic(characteristic)
-                    } catch (e: Exception) {
-                        throw BluetoothException(e)
-                    }
-                    check(success) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                    }
-                }
-                .takeWhile { !it.isServiceInvalidatedEvent }
-                .filterIsInstance(CharacteristicRead::class)
-                .filter { it.characteristic == characteristic }
-                .firstOrNull()
-                ?.let {
-                    when (it.status) {
-                        OperationStatus.SUCCESS -> it.value
-                        else -> throw OperationFailedException(it.status)
-                    }
-                }
-                ?: throw InvalidAttributeException()
+    override suspend fun FlowCollector<GattEvent>.executeRead() {
+        val success = gatt.readCharacteristic(characteristic)
+        check(success) {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
         }
     }
 
     @Suppress("DEPRECATION")
-    override suspend fun write(data: ByteArray, writeType: WriteType) {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
+    override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+            when (result) {
+                BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
 
-        // Verify that the characteristic can be written.
-        require(properties.intersect(listOf(CharacteristicProperty.WRITE, CharacteristicProperty.WRITE_WITHOUT_RESPONSE)).isNotEmpty()) {
-            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
-        }
+                BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
+                    throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
 
-        // Write the characteristic value.
-        NativeOperationMutex.withLock {
-            // Await the write operation result.
-            events
-                .onSubscription {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        val result = try {
-                            gatt.writeCharacteristic(characteristic, data, writeType.toInt())
-                        } catch (e: Exception) {
-                            throw BluetoothException(e)
-                        }
-                        when (result) {
-                            BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
-                            BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
-                                throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
-                            BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                                throw OperationFailedException(OperationStatus.BUSY)
-                            else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                        }
-                    } else {
-                        val success = try {
-                            characteristic.value = data
-                            characteristic.writeType = writeType.toInt()
-                            gatt.writeCharacteristic(characteristic)
-                        } catch (e: Exception) {
-                            throw BluetoothException(e)
-                        }
-                        check(success) {
-                            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                        }
-                    }
-                }
-                .takeWhile { !it.isServiceInvalidatedEvent }
-                .filterIsInstance(CharacteristicWrite::class)
-                .filter { it.characteristic == characteristic }
-                .firstOrNull()
-                ?.let {
-                    check(it.status == OperationStatus.SUCCESS) {
-                        throw OperationFailedException(it.status)
-                    }
-                }
-                ?: throw InvalidAttributeException()
+                BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
+                    throw OperationFailedException(OperationStatus.BUSY)
+
+                else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            }
+        } else {
+            characteristic.value = data
+            characteristic.writeType = writeType.toInt()
+            val success = gatt.writeCharacteristic(characteristic)
+            check(success) {
+                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            }
         }
     }
 
-    override suspend fun subscribe(): Flow<ByteArray> {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        // Suspend until the notifications are enabled.
-        setNotifying(true)
-        return events
-            .takeWhile { !it.isServiceInvalidatedEvent }
-            .filterIsInstance(CharacteristicChanged::class)
-            .filter { it.characteristic == characteristic }
-            .map { it.value }
-    }
-
-    override suspend fun waitForValueChange(): ByteArray {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        return subscribe()
-            .firstOrNull()
-            ?: throw InvalidAttributeException()
-    }
-
-    override fun toString(): String = uuid.toString()
+    override fun OperationEvent.matches(): Boolean = subject == characteristic
 }
 
-private fun Int.toList(): List<CharacteristicProperty> {
-    val list = mutableListOf<CharacteristicProperty>()
-    if (this and BluetoothGattCharacteristic.PROPERTY_BROADCAST != 0) {
-        list.add(CharacteristicProperty.BROADCAST)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS != 0) {
-        list.add(CharacteristicProperty.EXTENDED_PROPERTIES)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0) {
-        list.add(CharacteristicProperty.INDICATE)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0) {
-        list.add(CharacteristicProperty.NOTIFY)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_READ != 0) {
-        list.add(CharacteristicProperty.READ)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE != 0) {
-        list.add(CharacteristicProperty.SIGNED_WRITE)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) {
-        list.add(CharacteristicProperty.WRITE)
-    }
-    if (this and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0) {
-        list.add(CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
-    }
-    return list
-}
+private fun Int.toSet(): Set<CharacteristicProperty> =
+    listOf(
+        BluetoothGattCharacteristic.PROPERTY_BROADCAST to CharacteristicProperty.BROADCAST,
+        BluetoothGattCharacteristic.PROPERTY_READ to CharacteristicProperty.READ,
+        BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE to CharacteristicProperty.WRITE_WITHOUT_RESPONSE,
+        BluetoothGattCharacteristic.PROPERTY_WRITE to CharacteristicProperty.WRITE,
+        BluetoothGattCharacteristic.PROPERTY_NOTIFY to CharacteristicProperty.NOTIFY,
+        BluetoothGattCharacteristic.PROPERTY_INDICATE to CharacteristicProperty.INDICATE,
+        BluetoothGattCharacteristic.PROPERTY_SIGNED_WRITE to CharacteristicProperty.SIGNED_WRITE,
+        BluetoothGattCharacteristic.PROPERTY_EXTENDED_PROPS to CharacteristicProperty.EXTENDED_PROPERTIES,
+    ).mapNotNull { (flag, prop) -> if (this and flag != 0) prop else null }
+     .toSet()

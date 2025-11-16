@@ -46,9 +46,15 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RssiRead
 import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
-import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
-import no.nordicsemi.kotlin.ble.client.android.MtuChanged
-import no.nordicsemi.kotlin.ble.client.android.PhyChanged
+import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
+import no.nordicsemi.kotlin.ble.client.MtuChanged
+import no.nordicsemi.kotlin.ble.client.PhyChanged
+import no.nordicsemi.kotlin.ble.client.android.ReliableWriteCompleted
+import no.nordicsemi.kotlin.ble.client.internal.CharacteristicChanged
+import no.nordicsemi.kotlin.ble.client.internal.CharacteristicRead
+import no.nordicsemi.kotlin.ble.client.internal.CharacteristicWrite
+import no.nordicsemi.kotlin.ble.client.internal.DescriptorRead
+import no.nordicsemi.kotlin.ble.client.internal.DescriptorWrite
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import org.slf4j.LoggerFactory
@@ -61,6 +67,8 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
     /**
+     * A flag set when the user initiates terminating the connection.
+     *
      * Older Android versions don't return status=8 (GATT_CONN_TIMEOUT) when the connection
      * drops due to a link loss. By checking whether it was the user who requested disconnection
      * we can improve the status.
@@ -151,9 +159,11 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         _events.tryEmit(DescriptorWrite(descriptor, status.toOperationStatus()))
     }
 
+    // Note, this is called when Reliable Write was executed or aborted.
+    // There is no way to distinguish between the two without keeping state.
     override fun onReliableWriteCompleted(gatt: BluetoothGatt, status: Int) {
         logger.debug("onReliableWriteCompleted: status=$status")
-        // TODO implement
+        _events.tryEmit(ReliableWriteCompleted(status.toOperationStatus()))
     }
 
     // Handling connection parameter updates
@@ -161,7 +171,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     override fun onMtuChanged(gatt: BluetoothGatt, mtu: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("MTU request failed with status $status")
-            return
+            // no return, event must be emitted
         }
         logger.debug("onMtuChanged: mtu=$mtu")
         _events.tryEmit(MtuChanged(mtu))
@@ -170,7 +180,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     override fun onReadRemoteRssi(gatt: BluetoothGatt, rssi: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("RSSI request failed with status $status")
-            return
+            // no return, event must be emitted
         }
         logger.debug("onReadRemoteRssi: rssi=$rssi")
         _events.tryEmit(RssiRead(rssi))
@@ -179,7 +189,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     override fun onPhyUpdate(gatt: BluetoothGatt, txPhy: Int, rxPhy: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("PHY update failed with status $status")
-            return
+            // no return, event must be emitted
         }
         val phyInUse = PhyInUse(txPhy.toPhy(), rxPhy.toPhy())
         logger.debug("onPhyUpdate: {}", phyInUse)
@@ -189,7 +199,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     override fun onPhyRead(gatt: BluetoothGatt, txPhy: Int, rxPhy: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("Reading PHY failed with status $status")
-            return
+            // no return, event must be emitted
         }
         val phyInUse = PhyInUse(txPhy.toPhy(), rxPhy.toPhy())
         logger.debug("onPhyRead: {}", phyInUse)
@@ -201,7 +211,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     fun onConnectionUpdated(gatt: BluetoothGatt, interval: Int, latency: Int, timeout: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("Connection update failed with status $status")
-            return
+            // no return, event must be emitted
         }
         val newParameters = ConnectionParameters.Connected(interval, latency, timeout)
         logger.debug("onConnectionUpdated: {}", newParameters)

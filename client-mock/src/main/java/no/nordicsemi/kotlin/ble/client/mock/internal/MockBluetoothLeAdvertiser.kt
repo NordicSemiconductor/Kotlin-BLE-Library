@@ -48,71 +48,78 @@ import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 
 class MockBluetoothLeAdvertiser<ID: Any>(
     private val scope: CoroutineScope,
-    private val environment: MockEnvironment,
 ) {
     private val _advertisingEvents = MutableSharedFlow<MockScanResult<ID>>()
     val events = _advertisingEvents.asSharedFlow()
 
     private var jobs = mutableListOf<Job>()
 
+    /**
+     * Simulates advertising for given peripheral specs.
+     *
+     * This implementation emits advertising events just as specified in the [PeripheralSpec]s.
+     * It does not take under consideration the [MockEnvironment], i.e. packets using
+     * LE Coded PHY will advertise and it is up to the scanner to filter them or not.
+     *
+     * @param scope The coroutine scope to run the advertising simulation in.
+     * @return A flow emitting [MockScanResult]s for each advertising event.
+     */
     fun simulateAdvertising(peripherals: List<PeripheralSpec<ID>>) {
         peripherals.forEach { peripheralSpec ->
             // If a peripheral has defined advertising data, begin mock advertising.
-            peripheralSpec.advertisement?.let { list ->
-                list.forEach { advertisementConfig ->
-                    // Build the advertising parameters. We do this here once, as it doesn't change over time.
-                    val rawAdvertisingData = advertisementConfig.advertisingData.raw
-                    val bluetooth5AdvertisingSetParameters =
-                        advertisementConfig.parameters as? Bluetooth5AdvertisingSetParameters
-                    val txPowerLevel = advertisementConfig.parameters.txPowerLevel
-                        .takeIf { bluetooth5AdvertisingSetParameters?.includeTxPowerLevel == true }
-                    val primaryPhy =
-                        bluetooth5AdvertisingSetParameters?.primaryPhy ?: PrimaryPhy.PHY_LE_1M
-                    val secondaryPhy = bluetooth5AdvertisingSetParameters?.secondaryPhy
+            peripheralSpec.advertisingSets?.forEach { advertisingSet ->
+                // Build the advertising parameters. We do this here once, as it doesn't change over time.
+                val rawAdvertisingData = advertisingSet.advertisingData.raw
+                val bluetooth5AdvertisingSetParameters =
+                    advertisingSet.parameters as? Bluetooth5AdvertisingSetParameters
+                val txPowerLevel = advertisingSet.parameters.txPowerLevel
+                    .takeIf { bluetooth5AdvertisingSetParameters?.includeTxPowerLevel == true }
+                val primaryPhy =
+                    bluetooth5AdvertisingSetParameters?.primaryPhy ?: PrimaryPhy.PHY_LE_1M
+                val secondaryPhy = bluetooth5AdvertisingSetParameters?.secondaryPhy
 
-                    // With the parameters ready, we can start mock advertising.
-                    // Advertising will continue until:
-                    // * the timeout is reached,
-                    // * the maximum number of advertising events is reached,
-                    // * the simulation is tear down
-                    // * the scope is closed
-                    val job = scope.launch {
-                        // First, delay the advertising if needed.
-                        delay(advertisementConfig.delay)
+                // With the parameters ready, we can start mock advertising.
+                // Advertising will continue until:
+                // * the timeout is reached,
+                // * the maximum number of advertising events is reached,
+                // * the simulation is tear down
+                // * the scope is closed
+                val job = scope.launch {
+                    // First, delay the advertising if needed.
+                    delay(advertisingSet.delay)
 
-                        // Set up the timer to cancel advertising after the timeout.
-                        // The default timeout is set to INFINITE.
-                        withTimeoutOrNull(advertisementConfig.timeout) {
-                            // Set up event counter.
-                            repeat(advertisementConfig.maxAdvertisingEvents) {
-                                // The device is advertising only when disconnected or when connected and
-                                // the "isAdvertisingWhenConnected" flag is set.
-                                if (!peripheralSpec.isConnected || advertisementConfig.isAdvertisingWhenConnected) {
-                                    // Make sure the device is in range.
-                                    if (peripheralSpec.proximity != Proximity.OUT_OF_RANGE) {
-                                        // Emit the advertising event.
-                                        val scanResult = MockScanResult(
-                                            peripheralSpec = peripheralSpec,
-                                            isConnectable = advertisementConfig.parameters.connectable,
-                                            advertisingData = rawAdvertisingData,
-                                            isBeacon = advertisementConfig.isBeacon,
-                                            rssi = peripheralSpec.proximity.randomRssi(),
-                                            txPowerLevel = txPowerLevel,
-                                            primaryPhy = primaryPhy,
-                                            secondaryPhy = secondaryPhy,
-                                            timestamp = System.currentTimeMillis() // TODO different time
-                                        )
-                                        _advertisingEvents.emit(scanResult)
-                                    }
+                    // Set up the timer to cancel advertising after the timeout.
+                    // The default timeout is set to INFINITE.
+                    withTimeoutOrNull(advertisingSet.timeout) {
+                        // Set up event counter.
+                        repeat(advertisingSet.maxAdvertisingEvents) {
+                            // The device is advertising only when disconnected or when connected and
+                            // the "isAdvertisingWhenConnected" flag is set.
+                            if (!peripheralSpec.isConnected || advertisingSet.isAdvertisingWhenConnected) {
+                                // Make sure the device is in range.
+                                if (peripheralSpec.proximity != Proximity.OUT_OF_RANGE) {
+                                    // Emit the advertising event.
+                                    val scanResult = MockScanResult(
+                                        peripheralSpec = peripheralSpec,
+                                        isConnectable = advertisingSet.parameters.connectable,
+                                        advertisingData = rawAdvertisingData,
+                                        isBeacon = advertisingSet.isBeacon,
+                                        rssi = peripheralSpec.proximity.randomRssi(),
+                                        txPowerLevel = txPowerLevel,
+                                        primaryPhy = primaryPhy,
+                                        secondaryPhy = secondaryPhy,
+                                        timestamp = System.currentTimeMillis() // TODO different time
+                                    )
+                                    _advertisingEvents.emit(scanResult)
                                 }
-
-                                // Wait the advertising interval for the next advertising event.
-                                delay(advertisementConfig.parameters.interval)
                             }
+
+                            // Wait the advertising interval for the next advertising event.
+                            delay(advertisingSet.parameters.interval)
                         }
                     }
-                    jobs.add(job)
                 }
+                jobs.add(job)
             }
         }
     }

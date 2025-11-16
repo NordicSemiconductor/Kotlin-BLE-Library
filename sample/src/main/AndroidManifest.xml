@@ -6,14 +6,12 @@
         android:usesPermissionFlags="neverForLocation"
         tools:targetApi="31" />
 
-    <!--
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION"
-        tools:remove="android:maxSdkVersion" />
+        android:maxSdkVersion="31"/>
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION"
-        tools:remove="android:maxSdkVersion" />
-    -->
+        android:maxSdkVersion="31" />
 
     <application
         android:allowBackup="true"

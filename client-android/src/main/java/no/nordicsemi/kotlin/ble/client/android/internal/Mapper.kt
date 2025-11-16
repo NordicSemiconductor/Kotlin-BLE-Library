@@ -214,6 +214,15 @@ internal fun Int.toOperationStatus(): OperationStatus = when (this) {
     BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED -> OperationStatus.REQUEST_NOT_SUPPORTED
     BluetoothGatt.GATT_INVALID_OFFSET -> OperationStatus.INVALID_OFFSET
     BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH -> OperationStatus.INVALID_ATTRIBUTE_LENGTH
+    0x01 -> OperationStatus.INVALID_HANDLE
+    0x04 -> OperationStatus.INVALID_PDU
+    0x09 -> OperationStatus.PREPARE_QUEUE_FULL
+    0x0A -> OperationStatus.ATTRIBUTE_NOT_FOUND
+    0x0B -> OperationStatus.ATTRIBUTE_NOT_LONG
+    0x0C -> OperationStatus.ENCRYPTION_KEY_TOO_SHORT
+    0x0E -> OperationStatus.UNLIKELY_ERROR
+    0x11 -> OperationStatus.INSUFFICIENT_RESOURCES
+    0x13 -> OperationStatus.VALUE_NOT_ALLOWED
     133 -> OperationStatus.GATT_ERROR
     137 -> OperationStatus.INSUFFICIENT_AUTHENTICATION
     else -> OperationStatus.UNKNOWN_ERROR

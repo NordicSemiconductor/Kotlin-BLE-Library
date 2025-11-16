@@ -40,20 +40,25 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
+import no.nordicsemi.kotlin.ble.client.MtuChanged
 import no.nordicsemi.kotlin.ble.client.Peripheral
-import no.nordicsemi.kotlin.ble.client.ReliableWriteScope
+import no.nordicsemi.kotlin.ble.client.PhyChanged
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.exception.BondingFailedException
 import no.nordicsemi.kotlin.ble.client.android.exception.PeripheralClosedException
+import no.nordicsemi.kotlin.ble.client.android.Peripheral.Executor
 import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
@@ -70,12 +75,11 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.WriteType
+import org.jetbrains.annotations.Range
 import org.slf4j.LoggerFactory
 import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-
-private typealias AndroidExecutor = no.nordicsemi.kotlin.ble.client.android.Peripheral.Executor
 
 /**
  * Android-specific implementation of a peripheral.
@@ -88,7 +92,7 @@ private typealias AndroidExecutor = no.nordicsemi.kotlin.ble.client.android.Peri
 open class Peripheral(
     scope: CoroutineScope,
     impl: Executor,
-): Peripheral<String, AndroidExecutor>(scope, impl) {
+): Peripheral<String, Executor>(scope, impl) {
     private val logger = LoggerFactory.getLogger(Peripheral::class.java)
 
     /**
@@ -114,9 +118,10 @@ open class Peripheral(
          * to [events] flow.
          *
          * @param priority The new connection priority.
+         * @return True if connection priority was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestConnectionPriority(priority: ConnectionPriority): Boolean
+        suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean
 
         /**
          * Requests the MTU (Maximum Transmission Unit) to be set to the given value.
@@ -124,9 +129,10 @@ open class Peripheral(
          * The result should be reported by emitting [MtuChanged] event to [events] flow.
          *
          * @param mtu Requested MTU value.
+         * @return True if MTU was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestMtu(mtu: Int): Boolean
+        suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean
 
         /**
          * Requests the PHY to be changed.
@@ -137,18 +143,41 @@ open class Peripheral(
          * @param txPhy The preferred transmitter PHY.
          * @param rxPhy The preferred receiver PHY.
          * @param phyOptions The preferred coding to use when transmitting on the LE Coded PHY.
+         * @return True if PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean
+        suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean
 
         /**
          * This method should initiate reading the current PHY parameters.
          *
          * The result should be reported by emitting [PhyChanged] event to [events] flow.
          *
+         * @return True if reading PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun readPhy(): Boolean
+        suspend fun readPhy(): Boolean
+
+        /**
+         * This method should initiate a reliable write transaction.
+         *
+         * No event is expected to be emitted to [events] flow.
+         */
+        fun beginReliableWrite(): Boolean
+
+        /**
+         * This method should execute all queued reliable write operations.
+         *
+         * The result should be reported by emitting [ReliableWriteCompleted] event to [events] flow.
+         */
+        suspend fun executeReliableWrite(): Boolean
+
+        /**
+         * This method should abort a reliable write transaction.
+         *
+         * The result should be reported by emitting [ReliableWriteCompleted] event to [events] flow.
+         */
+        suspend fun abortReliableWrite(): Boolean
 
         /**
          * This method should initiate bonding with the peripheral.
@@ -158,9 +187,10 @@ open class Peripheral(
          * The result should be reported by emitting state [BondState.BONDED] (in case of a success)
          * or [BondState.NONE] (in case of a failure) to [bondState] flow.
          *
+         * @return True if bond was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun createBond(): Boolean
+        suspend fun createBond(): Boolean
 
         /**
          * This method should initiate removing bond information associated with the peripheral.
@@ -171,15 +201,17 @@ open class Peripheral(
          *
          * The result should be reported by emitting state [BondState.NONE] to [bondState] flow.
          *
-         * @return True if removing bond information has been initiated.
+         * @return True if removing bond information has been initiated successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        fun removeBond(): Boolean
+        suspend fun removeBond(): Boolean
 
         /**
          * Refreshes services cache.
+         *
+         * @return True if cache was cleared successfully; false otherwise.
          */
-        fun refreshCache(): Boolean
+        suspend fun refreshCache(): Boolean
     }
 
     override val identifier: String = impl.address
@@ -232,9 +264,11 @@ open class Peripheral(
             // In case of auto connect, the connection attempt does not time out.
             // Cancel the coroutine to abort.
             is CentralManager.ConnectionOptions.AutoConnect -> {
-                impl.connect(true, emptyList())
                 try {
-                    val state = waitUntil { it.isConnected || it.isDisconnected }
+                    val state = await(
+                        action = { impl.connect(true, emptyList()) },
+                        condition = { it.isConnected || it.isDisconnected },
+                    )
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger.info("Connected to {}", this)
@@ -289,15 +323,19 @@ open class Peripheral(
 
             // Direct connection gives more options to configure the connection.
             is CentralManager.ConnectionOptions.Direct -> {
-                impl.connect(false, options.preferredPhy)
                 try {
-                    val state = waitUntil(options.timeout) { it.isConnected || it.isDisconnected }
+                    val state = await(
+                        action = { impl.connect(false, options.preferredPhy) },
+                        condition = { it.isConnected || it.isDisconnected },
+                        timeout = options.timeout,
+                    )
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger.info("Connected to {}", this)
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
-                            _phy.update {  PhyInUse.PHY_LE_1M }
+                            // TODO should preferred PHY be used from options?
+                            _phy.update { PhyInUse.PHY_LE_1M }
                             // Since we're connected, let's start collecting GATT events.
                             // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.
@@ -337,6 +375,7 @@ open class Peripheral(
     }
 
     override suspend fun handle(event: GattEvent) = when (event) {
+        is ReliableWriteCompleted -> impl.isReliableWriteEnabled = false
         is MtuChanged -> mtu = event.mtu
         is PhyChanged -> _phy.update { event.phy }
         is ConnectionParametersChanged -> _connectionParameters.update { event.newParameters }
@@ -403,6 +442,7 @@ open class Peripheral(
             }
             .takeWhile { !it.isDisconnectionEvent }
             .filterIsInstance(PhyChanged::class)
+            // TODO add .timeout(...)?
             .firstOrNull()?.phy
             ?.also { logger.info("PHY read: {}", it) }
             ?: throw PeripheralNotConnectedException()
@@ -419,7 +459,7 @@ open class Peripheral(
      * Controller can override these settings.
      *
      * @param txPhy The preferred transmitter PHY.
-     * @param rxPhy The preferred receiver PHY.
+     * @param rxPhy The preferred receiver PHY. By default it is the same as [txPhy].
      * @param phyOptions The preferred coding to use when transmitting on the LE Coded PHY.
      * @return The PHYs in use after the change.
      * @throws PeripheralNotConnectedException If the device is not connected.
@@ -443,20 +483,22 @@ open class Peripheral(
             }
             .takeWhile { !it.isDisconnectionEvent }
             .filterIsInstance(PhyChanged::class)
+            // TODO add .timeout(...)?
             .firstOrNull()?.phy
             ?.also { logger.info("PHY changed to: {}", it) }
             ?: throw PeripheralNotConnectedException()
     }
 
     /**
-     * The maximum amount of data, in bytes, you can send to a characteristic in a single write
+     * The maximum amount of data, in bytes, that can be send to a characteristic in a single write
      * operation.
      *
-     * Maximum size for [WriteType.WITH_RESPONSE] type is *512 bytes* or to *ATT MTU - 5 bytes*
-     * when writing reliably (see [usingReliableWrite]).
-     * For [WriteType.WITHOUT_RESPONSE] it is equal to *ATT MTU - 3 bytes*.
+     * Maximum value length depends on [WriteType] and is calculated as:
+     * * *512 bytes* for [WriteType.WITH_RESPONSE],
+     * * *ATT MTU - 3 bytes* for [WriteType.WITHOUT_RESPONSE],
+     * * *ATT MTU - 15 bytes* for [WriteType.SIGNED] (additional 12 bytes for the signature).
      *
-     * Higher values of ATT MTU for [WriteType.WITHOUT_RESPONSE] can be requested
+     * Higher value of ATT MTU for [WriteType.WITHOUT_RESPONSE] can be requested
      * using [requestHighestValueLength].
      *
      * @throws PeripheralNotConnectedException If the device is not connected.
@@ -465,30 +507,30 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        // TODO Return "mtu - 5" when in Reliable Write mode
         return when (type) {
             WriteType.WITH_RESPONSE -> 512
             WriteType.WITHOUT_RESPONSE -> min(mtu - 3, 512)
-            WriteType.SIGNED -> mtu - 12
+            WriteType.SIGNED -> mtu - 15
         }
     }
 
     /**
      * Requests the highest possible MTU ([517][ATT_MTU_MAX]).
      *
-     * The MTU will be automatically requested when the peripheral is reconnected
-     * when connected using [AutoConnect][CentralManager.ConnectionOptions.AutoConnect].
+     * The highest MTU will be automatically requested when the peripheral is reconnected
+     * when connected using [automaticallyRequestHighestValueLength][CentralManager.ConnectionOptions.automaticallyRequestHighestValueLength]
+     * option.
      *
-     * The MTU is negotiated between the client and the server and set to the highest value supported
-     * by both devices.
+     * #### Note
      *
-     * Although it was possible to request any MTU from 23 to 517, since Android 14 the
-     * system will always request value 517 ignoring the requested value. Hence, this method
-     * does not allow to set the MTU value.
+     * Although it used to be possible to request any value of MTU from 23 to 517, since Android 14
+     * the system will always request value 517 ignoring the requested value. Hence, this method
+     * does not allow to set custom MTU value.
      *
      * #### Important
+     *
      * It is known that some Android devices (i.e. Samsung Galaxy Tab A8) fail to negotiate
-     * LL MTU (packet size on the Link Layer) using Data Length Extension (DLE). They mistakenly
+     * L2CAP MTU (packet size on the Link Layer) using Data Length Extension (DLE). They mistakenly
      * claim supporting only 27 bytes of TX, but then try to send up to 251 bytes, causing the
      * connection to terminate. For such devices it is recommended not to request higher MTU
      * or never sending more than 20 bytes in a single write operation.
@@ -501,7 +543,7 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        if (mtu > ATT_MTU_DEFAULT) {
+        check(mtu == ATT_MTU_DEFAULT) {
             logger.warn("MTU has been already requested")
             return
         }
@@ -515,6 +557,7 @@ open class Peripheral(
             }
             .takeWhile { !it.isDisconnectionEvent }
             .filterIsInstance(MtuChanged::class)
+            // TODO add .timeout(...)?
             .firstOrNull()?.mtu
             ?.also { logger.info("MTU set to {}", it) }
             ?: throw PeripheralNotConnectedException()
@@ -549,29 +592,119 @@ open class Peripheral(
             }
             .takeWhile { !it.isDisconnectionEvent }
             .filterIsInstance(ConnectionParametersChanged::class)
+            // TODO add .timeout(...)?
             .firstOrNull()?.newParameters
             ?.also { logger.info("Connection parameters updated: {}", it) }
             ?: throw PeripheralNotConnectedException()
     }
 
     /**
-     * Initiates a reliable write transaction for a given characteristic.
+     * Initiates a reliable write transaction.
      *
-     * The purpose of queued writes is to queue up writes of values of multiple
-     * attributes in a first-in first-out queue and then execute the write on all of them in
-     * a single atomic operation.
+     * The purpose of *Reliable Write* is to queue up writes of values of one or multiple
+     * attributes (characteristics or descriptors) in a first-in first-out queue and then execute
+     * the write on all of them in a single atomic operation.
      *
-     * Use [ReliableWriteScope.writeReliably] to write the value of supported characteristic
-     * and descriptors reliably.
+     * After calling this method, all write with response operations performed on characteristics
+     * and descriptors will use *Prepare Write Request* PDUs instead of *Write Request*.
      *
-     * All queued writes will be executed in a single atomic operation.
+     * Call [executeReliableWrite] or [abortReliableWrite] to commit or cancel the transaction.
+     *
+     * TODO Is the exception truly thrown?
      * If any of the write operations throws [ValueDoesNotMatchException], the whole transaction
      * will be aborted.
      *
-     * @param operations The lambda that will be called to queue the writes.
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @see executeReliableWrite
+     * @see abortReliableWrite
      */
-    suspend fun usingReliableWrite(operations: suspend ReliableWriteScope.() -> Unit) {
-        TODO()
+    fun beginReliableWrite() {
+        check(isConnected) {
+            throw PeripheralNotConnectedException()
+        }
+        logger.trace("Beginning reliable write")
+        impl.beginReliableWrite()
+    }
+
+    /**
+     * Executes all write with response operations queued since [beginReliableWrite] was called.
+     *
+     * The queued writes will be committed in a single atomic operation.
+     *
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If reliable write could not be executed.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @see beginReliableWrite
+     * @see executeReliableWrite
+     */
+    suspend fun executeReliableWrite() {
+        check(isConnected) {
+            throw PeripheralNotConnectedException()
+        }
+        check(impl.isReliableWriteEnabled) {
+            logger.warn("Reliable write not in progress, nothing to execute")
+            return
+        }
+        logger.trace("Executing reliable write")
+        impl.events
+            .onSubscription {
+                if (!impl.executeReliableWrite()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(ReliableWriteCompleted::class)
+            // TODO add .timeout(...)?
+            .firstOrNull()?.let {
+                when (it.status) {
+                    OperationStatus.SUCCESS -> logger.info("Reliable write executed successfully")
+                    else -> {
+                        logger.warn("Reliable write failed: {}", it.status)
+                        throw OperationFailedException(it.status)
+                    }
+                }
+            } ?: throw PeripheralNotConnectedException()
+    }
+
+    /**
+     * Aborts the reliable write transaction started using [beginReliableWrite].
+     *
+     * All queued write operations will be discarded on the peripheral.
+     *
+     * @throws PeripheralNotConnectedException If the device is not connected.
+     * @throws OperationFailedException If reliable write could not be aborted.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @see beginReliableWrite
+     * @see executeReliableWrite
+     */
+    suspend fun abortReliableWrite() {
+        check(isConnected) {
+            throw PeripheralNotConnectedException()
+        }
+        check(impl.isReliableWriteEnabled) {
+            logger.warn("Reliable write not in progress, nothing to abort")
+            return
+        }
+        logger.trace("Aborting reliable write")
+        impl.events
+            .onSubscription {
+                if (!impl.abortReliableWrite()) {
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                }
+            }
+            .takeWhile { !it.isDisconnectionEvent }
+            .filterIsInstance(ReliableWriteCompleted::class)
+            // TODO add .timeout(...)?
+            .firstOrNull()?.let {
+                when (it.status) {
+                    OperationStatus.SUCCESS -> logger.info("Reliable write aborted successfully")
+                    else -> {
+                        logger.warn("Aborting reliable write failed: {}", it.status)
+                        throw OperationFailedException(it.status)
+                    }
+                }
+            } ?: throw PeripheralNotConnectedException()
     }
 
     /**
@@ -607,6 +740,7 @@ open class Peripheral(
                     throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                 }
             }
+            // TODO add .timeout(...)?
             .first { it == ServicesChanged }
             .also { logger.info("Cache refreshed") }
     }

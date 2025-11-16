@@ -33,151 +33,952 @@
 
 package no.nordicsemi.kotlin.ble.client.mock
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
+import no.nordicsemi.kotlin.ble.client.CentralManager
+import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
+import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
+import no.nordicsemi.kotlin.ble.client.GattEvent
+import no.nordicsemi.kotlin.ble.client.MtuChanged
+import no.nordicsemi.kotlin.ble.client.PhyChanged
+import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.RssiRead
+import no.nordicsemi.kotlin.ble.client.ServicesChanged
+import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
+import no.nordicsemi.kotlin.ble.client.internal.CharacteristicChanged
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteService
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockScanResult
+import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.ConnectionParameters
+import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PhyInUse
+import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.ServerScope
+import no.nordicsemi.kotlin.ble.core.ServiceScope
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
 import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
+import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.core.mock.internal.AdvertisingDataScopeImpl
 import org.jetbrains.annotations.Range
+import kotlin.math.ceil
+import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * A specification of a peripheral that can be simulated.
  *
  * Use [PeripheralSpec.simulatePeripheral] to create a new peripheral specification.
  *
- * @property identifier The peripheral identifier.
+ * @param identifier The peripheral identifier.
+ * @param addressType The address type of the peripheral.
  * @property type The peripheral type.
- * @property proximity The proximity of the peripheral.
- * @property advertisement List of advertisement configurations.
+ * @param initialProximity The initial proximity of the peripheral.
  * @property name The name of the peripheral, exposed with Device Name characteristic.
- * @property services The services available after service discovery.
- * @property eventHandler The event handler that will be called for every event emulating
- * a real peripheral.
- * @property connectionInterval The connection interval when connected.
- * @property maxMtu The maximum supported MTU size.
+ * @property appearance The appearance of the peripheral, exposed with Appearance characteristic.
+ * See Bluetooth Assigned Numbers:
+ * [link](https://www.bluetooth.com/specifications/assigned-numbers/), 2.6 Appearance Values.
+ * @property preferredConnectionInterval The preferred connection interval range.
+ * @property preferredSlaveLatency The preferred slave latency.
+ * @property preferredSupervisionTimeout The preferred supervision timeout.
+ * @property maxAttMtu The maximum supported ATT MTU (ATT layer Maximum Transfer Unit).
+ * @property maxL2capMtu The maximum L2CAP MTU (Maximum Transfer Unit used on L2CAP Layer using
+ * Data Length Extension (DLE)).
  * @property supportedPhy The set of supported PHYs.
- * @property isConnected Whether the peripheral is connected.
- * @property isKnown Whether the peripheral has been scanned before and its address type is cached.
+ * @param isInitiallyConnected Whether the peripheral is initially connected.
+ * @param isKnown Whether the peripheral has been scanned before and its address type is cached.
  * It is not possible to connect to an unknown device without scanning.
- * @property isBonded Whether the peripheral is bonded.
+ * @param isBonded Whether the peripheral is bonded.
+ * @param advertisingSets List of advertisement configurations.
+ * @param eventHandler The event handler that will be called for every event emulating
+ * a real peripheral.
+ * @param services The services available after service discovery.
+ * @param cachedServices The services cached on the client side.
+ * @param isServiceCacheValid Whether the cached services are valid.
  */
-class PeripheralSpec<ID> private constructor(
+class PeripheralSpec<ID: Any> private constructor(
     identifier: ID,
+    addressType: AddressType,
     val type: PeripheralType,
     initialProximity: Proximity,
-    val advertisement: List<MockAdvertisementConfig>?,
     val name: String?,
-    val services: List<ServiceDefinition>?,
-    val eventHandler: PeripheralSpecEventHandler?,
-    val connectionInterval: Duration?,
-    val maxMtu: Int?,
+    val appearance: Int?,
+    val preferredConnectionInterval: IntRange?,
+    val preferredSlaveLatency: Int?,
+    val preferredSupervisionTimeout: Int?,
+    val maxAttMtu: Int?,
+    val maxL2capMtu: Int?,
     val supportedPhy: Set<Phy>,
     isInitiallyConnected: Boolean,
     isKnown: Boolean,
     isBonded: Boolean,
+    internal val advertisingSets: List<MockAdvertisingSet>?,
+    internal val eventHandler: PeripheralSpecEventHandler?,
+    private val services: List<ServiceDefinition>?,
+    private val cachedServices: List<ServiceDefinition>?,
+    isServiceCacheValid: Boolean,
 ) {
+    /** A flow of GATT events emitted by the peripheral. */
+    private val _events: MutableSharedFlow<GattEvent> = MutableSharedFlow(extraBufferCapacity = 64)
+    val events: SharedFlow<GattEvent> = _events.asSharedFlow()
+
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    /** The peripheral identifier. */
     var identifier: ID = identifier
         private set
 
+    /** The address type of the peripheral. */
+    var addressType: AddressType = addressType
+        private set
+
+    /** The proximity of the peripheral. */
     var proximity: Proximity = initialProximity
-        private set
+        private set(value) {
+            field = value
 
-    var isConnected: Boolean = isInitiallyConnected
-        private set
+            if (field == Proximity.OUT_OF_RANGE && isConnected) {
+                val supervisionTimeout = connectionParameters!!.supervisionTimeoutMillis
 
+                scope.launch {
+                    // Simulate supervision timeout delay before notifying disconnection.
+                    delay(supervisionTimeout)
+
+                    // Check if still out of range.
+                    if (field == Proximity.OUT_OF_RANGE && isConnected) {
+                        // TODO Should the connection be dropped immediately, or after supervision timeout? See simulateReset().
+                        connectionsCount = 0
+                        eventHandler!!.onConnectionLost(DisconnectionReason.Timeout)
+                        _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.LinkLoss)))
+                    }
+                }
+            }
+        }
+
+    /**
+     * Whether the peripheral has been scanned before and its address type is cached.
+     *
+     * Unknown devices have assumed [AddressType.PUBLIC] address type.
+     *
+     * It is not possible to connect to an unknown device with address type other than
+     * [AddressType.PUBLIC] without scanning it first (which sets this flag).
+     *
+     * @see simulateCaching
+     */
     var isKnown: Boolean = isKnown
         private set
 
+    /** Whether the peripheral is bonded. */
     var isBonded: Boolean = isBonded
         private set
+
+    /** Whether the peripheral is connected. */
+    val isConnected: Boolean
+        get() = connectionsCount > 0
+
+    /**
+     * Number of active virtual connections to the peripheral.
+     *
+     * This is used to simulate multiple clients connecting to the same peripheral.
+     *
+     * Calling [simulateReset] sets this value to 0.
+     */
+    private var connectionsCount = if (isInitiallyConnected) 1 else 0
+        set(value) {
+            field = value.coerceAtLeast(0)
+
+            // If no more connections, reset connection parameters.
+            if (field == 0) {
+                phy = null
+                mtu = null
+                l2capMtu = null
+                connectionParameters = null
+            } else if (mtu == null) {
+                // If first connection, set default parameters.
+                phy = Phy.PHY_LE_1M
+                mtu = 23
+                l2capMtu = 27
+                connectionParameters = ConnectionParameters.Connected(
+                    connectionInterval = preferredConnectionInterval!!.start,
+                    slaveLatency = preferredSlaveLatency!!,
+                    supervisionTimeout = preferredSupervisionTimeout!!
+                )
+            }
+        }
+
+    /** Current connection parameters. */
+    var connectionParameters: ConnectionParameters.Connected? = null
+        private set
+
+    /** Current ATT MTU. */
+    var mtu: Int? = null
+        private set
+
+    /** Current L2CAP MTU. */
+    var l2capMtu: Int? = null
+        private set
+
+    /** The currently used PHY. */
+    var phy: Phy? = null
+        private set
+
+    /**
+     * A flag indicating that the cached services are valid.
+     *
+     * If this is `false`, the client should perform service discovery again.
+     */
+    internal var isServiceCacheValid: Boolean = isServiceCacheValid
+        private set
+
+    /**
+     * Estimates the duration needed to transfer given data to the peripheral using
+     * a single GATT operation.
+     *
+     * This applies to single Write Command, Write Request or Long Write procedures, as well
+     * ass Read and Long Read procedures. It does NOT calculate the total time for transferring
+     * a long packet using multiple writes.
+     *
+     * @param value The data to be transferred.
+     * @param withResponse Whether the write with response is used.
+     * @return The estimated duration of the transfer.
+     * @throws IllegalStateException if the peripheral is not connected.
+     */
+    internal fun estimateTransferDuration(
+        value: ByteArray,
+        withResponse: Boolean,
+    ): Duration {
+        val mtu = checkNotNull(mtu) { "Peripheral not connected" }
+        val l2capMtu = checkNotNull(l2capMtu)
+        val phy = checkNotNull(phy)
+        val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis
+
+        return when (withResponse) {
+            // Long packets may be split into several Prepare Write or Prepare Read operations.
+            true -> {
+                // Payload per ATT packet (bytes).
+                val payloadPerPacket = min(mtu - 1, l2capMtu - 4)
+                // Number of packets needed.
+                val packetsNeeded = ceil((value.size.toDouble() + 2.0) / payloadPerPacket)
+                connectionInterval.milliseconds * packetsNeeded
+            }
+            // Single write without response (on a notification) fits into a single ATT packet,
+            // but may be split into several L2CAP packets, which may take more than one connection interval.
+            false -> {
+                // Max payload of a single L2CAP packet (bytes).
+                val payloadPerL2capPacket = min(mtu - 1, l2capMtu - 4)
+                // Time to send a single L2CAP packet, including a gap afterwards (seconds).
+                val timePerPacket =
+                    (payloadPerL2capPacket + 14) * 8 / phy.rate() + 0.00015 // seconds
+                // Approximate time needed to send all L2CAP packets.
+                val l2capPacketsNeeded = (value.size + 2.0) / payloadPerL2capPacket
+                timePerPacket.seconds * l2capPacketsNeeded
+            }
+        }
+    }
 
     companion object {
 
         /**
          * Simulates a peripheral with given ID and proximity.
          *
+         * Note, that if the identifier is a Bluetooth Address, the 2 most significant bits
+         * should match the [addressType]:
+         * - `0b00` - [AddressType.RANDOM_PRIVATE_NON_RESOLVABLE]
+         * - `0b01` - [AddressType.RANDOM_PRIVATE_RESOLVABLE]
+         * - `0b10` is reserved for future use and should not be used.
+         * - `0b11` - [AddressType.RANDOM_STATIC]
+         * - any value for [AddressType.PUBLIC]
+         *
+         * See Bluetooth Core Specification v6.2, Vol 6, Part B, Section 1.3 Device address:
+         * [link](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/low-energy-controller/link-layer-specification.html#UUID-3815b05a-b69c-4e3c-5897-c8d3baa4fc30).
+         *
+         * ### Example
+         *
+         * ```kotlin
+         * val peripheralSpec = PeripheralSpec.simulatePeripheral(
+         *   identifier = "12:34:56:78:9A:BC",
+         *   addressType = AddressType.RANDOM_STATIC,
+         *   proximity = Proximity.NEAR
+         * ) {
+         *     advertising(
+         *         parameters = LegacyAdvertisingSetParameters(
+         *             connectable = true,
+         *             interval = 500.milliseconds,
+         *         ),
+         *         isAdvertisingWhenConnected = false,
+         *         delay = 1.seconds,
+         *         // timeout = 10.seconds,
+         *         // maxAdvertisingEvents = 30,
+         *     ) {
+         *         CompleteLocalName("Nordic_LBS")
+         *         ServiceUuid(Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123"))
+         *         IncludeTxPowerLevel()
+         *     }
+         *     advertising(
+         *         parameters = Bluetooth5AdvertisingSetParameters(
+         *             connectable = true,
+         *             interval = 1.seconds,
+         *             primaryPhy = PrimaryPhy.PHY_LE_CODED,
+         *             secondaryPhy = Phy.PHY_LE_CODED,
+         *             txPowerLevel = TxPowerLevel.HIGH,
+         *             includeTxPowerLevel = true,
+         *         ),
+         *         delay = 4.seconds,
+         *         timeout = 10.seconds,
+         *     ) {
+         *         Flags(
+         *            AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE,
+         *            AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED
+         *         )
+         *         CompleteLocalName("HR Sensor")
+         *         ServiceUuid(Uuid.fromShortUuid(0x1809))
+         *         ServiceUuid(Uuid.fromShortUuid(0x180A))
+         *     }
+         *     connectable(
+         *         name = "Nordic_Blinky",
+         *         maxAttMtu = 247,
+         *         maxL2capMtu = 251,
+         *         // Uncommenting this line switches to a different "connectable" method, which
+         *         // makes the peripheral "cached" (there's additional param "cachedServices" to provide).
+         *         // In that case, the mock impl assumes, that the peripheral was connected before
+         *         // and services were cached, i.e. the Device Name was read. Hence, the scanner
+         *         // will switch from "Nordic_LBS" to "Nordic_Blinky".
+         *         //
+         *         // isBonded = false,
+         *         eventHandler = blinkyImpl,
+         *     ) {
+         *         GenericAccessService()
+         *         GenericAttributeService()
+         *         // Add LED Button Service (Blinky)
+         *         Service(
+         *             uuid = Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123")
+         *         ) {
+         *             Characteristic(
+         *                 uuid = Uuid.parse("00001524-1212-EFDE-1523-785FEABCD123"),
+         *                 properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,
+         *                 permissions = Permission.READ and Permission.WRITE,
+         *             ) {
+         *                 // CCCD is added automatically
+         *                 CharacteristicUserDescriptionDescriptor("Button 1")
+         *             }
+         *             Characteristic(
+         *                 uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
+         *                 properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+         *                 permission = Permission.READ,
+         *             ) {
+         *                 // CCCD is added automatically
+         *                 CharacteristicUserDescriptionDescriptor("LED 1")
+         *             }
+         *         }
+         *     }
+         * }
+         *
          * @param identifier The peripheral identifier.
+         * @param addressType The address type of the peripheral, default is [AddressType.RANDOM_STATIC].
          * @param type The peripheral type. By default set to [PeripheralType.LE].
          * @param proximity Approximate distance to the peripheral.
          * By default set to [Proximity.IMMEDIATE].
          */
-        fun <ID> simulatePeripheral(
+        fun <ID: Any> simulatePeripheral(
             identifier: ID,
+            addressType: AddressType = AddressType.RANDOM_STATIC,
             type: PeripheralType = PeripheralType.LE,
             proximity: Proximity = Proximity.IMMEDIATE,
             builder: Builder<ID>.() -> Unit = {}
         ): PeripheralSpec<ID> {
-            return Builder(identifier, type, proximity).apply(builder).build()
-        }
-    }
-
-    /**
-     * Simulates a change in the proximity of the peripheral.
-     *
-     * @param proximity The new proximity. Use [Proximity.OUT_OF_RANGE] to simulate leaving the range.
-     */
-    fun simulateProximityChange(proximity: Proximity) {
-        this.proximity = proximity
-
-        if (proximity == Proximity.OUT_OF_RANGE) {
-            isConnected
+            return Builder(identifier, addressType, type, proximity).apply(builder).build()
         }
     }
 
     /**
      * Simulates the situation when the device is scanned and advertisement data is received.
      *
-     * If the device is not known, the device will be marked as known and will be allowed
-     * for connection.
+     * The phone is adding the device address to its cache, remembering the address type.
+     * This will allow retrieving the device using [CentralManager.getPeripheralById] or connecting
+     * to it without scanning first.
+     *
+     * @see isKnown
      */
     fun simulateCaching() {
         isKnown = true
     }
 
     /**
-     * Simulates the situation when another application on the device
-     * connects to the device.
+     * Simulates a change in the proximity of the peripheral.
      *
-     * If the device has advertisement configuration with
-     * [MockAdvertisementConfig.isAdvertisingWhenConnected] flag set
-     * to `false`, the given advertisement will stop.
+     * When the peripheral is moved out of range, the connected clients will get a disconnection
+     * event with reason [ConnectionState.Disconnected.Reason.LinkLoss] after the supervision timeout.
      *
-     * A manager registered for connection event will receive an event.
+     * @param proximity The new proximity. Use [Proximity.OUT_OF_RANGE] to simulate leaving the range.
+     * @see ConnectionParameters.Connected.supervisionTimeout
      */
-    fun simulateConnection() {
-        TODO("Not yet implemented")
+    fun simulateProximityChange(proximity: Proximity) {
+        this.proximity = proximity
     }
 
     /**
-     * Simulates peripheral disconnection from the device.
+     * Simulates the situation when another application on the device tries to connects to the device.
      *
-     * The central manager will receive a disconnection event.
+     * If the device is already connected, the connections count will be increased. Otherwise,
+     * the [PeripheralSpecEventHandler.onConnectionRequest] will be called, and if the connection
+     * is accepted, the connections count will be increased.
      *
-     * @param reason The reason for disconnection.
+     * If the device advertises with [MockAdvertisingSet.isAdvertisingWhenConnected] flag set
+     * to `false` the advertisement will stop.
+     *
+     * A manager registered for connection event will be notified.
+     *
+     * // TODO The preferred PHYs are ignored for now. It is not set as active PHY upon connection.
+     * @param preferredPhy List of preferred PHYs for the connection.
+     * @throws IllegalStateException if the peripheral is not connectable.
      */
-    fun simulateDisconnection(reason: DisconnectionReason) {
-        TODO("Not yet implemented")
+    fun simulateConnection(preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M)) {
+        // If another client is already connected, just increase the connections count.
+        if (isConnected) {
+            connectionsCount += 1
+            return
+        }
+        // Otherwise, notify the event handler about the connection request.
+        val eventHandler = checkNotNull(eventHandler) { "Cannot connect to not connectable device." }
+        when (eventHandler.onConnectionRequest(preferredPhy)) {
+            is ConnectionResult.Accept -> connectionsCount += 1
+            else -> {
+                // Do nothing. Assume that the connection request times out.
+            }
+        }
     }
 
-    fun simulateMacChange(newIdentifier: ID) {
-        identifier = newIdentifier
-        isKnown = false
+    /**
+     * Simulates a situation when the peripheral is gracefully disconnecting from the device.
+     *
+     * The [PeripheralSpecEventHandler.onConnectionLost] will receive a call with reason
+     * [DisconnectionReason.TerminateLocalHost].
+     *
+     * Connected clients will immediately be notified about the disconnection with reason
+     * [ConnectionState.Disconnected.Reason.TerminatePeerUser].
+     *
+     */
+    // TODO Add Error to be returned to the clients?0
+    fun simulateDisconnection() {
+        if (isConnected) {
+            // TODO Should we delay this to simulate connection interval?
+            connectionsCount = 0
+            eventHandler!!.onConnectionLost(DisconnectionReason.TerminateLocalHost)
+            _events.tryEmit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.TerminatePeerUser)))
+        }
     }
 
+    /**
+     * Simulates peripheral reset.
+     *
+     * Connected clients will receive a disconnection event with reason
+     * [ConnectionState.Disconnected.Reason.LinkLoss] after the supervision timeout.
+     *
+     * @see ConnectionParameters.Connected.supervisionTimeout
+     */
     fun simulateReset() {
         eventHandler?.onReset()
-        simulateDisconnection(Timeout)
+
+        // If the device was connected, notify about disconnection due to link loss.
+        connectionParameters?.supervisionTimeoutMillis?.let { supervisionTimeout ->
+            scope.launch {
+                // Simulate supervision timeout delay before notifying clients.
+                delay(supervisionTimeout)
+
+                // If clients still assume they are connected, notify them about link loss.
+                if (isConnected) {
+                    // TODO Should the connection be dropped immediately, or after supervision timeout? See proximity setter.
+                    connectionsCount = 0
+                    _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.LinkLoss)))
+                }
+            }
+        }
+    }
+
+    /**
+     * Simulates a characteristic value update on the peripheral.
+     *
+     * This will notify all connected clients that the value has changed.
+     *
+     * The *handle number* is returned when creating the characteristic using
+     * [PeripheralSpec.Builder.connectable] from [ServiceScope.Characteristic].
+     *
+     * @param handle The handle of the characteristic.
+     * @param value The new value of the characteristic.
+     */
+    fun simulateValueUpdate(handle: Int, value: ByteArray) {
+        if (!isConnected) return
+
+        // Notify clients that the value has changed.
+        scope.launch {
+            val transferDuration = estimateTransferDuration(value, withResponse = false)
+            delay(transferDuration)
+
+            // If any client is still connected, emit the event.
+            if (isConnected) {
+                _events.emit(CharacteristicChanged(handle, value))
+            }
+        }
+    }
+
+    /**
+     * Simulates a change of the peripheral identifier (MAC address).
+     *
+     * This will be applied only if the peripheral is not connected.
+     *
+     * Note, that if the identifier is the Bluetooth Address, the 2 most significant bits
+     * should match the [addressType]:
+     * - `0b00` - [AddressType.RANDOM_PRIVATE_NON_RESOLVABLE]
+     * - `0b01` - [AddressType.RANDOM_PRIVATE_RESOLVABLE]
+     * - `0b10` is reserved for future use and should not be used.
+     * - `0b11` - [AddressType.RANDOM_STATIC]
+     * - any value for [AddressType.PUBLIC]
+     *
+     * See Bluetooth Core Specification v6.2, Vol 6, Part B, Section 1.3 Device address:
+     * [link](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/low-energy-controller/link-layer-specification.html#UUID-3815b05a-b69c-4e3c-5897-c8d3baa4fc30).
+     *
+     * @param newIdentifier The new peripheral identifier.
+     * @param addressType The new address type.
+     */
+    fun simulateMacChange(newIdentifier: ID, addressType: AddressType) {
+        if (!isConnected) {
+            this.identifier = newIdentifier
+            this.addressType = addressType
+            this.isKnown = false
+        }
+        // TODO what with cached connections in central managers? PeripheralSpec instance is the same.
+    }
+
+    /**
+     * Simulates a connection parameters update request from the peripheral.
+     *
+     * @param parameters The new connection parameters.
+     */
+    fun simulateConnectionParametersRequest(parameters: ConnectionParameters.Connected) {
+        // TODO Validate parameters against preferred / possible parameters?
+        connectionParameters?.connectionIntervalMillis?.let { connectionInterval ->
+            scope.launch {
+                // Wait for few (old) connection intervals before applying new parameters.
+                delay(5 * connectionInterval)
+
+                connectionParameters = parameters
+                _events.emit(ConnectionParametersChanged(parameters))
+            }
+        }
+    }
+
+    /**
+     * Simulates an MTU request from the peripheral.
+     *
+     * MTU may be changed only once per connection.
+     *
+     * > This request shall only be sent once during a connection by the client.
+     *
+     * Read more in Core Specification v6.2, Vol 3, Part F, Section 3.4.2 MTU Exchange:
+     * [link](https://w
+     * ww.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/attribute-protocol--att-.html#UUID-a1f22a10-ac5b-9887-badf-54c142565593).
+     *
+     * @param mtu The requested MTU.
+     */
+    fun simulateMtuRequest(mtu: Int) {
+        // MTU and max MTU are null if peripheral is not connected.
+        val currentMtu = this.mtu ?: return
+        val maxAttMtu = this.maxAttMtu ?: return
+        val newMtu = mtu.coerceIn(23, maxAttMtu)
+
+        // MTU may be changed only once per connection.
+        // If MTU is grater than 23, it has already been changed.
+        if (currentMtu != ATT_MTU_DEFAULT || newMtu == currentMtu) {
+            return
+        }
+
+        // Wait for few connection intervals before applying new parameters.
+        val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis
+        scope.launch {
+            delay(2 * connectionInterval)
+
+            this@PeripheralSpec.mtu = newMtu
+            _events.emit(MtuChanged(newMtu))
+        }
     }
 
     // TODO Add more simulation methods
+
+    // Implementation
+
+    /**
+     * Initiates a mock GATT connection to the peripheral.
+     *
+     * This method awaits first connectable advertisement from the given flow of advertisements
+     * and then simulates connection by calling [Api.connect].
+     *
+     * If a peripheral is already connected, it just emits the connection event immediately.
+     *
+     * @param environment The mock environment.
+     * @param autoConnect Whether to use auto-connect mode.
+     * @param preferredPhy List of preferred PHYs for the connection.
+     * @param advertisements A flow of advertisements emitted by the mock advertiser.
+     * @return The mock GATT object.
+     */
+    internal suspend fun connectGatt(
+        environment: MockEnvironment,
+        autoConnect: Boolean,
+        preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
+        advertisements: Flow<MockScanResult<*>>,
+    ): Api {
+        return Api(environment).also { gatt ->
+            // If the mock peripheral is already connected (to the phone) and another
+            // (virtual) client (that is Peripheral instance) tries to connect to it,
+            // just notify about the success.
+            if (isConnected) {
+                // This event will be ignored by already connected clients, but can re-connect
+                // a disconnected client, if not closed.
+                // TODO Is this re-connection intended behavior?
+                _events.emit(ConnectionStateChanged(ConnectionState.Connected))
+                return@also
+            }
+
+            // Android does not allow to create an auto-connection to a peripheral with RPA
+            // if the device is not bonded.
+            // Note: If a device is not known (has not been scanned before), Android
+            //       assumes PUBLIC address type.
+            // Note 2: On iOS it is not possible to get a peripheral by Device Address at all.
+            //         Devices must be scanned so that the Identifier is known.
+            if (autoConnect && !isBonded && isKnown && addressType == AddressType.RANDOM_PRIVATE_RESOLVABLE) {
+                // Some Android devices return error 133, newer ones 135.
+                // This event is later translated to UnsupportedAddress.
+                _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.Unknown(135))))
+                return@also
+            }
+
+            // If a device was not scanned before, Android assumes it has PUBLIC address type.
+            // Skip listening for advertisements if the spec has different address type.
+            // TODO Does iOS behave the same way?
+            val assumedPublicAddress = !isKnown
+            if (assumedPublicAddress && addressType != AddressType.PUBLIC) {
+                return@also
+            }
+
+            // Connection Request is sent as a response to a connectable advertisement.
+            advertisements.first { scanResult ->
+                scanResult.peripheralSpec.identifier == identifier && scanResult.isConnectable
+            }
+
+            gatt.connect(preferredPhy)
+        }
+    }
+
+    /**
+     * @hide
+     */
+    inner class Api internal constructor(val environment: MockEnvironment) {
+        /**
+         * An job for observing [ServicesChanged] events, that invalidates the service cache.
+         *
+         * Each connected client may invalidate services, but the change applies to all of them.
+         */
+        private val cacheMonitoring = events
+            .filterIsInstance(ServicesChanged::class)
+            .onEach { cachedServices = null }
+            .launchIn(scope)
+
+        /** Closes the GATT connection. */
+        internal fun close() {
+            cachedServices = null
+            cacheMonitoring.cancel()
+        }
+
+        /**
+         * Currently cached services.
+         *
+         * This contains a copy of the services discovered by the peripheral. Each service
+         * has [RemoteService.owner] which refers to this peripheral instance.
+         *
+         * Note, that these may differ from the actual services on the peripheral. For example,
+         * when a peripheral which was connected at some point gets a new firmware, or changes
+         * operation mode, it may change its services. The client is not aware of it until the
+         * Service Changed indication is received or cache is invalidated and services are
+         * discovered again.
+         */
+        internal var cachedServices: List<RemoteService>? = when (isServiceCacheValid) {
+            true -> services
+            false -> this@PeripheralSpec.cachedServices
+        }?.map { MockRemoteService(this@PeripheralSpec, it, events) }
+            private set
+
+        /**
+         * Simulates connecting to the peripheral.
+         *
+         * @param preferredPhy List of preferred PHYs for the connection.
+         * @throws IllegalStateException when the device is not connectable.
+         */
+        suspend fun connect(preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M)) {
+            // Event handler will only be null if a device is non-connectable.
+            val eventHandler =
+                checkNotNull(eventHandler) { "Cannot connect to not connectable device." }
+
+            // Notify the event handler about the connection request.
+            when (eventHandler.onConnectionRequest(preferredPhy)) {
+                // TODO add option to fail connection with 133-ish error
+
+                ConnectionResult.Accept -> {
+                    connectionsCount += 1
+                    // Note: onConnectionRequest callback can request MTU, bonding or PHY update.
+                    // TODO Make sure these requests are handled after state is reported
+                    // TODO This will re-connect all disconnected Peripheral instances.
+                    _events.emit(ConnectionStateChanged(ConnectionState.Connected))
+                }
+
+                ConnectionResult.Deny -> {
+                    // Do nothing. The connection request should timeout.
+                }
+            }
+        }
+
+        /**
+         * Simulates disconnecting from the peripheral.
+         *
+         * @throws IllegalStateException when the device is not connected.
+         */
+        suspend fun disconnect() {
+            val connectionParameters =
+                checkNotNull(connectionParameters) { "Peripheral not connected." }
+            val eventHandler = checkNotNull(eventHandler)
+
+            delay(connectionParameters.connectionIntervalMillis)
+            _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.Success)))
+
+            // One virtual client disconnected.
+            connectionsCount -= 1
+
+            // If no more connections, notify the event handler.
+            if (connectionsCount == 0) {
+                // Notify the event handler about the disconnection.
+                eventHandler.onConnectionLost(DisconnectionReason.TerminatePeerUser)
+            }
+        }
+
+        /**
+         * Simulates service discovery on the peripheral.
+         *
+         * @param uuids The list of service UUIDs to discover.
+         * @return `true` if the service discovery was started, `false` otherwise.
+         */
+        @OptIn(ExperimentalUuidApi::class)
+        suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+            val connectionParameters = connectionParameters ?: return false
+            val eventHandler = eventHandler ?: return false
+
+            // Return cached services if available. Note, that the cache may be invalid.
+            cachedServices?.let {
+                _events.emit(ServicesDiscovered(it))
+                return true
+            }
+
+            // Notify the event handler about the service discovery request.
+            when (eventHandler.onServiceDiscoveryRequest(uuids)) {
+                is ServiceDiscoveryResult.Success -> {
+                    // Simulate changing connection interval.
+                    delay(connectionParameters.connectionIntervalMillis)
+
+                    // Android changes connection parameters during service discovery.
+                    if (environment.reportsConnectionParameters) {
+                        _events.emit(ConnectionParametersChanged(
+                            ConnectionParameters.Connected(
+                                connectionInterval = 6, // 7.5 ms
+                                // TODO Are those kept the same?
+                                slaveLatency = connectionParameters.supervisionTimeout,
+                                supervisionTimeout = connectionParameters.supervisionTimeout,
+                            )
+                        ))
+                    }
+                    // Simulate service discovery delay.
+                    // The duration is arbitrary, but depends on the number of services.
+                    // Android switches to 7.5 ms connection interval during the service discovery.
+                    // TODO iOS doesn't change interval, but only discovers requested services.
+                    val serviceDiscoveryMillis = services!!
+                        .fold(2 * connectionParameters.connectionIntervalMillis) { acc, service ->
+                            acc + 10 * (service.characteristics.size + service.includedServices.size)
+                        }
+                    delay(serviceDiscoveryMillis)
+                    // TODO iOS returns only requested services. Filtering is also done later, but should be here?
+                    // TODO iOS does not return Generic Access and Generic Attribute services. Filter out, or leave for the PeripheralSpec?
+                    isServiceCacheValid = true
+                    cachedServices = services.map { MockRemoteService(this@PeripheralSpec, it, _events) }
+                    _events.emit(ServicesDiscovered(cachedServices!!))
+
+                    // Restore connection parameters.
+                    if (environment.reportsConnectionParameters) {
+                        scope.launch {
+                            delay(2 * connectionParameters.connectionIntervalMillis)
+                            _events.emit(ConnectionParametersChanged(connectionParameters))
+                        }
+                    }
+                }
+
+                is ServiceDiscoveryResult.Failure -> {
+                    // Let's say the failure happens after some delay.
+                    delay(2 * connectionParameters.connectionIntervalMillis)
+                    _events.emit(ServicesDiscovered(emptyList()))
+                }
+            }
+            return true
+        }
+
+        suspend fun refreshCache(): Boolean {
+            if (isConnected) {
+                isServiceCacheValid = false
+                // This will clear the cached services on all clients.
+                // See `cacheMonitoring` in Api init.
+                // TODO All clients will start service discovery again, independently.
+                _events.emit(ServicesChanged)
+                return true
+            }
+            return false
+        }
+
+        /**
+         * Simulates reading RSSI from the peripheral.
+         *
+         * @return `true` if the RSSI read was started, `false` otherwise.
+         */
+        suspend fun readRssi(): Boolean {
+            // Simulate a short delay for reading RSSI.
+            val connectionParameters = connectionParameters ?: return false
+            delay(connectionParameters.connectionIntervalMillis)
+
+            _events.emit(RssiRead(proximity.randomRssi()))
+            return true
+        }
+
+        /**
+         * Simulates reading RSSI from the peripheral.
+         *
+         * @param mtu The requested MTU.
+         * @return `true` if the MTU request was started, `false` otherwise.
+         */
+        suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
+            // MTU can be change just once per connection.
+            val currentMtu = this@PeripheralSpec.mtu ?: return false
+            if (currentMtu > ATT_MTU_DEFAULT || mtu == currentMtu) {
+                _events.emit(MtuChanged(currentMtu))
+                return true
+            }
+
+            // Simulate a delay for requesting MTU.
+            val connectionParameters = checkNotNull(connectionParameters)
+            delay(connectionParameters.connectionIntervalMillis)
+
+            // Check if the peripheral is still connected.
+            val maxAttMtu = maxAttMtu ?: return false
+            val newMtu = mtu.coerceIn(23, maxAttMtu)
+
+            this@PeripheralSpec.mtu = newMtu
+            _events.emit(MtuChanged(newMtu))
+            return true
+        }
+
+        /**
+         * Simulates requesting connection parameters update.
+         *
+         * @param parameters The requested connection parameters.
+         * @return `true` if the request was started, `false` otherwise.
+         */
+        suspend fun requestConnectionParameters(parameters: ConnectionParameters.Connected): Boolean {
+            val connectionParameters = connectionParameters ?: return false
+
+            // On environments that report connection parameters update, simulate the delay
+            // and then emit the event with new parameters.
+            if (environment.reportsConnectionParameters) {
+                // Simulate a delay for requesting connection parameters update.
+                delay(5 * connectionParameters.connectionIntervalMillis)
+
+                // Check if the peripheral is still connected and emit the event.
+                if (isConnected) {
+                    this@PeripheralSpec.connectionParameters = parameters
+                    _events.emit(ConnectionParametersChanged(parameters))
+                    return true
+                } else {
+                    return false
+                }
+            } else {
+                // Otherwise, apply the new parameters immediately. The client won't be notified.
+                this@PeripheralSpec.connectionParameters = parameters
+                return true
+            }
+        }
+
+        /**
+         * Notifies the client about connection parameters update,
+         * but without giving the exact parameters.
+         *
+         * This method should be called after [requestConnectionParameters] on environments
+         * that do not report connection parameters update automatically
+         * (i.e. pre-Oreo Android, or iOS).
+         */
+        suspend fun onConnectionUpdated() {
+            val newParameters = ConnectionParameters.Unknown
+            _events.emit(ConnectionParametersChanged(newParameters))
+        }
+
+        /**
+         * Simulates requesting PHY update.
+         *
+         * @param txPhy The requested TX PHY.
+         * @param rxPhy The requested RX PHY.
+         * @param phyOptions The PHY options.
+         */
+        // TODO PHY option is ignored. This could be use to improve estimating transfer duration.
+        suspend fun setPreferredPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption) {
+            // If the requested PHY is already in use, just emit it.
+            // The collector is waiting for the PhyChanged event.
+            if (this@PeripheralSpec.phy == txPhy) {
+                _events.emit(PhyChanged(PhyInUse(txPhy, rxPhy)))
+                return
+            }
+
+            val connectionParameters = connectionParameters ?: return
+
+            // Simulate a delay for requesting PHY update.
+            delay(2 * connectionParameters.connectionIntervalMillis)
+
+            // Check if the peripheral is still connected.
+            if (isConnected) {
+                this@PeripheralSpec.phy = txPhy
+                _events.emit(PhyChanged(PhyInUse(txPhy, rxPhy)))
+            }
+        }
+
+        /**
+         * Simulates reading the currently used PHY.
+         */
+        suspend fun readPhy() {
+            val phy = phy ?: return
+            _events.emit(PhyChanged(PhyInUse(phy, phy)))
+        }
+    }
 
     /**
      * The builder for the [PeripheralSpec].
@@ -186,24 +987,31 @@ class PeripheralSpec<ID> private constructor(
      * @param identifier The peripheral identifier.
      * @param proximity Approximate distance to the peripheral.
      */
-    class Builder<ID> internal constructor(
+    class Builder<ID: Any> internal constructor(
         private val identifier: ID,
+        private val addressType: AddressType,
         private val type: PeripheralType,
         private val proximity: Proximity,
     ) {
-        private var advertisements: List<MockAdvertisementConfig>? = null
+        private var advertisingSets: List<MockAdvertisingSet>? = null
         private var name: String? = null
+        private var appearance: Int? = null
         private var services: List<ServiceDefinition>? = null
+        private var cachedServices: List<ServiceDefinition>? = null
         private var eventHandler: PeripheralSpecEventHandler? = null
-        private var connectionInterval: Duration? = null
-        private var maxMtu: Int? = null
+        private var preferredConnectionInterval: @Range(from = 6L, to = 3200L) IntRange? = null
+        private var preferredSlaveLatency: @Range(from = 0, to = 499) Int? = null
+        private var preferredSupervisionTimeout: @Range(from = 10, to = 3200) Int? = null
+        private var maxAttMtu: Int? = null
+        private var maxL2capMtu: Int? = null
         private var supportedPhy: MutableSet<Phy> = mutableSetOf(Phy.PHY_LE_1M)
         private var isInitiallyConnected: Boolean = false
         private var isKnown: Boolean = false
         private var isBonded: Boolean = false
+        private var isServiceCacheValid: Boolean = false
 
         /**
-         * Adds an advertising set to the peripheral.
+         * Adds an advertising set to the peripheral advertisement configuration.
          *
          * @param parameters The advertising parameters.
          * @param delay The delay before the advertising starts.
@@ -221,18 +1029,18 @@ class PeripheralSpec<ID> private constructor(
             isAdvertisingWhenConnected: Boolean = false,
             isBeacon: Boolean = false,
             advertisingData: AdvertisingDataScope.() -> Unit,
-        ): Builder<ID> = addAdvertisingSet(
+        ) = addAdvertisingSet(
             parameters = parameters,
             delay = delay,
             timeout = timeout,
             maxAdvertisingEvents = Int.MAX_VALUE,
             isAdvertisingWhenConnected = isAdvertisingWhenConnected,
             isBeacon = isBeacon,
-            builder = advertisingData
+            builder = advertisingData,
         )
 
         /**
-         * Adds an advertising set to the peripheral.
+         * Adds an advertising set to the peripheral advertisement configuration.
          *
          * @param parameters The advertising parameters.
          * @param delay The delay before the advertising starts.
@@ -250,22 +1058,37 @@ class PeripheralSpec<ID> private constructor(
             isAdvertisingWhenConnected: Boolean = false,
             isBeacon: Boolean = false,
             advertisingData: AdvertisingDataScope.() -> Unit,
-        ): Builder<ID> = addAdvertisingSet(
+        ) = addAdvertisingSet(
             parameters = parameters,
             delay = delay,
             timeout = Duration.INFINITE,
             maxAdvertisingEvents = maxAdvertisingEvents,
             isAdvertisingWhenConnected = isAdvertisingWhenConnected,
             isBeacon = isBeacon,
-            builder = advertisingData
+            builder = advertisingData,
         )
 
         /**
          * Makes the device connectable, but not connected at the moment of initialization.
          *
+         * This method should be used to mock a peripheral seen for the first time, that is
+         * one which wasn't scanned, bonded or connected before.
+         *
+         * No services will be cached on the client side.
+         *
          * @param name The name of the peripheral, available from Device Name characteristic.
-         * @param connectionInterval The connection interval when connected.
-         * @param maxMtu The maximum supported MTU size.
+         * @param appearance The appearance of the peripheral, available from Appearance characteristic.
+         * See Bluetooth Assigned Numbers:
+         * [link](https://www.bluetooth.com/specifications/assigned-numbers/), 2.6 Appearance Values.
+         * @param preferredConnectionInterval The min and max connection interval, in 1.25 ms units.
+         * Valid range is from 6 (7.5ms) to 3200 (4000ms). Default is 25-40 (30-50 ms).
+         * @param preferredSlaveLatency Slave latency. Valid range is from 0 to 499. Default is 0.
+         * @param preferredSupervisionTimeout Supervision timeout in 10 ms units. Valid range
+         * is from 10 (0.1s) to 3200 (32s). Default is 400 (4 s).
+         * @param maxAttMtu The maximum supported ATT MTU (Maximum Transfer Unit).
+         * This value must be in range 23..517.
+         * @param maxL2capMtu The maximum supported L2CAP MTU (Maximum Transfer Unit used on L2CAP
+         * Layer using Data Length Extension (DLE)). This value must be in range 27..251.
          * @param isPhyLe2MSupported Whether the device supports PHY LE 2M.
          * @param isPhyCodedSupported Whether the device supports PHY LE Coded.
          * @param eventHandler The event handler that will be called for every event emulating
@@ -274,58 +1097,219 @@ class PeripheralSpec<ID> private constructor(
          */
         fun connectable(
             name: String,
-            connectionInterval: Duration = 45.milliseconds,
-            maxMtu: Int = 23,
+            appearance: Int = 0x0000,
+            preferredConnectionInterval: @Range(from = 6L, to = 3200L) IntRange = IntRange(25, 40), // 30-50 ms
+            preferredSlaveLatency: @Range(from = 0, to = 499) Int = 0,
+            preferredSupervisionTimeout: @Range(from = 10, to = 3200) Int = 400, // 4 s
+            maxAttMtu: @Range(from = 23L, to = 517L) Int = 23,
+            maxL2capMtu: @Range(from = 27L, to = 251L) Int = 27,
             isPhyLe2MSupported: Boolean = false,
             isPhyCodedSupported: Boolean = false,
             eventHandler: PeripheralSpecEventHandler,
-            services: ServerScope.() -> Unit,
+            services: MockServerScope.() -> Unit,
         ): Builder<ID> = setConnectionParameters(
-            name = name,
-            connectionInterval = connectionInterval,
-            maxMtu = maxMtu,
+            preferredConnectionInterval = preferredConnectionInterval,
+            preferredSlaveLatency = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSupervisionTimeout,
+            maxAttMtu = maxAttMtu,
+            maxL2capMtu = maxL2capMtu,
             isPhyLe2MSupported = isPhyLe2MSupported,
             isPhyCodedSupported = isPhyCodedSupported,
-            eventHandler = eventHandler,
-            services = services
         ).also {
-            isInitiallyConnected = false
+            require(this.name == null) { "Device is already configured as connectable." }
+            this.name = name
+            this.appearance = appearance
+            this.services = MockServerScopeImpl().apply(services).build()
+            this.eventHandler = eventHandler
+        }
+
+        /**
+         * Makes the device connectable, but not connected at the moment of initialization.
+         *
+         * This method should be used to mock a peripheral that was connected before,
+         * so some services may be cached on the client side. It is also possible to mock
+         * a situation in which the cached services are invalid and will return an error when
+         * accessed, in which case they need to be invalidated (i.e. using Service Changed
+         * characteristic) and discovered again.
+         *
+         * @param name The name of the peripheral, available from Device Name characteristic.
+         * @param appearance The appearance of the peripheral, available from Appearance characteristic.
+         * See Bluetooth Assigned Numbers:
+         * [link](https://www.bluetooth.com/specifications/assigned-numbers/), 2.6 Appearance Values.
+         * @param preferredConnectionInterval The min and max connection interval, in 1.25 ms units.
+         * Valid range is from 6 (7.5ms) to 3200 (4000ms). Default is 25-40 (30-50 ms).
+         * @param preferredSlaveLatency Slave latency. Valid range is from 0 to 499. Default is 0.
+         * @param preferredSupervisionTimeout Supervision timeout in 10 ms units. Valid range
+         * is from 10 (0.1s) to 3200 (32s). Default is 400 (4 s).
+         * @param maxAttMtu The maximum supported ATT MTU (Maximum Transfer Unit).
+         * This value must be in range 23..517.
+         * @param maxL2capMtu The maximum supported L2CAP MTU (Maximum Transfer Unit used on L2CAP
+         * Layer using Data Length Extension (DLE)). This value must be in range 27..251.
+         * @param isPhyLe2MSupported Whether the device supports PHY LE 2M.
+         * @param isPhyCodedSupported Whether the device supports PHY LE Coded.
+         * @param isBonded Whether the peripheral is bonded.
+         * @param eventHandler The event handler that will be called for every event emulating
+         * a real peripheral.
+         * @param actualServices The services available after service discovery. If `null` (default),
+         * they are set to be equal to [cachedServices].
+         * @param cachedServices The services that are cached and will be returned immediately
+         * on service discovery without the discovery. They may differ from the actual services.
+         * On some platforms a client may invalidate cache and trigger full service discovery.
+         */
+        fun connectable(
+            name: String,
+            appearance: Int = 0x0000,
+            preferredConnectionInterval: @Range(from = 6L, to = 3200L) IntRange = IntRange(25, 40), // 30-50 ms
+            preferredSlaveLatency: @Range(from = 0, to = 499) Int = 0,
+            preferredSupervisionTimeout: @Range(from = 10, to = 3200) Int = 400, // 4 s
+            maxAttMtu: @Range(from = 23L, to = 517L) Int = 23,
+            maxL2capMtu: @Range(from = 27L, to = 251L) Int = 27,
+            isPhyLe2MSupported: Boolean = false,
+            isPhyCodedSupported: Boolean = false,
+            isBonded: Boolean = false,
+            eventHandler: PeripheralSpecEventHandler,
+            actualServices: (MockServerScope.() -> Unit)? = null,
+            cachedServices: (MockServerScope.() -> Unit),
+        ): Builder<ID> = setConnectionParameters(
+            preferredConnectionInterval = preferredConnectionInterval,
+            preferredSlaveLatency = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSupervisionTimeout,
+            maxAttMtu = maxAttMtu,
+            maxL2capMtu = maxL2capMtu,
+            isPhyLe2MSupported = isPhyLe2MSupported,
+            isPhyCodedSupported = isPhyCodedSupported,
+        ).also {
+            require(this.name == null) { "Device is already configured as connectable." }
+            this.name = name
+            this.appearance = appearance
+            this.eventHandler = eventHandler
+            this.cachedServices = MockServerScopeImpl().apply(cachedServices).build()
+            this.services = actualServices?.let { MockServerScopeImpl().apply(it).build() } ?: this.cachedServices
+            // If the actual services were are specified, mark cache as invalid.
+            // Accessing cached services will result in INVALID_HANDLE error and a new service
+            // discovery will have to be performed
+            this.isServiceCacheValid = actualServices == null
+            // As services were cached, this device for sure was scanned before.
+            this.isKnown = true
+            this.isBonded = isBonded
         }
 
         /**
          * Makes the device connectable and already connected to the device at the moment
          * of initialization (if it's in range).
          *
-         * Connected devices are also allowed for retrieval.
+         * Connected devices are also allowed for retrieval using [CentralManager.getPeripheralById].
          *
          * @param name The name of the peripheral, available from Device Name characteristic.
-         * @param connectionInterval The connection interval when connected.
-         * @param maxMtu The maximum supported MTU size.
+         * @param appearance The appearance of the peripheral, available from Appearance characteristic.
+         * See Bluetooth Assigned Numbers:
+         * [link](https://www.bluetooth.com/specifications/assigned-numbers/), 2.6 Appearance Values.
+         * @param preferredConnectionInterval The min and max connection interval, in 1.25 ms units.
+         * Valid range is from 6 (7.5ms) to 3200 (4000ms). Default is 25-40 (30-50 ms).
+         * @param preferredSlaveLatency Slave latency. Valid range is from 0 to 499. Default is 0.
+         * @param preferredSupervisionTimeout Supervision timeout in 10 ms units. Valid range
+         * is from 10 (0.1s) to 3200 (32s). Default is 400 (4 s).
+         * @param maxAttMtu The maximum supported ATT MTU (Maximum Transfer Unit).
+         * This value must be in range 23..517.
+         * @param maxL2capMtu The maximum supported L2CAP MTU (Maximum Transfer Unit used on L2CAP
+         * Layer using Data Length Extension (DLE)). This value must be in range 27..251.
          * @param isPhyLe2MSupported Whether the device supports PHY LE 2M.
          * @param isPhyCodedSupported Whether the device supports PHY LE Coded.
+         * @param isBonded Whether the peripheral is bonded.
          * @param eventHandler The event handler that will be called for every event emulating
          * a real peripheral.
-         * @param services The services available after service discovery.
+         * @param actualServices The services available after service discovery. If `null` (default),
+         * they are set to be equal to [cachedServices].
+         * @param cachedServices The services that are cached and will be returned immediately
+         * on service discovery without the discovery. They may differ from the actual services.
+         * On some platforms a client may invalidate cache and trigger full service discovery.
          */
         fun connected(
             name: String,
-            connectionInterval: Duration = 45.milliseconds,
-            maxMtu: Int = 23,
+            appearance: Int = 0x0000,
+            preferredConnectionInterval: @Range(from = 6L, to = 3200L) IntRange = IntRange(25, 40), // 30-50 ms
+            preferredSlaveLatency: @Range(from = 0, to = 499) Int = 0,
+            preferredSupervisionTimeout: @Range(from = 10, to = 3200) Int = 400, // 4 s
+            maxAttMtu: @Range(from = 23L, to = 517L) Int = 23,
+            maxL2capMtu: @Range(from = 27L, to = 251L) Int = 27,
             isPhyLe2MSupported: Boolean = false,
             isPhyCodedSupported: Boolean = false,
+            isBonded: Boolean = false,
             eventHandler: PeripheralSpecEventHandler,
-            services: ServerScope.() -> Unit,
+            actualServices: (ServerScope.() -> Unit)? = null,
+            cachedServices: (ServerScope.() -> Unit),
         ): Builder<ID> = setConnectionParameters(
-            name = name,
-            connectionInterval = connectionInterval,
-            maxMtu = maxMtu,
+            preferredConnectionInterval = preferredConnectionInterval,
+            preferredSlaveLatency = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSupervisionTimeout,
+            maxAttMtu = maxAttMtu,
+            maxL2capMtu = maxL2capMtu,
             isPhyLe2MSupported = isPhyLe2MSupported,
             isPhyCodedSupported = isPhyCodedSupported,
-            eventHandler = eventHandler,
-            services = services
         ).also {
-            isInitiallyConnected = proximity != Proximity.OUT_OF_RANGE
+            require(this.name == null) { "Device is already configured as connectable." }
+            this.name = name
+            this.appearance = appearance
+            this.eventHandler = eventHandler
+            this.cachedServices = ServerScopeImpl().apply(cachedServices).build()
+            this.services = actualServices?.let { ServerScopeImpl().apply(it).build() } ?: this.cachedServices
+            // If the actual services were are specified, mark cache as invalid.
+            // Accessing cached services will result in INVALID_HANDLE error and a new service
+            // discovery will have to be performed
+            this.isServiceCacheValid = actualServices == null
+            this.isKnown = true
+            this.isBonded = isBonded
+            this.isInitiallyConnected = proximity != Proximity.OUT_OF_RANGE
         }
+
+        /**
+         * Configures the device for high speed connection.
+         *
+         * Sets ATT MTU to 498 bytes and L2CAP MTU to 251 bytes and enables PHY LE 2M
+         * together with fast connection parameters.
+         *
+         * [connectable] or [connected] method must be called in addition to this one, for example:
+         * ```kotlin
+         * val mock = PeripheralSpec.simulatePeripheral("01:02:03:04:05:06") {
+         *     connectable(
+         *         name = "High Speed Device",
+         *         eventHandler = myEventHandler,
+         *         services = {
+         *             // Define services here
+         *         }
+         *     )
+         *     highSpeed()
+         * }
+         * ```
+         *
+         * @param preferredConnectionInterval The min and max connection interval, in 1.25 ms units.
+         * Valid range is from 6 (7.5ms) to 3200 (4000ms). Default is 15-30 (15-30 ms).
+         * @param preferredSlaveLatency Slave latency. Valid range is from 0 to 499. Default is 0.
+         * @param preferredSupervisionTimeout Supervision timeout in 10 ms units. Valid range
+         * is from 10 (0.1s) to 3200 (32s). Default is 100 (1 s).
+         * @param maxAttMtu The maximum supported ATT MTU (Maximum Transfer Unit).
+         * This value must be in range 23..517. Default is 498, which allows to fit 2 full L2CAP
+         * packets of 251 bytes each into a single ATT packet.
+         * @param maxL2capMtu The maximum supported L2CAP MTU (Maximum Transfer Unit used on L2CAP
+         * Layer using Data Length Extension (DLE)). This value must be in range 27..251.
+         * Default is 251.
+         * @param isPhyLe2MSupported Whether the device supports PHY LE 2M, default is `true`.
+         */
+        fun highSpeed(
+            preferredConnectionInterval: @Range(from = 6L, to = 3200L) IntRange = IntRange(12, 24), // 15-30 ms
+            preferredSlaveLatency: @Range(from = 0, to = 499) Int = 0,
+            preferredSupervisionTimeout: @Range(from = 10, to = 3200) Int = 100, // 1 s
+            maxAttMtu: @Range(from = 23L, to = 517L) Int = 498,
+            maxL2capMtu: @Range(from = 27L, to = 251L) Int = 251,
+            isPhyLe2MSupported: Boolean = true,
+        ): Builder<ID> = setConnectionParameters(
+            preferredConnectionInterval = preferredConnectionInterval,
+            preferredSlaveLatency = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSupervisionTimeout,
+            maxAttMtu = maxAttMtu,
+            maxL2capMtu = maxL2capMtu,
+            isPhyLe2MSupported = isPhyLe2MSupported,
+        )
 
         /**
          * Makes a connection to the device possible without scanning.
@@ -333,22 +1317,8 @@ class PeripheralSpec<ID> private constructor(
          * If this method is not called, the device needs to be scanned before connection attempt.
          *
          * Bonded devices are automatically allowed for retrieval.
-         * @see bonded
          */
         fun allowForRetrieval(): Builder<ID> = apply {
-            isKnown = true
-        }
-
-        /**
-         * Makes the device bonded.
-         *
-         * If this method is not called, the device will not be bonded.
-         *
-         * Bonded devices are also automatically allowed for retrieval.
-         * @see allowForRetrieval
-         */
-        fun bonded(): Builder<ID> = apply {
-            isBonded = true
             isKnown = true
         }
 
@@ -357,18 +1327,25 @@ class PeripheralSpec<ID> private constructor(
          */
         fun build(): PeripheralSpec<ID> = PeripheralSpec(
             identifier = identifier,
+            addressType = addressType,
             type = type,
             initialProximity = proximity,
-            advertisement = advertisements,
             name = name,
-            services = services,
-            eventHandler = eventHandler,
-            connectionInterval = connectionInterval,
-            maxMtu = maxMtu,
+            appearance = appearance,
+            preferredConnectionInterval = preferredConnectionInterval,
+            preferredSlaveLatency = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSlaveLatency,
+            maxAttMtu = maxAttMtu,
+            maxL2capMtu = maxL2capMtu,
             supportedPhy = supportedPhy,
             isInitiallyConnected = isInitiallyConnected,
             isKnown = isKnown,
             isBonded = isBonded,
+            advertisingSets = advertisingSets,
+            eventHandler = eventHandler,
+            services = services,
+            cachedServices = cachedServices,
+            isServiceCacheValid = isServiceCacheValid,
         )
 
         // Implementation
@@ -384,7 +1361,7 @@ class PeripheralSpec<ID> private constructor(
         ): Builder<ID> = apply {
             val advertisingData =
                 AdvertisingDataScopeImpl(parameters.txPowerLevel).apply(builder).build()
-            val advertisement = MockAdvertisementConfig(
+            val advertisement = MockAdvertisingSet(
                 delay = delay,
                 timeout = timeout,
                 maxAdvertisingEvents = maxAdvertisingEvents,
@@ -393,7 +1370,7 @@ class PeripheralSpec<ID> private constructor(
                 advertisingData = advertisingData,
                 isBeacon = isBeacon,
             )
-            advertisements = advertisements?.plus(advertisement) ?: listOf(advertisement)
+            advertisingSets = advertisingSets?.plus(advertisement) ?: listOf(advertisement)
 
             // Update the set of supported PHYs.
             if (parameters is Bluetooth5AdvertisingSetParameters) {
@@ -405,20 +1382,29 @@ class PeripheralSpec<ID> private constructor(
         }
 
         private fun setConnectionParameters(
-            name: String,
-            connectionInterval: Duration,
-            maxMtu: Int,
+            preferredConnectionInterval: IntRange,
+            preferredSlaveLatency: Int,
+            preferredSupervisionTimeout: Int,
+            maxAttMtu: Int,
+            maxL2capMtu: Int,
             isPhyLe2MSupported: Boolean,
-            isPhyCodedSupported: Boolean,
-            eventHandler: PeripheralSpecEventHandler,
-            services: ServerScope.() -> Unit,
+            isPhyCodedSupported: Boolean = false,
         ): Builder<ID> = apply {
-            this.name = name
-            this.services = ServerScopeImpl().apply(services).build()
-            this.eventHandler = eventHandler
-            this.connectionInterval = connectionInterval
-            this.maxMtu = maxMtu.coerceIn(23, 517)
-            this.isKnown = true
+            require(preferredConnectionInterval.start in 6..3200) { "Min connection interval is out of range." }
+            require(preferredConnectionInterval.endInclusive in 6..3200) { "Max connection interval is out of range." }
+            require(preferredSlaveLatency in 0..499) { "Slave latency is out of range." }
+            require(preferredSupervisionTimeout in 10..3200) { "Supervision timeout is out of range." }
+            require(maxAttMtu in 23..517) { "Max ATT MTU is out of range." }
+            require(maxL2capMtu in 27..251) { "Max L2CAP MTU is out of range." }
+            this.preferredConnectionInterval = preferredConnectionInterval
+            this.preferredSlaveLatency = preferredSlaveLatency
+            this.preferredSupervisionTimeout = preferredSupervisionTimeout
+            if (this.maxAttMtu == null || this.maxAttMtu!! < maxAttMtu) {
+                this.maxAttMtu = maxAttMtu.coerceIn(23, 517)
+            }
+            if (this.maxL2capMtu == null || this.maxL2capMtu!! < maxL2capMtu) {
+                this.maxL2capMtu = maxL2capMtu.coerceIn(27, 251)
+            }
             if (isPhyLe2MSupported) this.supportedPhy.add(Phy.PHY_LE_2M)
             if (isPhyCodedSupported) this.supportedPhy.add(Phy.PHY_LE_CODED)
         }

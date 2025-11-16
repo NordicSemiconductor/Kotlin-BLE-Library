@@ -48,6 +48,9 @@ import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import org.jetbrains.annotations.Range
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 /**
  * A native implementation of [Peripheral.Executor] for Android.
@@ -113,21 +116,24 @@ internal class NativeExecutor(
     override val isClosed: Boolean
         get() = gatt == null
 
-    override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override var isReliableWriteEnabled: Boolean = false
+
+    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         // On retry the previous GATT object may not be null and must be closed.
         gatt?.close()
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
-    override fun discoverServices(): Boolean {
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         return gatt?.discoverServices() ?: false
     }
 
-    override fun createBond(): Boolean {
+    override suspend fun createBond(): Boolean {
         return bluetoothDevice.createBond()
     }
 
-    override fun removeBond(): Boolean {
+    override suspend fun removeBond(): Boolean {
         try {
             val method = BluetoothDevice::class.java.getMethod("removeBond")
             return method.invoke(bluetoothDevice) as Boolean
@@ -136,7 +142,7 @@ internal class NativeExecutor(
         }
     }
 
-    override fun refreshCache(): Boolean {
+    override suspend fun refreshCache(): Boolean {
         gatt?.let { gatt ->
             val result = try {
                 val method = BluetoothGatt::class.java.getMethod("refresh")
@@ -155,7 +161,7 @@ internal class NativeExecutor(
         return false
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
+    override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
         gatt?.let { gatt ->
             val result = gatt.requestConnectionPriority(priority.toPriority())
             if (!result) {
@@ -171,11 +177,11 @@ internal class NativeExecutor(
         return false
     }
 
-    override fun requestMtu(mtu: Int): Boolean {
+    override suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
         return gatt?.requestMtu(mtu) ?: false
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
+    override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 gatt.setPreferredPhy(txPhy.toPhy(), rxPhy.toPhy(), phyOptions.toOption())
@@ -190,7 +196,7 @@ internal class NativeExecutor(
         return false
     }
 
-    override fun readPhy(): Boolean {
+    override suspend fun readPhy(): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 gatt.readPhy()
@@ -205,11 +211,27 @@ internal class NativeExecutor(
         return false
     }
 
-    override fun readRssi(): Boolean {
+    override fun beginReliableWrite(): Boolean {
+        gatt?.let { gatt ->
+            return gatt.beginReliableWrite()
+                .also { isReliableWriteEnabled = it }
+        }
+        return false
+    }
+
+    override suspend fun executeReliableWrite(): Boolean {
+        return gatt?.executeReliableWrite() ?: false
+    }
+
+    override suspend fun abortReliableWrite(): Boolean {
+        return gatt?.abortReliableWrite()?.let { true } ?: false
+    }
+
+    override suspend fun readRssi(): Boolean {
         return gatt?.readRemoteRssi() ?: false
     }
 
-    override fun disconnect(): Boolean {
+    override suspend fun disconnect(): Boolean {
         gatt?.let { gatt ->
             gattCallback.disconnectRequest = true
             gatt.disconnect()

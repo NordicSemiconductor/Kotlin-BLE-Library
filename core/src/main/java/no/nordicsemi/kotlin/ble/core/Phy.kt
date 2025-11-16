@@ -93,6 +93,15 @@ enum class Phy {
      */
     PHY_LE_CODED;
 
+    /**
+     * Returns the nominal bit rate in bits per second for this PHY, in bits per second.
+     */
+    fun rate(): Int = when (this) {
+        PHY_LE_1M -> 1_000_000
+        PHY_LE_2M -> 2_000_000
+        PHY_LE_CODED -> 125_000 // Lowest rate for coded PHY
+    }
+
     override fun toString(): String = when (this) {
         PHY_LE_1M -> "LE 1M"
         PHY_LE_2M -> "LE 2M"

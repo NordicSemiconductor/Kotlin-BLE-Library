@@ -78,7 +78,7 @@ interface Characteristic<D: Descriptor> {
     /**
      * Characteristic properties.
      */
-    val properties: List<CharacteristicProperty>
+    val properties: Set<CharacteristicProperty>
 
     /**
      * The parent service.
@@ -89,4 +89,28 @@ interface Characteristic<D: Descriptor> {
      * List of descriptors of this characteristic.
      */
     val descriptors: List<D>
+
+    /**
+     * Checks whether the characteristic has [CharacteristicProperty.READ] property.
+     */
+    fun isReadable() = CharacteristicProperty.READ in properties
+
+    /**
+     * Checks whether the characteristic has any of the write properties.
+     */
+    fun isWritable() = properties.any {
+        it == CharacteristicProperty.WRITE ||
+        it == CharacteristicProperty.WRITE_WITHOUT_RESPONSE ||
+        it == CharacteristicProperty.SIGNED_WRITE
+    }
+
+    /**
+     * Checks whether the characteristic has
+     * [CharacteristicProperty.NOTIFY] or
+     * [CharacteristicProperty.INDICATE] property.
+     */
+    fun isSubscribable() = properties.any {
+        it == CharacteristicProperty.NOTIFY ||
+        it == CharacteristicProperty.INDICATE
+    }
 }

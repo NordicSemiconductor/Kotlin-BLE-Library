@@ -43,8 +43,11 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
+import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
+import no.nordicsemi.kotlin.ble.client.MtuChanged
+import no.nordicsemi.kotlin.ble.client.PhyChanged
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
@@ -52,12 +55,9 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.RssiRead
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
-import no.nordicsemi.kotlin.ble.client.android.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
-import no.nordicsemi.kotlin.ble.client.android.MtuChanged
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.core.PeripheralType
-import no.nordicsemi.kotlin.ble.client.android.PhyChanged
+import no.nordicsemi.kotlin.ble.client.android.ReliableWriteCompleted
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -65,7 +65,9 @@ import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.OperationStatus
+import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
@@ -77,6 +79,7 @@ import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
+import org.jetbrains.annotations.Range
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -116,64 +119,78 @@ private class StubExecutor(
     override val isClosed: Boolean
         get() = false
 
-    override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
-        _events.tryEmit(ConnectionStateChanged(ConnectionState.Connected))
+    override var isReliableWriteEnabled: Boolean = false
+
+    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+        _events.emit(ConnectionStateChanged(ConnectionState.Connected))
     }
 
-    override fun discoverServices(): Boolean {
-        _events.tryEmit(ServicesDiscovered(initialServices))
+    @OptIn(ExperimentalUuidApi::class)
+    override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+        _events.emit(ServicesDiscovered(initialServices))
         return true
     }
 
-    override fun createBond(): Boolean {
-        _bondState.tryEmit(BondState.BONDED)
+    override suspend fun createBond(): Boolean {
+        _bondState.emit(BondState.BONDED)
         return true
     }
 
-    override fun removeBond(): Boolean {
-        _bondState.tryEmit(BondState.NONE)
-        _events.tryEmit(ConnectionStateChanged(ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.TerminateLocalHost)))
+    override suspend fun removeBond(): Boolean {
+        _bondState.emit(BondState.NONE)
+        _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.TerminateLocalHost)))
         return true
     }
 
-    override fun refreshCache(): Boolean {
-        _events.tryEmit(ServicesChanged)
+    override suspend fun refreshCache(): Boolean {
+        _events.emit(ServicesChanged)
         return true
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
-        _events.tryEmit(ConnectionParametersChanged(ConnectionParameters.Connected(15, 0, 0)))
+    override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
+        _events.emit(ConnectionParametersChanged(ConnectionParameters.Connected(15, 0, 0)))
         return true
     }
 
-    override fun requestMtu(mtu: Int): Boolean {
-        _events.tryEmit(MtuChanged(mtu))
+    override suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
+        _events.emit(MtuChanged(mtu))
         return true
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
-        _events.tryEmit(PhyChanged(PhyInUse(txPhy, rxPhy)))
+    override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
+        _events.emit(PhyChanged(PhyInUse(txPhy, rxPhy)))
         return true
     }
 
-    override fun readPhy(): Boolean {
-        _events.tryEmit(PhyChanged(phy))
+    override suspend fun readPhy(): Boolean {
+        _events.emit(PhyChanged(phy))
         return true
     }
 
-    override fun readRssi(): Boolean {
-        _events.tryEmit(RssiRead(rssi))
+    override suspend fun readRssi(): Boolean {
+        _events.emit(RssiRead(rssi))
         return true
     }
 
-    override fun disconnect(): Boolean {
-        _events.tryEmit(
-            ConnectionStateChanged(
-                ConnectionState.Disconnected(
-                    reason = ConnectionState.Disconnected.Reason.Success
-                )
-            )
-        )
+    override fun beginReliableWrite(): Boolean {
+        isReliableWriteEnabled = true
+        return true
+    }
+
+    override suspend fun executeReliableWrite(): Boolean {
+        isReliableWriteEnabled = false
+        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS))
+        return true
+    }
+
+    override suspend fun abortReliableWrite(): Boolean {
+        isReliableWriteEnabled = false
+        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS))
+        return true
+    }
+
+    override suspend fun disconnect(): Boolean {
+        _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.Success)))
         return true
     }
 
@@ -196,11 +213,11 @@ private class StubRemoteService(
 ): RemoteService() {
 
     override val characteristics: List<StubRemoteCharacteristic> = characteristics
-        .mapIndexed { index, cd ->
+        .map { cd ->
             StubRemoteCharacteristic(
                 service = this,
                 uuid = cd.uuid,
-                instanceId = index,
+                instanceId = cd.instanceId,
                 properties = cd.properties,
                 permissions = cd.permissions,
                 descriptors = cd.descriptors,
@@ -208,13 +225,13 @@ private class StubRemoteService(
         }
 
     override val includedServices: List<RemoteIncludedService> = includedServices
-        .mapIndexed { index, sd ->
+        .map { sd ->
             StubRemoteIncludedService(
                 service = this,
                 uuid = sd.uuid,
-                instanceId = index,
+                instanceId = sd.instanceId,
                 characteristics = sd.characteristics,
-                includedServices = sd.innerServices,
+                includedServices = sd.includedServices,
             )
         }
 
@@ -236,11 +253,11 @@ private class StubRemoteIncludedService(
 ): RemoteIncludedService {
 
     override val characteristics: List<RemoteCharacteristic> = characteristics
-        .mapIndexed { index, cd ->
+        .map { cd ->
             StubRemoteCharacteristic(
                 service = this,
                 uuid = cd.uuid,
-                instanceId = index,
+                instanceId = cd.instanceId,
                 properties = cd.properties,
                 permissions = cd.permissions,
                 descriptors = cd.descriptors,
@@ -248,13 +265,13 @@ private class StubRemoteIncludedService(
         }
 
     override val includedServices: List<RemoteIncludedService> = includedServices
-        .mapIndexed { index, sd ->
+        .map { sd ->
             StubRemoteIncludedService(
                 service = this,
                 uuid = sd.uuid,
-                instanceId = index,
+                instanceId = sd.instanceId,
                 characteristics = sd.characteristics,
-                includedServices = sd.innerServices,
+                includedServices = sd.includedServices,
             )
         }
 
@@ -271,30 +288,27 @@ private class StubRemoteCharacteristic(
     override val service: AnyRemoteService,
     override val uuid: Uuid,
     override val instanceId: Int,
-    override val properties: List<CharacteristicProperty> = emptyList(),
-    private val permissions: List<Permission>,
+    override val properties: Set<CharacteristicProperty> = emptySet(),
+    private val permissions: Set<Permission>,
     descriptors: List<DescriptorDefinition> = emptyList(),
 ): RemoteCharacteristic {
     private var _isNotifying = false
 
     override val isNotifying: Boolean
-        get() = _isNotifying &&
-                (CharacteristicProperty.NOTIFY in properties || CharacteristicProperty.INDICATE in properties)
+        get() = _isNotifying && isSubscribable()
 
     override suspend fun setNotifying(enabled: Boolean) = when {
         owner == null -> throw InvalidAttributeException()
-        properties
-            .intersect(listOf(CharacteristicProperty.NOTIFY, CharacteristicProperty.INDICATE))
-            .isEmpty() -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
-        else -> _isNotifying = enabled
+        isSubscribable() -> _isNotifying = enabled
+        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
     }
 
     override val descriptors: List<RemoteDescriptor> = descriptors
-        .mapIndexed { index, dd ->
+        .map { dd ->
             StubRemoteDescriptor(
                 characteristic = this,
                 uuid = dd.uuid,
-                instanceId = index,
+                instanceId = dd.instanceId,
                 permissions = dd.permissions,
             )
         }
@@ -303,25 +317,19 @@ private class StubRemoteCharacteristic(
 
     override suspend fun read(): ByteArray = when {
         owner == null -> throw InvalidAttributeException()
-        permissions
-            .intersect(listOf(Permission.READ, Permission.READ_ENCRYPTED, Permission.READ_ENCRYPTED_MITM))
-            .isNotEmpty() -> _value.value
+        isReadable() -> _value.value
         else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
     }
 
     override suspend fun write(data: ByteArray, writeType: WriteType) = when {
         owner == null -> throw InvalidAttributeException()
-        permissions
-            .intersect(listOf(Permission.WRITE, Permission.WRITE_ENCRYPTED, Permission.WRITE_ENCRYPTED_MITM))
-            .isNotEmpty() -> _value.update { data }
+        isWritable() -> _value.update { data }
         else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
     }
 
     override suspend fun subscribe(): Flow<ByteArray> = when {
         owner == null -> throw InvalidAttributeException()
-        properties
-            .intersect(listOf(CharacteristicProperty.NOTIFY, CharacteristicProperty.INDICATE))
-            .isNotEmpty() -> _value.filter { _isNotifying }
+        isSubscribable() -> _value.filter { _isNotifying }
         else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
     }
 
@@ -340,23 +348,19 @@ private class StubRemoteDescriptor(
     override val characteristic: RemoteCharacteristic,
     override val uuid: Uuid,
     override val instanceId: Int,
-    private val permissions: List<Permission>,
+    private val permissions: Set<Permission>,
 ): RemoteDescriptor {
     private var value: ByteArray = byteArrayOf()
 
     override suspend fun read(): ByteArray = when {
         owner == null -> throw InvalidAttributeException()
-        permissions
-            .intersect(listOf(Permission.READ, Permission.READ_ENCRYPTED, Permission.READ_ENCRYPTED_MITM))
-            .isNotEmpty() -> value
+        isReadable() -> value
         else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
     }
 
     override suspend fun write(data: ByteArray) = when {
         owner == null -> throw InvalidAttributeException()
-        permissions
-            .intersect(listOf(Permission.WRITE, Permission.WRITE_ENCRYPTED, Permission.WRITE_ENCRYPTED_MITM))
-            .isNotEmpty() -> value = data
+        isWritable() -> value = data
         else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
     }
 
@@ -424,12 +428,12 @@ open class PreviewPeripheral(
         initialServices = ServerScopeImpl()
             .apply(services)
             .build()
-            .mapIndexed { index, sd ->
+            .map { sd ->
                 StubRemoteService(
                     uuid = sd.uuid,
-                    instanceId = index,
+                    instanceId = sd.instanceId,
                     characteristics = sd.characteristics,
-                    includedServices = sd.innerServices,
+                    includedServices = sd.includedServices,
                 )
             },
         rssi = rssi,

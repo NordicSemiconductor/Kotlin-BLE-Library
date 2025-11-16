@@ -29,38 +29,33 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.internal
+@file:Suppress("unused")
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
-import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
-import no.nordicsemi.kotlin.ble.core.OperationStatus
+package no.nordicsemi.kotlin.ble.client.mock
 
-internal sealed class NativeGattEvent: ImplSpecificEvent()
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition
+import kotlin.time.Duration
 
-internal class CharacteristicChanged(
-    val characteristic: BluetoothGattCharacteristic,
-    val value: ByteArray,
-): NativeGattEvent()
-
-internal class CharacteristicRead(
-    val characteristic: BluetoothGattCharacteristic,
-    val value: ByteArray,
-    val status: OperationStatus,
-): NativeGattEvent()
-
-internal class CharacteristicWrite(
-    val characteristic: BluetoothGattCharacteristic,
-    val status: OperationStatus,
-): NativeGattEvent()
-
-internal class DescriptorRead(
-    val descriptor: BluetoothGattDescriptor,
-    val value: ByteArray,
-    val status: OperationStatus,
-): NativeGattEvent()
-
-internal class DescriptorWrite(
-    val descriptor: BluetoothGattDescriptor,
-    val status: OperationStatus,
-): NativeGattEvent()
+/**
+ * The advertisement configuration for a mock peripheral.
+ *
+ * @property delay The delay before the peripheral starts advertising.
+ * @property timeout The timeout after which the advertising set stops advertising.
+ * @property maxAdvertisingEvents The maximum number of advertising events.
+ * @property isAdvertisingWhenConnected Whether the peripheral should advertise in the
+ * connected state.
+ * @property parameters The advertising parameters.
+ * @property advertisingData The advertising data.
+ * @property isBeacon Whether the advertisement can reveal user's location, therefore requires
+ * Location permission granted.
+ */
+class MockAdvertisingSet(
+    val delay: Duration,
+    val timeout: Duration,
+    val maxAdvertisingEvents: Int,
+    val isAdvertisingWhenConnected: Boolean,
+    val parameters: AdvertisingSetParameters,
+    val advertisingData: AdvertisingDataDefinition,
+    val isBeacon: Boolean,
+)

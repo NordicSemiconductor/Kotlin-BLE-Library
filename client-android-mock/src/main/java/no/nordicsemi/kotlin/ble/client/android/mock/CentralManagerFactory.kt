@@ -39,6 +39,7 @@ import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.internal.MockCentralManagerImpl
 import no.nordicsemi.kotlin.ble.client.mock.SimulationProvider
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
 
 /**
  * Creates a mock implementation of a [CentralManager] that can emulate scanning and connecting

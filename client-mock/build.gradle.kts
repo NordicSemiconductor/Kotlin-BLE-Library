@@ -49,16 +49,16 @@ nordicNexusPublishing {
 dependencies {
     api(project(":core-mock"))
     api(project(":client-core"))
-    //api(project(":server-core"))
 
     implementation(libs.slf4j)
+    dokkaPlugin(libs.dokka.android.gradlePlugin)
 }
 
 dokka {
     dokkaSourceSets.named("main") {
         includes.from("Module.md")
         perPackageOption {
-            matchingRegex.set("no.nordicsemi.kotlin.ble.client.internal")
+            matchingRegex.set("no.nordicsemi.kotlin.ble.client.mock.internal")
             suppress.set(true)
         }
     }

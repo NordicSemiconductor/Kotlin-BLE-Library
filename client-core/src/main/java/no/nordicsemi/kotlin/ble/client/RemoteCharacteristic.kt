@@ -36,14 +36,17 @@ package no.nordicsemi.kotlin.ble.client
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.defaultWriteType
 
 /**
  * A GATT characteristic of a service on a remote connected peripheral device.
  *
  * The API allows to access the value of the characteristic.
+ *
  * Depending on the properties of the characteristic, it may be possible to read, write,
  * subscribe for value changes, etc.
  */
@@ -85,13 +88,19 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * Writes the value of the characteristic.
      *
      * @param data The data to be written.
-     * @param writeType The write type to be used.
+     * @param writeType The write type to be used. By default set to the characteristic's
+     * default write type based on its properties.
+     * @throws ValueDoesNotMatchException if the value was sent using *Long Write* or *Reliable Write*
+     * procedure and the value replied back by the peripheral does not match the value written.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
      * disconnection of service change event.
      * @throws BluetoothException if the implementation fails, see cause for a reason.
      */
-    suspend fun write(data: ByteArray, writeType: WriteType)
+    suspend fun write(
+        data: ByteArray,
+        writeType: WriteType = properties.defaultWriteType ?: WriteType.WITH_RESPONSE
+    )
 
     /**
      * Subscribes for notifications or indications of the characteristic.

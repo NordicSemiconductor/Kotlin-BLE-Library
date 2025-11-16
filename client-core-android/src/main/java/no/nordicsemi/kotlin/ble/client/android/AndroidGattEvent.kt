@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
@@ -45,37 +46,12 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 sealed class AndroidGattEvent : ImplSpecificEvent()
 
 /**
- * Event indicating that the (Maximum Transfer Unit) MTU has changed.
+ * Event indicating that the Reliable Write procedure have been completed (executed or aborted)
  *
- * MTU is the maximum number of bytes that can be sent in a single Attribute Layer packet.
- * GATT protocol may use some of the bytes for its own headers, so the maximum size of the
- * payload is smaller, depending on the operation type.
+ * Reliable Write procedure is used to write long characteristics or descriptors
+ * in a reliable way. It ensures that either all prepared writes are committed
+ * or none of them.
  *
- * An Attribute Layer payload may be automatically split into multiple Link Layer packets.
- * The size of the Link Layer packet is 27 bytes by default, but it may be increased
- * using Data Length Extension feature, supported on Android 6+. The size of the
- * Link Layer packet is called the LL MTU and is not available using Android API.
- *
- * @param mtu The new MTU.
+ * @param status The operation status.
  */
-data class MtuChanged(val mtu: Int) : AndroidGattEvent()
-
-/**
- * Event indicating that the PHY used for the connection has changed.
- *
- * PHY defines the Physical Layer properties. LE 1M is the legacy PHY, with a speed of 1 Mbps.
- * Some Android 8+ devices supports LE 2M, with a speed of 2 Mbps and LL Coded, with a coding
- * 2 or 8 bits per symbol, providing a longer range.
- *
- * @param phy The new PHY.
- * @see Phy
- * @see PhyOption
- */
-data class PhyChanged(val phy: PhyInUse) : AndroidGattEvent()
-
-/**
- * Event indicating that the connection parameters have changed.
- *
- * @param newParameters The new connection parameters.
- */
-data class ConnectionParametersChanged(val newParameters: ConnectionParameters) : AndroidGattEvent()
+data class ReliableWriteCompleted(val status: OperationStatus) : AndroidGattEvent()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,18 +29,46 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.internal
+package no.nordicsemi.kotlin.ble.client.internal
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 
 /**
- * This mutex ensures that only one Bluetooth LE operation can be executed concurrently.
+ * GATT event specific to the implementation.
  */
-internal object NativeOperationMutex {
-    private val lock = Mutex(locked = false)
+sealed class OperationEvent(
+    val subject: Any
+): ImplSpecificEvent()
 
-    suspend fun <T> withLock(block: suspend () -> T): T {
-        return lock.withLock { block() }
+class CharacteristicChanged(
+    characteristic: Any,
+    val value: ByteArray,
+): OperationEvent(characteristic)
+
+class CharacteristicRead(
+    characteristic: Any,
+    val value: ByteArray,
+    val status: OperationStatus,
+): OperationEvent(characteristic) {
+
+    override fun toString(): String {
+        return "Read event on $subject: value=${value.contentToString()}, status=$status"
     }
 }
+
+class CharacteristicWrite(
+    characteristic: Any,
+    val status: OperationStatus,
+): OperationEvent(characteristic)
+
+class DescriptorRead(
+    descriptor: Any,
+    val value: ByteArray,
+    val status: OperationStatus,
+): OperationEvent(descriptor)
+
+class DescriptorWrite(
+    descriptor: Any,
+    val status: OperationStatus,
+): OperationEvent(descriptor)
