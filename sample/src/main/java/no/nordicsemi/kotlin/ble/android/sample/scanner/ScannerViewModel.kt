@@ -262,7 +262,7 @@ class ScannerViewModel @Inject constructor(
             // Check maximum write length
             val writeType = WriteType.WITHOUT_RESPONSE
             val length = peripheral.maximumWriteValueLength(writeType)
-            Timber.i("Maximum write length for $writeType: $length")
+            Timber.i("Maximum write length for $writeType: $length bytes")
 
             // Read RSSI
             val rssi = peripheral.readRssi()
@@ -312,10 +312,11 @@ class ScannerViewModel @Inject constructor(
     @OptIn(ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.services()
-            .filterNotNull()
             .onEach { services ->
                 Timber.i("Services changed: $services")
-
+            }
+            .filterNotNull()
+            .onEach { services ->
                 // Read values of all characteristics.
                 services.forEach { remoteService ->
                     Timber.i("Reading characteristics of ${remoteService.uuid}:")
