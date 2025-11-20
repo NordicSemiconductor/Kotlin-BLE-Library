@@ -61,8 +61,6 @@ import kotlin.uuid.Uuid
 @Composable
 fun DeviceServices(services: List<RemoteService>?) {
     Column {
-        Text("Services", style = MaterialTheme.typography.labelMedium)
-        Spacer(modifier = Modifier.height(4.dp))
         services?.forEach { service ->
             Service(service)
         }
