@@ -584,11 +584,11 @@ class PeripheralSpec<ID: Any> private constructor(
     }
 
     /**
-     * Simulates a change of the peripheral identifier (MAC address).
+     * Simulates a change of the peripheral identifier (Device Address).
      *
      * This will be applied only if the peripheral is not connected.
      *
-     * Note, that if the identifier is the Bluetooth Address, the 2 most significant bits
+     * Note, that if the identifier is the Bluetooth Device Address, the 2 most significant bits
      * should match the [addressType]:
      * - `0b00` - [AddressType.RANDOM_PRIVATE_NON_RESOLVABLE]
      * - `0b01` - [AddressType.RANDOM_PRIVATE_RESOLVABLE]
