@@ -49,13 +49,10 @@ import no.nordicsemi.kotlin.ble.client.mock.WriteResponse
 import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
+import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
-import no.nordicsemi.kotlin.ble.core.internal.CCCD
-import no.nordicsemi.kotlin.ble.core.internal.CEPD
-import no.nordicsemi.kotlin.ble.core.internal.CUD
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
-import kotlin.math.min
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -83,6 +80,7 @@ class MockRemoteCharacteristic(
 
         // Ensure that the services are valid.
         check(peripheralSpec.isServiceCacheValid) {
+            // The response is delivered in the next connection interval.
             delay(connectionInterval)
             emit(CharacteristicRead(
                 characteristic = this@MockRemoteCharacteristic,
@@ -93,6 +91,30 @@ class MockRemoteCharacteristic(
             return
         }
 
+        // Check read permissions.
+        val insecure = Permission.READ in characteristic.permissions
+        val authenticationRequired = characteristic.permissions.any {
+            it == Permission.READ_ENCRYPTED ||
+            it == Permission.READ_ENCRYPTED_MITM
+        }
+        val status = when {
+            insecure ||
+            authenticationRequired && peripheralSpec.isBonded -> null
+            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
+            else -> OperationStatus.READ_NOT_PERMITTED
+        }
+        status?.let { status ->
+            // The response is delivered in the next connection interval.
+            delay(connectionInterval)
+            emit(CharacteristicRead(
+                characteristic = this@MockRemoteCharacteristic,
+                value = byteArrayOf(),
+                status = status,
+            ))
+            return
+        }
+
+        // Handle read request. Some characteristics use Peripheral Spec data directly.
         val result = when (service.uuid) {
             Service.GENERIC_ACCESS_UUID -> when (characteristic.uuid) {
                 Characteristic.DEVICE_NAME -> ReadResponse.Success(peripheralSpec.name!!.encodeToByteArray())
@@ -116,6 +138,8 @@ class MockRemoteCharacteristic(
         }
         when (result) {
             is ReadResponse.Success -> {
+                // Bluetooth Core Specification 6.2, Vol 3 (Host), Part F (ATT), 3.2.9. Long attribute values:
+                // "The maximum length of an attribute value shall be 512 octets."
                 val truncatedData = result.value.take(512).toByteArray()
                 // Reading descriptor value takes time depending on the size of the value
                 // and connection parameters.
@@ -147,12 +171,35 @@ class MockRemoteCharacteristic(
         when (writeType == WriteType.WITH_RESPONSE) {
             true -> {
                 // Ensure that the services are valid.
-                checkNotNull(peripheralSpec.isServiceCacheValid) {
+                check(peripheralSpec.isServiceCacheValid) {
+                    // The response is delivered in the next connection interval.
                     delay(connectionInterval)
                     emit(CharacteristicWrite(
                         characteristic = this@MockRemoteCharacteristic,
                         // TODO Verify if this is the correct status to use.
                         status = OperationStatus.INVALID_HANDLE,
+                    ))
+                    return
+                }
+
+                // Check write permissions.
+                val insecure = Permission.WRITE in characteristic.permissions
+                val authenticationRequired = characteristic.permissions.any {
+                    it == Permission.WRITE_ENCRYPTED ||
+                    it == Permission.WRITE_ENCRYPTED_MITM
+                }
+                val status = when {
+                    insecure ||
+                    authenticationRequired && peripheralSpec.isBonded -> null
+                    authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
+                    else -> OperationStatus.WRITE_NOT_PERMITTED
+                }
+                status?.let { status ->
+                    // The response is delivered in the next connection interval.
+                    delay(connectionInterval)
+                    emit(CharacteristicWrite(
+                        characteristic = this@MockRemoteCharacteristic,
+                        status = status,
                     ))
                     return
                 }
@@ -177,11 +224,11 @@ class MockRemoteCharacteristic(
                 // so only one connection interval delay is added below in case of failure.
                 when (useLongWrite || useReliableWrite) {
                     true -> {
-                        val result = eventHandler.onPrepareWriteRequest(
+                        val response = eventHandler.onPrepareWriteRequest(
                             this@MockRemoteCharacteristic,
                             truncatedData
                         )
-                        when (result) {
+                        when (response) {
                             is PrepareWriteResponse.Success -> {
                                 // Writing characteristic value takes time depending on the size of the value
                                 // and connection parameters.
@@ -189,11 +236,15 @@ class MockRemoteCharacteristic(
                                     peripheralSpec.estimateTransferDuration(data, true)
                                 delay(duration)
                                 // Validate received data. In case of a incorrect data, throw an exception.
-                                val match = truncatedData.contentEquals(result.value)
+                                val match = truncatedData.contentEquals(response.value)
                                 // When not in Reliable Write, Long Write automatically executes or
                                 // aborts all prepared writes.
+                                var status = OperationStatus.SUCCESS
                                 if (!useReliableWrite) {
-                                    eventHandler.onExecuteWriteRequest(match)
+                                    when (val response = eventHandler.onExecuteWriteRequest(match)) {
+                                        is WriteResponse.Success -> { /* no-op */ }
+                                        is WriteResponse.Failure -> status = response.status
+                                    }
                                     delay(connectionInterval)
                                 }
                                 if (!match) {
@@ -201,7 +252,7 @@ class MockRemoteCharacteristic(
                                 }
                                 emit(CharacteristicWrite(
                                     characteristic = this@MockRemoteCharacteristic,
-                                    status = OperationStatus.SUCCESS,
+                                    status = status,
                                 ))
                             }
 
@@ -210,7 +261,7 @@ class MockRemoteCharacteristic(
                                 delay(connectionInterval)
                                 emit(CharacteristicWrite(
                                     characteristic = this@MockRemoteCharacteristic,
-                                    status = result.status,
+                                    status = response.status,
                                 ))
                             }
                         }
@@ -246,8 +297,12 @@ class MockRemoteCharacteristic(
                     }
                 }
             }
-            // There is no response for Write Without Response.
+            // There is no response for Write Without Response or Signed Write.
             false -> {
+                // Note: There is no check for service cache validity or write permissions,
+                //       as the operation does not expect a response.
+                //       It will always succeed.
+
                 val mtu = checkNotNull(peripheralSpec.mtu)
                 // Truncate the data to MTU - 3 bytes, or MTU - 12 bytes, depending on the write type.
                 val extra = if (writeType == WriteType.SIGNED) 12 else 3
@@ -263,6 +318,14 @@ class MockRemoteCharacteristic(
                 val duration =
                     peripheralSpec.estimateTransferDuration(truncatedData, false)
                 delay(duration)
+
+                // The flow is suspended and awaits for CharacteristicWrite event.
+                // Even though there is no response for this operation, we need to
+                // release it by emitting the event.
+                emit(CharacteristicWrite(
+                    characteristic = this@MockRemoteCharacteristic,
+                    status = OperationStatus.SUCCESS,
+                ))
             }
         }
     }

@@ -72,13 +72,37 @@ class MockRemoteDescriptor(
         val connectionInterval = checkNotNull(peripheralSpec.connectionParameters).connectionIntervalMillis
 
         // Ensure that the services are valid.
-        checkNotNull(peripheralSpec.isServiceCacheValid) {
+        check(peripheralSpec.isServiceCacheValid) {
+            // The read response is delivered in the next connection interval.
             delay(connectionInterval)
             emit(DescriptorRead(
                 descriptor = this@MockRemoteDescriptor,
                 value = byteArrayOf(),
                 // TODO Verify if this is the correct status to use.
                 status = OperationStatus.INVALID_HANDLE,
+            ))
+            return
+        }
+
+        // Check read permissions.
+        val insecure = Permission.READ in descriptor.permissions
+        val authenticationRequired = descriptor.permissions.any {
+            it == Permission.READ_ENCRYPTED ||
+            it == Permission.READ_ENCRYPTED_MITM
+        }
+        val status = when {
+            insecure ||
+                    authenticationRequired && peripheralSpec.isBonded -> null
+            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
+            else -> OperationStatus.READ_NOT_PERMITTED
+        }
+        status?.let { status ->
+            // The response is delivered in the next connection interval.
+            delay(connectionInterval)
+            emit(DescriptorRead(
+                descriptor = this@MockRemoteDescriptor,
+                value = byteArrayOf(),
+                status = status,
             ))
             return
         }
@@ -122,11 +146,34 @@ class MockRemoteDescriptor(
 
         // Ensure that the services are valid.
         check(peripheralSpec.isServiceCacheValid) {
+            // The write response is delivered in the next connection interval.
             delay(connectionInterval)
             emit(DescriptorWrite(
                 descriptor = this@MockRemoteDescriptor,
                 // TODO Verify if this is the correct status to use.
                 status = OperationStatus.INVALID_HANDLE,
+            ))
+            return
+        }
+
+        // Check write permissions.
+        val insecure = Permission.WRITE in descriptor.permissions
+        val authenticationRequired = descriptor.permissions.any {
+            it == Permission.WRITE_ENCRYPTED ||
+            it == Permission.WRITE_ENCRYPTED_MITM
+        }
+        val status = when {
+            insecure ||
+            authenticationRequired && peripheralSpec.isBonded -> null
+            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
+            else -> OperationStatus.WRITE_NOT_PERMITTED
+        }
+        status?.let { status ->
+            // The response is delivered in the next connection interval.
+            delay(connectionInterval)
+            emit(DescriptorWrite(
+                descriptor = this@MockRemoteDescriptor,
+                status = status,
             ))
             return
         }
@@ -229,20 +276,6 @@ class MockRemoteDescriptor(
     }
 
     override fun OperationEvent.matches(): Boolean = this.subject == this@MockRemoteDescriptor
-
-    override fun isWritable(): Boolean = descriptor.permissions.any {
-        it == Permission.WRITE ||
-        it == Permission.WRITE_ENCRYPTED ||
-        it == Permission.WRITE_ENCRYPTED_MITM ||
-        it == Permission.WRITE_SIGNED ||
-        it == Permission.WRITE_SIGNED_MITM
-    }
-
-    override fun isReadable(): Boolean = descriptor.permissions.any {
-        it == Permission.READ ||
-        it == Permission.READ_ENCRYPTED ||
-        it == Permission.READ_ENCRYPTED_MITM
-    }
 
     /** The value of the CCCD in bytes. */
     val CCCD.value: ByteArray

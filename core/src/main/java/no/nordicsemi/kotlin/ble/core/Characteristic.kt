@@ -91,12 +91,12 @@ interface Characteristic<D: Descriptor> {
     val descriptors: List<D>
 
     /**
-     * Checks whether the characteristic has [CharacteristicProperty.READ] property.
+     * Checks whether the characteristic can be read.
      */
     fun isReadable() = CharacteristicProperty.READ in properties
 
     /**
-     * Checks whether the characteristic has any of the write properties.
+     * Checks whether the characteristic can be written to.
      */
     fun isWritable() = properties.any {
         it == CharacteristicProperty.WRITE ||
