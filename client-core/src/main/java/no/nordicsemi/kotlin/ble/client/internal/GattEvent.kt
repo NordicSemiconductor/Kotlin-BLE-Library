@@ -42,33 +42,38 @@ sealed class OperationEvent(
 ): ImplSpecificEvent()
 
 class CharacteristicChanged(
+    // Note: This may be a BluetoothGattCharacteristic on Android or Int (instance ID) when mock
+    //       implementation is used.
     characteristic: Any,
     val value: ByteArray,
 ): OperationEvent(characteristic)
 
 class CharacteristicRead(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
     characteristic: Any,
     val value: ByteArray,
     val status: OperationStatus,
-): OperationEvent(characteristic) {
-
-    override fun toString(): String {
-        return "Read event on $subject: value=${value.contentToString()}, status=$status"
-    }
-}
+): OperationEvent(characteristic)
 
 class CharacteristicWrite(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
     characteristic: Any,
     val status: OperationStatus,
 ): OperationEvent(characteristic)
 
 class DescriptorRead(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
     descriptor: Any,
     val value: ByteArray,
     val status: OperationStatus,
 ): OperationEvent(descriptor)
 
 class DescriptorWrite(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
     descriptor: Any,
     val status: OperationStatus,
 ): OperationEvent(descriptor)
