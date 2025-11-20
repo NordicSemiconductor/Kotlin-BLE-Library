@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.client
 
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
@@ -126,6 +127,16 @@ data class PhyChanged(val phy: PhyInUse) : GattEvent()
  * @param newParameters The new connection parameters.
  */
 data class ConnectionParametersChanged(val newParameters: ConnectionParameters) : GattEvent()
+
+/**
+ * Event indicating that the Reliable Write procedure have been completed (executed or aborted).
+ *
+ * Reliable Write procedure is used to write characteristics or descriptors in a reliable way.
+ * It ensures that either all prepared writes are committed or none of them.
+ *
+ * @param status The operation status.
+ */
+data class ReliableWriteCompleted(val status: OperationStatus) : GattEvent()
 
 /**
  * Event type used by implementations.

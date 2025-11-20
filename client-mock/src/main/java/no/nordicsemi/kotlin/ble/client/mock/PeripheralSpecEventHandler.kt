@@ -417,20 +417,6 @@ interface PeripheralSpecEventHandler {
             is WriteResponse.Failure -> PrepareWriteResponse.Failure(response.status)
         }
 
-    /**
-     * Emulates an Execute Write request to the characteristic.
-     *
-     * This method after at least one [onPrepareWriteRequest] call. When `execute` is `true`,
-     * all previously prepared writes should be committed and applied atomically in the order they
-     * were received. When `execute` is `false`, all previously prepared writes should be discarded.
-     *
-     * @param execute `true` to commit all previously prepared writes, `false` to discard them.
-     * @see onPrepareWriteRequest
-     */
-    fun onExecuteWriteRequest(execute: Boolean) {
-        // no-op
-    }
-
     fun onReadRequest(descriptor: MockRemoteDescriptor): ReadResponse {
         return ReadResponse.Success(byteArrayOf())
     }
@@ -445,5 +431,22 @@ interface PeripheralSpecEventHandler {
             is WriteResponse.Success -> PrepareWriteResponse.Success(value)
             is WriteResponse.Failure -> PrepareWriteResponse.Failure(response.status)
         }
+
+    /**
+     * Emulates an Execute Write request to the characteristic.
+     *
+     * This method after at least one [onPrepareWriteRequest] call. When `execute` is `true`,
+     * all previously prepared writes should be committed and applied atomically in the order they
+     * were received. When `execute` is `false`, all previously prepared writes should be discarded.
+     *
+     * @param execute `true` to commit all previously prepared writes, `false` to discard them.
+     * @return The response of the execute write operation. This emulates a response received from
+     * the peripheral and it will be delayed to the client by one connection interval.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
+     * @see onPrepareWriteRequest
+     */
+    fun onExecuteWriteRequest(execute: Boolean): WriteResponse {
+        return WriteResponse.Success
+    }
 
 }

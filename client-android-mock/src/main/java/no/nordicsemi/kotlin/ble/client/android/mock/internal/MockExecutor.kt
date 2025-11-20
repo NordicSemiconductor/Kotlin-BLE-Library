@@ -141,11 +141,25 @@ open class MockExecutor(
     }
 
     override suspend fun executeReliableWrite(): Boolean {
-        TODO("Not yet implemented")
+        if (isClosed || !peripheralSpec.isConnected) {
+            return false
+        }
+        if (isReliableWriteEnabled) {
+            isReliableWriteEnabled = false
+            return gatt?.endReliableWrites(true) ?: false
+        }
+        return true
     }
 
     override suspend fun abortReliableWrite(): Boolean {
-        TODO("Not yet implemented")
+        if (isClosed || !peripheralSpec.isConnected) {
+            return false
+        }
+        if (isReliableWriteEnabled) {
+            isReliableWriteEnabled = false
+            return gatt?.endReliableWrites(false) ?: false
+        }
+        return true
     }
 
     private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Connected = when (this) {

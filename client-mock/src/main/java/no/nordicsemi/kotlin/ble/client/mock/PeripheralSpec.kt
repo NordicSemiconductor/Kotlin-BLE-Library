@@ -52,6 +52,7 @@ import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.MtuChanged
 import no.nordicsemi.kotlin.ble.client.PhyChanged
+import no.nordicsemi.kotlin.ble.client.ReliableWriteCompleted
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.RssiRead
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
@@ -66,6 +67,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
@@ -977,6 +979,29 @@ class PeripheralSpec<ID: Any> private constructor(
         suspend fun readPhy() {
             val phy = phy ?: return
             _events.emit(PhyChanged(PhyInUse(phy, phy)))
+        }
+
+        /**
+         * Simulating ending reliable writes.
+         *
+         * @param execute Whether to execute or abort the reliable write procedure.
+         */
+        suspend fun endReliableWrites(execute: Boolean): Boolean {
+            val connectionParameters = connectionParameters ?: return false
+            // Simulate a delay for ending reliable writes.
+            delay(connectionParameters.connectionIntervalMillis)
+
+            val eventHandler = checkNotNull(eventHandler)
+            when (val response = eventHandler.onExecuteWriteRequest(execute)) {
+                is WriteResponse.Success -> {
+                    _events.emit(ReliableWriteCompleted(OperationStatus.SUCCESS))
+                }
+
+                is WriteResponse.Failure -> {
+                    _events.emit(ReliableWriteCompleted(response.status))
+                }
+            }
+            return true
         }
     }
 
