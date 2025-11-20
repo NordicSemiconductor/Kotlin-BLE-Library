@@ -614,14 +614,18 @@ class PeripheralSpec<ID: Any> private constructor(
     /**
      * Simulates a connection parameters update request from the peripheral.
      *
+     * The change is applied [delay] connection intervals after the request.
+     *
      * @param parameters The new connection parameters.
+     * @param delay Number of old connection intervals to wait before applying new parameters.
+     * Defaults to 5.
      */
-    fun simulateConnectionParametersRequest(parameters: ConnectionParameters.Connected) {
+    fun simulateConnectionParametersRequest(parameters: ConnectionParameters.Connected, delay: Int = 5) {
         // TODO Validate parameters against preferred / possible parameters?
         connectionParameters?.connectionIntervalMillis?.let { connectionInterval ->
             scope.launch {
                 // Wait for few (old) connection intervals before applying new parameters.
-                delay(5 * connectionInterval)
+                delay(delay * connectionInterval)
 
                 connectionParameters = parameters
                 _events.emit(ConnectionParametersChanged(parameters))
