@@ -421,7 +421,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * This will allow retrieving the device using [CentralManager.getPeripheralById] or connecting
      * to it without scanning first.
      *
-     * @see isKnown
+     * @see PeripheralSpec.isKnown
      */
     fun simulateCaching() {
         isKnown = true
@@ -849,6 +849,13 @@ class PeripheralSpec<ID: Any> private constructor(
             return true
         }
 
+        /**
+         * Simulates refreshing the service cache on the peripheral.
+         *
+         * This will invalidate the service cache on all connected clients.
+         *
+         * @return `true` if the cache refresh was started, `false` otherwise.
+         */
         suspend fun refreshCache(): Boolean {
             if (isConnected) {
                 isServiceCacheValid = false
