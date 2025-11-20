@@ -248,12 +248,17 @@ abstract class BaseRemoteCharacteristic(
             throw InvalidAttributeException()
         }
 
+        // Verify that the characteristic can be subscribed to.
+        require(isSubscribable() && descriptors.cccd() != null) {
+            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        }
+
         return events
+            .onSubscription { setNotifying(true) }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)
             .filter { isNotifying && it.matches() }
             .map { it.value }
-            .also { setNotifying(true) }
     }
 
     final override suspend fun waitForValueChange(): ByteArray {
