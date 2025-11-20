@@ -35,7 +35,6 @@ package no.nordicsemi.kotlin.ble.client.mock
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -63,9 +62,11 @@ import no.nordicsemi.kotlin.ble.client.mock.internal.MockScanResult
 import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
+import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
@@ -73,9 +74,9 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.core.ServerScope
+import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.ServiceScope
-import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
+import no.nordicsemi.kotlin.ble.core.internal.CCCD
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
 import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
@@ -138,7 +139,7 @@ class PeripheralSpec<ID: Any> private constructor(
     isBonded: Boolean,
     internal val advertisingSets: List<MockAdvertisingSet>?,
     internal val eventHandler: PeripheralSpecEventHandler?,
-    private val services: List<ServiceDefinition>?,
+    private var services: List<ServiceDefinition>?,
     private val cachedServices: List<ServiceDefinition>?,
     isServiceCacheValid: Boolean,
 ) {
@@ -546,6 +547,43 @@ class PeripheralSpec<ID: Any> private constructor(
     }
 
     /**
+     * Simulates a change in the services offered by the peripheral.
+     *
+     * This will replace the existing services with new ones defined in [newServices].
+     *
+     * @param newServices A builder for the set of services.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    fun simulateServiceChange(newServices: MockServerScope.() -> Unit) {
+        val oldServices = services
+
+        // Replace the services with new ones.
+        services = MockServerScopeImpl().apply(newServices).build()
+        isServiceCacheValid = false
+
+        val connectionInterval = connectionParameters?.connectionIntervalMillis ?: return
+
+        // If the indications on Service Changed characteristic are enabled, notify clients about the change.
+        val serviceChangedCharacteristicCccd = oldServices
+            ?.firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
+            ?.characteristics
+            ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
+            ?.descriptors
+            ?.firstOrNull { it.uuid == Descriptor.CLIENT_CHAR_CONF_UUID } as? CCCD
+        if (serviceChangedCharacteristicCccd?.enabled == true) {
+            scope.launch {
+                // Simulate delay for sending indication.
+                delay(connectionInterval)
+
+                // If any client is still connected, emit the event.
+                if (isConnected) {
+                    _events.emit(ServicesChanged)
+                }
+            }
+        }
+    }
+
+    /**
      * Simulates a change of the peripheral identifier (MAC address).
      *
      * This will be applied only if the peripheral is not connected.
@@ -828,7 +866,7 @@ class PeripheralSpec<ID: Any> private constructor(
                     // TODO iOS returns only requested services. Filtering is also done later, but should be here?
                     // TODO iOS does not return Generic Access and Generic Attribute services. Filter out, or leave for the PeripheralSpec?
                     isServiceCacheValid = true
-                    cachedServices = services.map { MockRemoteService(this@PeripheralSpec, it, _events) }
+                    cachedServices = services!!.map { MockRemoteService(this@PeripheralSpec, it, _events) }
                     _events.emit(ServicesDiscovered(cachedServices!!))
 
                     // Restore connection parameters.
@@ -1268,8 +1306,8 @@ class PeripheralSpec<ID: Any> private constructor(
             isPhyCodedSupported: Boolean = false,
             isBonded: Boolean = false,
             eventHandler: PeripheralSpecEventHandler,
-            actualServices: (ServerScope.() -> Unit)? = null,
-            cachedServices: (ServerScope.() -> Unit),
+            actualServices: (MockServerScope.() -> Unit)? = null,
+            cachedServices: (MockServerScope.() -> Unit),
         ): Builder<ID> = setConnectionParameters(
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
@@ -1283,8 +1321,8 @@ class PeripheralSpec<ID: Any> private constructor(
             this.name = name
             this.appearance = appearance
             this.eventHandler = eventHandler
-            this.cachedServices = ServerScopeImpl().apply(cachedServices).build()
-            this.services = actualServices?.let { ServerScopeImpl().apply(it).build() } ?: this.cachedServices
+            this.cachedServices = MockServerScopeImpl().apply(cachedServices).build()
+            this.services = actualServices?.let { MockServerScopeImpl().apply(it).build() } ?: this.cachedServices
             // If the actual services were are specified, mark cache as invalid.
             // Accessing cached services will result in INVALID_HANDLE error and a new service
             // discovery will have to be performed
