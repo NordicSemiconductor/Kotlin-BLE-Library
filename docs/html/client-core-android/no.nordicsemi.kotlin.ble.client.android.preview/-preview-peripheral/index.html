@@ -1,22 +1,22 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>PreviewPeripheral</title>
-<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
@@ -24,33 +24,31 @@
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async></script>
-<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../../../index.html">
-                    Kotlin-BLE-Library
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Kotlin BLE Library
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha07
+        <div class="library-version" id="library-version">2.0.0-alpha11
         </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":client-core-android/main">jvm</button>
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":client-core-android/main">jvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
@@ -64,32 +62,34 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
             </button>
             <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
-                                    Kotlin-BLE-Library
+                                    Kotlin BLE Library
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
 <div class="main-content" data-page-type="classlike" id="content" pageids="client-core-android::no.nordicsemi.kotlin.ble.client.android.preview/PreviewPeripheral///PointingToDeclaration//1655438001">
   <div class="breadcrumbs"><a href="../../index.html">client-core-android</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.client.android.preview</a><span class="delimiter">/</span><span class="current">PreviewPeripheral</span></div>
   <div class="cover ">
@@ -119,15 +119,15 @@
                 permission = Permission.READ,
             )
         }
-    }<span class="token punctuation">, </span></span><span class="parameter ">hasBondInformation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/index.html">Peripheral</a></div><p class="paragraph">A preview implementation of <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/index.html">Peripheral</a> for Android.</p><p class="paragraph">This class is used to preview the UI in the Compose Preview.</p><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>scope</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The coroutine scope. This can be set to <code class="lang-kotlin">rememberCoroutineScope()</code>.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>address</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The MAC address of the peripheral.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>name</span></span></u></div></span></div><div><div class="title"><p class="paragraph">An optional name of the peripheral.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>type</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The type of the peripheral, defaults to <a href="../../../core/no.nordicsemi.kotlin.ble.core/-peripheral-type/-l-e/index.html">PeripheralType.LE</a>.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>rssi</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The signal strength of the peripheral in dBm.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>state</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The connection state of the peripheral.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>services</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The list of fake services discovered on the peripheral.</p></div></div></div></div><div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>has</span><wbr><span>Bond</span><wbr><span><span>Information</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><code class="lang-kotlin">true</code> if the Android device has the bond information for the peripheral, that is, if the peripheral is bonded to the device. Defaults to <code class="lang-kotlin">false</code>.</p></div></div></div></div></div></div></div>
+    }<span class="token punctuation">, </span></span><span class="parameter ">hasBondInformation<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/index.html">Peripheral</a></div><p class="paragraph">A preview implementation of <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/index.html">Peripheral</a> for Android.</p><p class="paragraph">This class is used to preview the UI in the Compose Preview.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>scope</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The coroutine scope. This can be set to <code class="lang-kotlin">rememberCoroutineScope()</code>.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>address</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The MAC address of the peripheral.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>name</span></span></u></div></span></div><div><div class="title"><p class="paragraph">An optional name of the peripheral.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>type</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The type of the peripheral, defaults to <a href="../../../core/no.nordicsemi.kotlin.ble.core/-peripheral-type/-l-e/index.html">PeripheralType.LE</a>.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>rssi</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The signal strength of the peripheral in dBm.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>state</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The connection state of the peripheral.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>services</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The list of fake services discovered on the peripheral.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>has</span><wbr><span>Bond</span><wbr><span><span>Information</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><code class="lang-kotlin">true</code> if the Android device has the bond information for the peripheral, that is, if the peripheral is bonded to the device. Defaults to <code class="lang-kotlin">false</code>.</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
-        <h2 class="">Constructors</h2>
+        <h2 class="tableheader">Constructors</h2>
         <div class="table"><a data-name="-1645420471%2FConstructors%2F1655438001" anchor-label="PreviewPeripheral" id="-1645420471%2FConstructors%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-preview-peripheral.html"><span>Preview</span><wbr><span><span>Peripheral</span></span></a></div>
@@ -169,9 +169,9 @@
         </div>
       </div>
       <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
+        <h2 class="tableheader">Properties</h2>
         <div class="table"><a data-name="-1661991181%2FProperties%2F1655438001" anchor-label="address" id="-1661991181%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/address.html"><span><span>address</span></span></a></div>
@@ -186,7 +186,7 @@
             </div>
           </div>
 <a data-name="-320657895%2FProperties%2F1655438001" anchor-label="bondState" id="-320657895%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/bond-state.html"><span>bond</span><wbr><span><span>State</span></span></a></div>
@@ -201,7 +201,7 @@
             </div>
           </div>
 <a data-name="-1332172565%2FProperties%2F1655438001" anchor-label="connectionParameters" id="-1332172565%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/connection-parameters.html"><span>connection</span><wbr><span><span>Parameters</span></span></a></div>
@@ -216,7 +216,7 @@
             </div>
           </div>
 <a data-name="821928772%2FProperties%2F1655438001" anchor-label="hasBondInformation" id="821928772%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/has-bond-information.html"><span>has</span><wbr><span>Bond</span><wbr><span><span>Information</span></span></a></div>
@@ -231,7 +231,7 @@
             </div>
           </div>
 <a data-name="1074444874%2FProperties%2F1655438001" anchor-label="identifier" id="1074444874%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/identifier.html"><span><span>identifier</span></span></a></div>
@@ -246,7 +246,7 @@
             </div>
           </div>
 <a data-name="-1176940601%2FProperties%2F1655438001" anchor-label="isConnected" id="-1176940601%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#-1176940601%2FProperties%2F1655438001"><span>is</span><wbr><span><span>Connected</span></span></a></div>
@@ -261,7 +261,7 @@
             </div>
           </div>
 <a data-name="449364495%2FProperties%2F1655438001" anchor-label="isDisconnected" id="449364495%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#449364495%2FProperties%2F1655438001"><span>is</span><wbr><span><span>Disconnected</span></span></a></div>
@@ -276,7 +276,7 @@
             </div>
           </div>
 <a data-name="1568105353%2FProperties%2F1655438001" anchor-label="name" id="1568105353%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#1568105353%2FProperties%2F1655438001"><span><span>name</span></span></a></div>
@@ -291,7 +291,7 @@
             </div>
           </div>
 <a data-name="-1699004666%2FProperties%2F1655438001" anchor-label="phy" id="-1699004666%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/phy.html"><span><span>phy</span></span></a></div>
@@ -306,7 +306,7 @@
             </div>
           </div>
 <a data-name="-1154573515%2FProperties%2F1655438001" anchor-label="state" id="-1154573515%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#-1154573515%2FProperties%2F1655438001"><span><span>state</span></span></a></div>
@@ -321,7 +321,7 @@
             </div>
           </div>
 <a data-name="-1620265639%2FProperties%2F1655438001" anchor-label="type" id="-1620265639%2FProperties%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/type.html"><span><span>type</span></span></a></div>
@@ -338,9 +338,39 @@
         </div>
       </div>
       <div data-togglable="FUNCTION">
-        <h2 class="">Functions</h2>
-        <div class="table"><a data-name="19799508%2FFunctions%2F1655438001" anchor-label="createBond" id="19799508%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1688628210%2FFunctions%2F1655438001" anchor-label="abortReliableWrite" id="-1688628210%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/abort-reliable-write.html"><span>abort</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1688628210%2FFunctions%2F1655438001"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/abort-reliable-write.html"><span class="token function">abortReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Aborts the reliable write transaction started using <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/begin-reliable-write.html">beginReliableWrite</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1807091399%2FFunctions%2F1655438001" anchor-label="beginReliableWrite" id="1807091399%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/begin-reliable-write.html"><span>begin</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1807091399%2FFunctions%2F1655438001"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/begin-reliable-write.html"><span class="token function">beginReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Initiates a reliable write transaction.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="19799508%2FFunctions%2F1655438001" anchor-label="createBond" id="19799508%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/create-bond.html"><span>create</span><wbr><span><span>Bond</span></span></a></div>
@@ -355,7 +385,7 @@
             </div>
           </div>
 <a data-name="-1109936808%2FFunctions%2F1655438001" anchor-label="disconnect" id="-1109936808%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#-1109936808%2FFunctions%2F1655438001"><span><span>disconnect</span></span></a></div>
@@ -370,7 +400,7 @@
             </div>
           </div>
 <a data-name="1850719693%2FFunctions%2F1655438001" anchor-label="equals" id="1850719693%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#1850719693%2FFunctions%2F1655438001"><span><span>equals</span></span></a></div>
@@ -384,8 +414,23 @@
               </div>
             </div>
           </div>
+<a data-name="-529916141%2FFunctions%2F1655438001" anchor-label="executeReliableWrite" id="-529916141%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/execute-reliable-write.html"><span>execute</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-529916141%2FFunctions%2F1655438001"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/execute-reliable-write.html"><span class="token function">executeReliableWrite</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Executes all write with response operations queued since <a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/begin-reliable-write.html">beginReliableWrite</a> was called.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
 <a data-name="-367378311%2FFunctions%2F1655438001" anchor-label="hashCode" id="-367378311%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#-367378311%2FFunctions%2F1655438001"><span>hash</span><wbr><span><span>Code</span></span></a></div>
@@ -400,7 +445,7 @@
             </div>
           </div>
 <a data-name="2081454895%2FFunctions%2F1655438001" anchor-label="maximumWriteValueLength" id="2081454895%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/maximum-write-value-length.html"><span>maximum</span><wbr><span>Write</span><wbr><span>Value</span><wbr><span><span>Length</span></span></a></div>
@@ -409,13 +454,13 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/maximum-write-value-length.html"><span class="token function">maximumWriteValueLength</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">type<span class="token operator">: </span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-write-type/index.html">WriteType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The maximum amount of data, in bytes, you can send to a characteristic in a single write operation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/maximum-write-value-length.html"><span class="token function">maximumWriteValueLength</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">type<span class="token operator">: </span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-write-type/index.html">WriteType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The maximum amount of data, in bytes, that can be send to a characteristic in a single write operation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
 <a data-name="1277110972%2FFunctions%2F1655438001" anchor-label="readPhy" id="1277110972%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/read-phy.html"><span>read</span><wbr><span><span>Phy</span></span></a></div>
@@ -430,7 +475,7 @@
             </div>
           </div>
 <a data-name="206544327%2FFunctions%2F1655438001" anchor-label="readRssi" id="206544327%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#206544327%2FFunctions%2F1655438001"><span>read</span><wbr><span><span>Rssi</span></span></a></div>
@@ -445,7 +490,7 @@
             </div>
           </div>
 <a data-name="1152970188%2FFunctions%2F1655438001" anchor-label="refreshCache" id="1152970188%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/refresh-cache.html"><span>refresh</span><wbr><span><span>Cache</span></span></a></div>
@@ -460,7 +505,7 @@
             </div>
           </div>
 <a data-name="2021086028%2FFunctions%2F1655438001" anchor-label="removeBond" id="2021086028%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/remove-bond.html"><span>remove</span><wbr><span><span>Bond</span></span></a></div>
@@ -475,7 +520,7 @@
             </div>
           </div>
 <a data-name="-900967060%2FFunctions%2F1655438001" anchor-label="requestConnectionPriority" id="-900967060%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/request-connection-priority.html"><span>request</span><wbr><span>Connection</span><wbr><span><span>Priority</span></span></a></div>
@@ -490,7 +535,7 @@
             </div>
           </div>
 <a data-name="-1203465531%2FFunctions%2F1655438001" anchor-label="requestHighestValueLength" id="-1203465531%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/request-highest-value-length.html"><span>request</span><wbr><span>Highest</span><wbr><span>Value</span><wbr><span><span>Length</span></span></a></div>
@@ -499,13 +544,13 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/request-highest-value-length.html"><span class="token function">requestHighestValueLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Requests the highest possible MTU (ATT_MTU_MAX).</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/request-highest-value-length.html"><span class="token function">requestHighestValueLength</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Requests the highest possible MTU (<a href="../../../core/no.nordicsemi.kotlin.ble.core/index.html">517</a>).</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
 <a data-name="-1168808761%2FFunctions%2F1655438001" anchor-label="services" id="-1168808761%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="index.html#-1168808761%2FFunctions%2F1655438001"><span><span>services</span></span></a></div>
@@ -520,7 +565,7 @@
             </div>
           </div>
 <a data-name="-1588881334%2FFunctions%2F1655438001" anchor-label="setPreferredPhy" id="-1588881334%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/set-preferred-phy.html"><span>set</span><wbr><span>Preferred</span><wbr><span><span>Phy</span></span></a></div>
@@ -535,7 +580,7 @@
             </div>
           </div>
 <a data-name="1126525751%2FFunctions%2F1655438001" anchor-label="toString" id="1126525751%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="to-string.html"><span>to</span><wbr><span><span>String</span></span></a></div>
@@ -549,38 +594,27 @@
               </div>
             </div>
           </div>
-<a data-name="1170674730%2FFunctions%2F1655438001" anchor-label="usingReliableWrite" id="1170674730%2FFunctions%2F1655438001" data-filterable-set=":client-core-android/main"></a>
-          <div class="table-row" data-filterable-current=":client-core-android/main" data-filterable-set=":client-core-android/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/using-reliable-write.html"><span>using</span><wbr><span>Reliable</span><wbr><span><span>Write</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1170674730%2FFunctions%2F1655438001"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-core-android/main"><div class="symbol monospace"><span class="token keyword">suspend </span><span class="token keyword">fun </span><a href="../../no.nordicsemi.kotlin.ble.client.android/-peripheral/using-reliable-write.html"><span class="token function">usingReliableWrite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">operations<span class="token operator">: </span><span class="token keyword">suspend </span><a href="../../../client-core/no.nordicsemi.kotlin.ble.client/-reliable-write-scope/index.html">ReliableWriteScope</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Initiates a reliable write transaction for a given characteristic.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
