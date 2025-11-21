@@ -360,8 +360,8 @@ open class Peripheral(
                         else -> {}
                     }
                 } catch (e: TimeoutCancellationException) {
-                    logger.warn("Connection attempt timed out after {}", options.timeout)
-                    _state.update { ConnectionState.Disconnected(Reason.Timeout(options.timeout)) }
+                    logger.warn("Connection attempt timed out after {}", e.timeout)
+                    _state.update { ConnectionState.Disconnected(Reason.Timeout(e.timeout ?: options.timeout)) }
                     close()
                     throw e
                 } catch (e: CancellationException) {
