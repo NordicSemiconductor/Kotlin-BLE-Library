@@ -17,14 +17,12 @@ no.nordicsemi.kotlin.ble.client.android.mock
 module:client-core
 no.nordicsemi.kotlin.ble.client
 no.nordicsemi.kotlin.ble.client.exception
-no.nordicsemi.kotlin.ble.client.internal
 module:client-core-android
 no.nordicsemi.kotlin.ble.client.android
 no.nordicsemi.kotlin.ble.client.android.exception
 no.nordicsemi.kotlin.ble.client.android.preview
 module:client-mock
 no.nordicsemi.kotlin.ble.client.mock
-no.nordicsemi.kotlin.ble.client.mock.internal
 module:core
 no.nordicsemi.kotlin.ble.core
 no.nordicsemi.kotlin.ble.core.exception
@@ -35,4 +33,3 @@ module:core-android-mock
 no.nordicsemi.kotlin.ble.android.mock
 module:core-mock
 no.nordicsemi.kotlin.ble.core.mock
-no.nordicsemi.kotlin.ble.core.mock.internal

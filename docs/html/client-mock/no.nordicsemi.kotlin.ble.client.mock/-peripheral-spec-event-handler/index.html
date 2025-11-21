@@ -1,22 +1,22 @@
 <!doctype html>
-<html class="no-js">
+<html class="no-js" lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>PeripheralSpecEventHandler</title>
-<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../";</script>
-    <script>document.documentElement.classList.replace("no-js","js");</script>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
-    if (storage == null) {
+      if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         if (osDarkSchemePreferred === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    } else {
+      } else {
         const savedDarkMode = JSON.parse(storage)
-        if(savedDarkMode === true) {
-            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
         }
-    }
+      }
     </script>
 <script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
@@ -24,33 +24,31 @@
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
-<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
-<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
 <script type="text/javascript" src="../../../scripts/main.js" defer></script>
 <script type="text/javascript" src="../../../scripts/prism.js" async></script>
-<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
-<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
 <body>
-    <div class="root">
-    <nav class="navigation theme-dark" id="navigation-wrapper">
-<a class="library-name--link" href="../../../index.html">
-                    Kotlin-BLE-Library
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Kotlin BLE Library
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha07
+        <div class="library-version" id="library-version">2.0.0-alpha11
         </div>
         <div class="navigation-controls">
-        <div class="filter-section filter-section_loading" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":client-mock/main">jvm</button>
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":client-mock/main">jvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
-                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox">
-                    <div class="dropdown--header"><span>Platform filter</span>
-                        <button class="button" data-role="dropdown-toggle" aria-label="Close platform filter">
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
                             <i class="ui-kit-icon ui-kit-icon_cross"></i>
                         </button>
                     </div>
@@ -64,105 +62,122 @@
                 </ul>
                 <div class="dropdown--overlay"></div>
             </div>
-        </div>
+        </ul>
             <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
             </button>
             <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
                 API
             </div>
         </div>
-    </nav>
-        <div id="container">
-            <div class="sidebar" id="leftColumn">
-                <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
-                    <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox">
-                        <div class="dropdown--header">
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
                             <span>
-                                    Kotlin-BLE-Library
+                                    Kotlin BLE Library
                             </span>
-                            <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
-                                <i class="ui-kit-icon ui-kit-icon_cross"></i>
-                            </button>
-                        </div>
-                        <div class="sidebar--inner" id="sideMenu"></div>
-                    </ul>
-                    <div class="dropdown--overlay"></div>
-                </div>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
             </div>
-            <div id="main">
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
 <div class="main-content" data-page-type="classlike" id="content" pageids="client-mock::no.nordicsemi.kotlin.ble.client.mock/PeripheralSpecEventHandler///PointingToDeclaration//872754938">
   <div class="breadcrumbs"><a href="../../index.html">client-mock</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.client.mock</a><span class="delimiter">/</span><span class="current">PeripheralSpecEventHandler</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Peripheral</span><wbr><span>Spec</span><wbr><span>Event</span><wbr><span><span>Handler</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">PeripheralSpecEventHandler</a></div></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">PeripheralSpecEventHandler</a></div><p class="paragraph">This is the interface of a peripheral event handler.</p><p class="paragraph">The implementation should respond to various events occurring on the mock peripheral, such as connection requests, read/write requests, etc.</p><p class="paragraph">For example, a mock Blinky device can handle requests to turn on an LED or send notifications when a button was clicked.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="FUNCTION">
-        <h2 class="">Functions</h2>
-        <div class="table"><a data-name="551030350%2FFunctions%2F872754938" anchor-label="onConnectionLost" id="551030350%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="145730331%2FFunctions%2F872754938" anchor-label="onConnectionLost" id="145730331%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="on-connection-lost.html"><span>on</span><wbr><span>Connection</span><wbr><span><span>Lost</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="551030350%2FFunctions%2F872754938"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="145730331%2FFunctions%2F872754938"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-connection-lost.html"><span class="token function">onConnectionLost</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">status<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-connection-lost.html"><span class="token function">onConnectionLost</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">reason<span class="token operator">: </span><a href="../-disconnection-reason/index.html">DisconnectionReason</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Called when the connection is lost.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1953799913%2FFunctions%2F872754938" anchor-label="onConnectionRequest" id="-1953799913%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+<a data-name="54428751%2FFunctions%2F872754938" anchor-label="onConnectionRequest" id="54428751%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="on-connection-request.html"><span>on</span><wbr><span>Connection</span><wbr><span><span>Request</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1953799913%2FFunctions%2F872754938"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="54428751%2FFunctions%2F872754938"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-connection-request.html"><span class="token function">onConnectionRequest</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-connection-request.html"><span class="token function">onConnectionRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">preferredPhy<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-phy/index.html">Phy</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-connection-result/index.html">ConnectionResult</a></div><div class="brief "><p class="paragraph">Called when a connection request is made to the mock peripheral.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1247841137%2FFunctions%2F872754938" anchor-label="onMtuRequest" id="-1247841137%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+<a data-name="1812089576%2FFunctions%2F872754938" anchor-label="onExecuteWriteRequest" id="1812089576%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="on-mtu-request.html"><span>on</span><wbr><span>Mtu</span><wbr><span><span>Request</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1247841137%2FFunctions%2F872754938"></span>
+                  <div><a href="on-execute-write-request.html"><span>on</span><wbr><span>Execute</span><wbr><span>Write</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1812089576%2FFunctions%2F872754938"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-mtu-request.html"><span class="token function">onMtuRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mtu<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-execute-write-request.html"><span class="token function">onExecuteWriteRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">execute<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-write-response/index.html">WriteResponse</a></div><div class="brief "><p class="paragraph">Emulates an Execute Write request to the characteristic.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1951469842%2FFunctions%2F872754938" anchor-label="onPhyRequest" id="1951469842%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+<a data-name="-1574911488%2FFunctions%2F872754938" anchor-label="onPrepareWriteRequest" id="-1574911488%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="on-phy-request.html"><span>on</span><wbr><span>Phy</span><wbr><span><span>Request</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1951469842%2FFunctions%2F872754938"></span>
+                  <div><a href="on-prepare-write-request.html"><span>on</span><wbr><span>Prepare</span><wbr><span>Write</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1574911488%2FFunctions%2F872754938"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-phy-request.html"><span class="token function">onPhyRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">phy<span class="token operator">: </span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-phy/index.html">Phy</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-phy/index.html">Phy</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-prepare-write-request.html"><span class="token function">onPrepareWriteRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteCharacteristic///PointingToDeclaration/">MockRemoteCharacteristic</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-prepare-write-response/index.html">PrepareWriteResponse</a></div><div class="brief "><p class="paragraph">Emulates a prepared write to a characteristic.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-prepare-write-request.html"><span class="token function">onPrepareWriteRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteDescriptor///PointingToDeclaration/">MockRemoteDescriptor</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-prepare-write-response/index.html">PrepareWriteResponse</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="605361596%2FFunctions%2F872754938" anchor-label="onReadRequest" id="605361596%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-read-request.html"><span>on</span><wbr><span>Read</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="605361596%2FFunctions%2F872754938"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-read-request.html"><span class="token function">onReadRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteCharacteristic///PointingToDeclaration/">MockRemoteCharacteristic</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-read-response/index.html">ReadResponse</a></div><div class="brief "><p class="paragraph">A callback called when the client sends Read request to a characteristic.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-read-request.html"><span class="token function">onReadRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteDescriptor///PointingToDeclaration/">MockRemoteDescriptor</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-read-response/index.html">ReadResponse</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
 <a data-name="618445785%2FFunctions%2F872754938" anchor-label="onReset" id="618445785%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="on-reset.html"><span>on</span><wbr><span><span>Reset</span></span></a></div>
@@ -171,13 +186,13 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-reset.html"><span class="token function">onReset</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-reset.html"><span class="token function">onReset</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Called when the peripheral is reset.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
 <a data-name="1028423593%2FFunctions%2F872754938" anchor-label="onServiceDiscoveryRequest" id="1028423593%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
-          <div class="table-row" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="on-service-discovery-request.html"><span>on</span><wbr><span>Service</span><wbr><span>Discovery</span><wbr><span><span>Request</span></span></a></div>
@@ -186,7 +201,37 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-service-discovery-request.html"><span class="token function">onServiceDiscoveryRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">filter<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.uuid/-uuid/index.html">Uuid</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-result/index.html">Result</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator">&gt;</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-service-discovery-request.html"><span class="token function">onServiceDiscoveryRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">uuids<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.uuid/-uuid/index.html">Uuid</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-service-discovery-result/index.html">ServiceDiscoveryResult</a></div><div class="brief "><p class="paragraph">Called when a service discovery request is made to the mock peripheral.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1357650538%2FFunctions%2F872754938" anchor-label="onWriteCommand" id="-1357650538%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-write-command.html"><span>on</span><wbr><span>Write</span><wbr><span><span>Command</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1357650538%2FFunctions%2F872754938"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-write-command.html"><span class="token function">onWriteCommand</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteCharacteristic///PointingToDeclaration/">MockRemoteCharacteristic</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">A callback called when the client sends a Write Command (write without response) to a characteristic.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="934402940%2FFunctions%2F872754938" anchor-label="onWriteRequest" id="934402940%2FFunctions%2F872754938" data-filterable-set=":client-mock/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":client-mock/main" data-filterable-set=":client-mock/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="on-write-request.html"><span>on</span><wbr><span>Write</span><wbr><span><span>Request</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="934402940%2FFunctions%2F872754938"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":client-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-write-request.html"><span class="token function">onWriteRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">characteristic<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteCharacteristic///PointingToDeclaration/">MockRemoteCharacteristic</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-write-response/index.html">WriteResponse</a></div><div class="brief "><p class="paragraph">A callback called when the client sends a Write Request (write with response) to a characteristic.</p></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="on-write-request.html"><span class="token function">onWriteRequest</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">descriptor<span class="token operator">: </span><span data-unresolved-link="no.nordicsemi.kotlin.ble.client.mock.internal/MockRemoteDescriptor///PointingToDeclaration/">MockRemoteDescriptor</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../-write-response/index.html">WriteResponse</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -197,17 +242,21 @@
   </div>
 </div>
     <div class="footer">
-        <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
-        <span>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</span>
-        <span class="pull-right">
-            <span>Generated by </span>
-            <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
-                <span>dokka</span>
-            </a>
-        </span>
-    </div>
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</div>
+                </div>
             </div>
         </div>
     </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>
