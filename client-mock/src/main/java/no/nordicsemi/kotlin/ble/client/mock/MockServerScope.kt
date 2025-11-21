@@ -91,17 +91,23 @@ interface MockServerScope: ServerScope {
     /**
      * Declares the Generic Attribute Service (GATT) with the Service Changed characteristic.
      *
-     * Note: The Service Changed characteristic will be handled automatically.
+     * The Service Changed characteristic will be handled automatically.
+     * Use [PeripheralSpec.simulateServiceChange] to simulate service change.
+     *
+     * @param initiallyEnabled If true, the Client Characteristic Configuration Descriptor
+     * for the Service Changed characteristic will be initially enabled.
      */
     @Suppress("FunctionName")
-    fun GenericAttributeService() {
+    fun GenericAttributeService(initiallyEnabled: Boolean = true) {
         Service(
             uuid = Service.GENERIC_ATTRIBUTE_UUID,
         ) {
             Characteristic(
                 uuid = Characteristic.SERVICE_CHANGED,
                 property = CharacteristicProperty.INDICATE,
-            )
+            ) {
+                ClientCharacteristicConfigurationDescriptor(enabled = initiallyEnabled)
+            }
         }
     }
 }
