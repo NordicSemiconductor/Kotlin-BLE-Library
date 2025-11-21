@@ -56,6 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
+import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
@@ -334,6 +335,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         _services.value?.onEach { it.owner = null }
         _services.update { null }
         servicesDiscovered = false
+        if (OperationMutex.holdsLock(ServicesChanged)) {
+            try {
+                OperationMutex.unlock(ServicesChanged)
+            } catch (e: IllegalStateException) {
+                logger.warn(e.message)
+            }
+        }
         // Note!
         // Don't clear the serviceDiscoveryRequested flag here.
         // It will be cleared when the peripheral is closed.
@@ -376,6 +384,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             is ServicesDiscovered -> {
+                try {
+                    // Unlocks the lock locked in `discoverServices` below.
+                    OperationMutex.unlock(ServicesChanged)
+                } catch (e: IllegalStateException) {
+                    logger.warn(e.message)
+                }
                 if (event.services.isEmpty()) {
                     logger.warn("Service discovery failed")
                     invalidateServices()
@@ -413,8 +427,17 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     private fun discoverServices(uuids: List<Uuid>) {
         if (!servicesDiscovered) {
             servicesDiscovered = true
-            logger.trace("Discovering services")
             scope.launch {
+                try {
+                    // On older Android versions each Bluetooth operation needs to await its
+                    // callback before another one can be triggered. Otherwise, some callbacks
+                    // aren't called at all. I.e. discovering services while also requesting HIGH
+                    // connection priority makes only one of them to complete.
+                    OperationMutex.lock(ServicesChanged)
+                } catch (e: IllegalStateException) {
+                    logger.warn(e.message)
+                }
+                logger.trace("Discovering services")
                 impl.discoverServices(uuids)
             }
         }
@@ -508,19 +531,21 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         check (isConnected) {
             throw PeripheralNotConnectedException()
         }
-        logger.trace("Reading RSSI")
-        return impl.events
-            .onSubscription {
-                if (!impl.readRssi()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        return OperationMutex.withLock {
+            logger.trace("Reading RSSI")
+            impl.events
+                .onSubscription {
+                    if (!impl.readRssi()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(RssiRead::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.rssi
-            ?.also { logger.info("RSSI read: {} dBm", it) }
-            ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(RssiRead::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.rssi
+                ?.also { logger.info("RSSI read: {} dBm", it) }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**

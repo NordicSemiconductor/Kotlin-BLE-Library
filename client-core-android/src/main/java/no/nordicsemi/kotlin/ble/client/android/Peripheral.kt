@@ -62,6 +62,7 @@ import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
+import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
 import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
 import no.nordicsemi.kotlin.ble.core.ATT_MTU_MAX
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -432,19 +433,21 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        logger.trace("Reading PHY")
-        return impl.events
-            .onSubscription {
-                if (!impl.readPhy()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        return OperationMutex.withLock {
+            logger.trace("Reading PHY")
+            impl.events
+                .onSubscription {
+                    if (!impl.readPhy()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(PhyChanged::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.phy
-            ?.also { logger.info("PHY read: {}", it) }
-            ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(PhyChanged::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.phy
+                ?.also { logger.info("PHY read: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -473,19 +476,21 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        logger.trace("Setting preferred PHY: tx={}, rx={}, options={}", txPhy, rxPhy, phyOptions)
-        return impl.events
-            .onSubscription {
-                if (!impl.requestPhy(txPhy, rxPhy, phyOptions)) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        return OperationMutex.withLock {
+            logger.trace("Setting preferred PHY: tx={}, rx={}, options={}", txPhy, rxPhy, phyOptions)
+            impl.events
+                .onSubscription {
+                    if (!impl.requestPhy(txPhy, rxPhy, phyOptions)) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(PhyChanged::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.phy
-            ?.also { logger.info("PHY changed to: {}", it) }
-            ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(PhyChanged::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.phy
+                ?.also { logger.info("PHY changed to: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -547,19 +552,21 @@ open class Peripheral(
             return
         }
         mtuRequested = true
-        logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
-        impl.events
-            .onSubscription {
-                if (!impl.requestMtu(ATT_MTU_MAX)) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        OperationMutex.withLock {
+            logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
+            impl.events
+                .onSubscription {
+                    if (!impl.requestMtu(ATT_MTU_MAX)) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(MtuChanged::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.mtu
-            ?.also { logger.info("MTU set to {}", it) }
-            ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(MtuChanged::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.mtu
+                ?.also { logger.info("MTU set to {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -582,19 +589,21 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        logger.trace("Requesting connection priority: {}", priority)
-        return impl.events
-            .onSubscription {
-                if (!impl.requestConnectionPriority(priority)) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        return OperationMutex.withLock {
+            logger.trace("Requesting connection priority: {}", priority)
+            impl.events
+                .onSubscription {
+                    if (!impl.requestConnectionPriority(priority)) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(ConnectionParametersChanged::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.newParameters
-            ?.also { logger.info("Connection parameters updated: {}", it) }
-            ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(ConnectionParametersChanged::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.newParameters
+                ?.also { logger.info("Connection parameters updated: {}", it) }
+                ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -645,25 +654,27 @@ open class Peripheral(
             logger.warn("Reliable write not in progress, nothing to execute")
             return
         }
-        logger.trace("Executing reliable write")
-        impl.events
-            .onSubscription {
-                if (!impl.executeReliableWrite()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(ReliableWriteCompleted::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.let {
-                when (it.status) {
-                    OperationStatus.SUCCESS -> logger.info("Reliable write executed successfully")
-                    else -> {
-                        logger.warn("Reliable write failed: {}", it.status)
-                        throw OperationFailedException(it.status)
+        OperationMutex.withLock {
+            logger.trace("Executing reliable write")
+            impl.events
+                .onSubscription {
+                    if (!impl.executeReliableWrite()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                     }
                 }
-            } ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(ReliableWriteCompleted::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.let {
+                    when (it.status) {
+                        OperationStatus.SUCCESS -> logger.info("Reliable write executed successfully")
+                        else -> {
+                            logger.warn("Reliable write failed: {}", it.status)
+                            throw OperationFailedException(it.status)
+                        }
+                    }
+                } ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -685,25 +696,27 @@ open class Peripheral(
             logger.warn("Reliable write not in progress, nothing to abort")
             return
         }
-        logger.trace("Aborting reliable write")
-        impl.events
-            .onSubscription {
-                if (!impl.abortReliableWrite()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                }
-            }
-            .takeWhile { !it.isDisconnectionEvent }
-            .filterIsInstance(ReliableWriteCompleted::class)
-            // TODO add .timeout(...)?
-            .firstOrNull()?.let {
-                when (it.status) {
-                    OperationStatus.SUCCESS -> logger.info("Reliable write aborted successfully")
-                    else -> {
-                        logger.warn("Aborting reliable write failed: {}", it.status)
-                        throw OperationFailedException(it.status)
+        OperationMutex.withLock {
+            logger.trace("Aborting reliable write")
+            impl.events
+                .onSubscription {
+                    if (!impl.abortReliableWrite()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                     }
                 }
-            } ?: throw PeripheralNotConnectedException()
+                .takeWhile { !it.isDisconnectionEvent }
+                .filterIsInstance(ReliableWriteCompleted::class)
+                // TODO add .timeout(...)?
+                .firstOrNull()?.let {
+                    when (it.status) {
+                        OperationStatus.SUCCESS -> logger.info("Reliable write aborted successfully")
+                        else -> {
+                            logger.warn("Aborting reliable write failed: {}", it.status)
+                            throw OperationFailedException(it.status)
+                        }
+                    }
+                } ?: throw PeripheralNotConnectedException()
+        }
     }
 
     /**
@@ -732,16 +745,18 @@ open class Peripheral(
         check(!impl.isClosed) {
             throw PeripheralClosedException()
         }
-        logger.trace("Refreshing cache")
-        impl.events
-            .onSubscription {
-                if (!impl.refreshCache()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        OperationMutex.withLock {
+            logger.trace("Refreshing cache")
+            impl.events
+                .onSubscription {
+                    if (!impl.refreshCache()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            // TODO add .timeout(...)?
-            .first { it == ServicesChanged }
-            .also { logger.info("Cache refreshed") }
+                // TODO add .timeout(...)?
+                .first { it == ServicesChanged }
+                .also { logger.info("Cache refreshed") }
+        }
     }
 
     /**
@@ -755,28 +770,32 @@ open class Peripheral(
         if (hasBondInformation) {
             return
         }
-        logger.trace("Creating bond")
-        impl.bondState
-            .onSubscription {
-                if (!impl.createBond()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                }
-            }
-            // Skip the initial state. It should transition to BONDING quickly.
-            .dropWhile { it == BondState.NONE }
-            // Now, await for the next state after BONDING.
-            .first { it != BondState.BONDING }
-            // And process it.
-            .also {
-                when (it) {
-                    BondState.BONDED -> logger.info("Bond created")
-                    BondState.NONE -> {
-                        logger.warn("Bonding failed")
-                        throw BondingFailedException()
+        OperationMutex.withLock {
+            logger.trace("Creating bond")
+            impl.bondState
+                .onSubscription {
+                    if (!impl.createBond()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
                     }
-                    else -> { /* Not possible */ }
                 }
-            }
+                // Skip the initial state. It should transition to BONDING quickly.
+                .dropWhile { it == BondState.NONE }
+                // Now, await for the next state after BONDING.
+                .first { it != BondState.BONDING }
+                // And process it.
+                .also {
+                    when (it) {
+                        BondState.BONDED -> logger.info("Bond created")
+                        BondState.NONE -> {
+                            logger.warn("Bonding failed")
+                            throw BondingFailedException()
+                        }
+
+                        else -> { /* Not possible */
+                        }
+                    }
+                }
+        }
     }
 
     /**
@@ -791,15 +810,17 @@ open class Peripheral(
         if (!hasBondInformation) {
             return
         }
-        logger.trace("Removing bond information")
-        impl.bondState
-            .onSubscription {
-                if (!impl.removeBond()) {
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+        OperationMutex.withLock {
+            logger.trace("Removing bond information")
+            impl.bondState
+                .onSubscription {
+                    if (!impl.removeBond()) {
+                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    }
                 }
-            }
-            .first { it == BondState.NONE }
-            .also { logger.info("Bond information removed") }
+                .first { it == BondState.NONE }
+                .also { logger.info("Bond information removed") }
+        }
     }
 
     /**
