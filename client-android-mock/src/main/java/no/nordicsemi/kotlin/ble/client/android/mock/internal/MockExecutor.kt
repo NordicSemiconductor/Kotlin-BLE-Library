@@ -36,6 +36,7 @@ package no.nordicsemi.kotlin.ble.client.android.mock.internal
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -48,6 +49,7 @@ import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import org.jetbrains.annotations.Range
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A mock implementation of [Peripheral] for Android.
@@ -73,6 +75,19 @@ open class MockExecutor(
     override val bondState = _bondState.asStateFlow()
 
     // Implementation
+
+    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+        if (autoConnect) {
+            // There is no timeout for auto connect attempts.
+            super.connect(true, preferredPhy)
+        } else {
+            // Android has a timeout of 30 seconds for connection attempts.
+            // User may set a shorter timeout in ConnectionOptions.Direct.
+            withTimeout(30.seconds) {
+                super.connect(false, preferredPhy)
+            }
+        }
+    }
 
     override suspend fun createBond(): Boolean {
         TODO("Not yet implemented")
