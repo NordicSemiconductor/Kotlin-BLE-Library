@@ -33,19 +33,21 @@
 
 package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import no.nordicsemi.kotlin.ble.client.GattEvent
-import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockExecutor
+import no.nordicsemi.kotlin.ble.client.mock.internal.MockScanResult
 import no.nordicsemi.kotlin.ble.core.BondState
-import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.ConnectionParameters
+import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import org.jetbrains.annotations.Range
 
 /**
  * A mock implementation of [Peripheral] for Android.
@@ -53,16 +55,16 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
  * @param peripheralSpec The peripheral specification.
  * @param name Name of the peripheral read from the advertisement data or peripheral spec
  * when it was connected / bonded before.
+ * @param environment The mock environment.
+ * @param advertisements A flow of advertisements emitted by the mock advertiser.
  */
 open class MockExecutor(
-    private val peripheralSpec: PeripheralSpec<String>,
+    peripheralSpec: PeripheralSpec<String>,
     name: String?,
-): Peripheral.Executor {
+    private val environment: MockEnvironment,
+    advertisements: Flow<MockScanResult<String>>,
+): MockExecutor(peripheralSpec, name, environment, advertisements), Peripheral.Executor {
     override val type: PeripheralType = peripheralSpec.type
-    override val initialState: ConnectionState = ConnectionState.Disconnected()
-    override val initialServices: List<RemoteService> = emptyList()
-
-    override val identifier: String = peripheralSpec.identifier
 
     /** The current bond state. */
     private val _bondState = MutableStateFlow(
@@ -70,73 +72,124 @@ open class MockExecutor(
     )
     override val bondState = _bondState.asStateFlow()
 
-    /**
-     * A flag set when the phone connects to the peripheral.
-     *
-     * We assume, that the Device Name characteristic is read during service discovery.
-     */
-    private var isNameCached = false
-
-    /** The peripheral name. */
-    private var _name: String? = name
-    override val name: String?
-        get() = if (isNameCached) peripheralSpec.name else _name
-
     // Implementation
 
-    override val events: SharedFlow<GattEvent>
-        get() = TODO("Not yet implemented")
-
-    override val isClosed: Boolean
-        get() = TODO("Not yet implemented")
-
-    override fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override suspend fun createBond(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun discoverServices(): Boolean {
-        TODO("Not yet implemented")
-
-        // TODO set isNameCached to true when service discovery finished
-    }
-
-    override fun createBond(): Boolean {
+    override suspend fun removeBond(): Boolean {
         TODO("Not yet implemented")
     }
 
-    override fun removeBond(): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun refreshCache(): Boolean {
+        return gatt?.refreshCache() ?: false
     }
 
-    override fun refreshCache(): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
+        gatt?.let { gatt ->
+            val result = gatt.requestConnectionParameters(priority.toConnectionParameters(environment))
+            if (!result) {
+                return false
+            }
+
+            // Prior to Android Oreo there is no callback for connection parameters change.
+            if (environment.androidSdkVersion < MockEnvironment.AndroidSdkVersion.OREO) {
+                gatt.onConnectionUpdated()
+            }
+            return true
+        }
+        return false
     }
 
-    override fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
+        return gatt?.requestMtu(mtu) ?: false
     }
 
-    override fun requestMtu(mtu: Int): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
+        gatt?.let { gatt ->
+            if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) {
+                gatt.setPreferredPhy(txPhy, rxPhy, phyOptions)
+            } else {
+                gatt.setPreferredPhy(
+                    Phy.PHY_LE_1M,
+                    Phy.PHY_LE_1M,
+                    PhyOption.NO_PREFERRED
+                )
+            }
+            return true
+        }
+        return false
     }
 
-    override fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun readPhy(): Boolean {
+        gatt?.let {  gatt ->
+            // It's not possible to set PHY to anything other than 1M on Android versions below Oreo,
+            // so we can just read it.
+            gatt.readPhy()
+            return true
+        }
+        return false
     }
 
-    override fun readPhy(): Boolean {
-        TODO("Not yet implemented")
+    override fun beginReliableWrite(): Boolean {
+        if (isClosed || !peripheralSpec.isConnected) {
+            return false
+        }
+        isReliableWriteEnabled = true
+        return true
     }
 
-    override fun readRssi(): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun executeReliableWrite(): Boolean {
+        if (isClosed || !peripheralSpec.isConnected) {
+            return false
+        }
+        if (isReliableWriteEnabled) {
+            isReliableWriteEnabled = false
+            return gatt?.endReliableWrites(true) ?: false
+        }
+        return true
     }
 
-    override fun disconnect(): Boolean {
-        TODO("Not yet implemented")
+    override suspend fun abortReliableWrite(): Boolean {
+        if (isClosed || !peripheralSpec.isConnected) {
+            return false
+        }
+        if (isReliableWriteEnabled) {
+            isReliableWriteEnabled = false
+            return gatt?.endReliableWrites(false) ?: false
+        }
+        return true
     }
 
-    override fun close() {
-        TODO("Not yet implemented")
+    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Connected = when (this) {
+        ConnectionPriority.BALANCED -> ConnectionParameters.Connected(
+            connectionInterval = 24,
+            slaveLatency = 0,
+            supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+        )
+        ConnectionPriority.HIGH -> if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.MARSHMALLOW) {
+            ConnectionParameters.Connected(
+                connectionInterval = 9,
+                slaveLatency = 0,
+                supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+            )
+        } else {
+            ConnectionParameters.Connected(
+                connectionInterval = 6,
+                slaveLatency = 0,
+                supervisionTimeout = 2000
+            )
+        }
+        ConnectionPriority.LOW_POWER -> ConnectionParameters.Connected(
+            connectionInterval = 80,
+            slaveLatency = 2,
+            supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+        )
+        ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Connected(
+            connectionInterval = 24,
+            slaveLatency = 0,
+            supervisionTimeout = 500
+        )
     }
 }

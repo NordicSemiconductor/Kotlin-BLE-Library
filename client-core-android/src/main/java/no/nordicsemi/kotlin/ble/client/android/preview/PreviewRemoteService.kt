@@ -47,7 +47,7 @@ import kotlin.uuid.Uuid
 /**
  * A remote service that can be used for compose previews.
  *
- * If has no-op implementation.
+ * It has no-op implementation.
  */
 @OptIn(ExperimentalUuidApi::class)
 class PreviewRemoteService: RemoteService {
@@ -66,7 +66,7 @@ class PreviewRemoteService: RemoteService {
         } ?: listOfNotNull(characteristic)
 
     override val includedServices: List<RemoteIncludedService>
-        get() = definition?.innerServices?.map {
+        get() = definition?.includedServices?.map {
             PreviewInnerRemoteService(
                 service = this,
                 uuid = it.uuid,
@@ -103,7 +103,7 @@ class PreviewRemoteService: RemoteService {
         this.uuid = uuid
         this.instanceId = instanceId
         this.definition = null
-        this.characteristic = PreviewRemoteCharacteristic(this, Uuid.random(), emptyList(), descriptor)
+        this.characteristic = PreviewRemoteCharacteristic(this, Uuid.random(), emptySet(), descriptor)
     }
 
     /**
@@ -163,7 +163,7 @@ class PreviewInnerRemoteService internal constructor(
             )
         }
     override val includedServices: List<RemoteIncludedService>
-        get() = definition.innerServices.map {
+        get() = definition.includedServices.map {
             PreviewInnerRemoteService(
                 service = this,
                 uuid = it.uuid,

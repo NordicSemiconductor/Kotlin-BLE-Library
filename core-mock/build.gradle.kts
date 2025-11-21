@@ -54,7 +54,7 @@ dokka {
     dokkaSourceSets.named("main") {
         includes.from("Module.md")
         perPackageOption {
-            matchingRegex.set("no.nordicsemi.kotlin.ble.core.internal")
+            matchingRegex.set("no.nordicsemi.kotlin.ble.core.mock.internal")
             suppress.set(true)
         }
     }

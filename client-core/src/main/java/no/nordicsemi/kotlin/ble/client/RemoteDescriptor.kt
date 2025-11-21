@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.client
 
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
@@ -42,6 +43,7 @@ import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
  * A GATT descriptor of a characteristic on a remote connected peripheral device.
  *
  * The API allows to access the value of the descriptor.
+ *
  * Depending on the descriptor, it may be possible to read or write its value.
  */
 interface RemoteDescriptor: Descriptor {
@@ -64,6 +66,8 @@ interface RemoteDescriptor: Descriptor {
      * Writes the value of the descriptor.
      *
      * @param data The data to be written.
+     * @throws ValueDoesNotMatchException if the value was sent using *Long Write* or *Reliable Write*
+     * procedure and the value replied back by the peripheral does not match the value written.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the descriptor has been invalidated due to
      * disconnection of service change event.

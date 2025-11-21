@@ -49,14 +49,13 @@ fun DeviceActions(
     onClearCacheRequested: () -> Unit,
 ) {
     Row(
-
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Button(
             onClick = onBondRequested,
             enabled = !isBonded,
         ) {
-            Text("Bond", maxLines = 1)
+            Text("Bind", maxLines = 1)
         }
         Button(
             onClick = onRemoveBondRequested,
@@ -66,7 +65,7 @@ fun DeviceActions(
                 contentColor = MaterialTheme.colorScheme.onError
             ),
         ) {
-            Text("Remove bond", maxLines = 1)
+            Text("Unbind", maxLines = 1)
         }
         Button(
             onClick = onClearCacheRequested,

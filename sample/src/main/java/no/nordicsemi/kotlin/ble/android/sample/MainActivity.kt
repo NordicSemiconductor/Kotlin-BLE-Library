@@ -6,16 +6,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -52,7 +54,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     topBar = {
-                        MediumTopAppBar(
+                        TopAppBar(
                             // TODO: Titles should go from strings.xml
                             title = { Text(text = currentRoute ?: NAV_MENU) },
                             navigationIcon = {
@@ -64,13 +66,13 @@ class MainActivity : ComponentActivity() {
                                         Icon(
                                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
                                             contentDescription = "Navigate back",
-                                            tint = MaterialTheme.colorScheme.onPrimary,
                                         )
                                     }
                                 }
                             },
                         )
-                    }
+                    },
+                    contentWindowInsets = WindowInsets.statusBars,
                 ) { paddings ->
                     NavHost(
                         modifier = Modifier.padding(paddings),

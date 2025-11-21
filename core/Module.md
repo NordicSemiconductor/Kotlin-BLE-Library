@@ -6,10 +6,10 @@ Core types and interfaces for Bluetooth Low Energy clients and server implementa
 
 Core types and interfaces for Bluetooth Low Energy clients and server implementations.
 
-# Package no.nordicsemi.kotlin.ble.exception
+# Package no.nordicsemi.kotlin.ble.core.exception
 
 Generic Bluetooth Low Energy exceptions.
 
-# Package no.nordicsemi.kotlin.ble.util
+# Package no.nordicsemi.kotlin.ble.core.util
 
 Utilities.

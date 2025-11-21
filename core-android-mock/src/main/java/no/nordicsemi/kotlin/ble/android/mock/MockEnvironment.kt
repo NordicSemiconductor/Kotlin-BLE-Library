@@ -98,6 +98,14 @@ private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
  * The callback should return the TX power level used for mock advertising.
  * @property scanner A callback that will be called when the mock central manager requests to scan
  * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+ * @property issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+ * message for a single device per scan. Non-connectable devices were reported continuously, but
+ * connectable devices were reported only once. The client had to stop and start scanning again
+ * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+ * @property issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
+ * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+ * This causes the peripheral to terminate the connection. This flag simulates this issue.
+ * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
  */
 sealed class MockEnvironment(
     val androidSdkVersion: Int,
@@ -118,7 +126,17 @@ sealed class MockEnvironment(
     val isBluetoothAdvertisePermissionGranted: Boolean = false,
     val advertiser: MockAdvertiser,
     val scanner: MockScanner,
-): MockEnvironment(deviceName, isBluetoothSupported, isBluetoothEnabled) {
+    val issueOnlyOneActiveScan: Boolean = false, // Nexus 4 issue
+    val issueIncorrectL2capTxMtu: Boolean = false, // Samsung A8 Tab issue
+    // TODO add the issue when Samsung S8 fails PHY update, tested with Memfault.
+    // This issue can be workaround by delaying service discovery (?) and waiting
+    // until the PHY request completes. It works in nRF Connect when SD is triggered manually.
+): MockEnvironment(
+    deviceName = deviceName,
+    isBluetoothSupported = isBluetoothSupported,
+    isBluetoothEnabled = isBluetoothEnabled,
+    reportsConnectionParameters = androidSdkVersion >= AndroidSdkVersion.OREO
+) {
 
     /**
      * Android SDK versions.
@@ -147,6 +165,10 @@ sealed class MockEnvironment(
      * The callback should return TX power level used for mock advertising.
      * @param scanner A callback that will be called when the mock central manager requests to scan
      * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
      */
     class Api21(
         deviceName: String = DEFAULT_NAME,
@@ -155,6 +177,7 @@ sealed class MockEnvironment(
         isMultipleAdvertisementSupported: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.LOLLIPOP,
         deviceName = deviceName,
@@ -163,6 +186,7 @@ sealed class MockEnvironment(
         isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
         advertiser = advertiser,
         scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
     )
 
     /**
@@ -180,6 +204,14 @@ sealed class MockEnvironment(
      * The callback should return TX power level used for mock advertising.
      * @param scanner A callback that will be called when the mock central manager requests to scan
      * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
+     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * This causes the peripheral to terminate the connection. This flag simulates this issue.
+     * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
     class Api23(
         deviceName: String = DEFAULT_NAME,
@@ -190,6 +222,8 @@ sealed class MockEnvironment(
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
+        issueIncorrectL2capTxMtu: Boolean = false,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion =AndroidSdkVersion.MARSHMALLOW,
         deviceName = deviceName,
@@ -201,6 +235,8 @@ sealed class MockEnvironment(
         isLocationEnabled = isLocationEnabled,
         advertiser = advertiser,
         scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
     )
 
     /**
@@ -227,6 +263,14 @@ sealed class MockEnvironment(
      * The callback should return TX power level used for mock advertising.
      * @param scanner A callback that will be called when the mock central manager requests to scan
      * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
+     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * This causes the peripheral to terminate the connection. This flag simulates this issue.
+     * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
     class Api26(
         deviceName: String = DEFAULT_NAME,
@@ -243,6 +287,8 @@ sealed class MockEnvironment(
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
+        issueIncorrectL2capTxMtu: Boolean = false,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.OREO,
         deviceName = deviceName,
@@ -259,6 +305,8 @@ sealed class MockEnvironment(
         isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
         advertiser = advertiser,
         scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
     )
 
     /**
@@ -294,6 +342,14 @@ sealed class MockEnvironment(
      * The callback should return TX power level used for mock advertising.
      * @param scanner A callback that will be called when the mock central manager requests to scan
      * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
+     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * This causes the peripheral to terminate the connection. This flag simulates this issue.
+     * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
     class Api31(
         deviceName: String = DEFAULT_NAME,
@@ -314,6 +370,8 @@ sealed class MockEnvironment(
         isLocationEnabled: Boolean = true,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
+        issueIncorrectL2capTxMtu: Boolean = false,
     ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
         androidSdkVersion = AndroidSdkVersion.S,
         deviceName = deviceName,
@@ -333,6 +391,57 @@ sealed class MockEnvironment(
         isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
         advertiser = advertiser,
         scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+    )
+
+    class Nexus4(
+        deviceName: String = "Nexus 4",
+        isBluetoothEnabled: Boolean = true,
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
+        androidSdkVersion = 22,
+        deviceName = deviceName,
+        isBluetoothSupported = true,
+        isBluetoothEnabled = isBluetoothEnabled,
+        isMultipleAdvertisementSupported = true,
+        advertiser = advertiser,
+        scanner = scanner,
+        issueOnlyOneActiveScan = true,
+    )
+
+    class SamsungA8(
+        deviceName: String = "Samsung A8",
+        isBluetoothEnabled: Boolean = true,
+        isBluetoothScanPermissionGranted: Boolean = true,
+        isBluetoothConnectPermissionGranted: Boolean = true,
+        isBluetoothAdvertisePermissionGranted: Boolean = true,
+        isNeverForLocationFlagSet: Boolean = true,
+        isLocationPermissionGranted: Boolean = true,
+        isLocationEnabled: Boolean = true,
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+    ): no.nordicsemi.kotlin.ble.android.mock.MockEnvironment(
+        androidSdkVersion = 34,
+        deviceName = deviceName,
+        isBluetoothSupported = true,
+        isBluetoothEnabled = isBluetoothEnabled,
+        isMultipleAdvertisementSupported = true,
+        isLeExtendedAdvertisingSupported = true,
+        leMaximumAdvertisingDataLength = 1650,
+        isLocationRequiredForScanning = !isNeverForLocationFlagSet,
+        isLocationPermissionGranted = isLocationPermissionGranted,
+        isLocationEnabled = isLocationEnabled,
+        isLe2MPhySupported = true,
+        isLeCodedPhySupported = true,
+        isScanningOnLeCodedPhySupported = false,
+        isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
+        isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
+        isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
+        advertiser = advertiser,
+        scanner = scanner,
+        issueIncorrectL2capTxMtu = true,
     )
 
     /**

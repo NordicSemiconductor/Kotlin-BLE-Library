@@ -29,18 +29,33 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.internal
+@file:Suppress("unused")
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
+package no.nordicsemi.kotlin.ble.client.mock
+
+import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition
+import kotlin.time.Duration
 
 /**
- * This mutex ensures that only one Bluetooth LE operation can be executed concurrently.
+ * The advertisement configuration for a mock peripheral.
+ *
+ * @property delay The delay before the peripheral starts advertising.
+ * @property timeout The timeout after which the advertising set stops advertising.
+ * @property maxAdvertisingEvents The maximum number of advertising events.
+ * @property isAdvertisingWhenConnected Whether the peripheral should advertise in the
+ * connected state.
+ * @property parameters The advertising parameters.
+ * @property advertisingData The advertising data.
+ * @property isBeacon Whether the advertisement can reveal user's location, therefore requires
+ * Location permission granted.
  */
-internal object NativeOperationMutex {
-    private val lock = Mutex(locked = false)
-
-    suspend fun <T> withLock(block: suspend () -> T): T {
-        return lock.withLock { block() }
-    }
-}
+class MockAdvertisingSet(
+    val delay: Duration,
+    val timeout: Duration,
+    val maxAdvertisingEvents: Int,
+    val isAdvertisingWhenConnected: Boolean,
+    val parameters: AdvertisingSetParameters,
+    val advertisingData: AdvertisingDataDefinition,
+    val isBeacon: Boolean,
+)

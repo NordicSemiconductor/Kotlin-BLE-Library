@@ -105,11 +105,11 @@ enum class CharacteristicProperty {
         }
 }
 
-infix fun CharacteristicProperty.and(property: CharacteristicProperty): List<CharacteristicProperty> {
-    return listOf(this, property)
+infix fun CharacteristicProperty.and(property: CharacteristicProperty): Set<CharacteristicProperty> {
+    return setOf(this, property)
 }
 
-infix fun List<CharacteristicProperty>.and(property: CharacteristicProperty): List<CharacteristicProperty> {
+infix fun Set<CharacteristicProperty>.and(property: CharacteristicProperty): Set<CharacteristicProperty> {
     return this + property
 }
 
@@ -119,7 +119,5 @@ infix fun List<CharacteristicProperty>.and(property: CharacteristicProperty): Li
  * The default write type is the first write type found in the list, or [WriteType.WITH_RESPONSE]
  * if the list contains [CharacteristicProperty.WRITE].
  */
-val List<CharacteristicProperty>.defaultWriteType: WriteType?
+val Set<CharacteristicProperty>.defaultWriteType: WriteType?
     get() = if (CharacteristicProperty.WRITE in this) WriteType.WITH_RESPONSE else firstNotNullOfOrNull { it.writeType }
-
-

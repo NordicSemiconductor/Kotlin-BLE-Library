@@ -69,13 +69,13 @@ enum class Permission {
     WRITE_SIGNED,
 
     /** Allow signed write operations with person-in-the-middle protection. */
-    PERMISSION_WRITE_SIGNED_MITM;
+    WRITE_SIGNED_MITM;
 }
 
-infix fun Permission.and(permission: Permission): List<Permission> {
-    return listOf(this, permission)
+infix fun Permission.and(permission: Permission): Set<Permission> {
+    return setOf(this, permission)
 }
 
-infix fun List<Permission>.and(permission: Permission): List<Permission> {
+infix fun Set<Permission>.and(permission: Permission): Set<Permission> {
     return this + permission
 }

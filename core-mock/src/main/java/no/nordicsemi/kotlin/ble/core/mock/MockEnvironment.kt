@@ -37,9 +37,11 @@ package no.nordicsemi.kotlin.ble.core.mock
  * @property deviceName The device local device name.
  * @property isBluetoothSupported Whether Bluetooth is supported on the device.
  * @property isBluetoothEnabled Whether Bluetooth is enabled.
+ * @property reportsConnectionParameters Whether the environment reports connection parameters.
  */
 open class MockEnvironment(
     var deviceName: String,
     val isBluetoothSupported: Boolean,
     val isBluetoothEnabled: Boolean,
+    val reportsConnectionParameters: Boolean
 )

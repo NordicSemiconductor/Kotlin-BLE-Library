@@ -59,7 +59,7 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
     override val instanceId: Int
     override var isNotifying: Boolean
         private set
-    override val properties: List<CharacteristicProperty>
+    override val properties: Set<CharacteristicProperty>
 
     override val descriptors: List<RemoteDescriptor>
         get() = definition?.descriptors?.map {
@@ -80,7 +80,7 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
     internal constructor(
         service: AnyRemoteService,
         uuid: Uuid,
-        properties: List<CharacteristicProperty>,
+        properties: Set<CharacteristicProperty>,
         definition: CharacteristicDefinition,
     ) {
         this.service = service
@@ -95,7 +95,7 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
     internal constructor(
         service: AnyRemoteService,
         uuid: Uuid,
-        properties: List<CharacteristicProperty>,
+        properties: Set<CharacteristicProperty>,
         descriptor: PreviewRemoteDescriptor,
     ) {
         // The point of this constructor is to create a characteristic with a parent service
@@ -114,14 +114,14 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
      *
      * @param shortUuid A 16 or 32 bit short UUID assigned by Bluetooth SIG.
      * @param instanceId The instance ID of the characteristic, defaults to 0.
-     * @param properties The properties of the characteristic, defaults to an empty list.
+     * @param properties The properties of the characteristic, defaults to an empty set.
      * @param isNotifying Whether the characteristic is notifying, defaults to false.
      * @param builder The characteristic builder.
      */
     constructor(
         shortUuid: Int,
         instanceId: Int = 0,
-        properties: List<CharacteristicProperty> = emptyList(),
+        properties: Set<CharacteristicProperty> = emptySet(),
         isNotifying: Boolean = false,
         builder: CharacteristicScope.() -> Unit = {},
     ): this(Uuid.fromShortUuid(shortUuid), instanceId, properties, isNotifying, builder)
@@ -131,21 +131,21 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
      *
      * @param uuid The service UUID.
      * @param instanceId The instance ID of the characteristic, defaults to 0.
-     * @param properties The properties of the characteristic, defaults to an empty list.
+     * @param properties The properties of the characteristic, defaults to an empty set.
      * @param isNotifying Whether the characteristic is notifying, defaults to false.
      * @param builder The characteristic builder.
      */
     constructor(
         uuid: Uuid,
         instanceId: Int = 0,
-        properties: List<CharacteristicProperty> = emptyList(),
+        properties: Set<CharacteristicProperty> = emptySet(),
         isNotifying: Boolean = false,
         builder: CharacteristicScope.() -> Unit = {},
     ) {
         val serviceDefinition = ServerScopeImpl()
             .apply {
                 Service(Uuid.random()) {
-                    Characteristic(uuid, properties, emptyList(), builder)
+                    Characteristic(uuid, properties, emptySet(), builder)
                 }
             }
             .build()

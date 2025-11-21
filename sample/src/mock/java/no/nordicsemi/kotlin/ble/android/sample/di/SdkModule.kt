@@ -48,7 +48,7 @@ class SdkModule {
 
     @Provides
     @Named("sdkVersion")
-    fun provideSdkVersion() = 34 // Build.VERSION.SDK_INT
+    fun provideSdkVersion() = 23 // Build.VERSION.SDK_INT
 
     @Provides
     fun providesEnvironment(@Named("sdkVersion") sdkVersion: Int): MockEnvironment {

@@ -83,7 +83,7 @@ open class MockCentralManagerImpl(
 
     // Simulation methods
     private var peripheralSpecs = mutableListOf<PeripheralSpec<String>>()
-    private val mockAdvertiser = MockBluetoothLeAdvertiser<String>(scope, environment)
+    private val mockAdvertiser = MockBluetoothLeAdvertiser<String>(scope)
 
     override fun simulatePowerOn() = simulateStateChange(Manager.State.POWERED_ON)
 
@@ -93,14 +93,31 @@ open class MockCentralManagerImpl(
         require(peripheralSpecs.isEmpty()) {
             "Peripherals have already been added to the simulation"
         }
+        // Validate the MAC addresses.
         peripherals.forEach {
-            // Validate the MAC address.
-            require(it.identifier.matches(Regex("([0-9A-Fa-f]{2}:){5}([0-9A-Fa-f]{2})"))) {
-                "Invalid MAC address: ${it.identifier}"
+            require(checkBluetoothAddress(it.identifier)) {
+                "${it.identifier} + is not a valid Bluetooth address"
             }
         }
+        // Add known peripherals to the managed list. They will be available for connection without scanning.
+        // This list includes bonded devices as well.
+        peripherals
+            .filter { it.isKnown }
+            .forEach {
+                managedPeripherals.put(
+                    key = it.identifier,
+                    value = Peripheral(
+                        scope = scope,
+                        impl = MockExecutor(
+                            peripheralSpec = it,
+                            name = it.name,
+                            environment = environment,
+                            advertisements = mockAdvertiser.events,
+                        )
+                    )
+                )
+            }
         peripheralSpecs.addAll(peripherals)
-        managedPeripherals
         mockAdvertiser.simulateAdvertising(peripherals)
     }
 
@@ -131,8 +148,6 @@ open class MockCentralManagerImpl(
     }
 
     // Implementation
-    private val _advertisingEvents = MutableSharedFlow<ScanResult>()
-
     private val _state = MutableStateFlow(
         when {
             !environment.isBluetoothSupported -> Manager.State.UNSUPPORTED
@@ -160,7 +175,9 @@ open class MockCentralManagerImpl(
         ensureOpen()
 
         return ids.map { id ->
-            require(checkBluetoothAddress(id)) { "$id + is not a valid Bluetooth address" }
+            require(checkBluetoothAddress(id)) {
+                "$id + is not a valid Bluetooth address"
+            }
             peripheral(id) {
                 Peripheral(
                     scope = scope,
@@ -172,7 +189,9 @@ open class MockCentralManagerImpl(
                                 identifier = id,
                                 proximity = Proximity.OUT_OF_RANGE
                             ),
-                        name = null
+                        name = null,
+                        environment = environment,
+                        advertisements = mockAdvertiser.events,
                     )
                 )
             }
@@ -195,19 +214,25 @@ open class MockCentralManagerImpl(
         // but were not scanned yet.
         val managedBondedPeripherals = managedPeripherals.values
             .filter { it.hasBondInformation }
-        val otherBondedPeripherals = peripheralSpecs
-            .filter { it.isBonded }
-            .filter { it.identifier !in managedPeripherals.keys }
-            .map { peripheralSpec ->
-                peripheral(peripheralSpec.identifier) {
-                    Peripheral(
-                        scope = scope,
-                        impl = MockExecutor(peripheralSpec, peripheralSpec.name)
-                    )
-                }
-            }
+//        val otherBondedPeripherals = peripheralSpecs
+//            .filter { it.isBonded }
+//            .filter { it.identifier !in managedPeripherals.keys }
+//            .map { peripheralSpec ->
+//                peripheral(peripheralSpec.identifier) {
+//                    Peripheral(
+//                        scope = scope,
+//                        impl = MockExecutor(
+//                            peripheralSpec = peripheralSpec,
+//                            name = peripheralSpec.name,
+//                            advertisements = mockAdvertiser.events,
+//                        )
+//                    )
+//                }
+//            }
         // TODO any order?
-        return managedBondedPeripherals + otherBondedPeripherals
+        // TODO NOTE all known (including bonded) peripherals were added to managed already in simulatePeripherals
+        // TODO a peripheral may change MAC address, how about that?
+        return managedBondedPeripherals // + otherBondedPeripherals
     }
 
     override fun scan(
@@ -235,13 +260,30 @@ open class MockCentralManagerImpl(
             val reportResult = environment.scanner().getOrThrow()
 
             // Emit all scan results until the timeout.
-            withTimeoutOrNull<Nothing>(timeout) {
+            withTimeoutOrNull(timeout) {
+                // Keep IDs of all scanned peripherals to this scan.
+                // This is used for handing passive scan.
+                val cache = mutableSetOf<String>()
+
                 mockAdvertiser.events.collect { result ->
                     // Some (most?) Android devices do not report scan error using `onScanFailed`
                     // callback, but instead don't return any results.
-                    // Re
                     if (!reportResult) {
                         return@collect
+                    }
+
+                    // Some phones send only one Scan Request to connectable devices per scan.
+                    // Such devices are only reported once. Non-connectable devices, which only
+                    // send Advertising Data, are reported continuously.
+                    // TODO Modify to support passive scan on Android 16+
+                    if (environment.issueOnlyOneActiveScan) {
+                        if (result.isConnectable) {
+                            if (cache.contains(result.peripheralSpec.identifier)) {
+                                return@collect
+                            } else {
+                                cache.add(result.peripheralSpec.identifier)
+                            }
+                        }
                     }
 
                     // Starting from Android 6 Location permission and Location service are required
@@ -283,7 +325,12 @@ open class MockCentralManagerImpl(
                         peripheral(peripheralSpec.identifier) {
                             Peripheral(
                                 scope = scope,
-                                impl = MockExecutor(peripheralSpec, name)
+                                impl = MockExecutor(
+                                    peripheralSpec = peripheralSpec,
+                                    name = name,
+                                    environment = environment,
+                                    advertisements = mockAdvertiser.events,
+                                )
                             )
                         }
                     }

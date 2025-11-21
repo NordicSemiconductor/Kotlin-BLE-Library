@@ -42,7 +42,7 @@ import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
  *
  * @property ID The type of the peripheral identifier.
  */
-interface SimulationProvider<ID> {
+interface SimulationProvider<ID: Any> {
 
     /**
      * Simulates turning on Bluetooth adapter on the device.

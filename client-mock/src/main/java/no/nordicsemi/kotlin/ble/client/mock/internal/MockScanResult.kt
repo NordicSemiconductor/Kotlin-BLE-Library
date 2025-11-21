@@ -35,7 +35,7 @@ import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
-class MockScanResult<ID>(
+class MockScanResult<ID: Any>(
     val peripheralSpec: PeripheralSpec<ID>,
     val isConnectable: Boolean,
     val advertisingData: ByteArray,

@@ -43,39 +43,81 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class ServiceDefinition(
     val uuid: Uuid,
+    val instanceId: Int,
     val characteristics: List<CharacteristicDefinition>,
-    val innerServices: List<ServiceDefinition>,
+    val includedServices: List<ServiceDefinition>,
 )
 
 @OptIn(ExperimentalUuidApi::class)
 class CharacteristicDefinition(
     val uuid: Uuid,
-    val properties: List<CharacteristicProperty>,
-    val permissions: List<Permission>,
+    val instanceId: Int,
+    val properties: Set<CharacteristicProperty>,
+    val permissions: Set<Permission>,
     val descriptors: List<DescriptorDefinition>,
 )
 
 @OptIn(ExperimentalUuidApi::class)
 open class DescriptorDefinition(
     val uuid: Uuid,
-    val permissions: List<Permission>,
+    val instanceId: Int,
+    val permissions: Set<Permission>,
 )
 
+/**
+ * Client Characteristic Configuration Descriptor (CCCD) definition.
+ *
+ * @param enabled True if notifications/indications are enabled initially. Bonded devices may
+ * store this information and restore it when reconnecting.
+ * @param instanceId The instance ID of the descriptor.
+ */
 @OptIn(ExperimentalUuidApi::class)
-class CCCD: DescriptorDefinition(
+class CCCD(
+    val enabled: Boolean = false,
+    instanceId: Int,
+): DescriptorDefinition(
     uuid = Descriptor.CLIENT_CHAR_CONF_UUID,
+    instanceId = instanceId,
     permissions = Permission.READ and Permission.WRITE
 )
 
+/**
+ * Characteristic User Description (CUD) definition.
+ *
+ * @param description The description string.
+ * @param writable True if the description is writable.
+ * @param instanceId The instance ID of the descriptor.
+ */
 @OptIn(ExperimentalUuidApi::class)
 class CUD(
     val description: String,
     writable: Boolean,
+    instanceId: Int,
 ): DescriptorDefinition(
     uuid = Descriptor.CHAR_USER_DESC_UUID,
+    instanceId = instanceId,
     permissions = if (writable) {
-        listOf(Permission.READ, Permission.WRITE)
+        Permission.READ and Permission.WRITE
     } else {
-        listOf(Permission.READ)
+        setOf(Permission.READ)
     }
+)
+
+
+/**
+ * Characteristic Extended Properties Descriptor (CEPD) definition.
+ *
+ * @param reliableWrite True if reliable writes are supported.
+ * @param writableAuxiliaries True if the Characteristic User Description descriptor is writable.
+ * @param instanceId The instance ID of the descriptor.
+ */
+@OptIn(ExperimentalUuidApi::class)
+class CEPD(
+    val reliableWrite: Boolean,
+    val writableAuxiliaries: Boolean,
+    instanceId: Int,
+): DescriptorDefinition(
+    uuid = Descriptor.CHAR_EXT_PROP_UUID,
+    instanceId = instanceId,
+    permissions = setOf(Permission.READ)
 )

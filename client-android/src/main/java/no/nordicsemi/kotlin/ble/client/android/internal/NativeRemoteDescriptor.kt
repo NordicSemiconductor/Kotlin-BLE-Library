@@ -37,19 +37,14 @@ import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothStatusCodes
 import android.os.Build
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.filterIsInstance
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.onSubscription
-import kotlinx.coroutines.flow.takeWhile
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
-import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
-import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.OperationStatus
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -58,102 +53,44 @@ internal class NativeRemoteDescriptor(
     parent: RemoteCharacteristic,
     private val gatt: BluetoothGatt,
     private val descriptor: BluetoothGattDescriptor,
-    private val events: SharedFlow<GattEvent>,
-): RemoteDescriptor {
-    override val characteristic: RemoteCharacteristic = parent
+    events: SharedFlow<GattEvent>,
+): BaseRemoteDescriptor(parent, events) {
     override val uuid: Uuid = descriptor.uuid.toKotlinUuid
     override val instanceId: Int = descriptor.instanceId
 
-    override suspend fun read(): ByteArray {
-        // Check whether the descriptor wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        return NativeOperationMutex.withLock {
-            events
-                .onSubscription {
-                    // Read the descriptor value.
-                    val success = try {
-                        gatt.readDescriptor(descriptor)
-                    } catch (e: Exception) {
-                        throw BluetoothException(e)
-                    }
-                    check(success) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                    }
-                }
-                .takeWhile { !it.isServiceInvalidatedEvent }
-                .filterIsInstance(DescriptorRead::class)
-                .filter { it.descriptor == descriptor }
-                .firstOrNull()
-                ?.let {
-                    when (it.status) {
-                        OperationStatus.SUCCESS -> it.value
-                        else -> throw OperationFailedException(it.status)
-                    }
-                }
-                ?: throw InvalidAttributeException()
+    override suspend fun FlowCollector<GattEvent>.executeRead() {
+        val success = gatt.readDescriptor(descriptor)
+        check(success) {
+            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
         }
     }
 
     @Suppress("DEPRECATION")
-    override suspend fun write(data: ByteArray) {
-        // Check whether the descriptor wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        NativeOperationMutex.withLock {
-            events
-                .onSubscription {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        val result = try {
-                            gatt.writeDescriptor(descriptor, data)
-                        } catch (e: Exception) {
-                            throw BluetoothException(e)
-                        }
-                        when (result) {
-                            BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
-                            BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                                throw OperationFailedException(OperationStatus.BUSY)
-                            else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                        }
-                    } else {
-                        val success = try {
-                            descriptor.value = data
-                            // There was a bug on an early versions of Android, where the descriptor
-                            // was written using the write type of the parent characteristic.
-                            // Instead, descriptors can only be written using WRITE_TYPE_DEFAULT.
-                            descriptor.characteristic.writeType =
-                                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-                            gatt.writeDescriptor(descriptor)
-                        } catch (e: Exception) {
-                            throw BluetoothException(e)
-                        }
-                        check(success) {
-                            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
-                        }
-                    }
-                }
-                .takeWhile { !it.isServiceInvalidatedEvent }
-                .filterIsInstance(DescriptorWrite::class)
-                .filter { it.descriptor == descriptor }
-                .firstOrNull()
-                ?.let {
-                    // Store the newly written value in the descriptor despite this field is
-                    // deprecated and not used. The value is checked in 'characteristic.isNotifying`.
-                    descriptor.value = data
-
-                    check(it.status.isSuccess) {
-                        throw OperationFailedException(it.status)
-                    }
-                }
-                ?: throw InvalidAttributeException()
+    override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val result = gatt.writeDescriptor(descriptor, data)
+            when (result) {
+                BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
+                BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
+                    throw OperationFailedException(OperationStatus.BUSY)
+                else ->
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            }
+        } else {
+            descriptor.value = data
+            // There was a bug on an early versions of Android, where the descriptor
+            // was written using the write type of the parent characteristic.
+            // Instead, descriptors can only be written using WRITE_TYPE_DEFAULT.
+            descriptor.characteristic.writeType =
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
+            val success = gatt.writeDescriptor(descriptor)
+            check(success) {
+                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            }
         }
     }
 
-    override fun toString(): String = uuid.toString()
+    override fun OperationEvent.matches(): Boolean = subject == descriptor
 }
 
 private val BluetoothGattDescriptor.instanceId: Int
@@ -161,7 +98,7 @@ private val BluetoothGattDescriptor.instanceId: Int
     get() = try {
         val method = BluetoothGattDescriptor::class.java.getDeclaredMethod("getInstanceId")
         method.invoke(this) as Int
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         // Handle the exception or return a default value
         -1 // Assuming -1 is an invalid instance ID and used as an error code
     }

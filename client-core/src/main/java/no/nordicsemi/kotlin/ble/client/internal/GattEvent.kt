@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,38 +29,51 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.internal
+package no.nordicsemi.kotlin.ble.client.internal
 
-import android.bluetooth.BluetoothGattCharacteristic
-import android.bluetooth.BluetoothGattDescriptor
 import no.nordicsemi.kotlin.ble.client.ImplSpecificEvent
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 
-internal sealed class NativeGattEvent: ImplSpecificEvent()
+/**
+ * GATT event specific to the implementation.
+ */
+sealed class OperationEvent(
+    val subject: Any
+): ImplSpecificEvent()
 
-internal class CharacteristicChanged(
-    val characteristic: BluetoothGattCharacteristic,
+class CharacteristicChanged(
+    // Note: This may be a BluetoothGattCharacteristic on Android or Int (instance ID) when mock
+    //       implementation is used.
+    characteristic: Any,
     val value: ByteArray,
-): NativeGattEvent()
+): OperationEvent(characteristic)
 
-internal class CharacteristicRead(
-    val characteristic: BluetoothGattCharacteristic,
-    val value: ByteArray,
-    val status: OperationStatus,
-): NativeGattEvent()
-
-internal class CharacteristicWrite(
-    val characteristic: BluetoothGattCharacteristic,
-    val status: OperationStatus,
-): NativeGattEvent()
-
-internal class DescriptorRead(
-    val descriptor: BluetoothGattDescriptor,
+class CharacteristicRead(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
+    characteristic: Any,
     val value: ByteArray,
     val status: OperationStatus,
-): NativeGattEvent()
+): OperationEvent(characteristic)
 
-internal class DescriptorWrite(
-    val descriptor: BluetoothGattDescriptor,
+class CharacteristicWrite(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
+    characteristic: Any,
     val status: OperationStatus,
-): NativeGattEvent()
+): OperationEvent(characteristic)
+
+class DescriptorRead(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
+    descriptor: Any,
+    val value: ByteArray,
+    val status: OperationStatus,
+): OperationEvent(descriptor)
+
+class DescriptorWrite(
+    // Note: This may be a BluetoothGattCharacteristic on Android or MockRemoteCharacteristic
+    //       when mock implementation is used.
+    descriptor: Any,
+    val status: OperationStatus,
+): OperationEvent(descriptor)

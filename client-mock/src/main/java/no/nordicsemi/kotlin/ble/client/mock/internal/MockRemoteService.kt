@@ -29,52 +29,52 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.internal
+package no.nordicsemi.kotlin.ble.client.mock.internal
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattService
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
+import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @OptIn(ExperimentalUuidApi::class)
-internal class NativeRemoteService(
-    gatt: BluetoothGatt,
-    service: BluetoothGattService,
+class MockRemoteService(
+    peripheralSpec: PeripheralSpec<*>,
+    service: ServiceDefinition,
     events: SharedFlow<GattEvent>,
 ): RemoteService() {
-    // NOTE: The owner is set by the GenericPeripheral when handling ServicesChanged event.
-    override val uuid: Uuid = service.uuid.toKotlinUuid
+    override val uuid: Uuid = service.uuid
     override val instanceId: Int = service.instanceId
 
     override val characteristics: List<RemoteCharacteristic> = service.characteristics
-        .map { NativeRemoteCharacteristic(this, gatt, it, events) }
-    override val includedServices: List<RemoteIncludedService> = service.includedServices
-        .map { NativeRemoteIncludedService(this, gatt, it, events) }
+        .map { MockRemoteCharacteristic(this, peripheralSpec, it, events) }
+    override val includedServices: List<MockRemoteIncludedService> = service.includedServices
+        .map { MockRemoteIncludedService(this, peripheralSpec,  it, events) }
 
     override fun toString(): String = uuid.toString()
 }
 
 @OptIn(ExperimentalUuidApi::class)
-internal class NativeRemoteIncludedService(
+class MockRemoteIncludedService(
     parent: AnyRemoteService,
-    gatt: BluetoothGatt,
-    service: BluetoothGattService,
+    peripheralSpec: PeripheralSpec<*>,
+    service: ServiceDefinition,
     events: SharedFlow<GattEvent>,
 ): RemoteIncludedService {
     override val service: AnyRemoteService = parent
-    override val uuid: Uuid = service.uuid.toKotlinUuid
+    override val uuid: Uuid = service.uuid
     override val instanceId: Int = service.instanceId
 
     override val characteristics: List<RemoteCharacteristic> = service.characteristics
-        .map { NativeRemoteCharacteristic(this, gatt, it, events) }
-    override val includedServices: List<RemoteIncludedService> = service.includedServices
-        .map { NativeRemoteIncludedService(this, gatt, it, events) }
+        .map { MockRemoteCharacteristic(this, peripheralSpec, it, events) }
+    override val includedServices: List<MockRemoteIncludedService> = service.includedServices
+        .map { MockRemoteIncludedService(this, peripheralSpec, it, events) }
 
     override fun toString(): String = uuid.toString()
 }

@@ -67,6 +67,7 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -77,8 +78,11 @@ class ScannerViewModel @Inject constructor(
 ): ViewModel() {
     val state = centralManager.state
 
-    private val _devices: MutableStateFlow<List<Peripheral>> = MutableStateFlow(
+    private val _peripherals: MutableStateFlow<List<Peripheral>> = MutableStateFlow(
         listOf(
+            // Note: It's not possible to connect to PreviewPeripheral instances.
+            //       An exception is thrown, that it was obtained using a different CentralManager.
+            // TODO Allow it?
             PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
                 .apply {
                     // Track state of each peripheral.
@@ -90,7 +94,7 @@ class ScannerViewModel @Inject constructor(
                 }
         )
     )
-    val devices = _devices.asStateFlow()
+    val peripherals = _peripherals.asStateFlow()
 
     private val _isScanning: MutableStateFlow<Boolean> = MutableStateFlow(false)
     val isScanning: StateFlow<Boolean> = _isScanning.asStateFlow()
@@ -122,11 +126,11 @@ class ScannerViewModel @Inject constructor(
             }
             .distinctByPeripheral()
             .map { it.peripheral }
-            .filterNot { _devices.value.contains(it) }
+            .filterNot { _peripherals.value.contains(it) }
             //.distinct()
             .onEach { newPeripheral ->
                 Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
-                _devices.update { devices.value + newPeripheral }
+                _peripherals.update { peripherals.value + newPeripheral }
             }
             .onEach { peripheral ->
                 // Track state of each peripheral.
@@ -258,7 +262,7 @@ class ScannerViewModel @Inject constructor(
             // Check maximum write length
             val writeType = WriteType.WITHOUT_RESPONSE
             val length = peripheral.maximumWriteValueLength(writeType)
-            Timber.i("Maximum write length for $writeType: $length")
+            Timber.i("Maximum write length for $writeType: $length bytes")
 
             // Read RSSI
             val rssi = peripheral.readRssi()
@@ -308,29 +312,46 @@ class ScannerViewModel @Inject constructor(
     @OptIn(ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.services()
+            .onEach { services ->
+                Timber.i("Services changed: $services")
+            }
             .filterNotNull()
-            .onEach {
-                Timber.i("Services changed: $it")
-
+            .onEach { services ->
                 // Read values of all characteristics.
-                it.forEach { remoteService ->
+                services.forEach { remoteService ->
+                    Timber.i("Reading characteristics of ${remoteService.uuid}:")
                     remoteService.characteristics.forEach { remoteCharacteristic ->
                         try {
                             val value = remoteCharacteristic.read()
-                            Timber.i("Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
+                            Timber.i("- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                         } catch (e: Exception) {
-                            Timber.e("Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                            Timber.e(e, "- Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                        }
+
+                        for (descriptor in remoteCharacteristic.descriptors) {
+                            try {
+                                val descValue = descriptor.read()
+                                Timber.i("   - Value of descriptor ${descriptor.uuid}: 0x${descValue.toHexString()}")
+                            } catch (e: Exception) {
+                                Timber.e(e, "   - Failed to read descriptor ${descriptor.uuid}: ${e.message}")
+                            }
                         }
                     }
                 }
 
-                it.forEach { remoteService ->
+                services.forEach { remoteService ->
                     remoteService.characteristics.forEach { remoteCharacteristic ->
+                        Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
                         try {
-                            Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
+                            // subscribe() will throw OperationFailedException with reason
+                            // SUBSCRIPTION_NOT_SUPPORTED if the characteristic doesn't support
+                            // notifications or indications.
                             remoteCharacteristic.subscribe()
                                 .onEach { newValue ->
                                     Timber.i("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                }
+                                .catch { e ->
+                                    Timber.e("Subscription to ${remoteCharacteristic.uuid} failed: ${e.message}")
                                 }
                                 .onEmpty {
                                     Timber.w("No updates from ${remoteCharacteristic.uuid}")
@@ -342,6 +363,29 @@ class ScannerViewModel @Inject constructor(
                             Timber.i("Notifications for ${remoteCharacteristic.uuid} are now ${if (remoteCharacteristic.isNotifying) "enabled" else "disabled"}")
                         } catch (e: Exception) {
                             Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                        }
+                    }
+                }
+
+                // Check if LED Button service is available.
+                // If so, blink the LED 5 times.
+                val blinkyServiceUuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+                val blinkyService = services.firstOrNull { it.uuid == blinkyServiceUuid }
+                blinkyService?.let { service ->
+                    val ledCharacteristicUuid = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
+                    val ledCharacteristic = service.characteristics.firstOrNull { it.uuid == ledCharacteristicUuid }
+                    ledCharacteristic?.let { led ->
+                        Timber.i("Starting to blink LED...")
+                        scope.launch {
+                            try {
+                                repeat(10) { i ->
+                                    val newValue = byteArrayOf(((i + 1) % 2).toByte())
+                                    led.write(newValue)
+                                    delay(250.milliseconds)
+                                }
+                            } catch (e: Exception) {
+                                Timber.e("Failed to write to ${led.uuid}: ${e.message}")
+                            }
                         }
                     }
                 }

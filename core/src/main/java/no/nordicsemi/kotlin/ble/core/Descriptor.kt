@@ -56,6 +56,43 @@ interface Descriptor {
         val CHAR_PRESENTATION_FORMAT_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2904) }
         /** Characteristic Aggregate Format descriptor UUID. */
         val CHAR_AGGREGATE_FORMAT_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2905) }
+        // TODO Are any of the following descriptors read-only?
+        /** Valid Range descriptor UUID. */
+        val VALID_RANGE_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2906) }
+        /** External Report Reference descriptor UUID. */
+        val EXTERNAL_REPORT_REF_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2907) }
+        /** Report Reference descriptor UUID. */
+        val REPORT_REF_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2908) }
+        /** Number of Digitals descriptor UUID. */
+        val NUMBER_OF_DIGITALS_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2909) }
+        /** Value Trigger Setting descriptor UUID. */
+        val VALUE_TRIGGER_SETTING_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290A) }
+        /** Environmental Sensing Configuration descriptor UUID. */
+        val ENV_SENSING_CONFIG_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290B) }
+        /** Environmental Sensing Measurement descriptor UUID. */
+        val ENV_SENSING_MEASUREMENT_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290C) }
+        /** Environmental Sensing Trigger Setting descriptor UUID. */
+        val ENV_SENSING_TRIGGER_SETTING_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290D) }
+        /** Time Trigger Setting descriptor UUID. */
+        val TIME_TRIGGER_SETTING_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290E) }
+        /** Complete BR-EDR Transport Block Data descriptor UUID. */
+        val COMPLETE_BR_EDR_TRANSPORT_BLOCK_DATA_UUID: Uuid by lazy { Uuid.fromShortUuid(0x290F) }
+        /** Observation Schedule descriptor UUID. */
+        val OBSERVATION_SCHEDULE_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2910) }
+        /** Valid Range and Accuracy descriptor UUID. */
+        val VALID_RANGE_AND_ACCURACY_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2911) }
+        /** Measurement Description descriptor UUID. */
+        val MEASUREMENT_DESCRIPTION_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2912) }
+        /** Manufacturer Limits descriptor UUID. */
+        val MANUFACTURER_LIMITS_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2913) }
+        /** Process Tolerances descriptor UUID. */
+        val PROCESS_TOLERANCES_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2914) }
+        /** IMD Trigger Setting descriptor UUID. */
+        val IMD_TRIGGER_SETTING_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2915) }
+        /** Cooking Sensor Info descriptor UUID. */
+        val COOKING_SENSOR_INFO_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2916) }
+        /** Cooking Trigger Setting descriptor UUID. */
+        val COOKING_TRIGGER_SETTING_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2917) }
     }
 
     /**
@@ -85,4 +122,23 @@ interface Descriptor {
      */
     val isClientCharacteristicConfiguration: Boolean
         get() = uuid == CLIENT_CHAR_CONF_UUID
+
+    /**
+     * Checks whether the descriptor can be read.
+     */
+    fun isReadable() = true
+
+    /**
+     * Checks whether the descriptor can be written.
+     *
+     * As descriptors don't have properties, like characteristics, this depends on the descriptor
+     * specification and permissions. Some descriptors are always read-only. When unknown,
+     * it is assumed that the descriptor is writable, as the write operation will fail if not.
+     */
+    fun isWritable() =
+        // Note: These 3 descriptors are read-only as per specification.
+        //       Other descriptors may be writable depending on the implementation.
+        uuid != CHAR_EXT_PROP_UUID &&
+        uuid != CHAR_PRESENTATION_FORMAT_UUID &&
+        uuid != CHAR_AGGREGATE_FORMAT_UUID
 }

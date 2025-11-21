@@ -1,0 +1,279 @@
+/*
+ * Copyright (c) 2025, Nordic Semiconductor
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list
+ * of conditions and the following disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package no.nordicsemi.kotlin.ble.client.internal
+
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.flow.takeWhile
+import no.nordicsemi.kotlin.ble.client.AnyRemoteService
+import no.nordicsemi.kotlin.ble.client.GattEvent
+import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
+import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.OperationStatus
+import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+import kotlin.uuid.ExperimentalUuidApi
+
+@OptIn(ExperimentalUuidApi::class)
+abstract class BaseRemoteCharacteristic(
+    parent: AnyRemoteService,
+    private val events: SharedFlow<GattEvent>,
+): RemoteCharacteristic {
+    final override val service: AnyRemoteService = parent
+
+    /**
+     * A flag indicating whether reliable write is enabled.
+     */
+    protected val isReliableWriteEnabled: Boolean
+        get() = service.owner?.executor?.isReliableWriteEnabled ?: false
+
+    abstract fun setCharacteristicNotification(enabled: Boolean)
+
+    /**
+     * Executes the read operation specific to the implementation.
+     *
+     * This method should emit a [CharacteristicRead] event to the [FlowCollector] upon
+     * successful or failed completion of the read operation.
+     *
+     * This method is only called when the preconditions for reading the characteristic
+     * value have been met (i.e., the characteristic is readable and not invalidated).
+     *
+     * @receiver The flow collector to emitting GATT events.
+     * @throws CancellationException when any matching event is emitted.
+     * @throws OperationFailedException in case the request has failed.
+     */
+    abstract suspend fun FlowCollector<GattEvent>.executeRead()
+
+    /**
+     * Executes the write operation specific to the implementation.
+     *
+     * This method should emit a [CharacteristicWrite] event to the [FlowCollector] upon
+     * successful or failed completion of the write operation.
+     *
+     * This method is only called when the preconditions for writing the characteristic
+     * value have been met (i.e., the characteristic is writable and not invalidated).
+     *
+     * @receiver The flow collector to emitting GATT events.
+     * @throws OperationFailedException in case the request has failed.
+     * @throws ValueDoesNotMatchException when the value reported by the peripheral
+     * is not equal to the value written. This can only happen when *Long Write* is used
+     * or the *Reliable Write* procedure is in progress.
+     */
+    abstract suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType)
+
+    /**
+     * Checks whether the event matches this descriptor.
+     *
+     * If there are multiple descriptors read or written at the same time, this method should
+     * differentiate them using the reference, UUID, instance ID or other means.
+     *
+     * @receiver The received GATT event.
+     * @return `true` if the event matches this descriptor, `false` otherwise.
+     */
+    abstract fun OperationEvent.matches(): Boolean
+
+    /** A flag indicating whether notifications or indications are enabled.  */
+    private var _isNotifying: Boolean = false
+    final override val isNotifying: Boolean
+        get() = owner != null && _isNotifying
+
+    final override suspend fun setNotifying(enabled: Boolean) {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        // If the current state of notifications is the same as the requested state, return.
+        if (enabled == isNotifying)
+            return
+
+        // Verify that the characteristic can be subscribed to.
+        require(isSubscribable()) {
+            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        }
+
+        // Check if the CCCD descriptor exists.
+        val cccd = descriptors.cccd()
+            ?: throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+
+        // Enable handling of notifications or indications locally.
+        try {
+            setCharacteristicNotification(enabled)
+        } catch (e: OperationFailedException) {
+            throw e
+        } catch (e: Exception) {
+            throw BluetoothException(e)
+        }
+
+        // Enable notifications or indications by writing to the CCCD descriptor.
+        val value = when {
+            // Note: Indicate has priority over Notify, if both are supported.
+            enabled && CharacteristicProperty.INDICATE in properties -> BaseRemoteDescriptor.ENABLE_INDICATIONS_VALUE
+            enabled -> BaseRemoteDescriptor.ENABLE_NOTIFICATIONS_VALUE
+            else -> BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE
+        }
+        cccd.write(value)
+        _isNotifying = enabled
+    }
+
+    final override suspend fun read(): ByteArray {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        // Verify that the characteristic can be read.
+        require(isReadable()) {
+            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
+        }
+
+        // Read the characteristic value and await the result.
+        return OperationMutex.withLock {
+            events
+                .onSubscription {
+                    try {
+                        executeRead()
+                    } catch (e: CancellationException) {
+                        // We MUST rethrow CancellationException.
+                        throw e
+                    } catch (e: OperationFailedException) {
+                        // This is thrown when the write request failed before it was sent.
+                        throw e
+                    } catch (e: Exception) {
+                        // This is any other exception, i.e. SecurityException, etc.
+                        throw BluetoothException(e)
+                    }
+                }
+                .takeWhile { !it.isServiceInvalidatedEvent }
+                .filterIsInstance(CharacteristicRead::class)
+                .filter { it.matches() }
+                .firstOrNull()
+                ?.let {
+                    when (it.status) {
+                        OperationStatus.SUCCESS -> it.value
+                        else -> throw OperationFailedException(it.status)
+                    }
+                }
+                ?: throw InvalidAttributeException()
+        }
+    }
+
+    final override suspend fun write(data: ByteArray, writeType: WriteType) {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        // Verify that the characteristic can be written.
+        require(isWritable()) {
+            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+        }
+
+        // Write the characteristic value and await the result.
+        OperationMutex.withLock {
+            events
+                .onSubscription {
+                    try {
+                        executeWrite(data, writeType)
+                    } catch (e: CancellationException) {
+                        // We MUST rethrow CancellationException.
+                        throw e
+                    } catch (e: ValueDoesNotMatchException) {
+                        // This exception is thrown when during Long Write or Reliable Write.
+                        throw e
+                    } catch (e: OperationFailedException) {
+                        // This is thrown when the write request failed before it was sent.
+                        throw e
+                    } catch (e: Exception) {
+                        // This is any other exception, i.e. SecurityException, etc.
+                        throw BluetoothException(e)
+                    }
+                }
+                .takeWhile { !it.isServiceInvalidatedEvent }
+                .filterIsInstance(CharacteristicWrite::class)
+                .filter { it.matches() }
+                .firstOrNull()
+                ?.let {
+                    check(it.status == OperationStatus.SUCCESS) {
+                        throw OperationFailedException(it.status)
+                    }
+                }
+                ?: throw InvalidAttributeException()
+        }
+    }
+
+    final override suspend fun subscribe(): Flow<ByteArray> {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        // Verify that the characteristic can be subscribed to.
+        require(isSubscribable() && descriptors.cccd() != null) {
+            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        }
+
+        return events
+            .onSubscription { setNotifying(true) }
+            .takeWhile { !it.isServiceInvalidatedEvent }
+            .filterIsInstance(CharacteristicChanged::class)
+            .filter { isNotifying && it.matches() }
+            .map { it.value }
+    }
+
+    final override suspend fun waitForValueChange(): ByteArray {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        return subscribe()
+            .firstOrNull()
+            ?: throw InvalidAttributeException()
+    }
+
+    final override fun toString(): String = uuid.toString()
+}
+
+private fun List<RemoteDescriptor>.cccd() =
+    firstOrNull { it.isClientCharacteristicConfiguration }
