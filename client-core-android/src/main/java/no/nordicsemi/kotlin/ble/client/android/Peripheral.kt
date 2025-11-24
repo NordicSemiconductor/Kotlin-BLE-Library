@@ -361,7 +361,7 @@ open class Peripheral(
                                     // The connection timeout should behave just as a timeout defined
                                     // by the user with withTimeout or Direct(timeout=...).
                                     withTimeout(0) {}
-                                    // ^ throws TimeoutCancellationException!!!
+                                    // ^ throws TimeoutCancellationException("Timed out immediately")!!!
                                 }
                             }
                             check(options.retry > 0) {
