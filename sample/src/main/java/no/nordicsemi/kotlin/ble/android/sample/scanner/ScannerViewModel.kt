@@ -172,9 +172,9 @@ class ScannerViewModel @Inject constructor(
                 .apply {
                     launch {
                         try {
-                            withTimeout(5000) {
-                                connect(peripheral, false)
-                            }
+                            // This could be wrapped in withTimeout, but the Direct option
+                            // already specifies a timeout.
+                            connect(peripheral, false)
 
                             // The first time the app connects to the peripheral it needs to initiate
                             // observers for various parameters.
