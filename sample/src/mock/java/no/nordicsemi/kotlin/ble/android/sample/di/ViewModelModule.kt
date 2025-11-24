@@ -50,6 +50,7 @@ import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
 import no.nordicsemi.kotlin.ble.client.mock.Proximity
 import no.nordicsemi.kotlin.ble.client.mock.ReadResponse
+import no.nordicsemi.kotlin.ble.client.mock.ServiceDiscoveryResult
 import no.nordicsemi.kotlin.ble.client.mock.WriteResponse
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
@@ -102,10 +103,16 @@ object ViewModelModule {
         private var isButtonPressed = false
             set(value) {
                 buttonHandle?.let {
-                    Timber.i("[Blinky]: Simulating Button ${if (value) "clicked" else "released"}")
+                    Timber.i("[Blinky] Simulating Button ${if (value) "clicked" else "released"}")
                     blinky.simulateValueUpdate(it, value.toBytes())
                 }
             }
+        /**
+         * Counts how many times the LED characteristic was written to.
+         *
+         * Used to simulate a service change after 5 writes with response.
+         */
+        private var blinkCount = 0
 
         // Event handlers implementation
 
@@ -115,22 +122,65 @@ object ViewModelModule {
         }
 
         override fun onConnectionLost(reason: DisconnectionReason) {
-            Timber.i("[Blinky] Connection terminated")
-            super.onConnectionLost(reason)
+            Timber.i("[Blinky] Connection terminated: $reason")
+        }
+
+        override fun onReset() {
+            Timber.i("[Blinky] --- Booting up ---")
+            blinkCount = 0
+            isLedOn = false
+            isButtonPressed = false
+        }
+
+        override fun onServiceDiscoveryRequest(uuids: List<Uuid>): ServiceDiscoveryResult {
+            Timber.i("[Blinky] Service discovery requested for UUIDs: $uuids")
+            return super.onServiceDiscoveryRequest(uuids)
         }
 
         override fun onWriteRequest(
             characteristic: MockRemoteCharacteristic,
             value: ByteArray
         ): WriteResponse {
-            val on = value.isOn()
-            isLedOn = on
-            Timber.i("[Blinky]: LED ${if (on) "ON" else "OFF"}")
+            onWriteCommand(characteristic, value)
+
+            // After 5 writes with response, simulate a service change.
+            // Note, that the counter isn't reset, so the change happens only once.
+            if (blinkCount++ == 5) {
+                Timber.i("[Blinky] Changing services")
+                blinky.simulateServiceChange {
+                    GenericAccessService()
+                    GenericAttributeService()
+                    // Add LED Button Service (Blinky)
+                    Service(
+                        uuid = Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123")
+                    ) {
+                        buttonHandle = Characteristic(
+                            uuid = Uuid.parse("00001524-1212-EFDE-1523-785FEABCD123"),
+                            properties = CharacteristicProperty.READ and CharacteristicProperty.NOTIFY,
+                            permission = Permission.READ,
+                        )
+                        ledHandle = Characteristic(
+                            uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
+                            properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE_WITHOUT_RESPONSE,
+                            permissions = Permission.READ and Permission.WRITE,
+                        ) {
+                            // CCCD is added automatically
+                            CharacteristicUserDescriptionDescriptor("LED 2")
+                        }
+                    }
+                }
+            }
 
             // Send a Button notification when LED characteristic is written to.
-            isButtonPressed = on
+            isButtonPressed = value.isOn()
 
             return WriteResponse.Success
+        }
+
+        override fun onWriteCommand(characteristic: MockRemoteCharacteristic, value: ByteArray) {
+            val on = value.isOn()
+            isLedOn = on
+            Timber.i("[Blinky] LED ${if (on) "ON" else "OFF"}")
         }
 
         override fun onReadRequest(characteristic: MockRemoteCharacteristic): ReadResponse =
@@ -139,7 +189,6 @@ object ViewModelModule {
                 ledHandle -> ReadResponse.Success(isLedOn.toBytes())
                 else -> ReadResponse.Failure(OperationStatus.READ_NOT_PERMITTED)
             }
-
     }
 
     /** Definition of the Blinky device. */
@@ -213,7 +262,8 @@ object ViewModelModule {
                             writableAuxiliaries = true
                         )
                         // A custom descriptor with write-only property. Just for fun.
-                        Descriptor(Uuid.random(), permission = Permission.WRITE)
+                        // TODO Reading this should trigger bonding
+                        Descriptor(Uuid.random(), permission = Permission.READ_ENCRYPTED)
                     }
                     ledHandle = Characteristic(
                         uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
@@ -240,11 +290,27 @@ object ViewModelModule {
         return BluetoothLeAdvertiser.Factory.mock(environment)
     }
 
+    private val beacon = PeripheralSpec.simulatePeripheral(
+        identifier = "11:22:33:44:55:66",
+        proximity = Proximity.NEAR
+    ) {
+        advertising(
+            parameters = LegacyAdvertisingSetParameters(
+                connectable = false,
+                interval = 1.seconds,
+            ),
+        ) {
+            CompleteLocalName("Nordic_Beacon")
+            ServiceUuid(Uuid.fromShortUuid(0xFEAA)) // Eddystone UUID
+            IncludeTxPowerLevel()
+        }
+    }
+
     @Provides
     fun provideCentralManager(scope: CoroutineScope, environment: MockEnvironment): CentralManager {
         return CentralManager.Factory.mock(scope, environment)
             .apply {
-                simulatePeripherals(listOf(blinky))
+                simulatePeripherals(listOf(blinky, beacon))
             }
     }
 
