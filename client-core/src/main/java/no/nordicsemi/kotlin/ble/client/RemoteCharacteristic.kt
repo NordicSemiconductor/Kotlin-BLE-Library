@@ -63,8 +63,14 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
     /**
      * Sets notifications or indications state, depending on the characteristic's properties.
      *
-     * Note, that calling [suspend] or [waitForValueChange] will enable notifications
+     * Note, that calling [subscribe] or [waitForValueChange] will enable notifications
      * automatically.
+     *
+     * ### Possible race condition
+     * If a device is expected to send a notification or indication right after enabling it,
+     * there is a risk of missing it. In such cases, it is recommended to use [subscribe] or
+     * [waitForValueChange] instead, which subscribe to incoming messages before enabling
+     * notifications or indications on the peripheral.
      *
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
@@ -105,7 +111,8 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
     /**
      * Subscribes for notifications or indications of the characteristic.
      *
-     * This method suspends until the notifications are enabled.
+     * If not already enabled, this method will enable notifications or indications automatically
+     * on subscription.
      *
      * The client will NOT unsubscribe when the flow is closed.
      * Use [setNotifying] to disable notifications or indications.
@@ -117,7 +124,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @see isNotifying
      * @see setNotifying
      */
-    suspend fun subscribe(): Flow<ByteArray>
+    fun subscribe(): Flow<ByteArray>
 
     /**
      * Waits for the value of the characteristic to change.

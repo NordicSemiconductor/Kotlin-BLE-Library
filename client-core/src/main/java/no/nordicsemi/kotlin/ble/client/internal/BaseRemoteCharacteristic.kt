@@ -242,7 +242,7 @@ abstract class BaseRemoteCharacteristic(
         }
     }
 
-    final override suspend fun subscribe(): Flow<ByteArray> {
+    final override fun subscribe(): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
         require(owner != null) {
             throw InvalidAttributeException()

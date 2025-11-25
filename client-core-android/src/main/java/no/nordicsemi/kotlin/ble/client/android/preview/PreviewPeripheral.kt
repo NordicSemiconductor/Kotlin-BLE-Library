@@ -327,7 +327,7 @@ private class StubRemoteCharacteristic(
         else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
     }
 
-    override suspend fun subscribe(): Flow<ByteArray> = when {
+    override fun subscribe(): Flow<ByteArray> = when {
         owner == null -> throw InvalidAttributeException()
         isSubscribable() -> _value.filter { _isNotifying }
         else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
