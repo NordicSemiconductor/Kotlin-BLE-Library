@@ -177,33 +177,33 @@ open class MockExecutor(
         return true
     }
 
-    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Connected = when (this) {
-        ConnectionPriority.BALANCED -> ConnectionParameters.Connected(
+    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Specified = when (this) {
+        ConnectionPriority.BALANCED -> ConnectionParameters.Specified(
             connectionInterval = 24,
-            slaveLatency = 0,
+            latency = 0,
             supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
         )
         ConnectionPriority.HIGH -> if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.MARSHMALLOW) {
-            ConnectionParameters.Connected(
+            ConnectionParameters.Specified(
                 connectionInterval = 9,
-                slaveLatency = 0,
+                latency = 0,
                 supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
             )
         } else {
-            ConnectionParameters.Connected(
+            ConnectionParameters.Specified(
                 connectionInterval = 6,
-                slaveLatency = 0,
+                latency = 0,
                 supervisionTimeout = 2000
             )
         }
-        ConnectionPriority.LOW_POWER -> ConnectionParameters.Connected(
+        ConnectionPriority.LOW_POWER -> ConnectionParameters.Specified(
             connectionInterval = 80,
-            slaveLatency = 2,
+            latency = 2,
             supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
         )
-        ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Connected(
+        ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Specified(
             connectionInterval = 24,
-            slaveLatency = 0,
+            latency = 0,
             supervisionTimeout = 500
         )
     }

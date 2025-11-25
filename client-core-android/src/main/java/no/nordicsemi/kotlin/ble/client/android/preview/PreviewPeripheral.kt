@@ -148,7 +148,7 @@ private class StubExecutor(
     }
 
     override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
-        _events.emit(ConnectionParametersChanged(ConnectionParameters.Connected(15, 0, 0)))
+        _events.emit(ConnectionParametersChanged(ConnectionParameters.Specified(15, 0, 0)))
         return true
     }
 

@@ -34,11 +34,61 @@
 package no.nordicsemi.kotlin.ble.core
 
 import org.jetbrains.annotations.Range
+import kotlin.time.Duration
 
 /**
  * Bluetooth LE connection parameters.
  */
 sealed class ConnectionParameters {
+
+    companion object {
+        /**
+         * Creates unknown connection parameters.
+         *
+         * @return Unknown connection parameters.
+         * @see ConnectionParameters.Unknown
+         */
+        operator fun invoke(): ConnectionParameters = Unknown
+
+        /**
+         * Creates a specified connection parameters.
+         *
+         * @param connectionInterval Connection interval in 1.25ms unit.
+         *        Valid range is from 6 (7.5ms) to 3200 (4000ms).
+         * @param latency Connection latency. Valid range is from 0 to 499.
+         * @param supervisionTimeout Supervision timeout in 10ms unit.
+         *        Valid range is from 10 (0.1s) to 3200 (32s)
+         * @return Specified connection parameters.
+         * @see ConnectionParameters.Specified
+         */
+        operator fun invoke(
+            connectionInterval: Int,
+            latency: Int,
+            supervisionTimeout: Int,
+        ) = Specified(
+            connectionInterval,
+            latency,
+            supervisionTimeout,
+        )
+        /**
+         * Creates a specified connection parameters.
+         *
+         * @param connectionInterval Connection interval.
+         * @param latency Connection latency.
+         * @param supervisionTimeout Supervision timeout.
+         * @return Specified connection parameters.
+         * @see ConnectionParameters.Specified
+         */
+        operator fun invoke(
+            connectionInterval: Duration,
+            latency: Int,
+            supervisionTimeout: Duration,
+        ) = Specified(
+            connectionInterval,
+            latency,
+            supervisionTimeout,
+        )
+    }
 
     /**
      * Connection parameters are not known due to API limitations, but the device is connected.
@@ -58,15 +108,7 @@ sealed class ConnectionParameters {
      * it is up to your application to decide how often you want the devices to communicate by setting
      * the connection interval.
      *
-     * ### Supervision timeout
-     *
-     * When two devices are connected, they agree on a parameter that determines how long it should
-     * take since the last packet was successfully received until the devices consider the connection lost.
-     * This is called the supervision timeout. So if one of the devices is unexpectedly switched off,
-     * runs out of battery, or if the devices are out of radio range, then this is the amount of time
-     * it takes between successfully receiving the last packet before the connection is considered lost.
-     *
-     * ### Slave latency
+     * ### Connection latency
      *
      * Peripheral latency allows the peripheral to skip waking up for a certain number of connection
      * events if it doesn't have any data to send. Usually, the connection interval is a strict tradeoff
@@ -77,17 +119,44 @@ sealed class ConnectionParameters {
      * data to send, we want to have very low latency. Using the peripheral latency option, we can
      * maintain low latency but reduce power consumption by remaining idle for several connection intervals.
      *
+     * ### Supervision timeout
+     *
+     * When two devices are connected, they agree on a parameter that determines how long it should
+     * take since the last packet was successfully received until the devices consider the connection lost.
+     * This is called the supervision timeout. So if one of the devices is unexpectedly switched off,
+     * runs out of battery, or if the devices are out of radio range, then this is the amount of time
+     * it takes between successfully receiving the last packet before the connection is considered lost.
+     *
      * @param connectionInterval Connection interval in 1.25ms unit.
      *        Valid range is from 6 (7.5ms) to 3200 (4000ms).
-     * @param slaveLatency  Slave latency. Valid range is from 0 to 499.
-     * @param supervisionTimeout  Supervision timeout in 10ms unit.
+     * @param latency Connection latency. Valid range is from 0 to 499.
+     * @param supervisionTimeout Supervision timeout in 10ms unit.
      *        Valid range is from 10 (0.1s) to 3200 (32s)
      */
-    data class Connected(
+    data class Specified(
         val connectionInterval: @Range(from = 6L, to = 3200L) Int,
-        val slaveLatency: @Range(from = 0, to = 499) Int,
+        val latency: @Range(from = 0, to = 499) Int,
         val supervisionTimeout: @Range(from = 10, to = 3200) Int,
     ) : ConnectionParameters() {
+
+        /**
+         * Creates a connection parameters using [Duration] for interval and timeout.
+         *
+         * @param connectionInterval Connection interval.
+         * @param latency Connection latency.
+         * @param supervisionTimeout Supervision timeout.
+         * @see ConnectionParameters.Specified
+         */
+        constructor(
+            connectionInterval: Duration,
+            latency: Int,
+            supervisionTimeout: Duration,
+        ): this(
+            connectionInterval = (connectionInterval.inWholeMilliseconds * 100 / 125L).toInt(),
+            latency = latency,
+            supervisionTimeout = (supervisionTimeout.inWholeMilliseconds / 10L).toInt(),
+        )
+
         /**
          * Returns the connection interval in milliseconds.
          */
@@ -101,7 +170,7 @@ sealed class ConnectionParameters {
             get() = supervisionTimeout * 10L
 
         override fun toString(): String {
-            return "Interval=$connectionInterval ($connectionIntervalMillis ms), Latency=$slaveLatency, Timeout=$supervisionTimeout ($supervisionTimeoutMillis ms)"
+            return "Interval=$connectionInterval ($connectionIntervalMillis ms), Latency=$latency, Timeout=$supervisionTimeout ($supervisionTimeoutMillis ms)"
         }
     }
 }

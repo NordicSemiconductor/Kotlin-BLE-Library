@@ -37,7 +37,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.ViewModelLifecycle
 import dagger.hilt.android.components.ViewModelComponent
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
@@ -56,6 +59,7 @@ import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
+import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Permission
@@ -168,6 +172,19 @@ object ViewModelModule {
                             CharacteristicUserDescriptionDescriptor("LED 2")
                         }
                     }
+                }
+                CoroutineScope(Dispatchers.IO).launch {
+                    // Request shorter supervision timeout.
+                    delay(5000)
+                    blinky.simulateConnectionParametersRequest(ConnectionParameters(
+                        connectionInterval = 30.milliseconds,
+                        latency = 4,
+                        supervisionTimeout = 1.seconds,
+                    ))
+                    // Simulate a reset after a while. The Peripheral should get disconnection
+                    // event after 1 second (supervision timeout).
+                    delay(2000)
+                    blinky.simulateReset()
                 }
             }
 

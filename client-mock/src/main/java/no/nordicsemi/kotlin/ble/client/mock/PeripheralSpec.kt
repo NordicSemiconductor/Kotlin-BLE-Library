@@ -223,16 +223,16 @@ class PeripheralSpec<ID: Any> private constructor(
                 phy = Phy.PHY_LE_1M
                 mtu = 23
                 l2capMtu = 27
-                connectionParameters = ConnectionParameters.Connected(
+                connectionParameters = ConnectionParameters.Specified(
                     connectionInterval = preferredConnectionInterval!!.start,
-                    slaveLatency = preferredSlaveLatency!!,
+                    latency = preferredSlaveLatency!!,
                     supervisionTimeout = preferredSupervisionTimeout!!
                 )
             }
         }
 
     /** Current connection parameters. */
-    var connectionParameters: ConnectionParameters.Connected? = null
+    var connectionParameters: ConnectionParameters.Specified? = null
         private set
 
     /** Current ATT MTU. */
@@ -435,7 +435,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * event with reason [ConnectionState.Disconnected.Reason.LinkLoss] after the supervision timeout.
      *
      * @param proximity The new proximity. Use [Proximity.OUT_OF_RANGE] to simulate leaving the range.
-     * @see ConnectionParameters.Connected.supervisionTimeout
+     * @see ConnectionParameters.Specified.supervisionTimeout
      */
     fun simulateProximityChange(proximity: Proximity) {
         this.proximity = proximity
@@ -499,7 +499,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * Connected clients will receive a disconnection event with reason
      * [ConnectionState.Disconnected.Reason.LinkLoss] after the supervision timeout.
      *
-     * @see ConnectionParameters.Connected.supervisionTimeout
+     * @see ConnectionParameters.Specified.supervisionTimeout
      */
     fun simulateReset() {
         eventHandler?.onReset()
@@ -620,7 +620,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * @param delay Number of old connection intervals to wait before applying new parameters.
      * Defaults to 5.
      */
-    fun simulateConnectionParametersRequest(parameters: ConnectionParameters.Connected, delay: Int = 5) {
+    fun simulateConnectionParametersRequest(parameters: ConnectionParameters.Specified, delay: Int = 5) {
         // TODO Validate parameters against preferred / possible parameters?
         connectionParameters?.connectionIntervalMillis?.let { connectionInterval ->
             scope.launch {
@@ -850,10 +850,10 @@ class PeripheralSpec<ID: Any> private constructor(
                     // Android changes connection parameters during service discovery.
                     if (environment.reportsConnectionParameters) {
                         _events.emit(ConnectionParametersChanged(
-                            ConnectionParameters.Connected(
+                            ConnectionParameters.Specified(
                                 connectionInterval = 6, // 7.5 ms
                                 // TODO Are those kept the same?
-                                slaveLatency = connectionParameters.supervisionTimeout,
+                                latency = connectionParameters.supervisionTimeout,
                                 supervisionTimeout = connectionParameters.supervisionTimeout,
                             )
                         ))
@@ -957,7 +957,7 @@ class PeripheralSpec<ID: Any> private constructor(
          * @param parameters The requested connection parameters.
          * @return `true` if the request was started, `false` otherwise.
          */
-        suspend fun requestConnectionParameters(parameters: ConnectionParameters.Connected): Boolean {
+        suspend fun requestConnectionParameters(parameters: ConnectionParameters.Specified): Boolean {
             val connectionParameters = connectionParameters ?: return false
 
             // On environments that report connection parameters update, simulate the delay
