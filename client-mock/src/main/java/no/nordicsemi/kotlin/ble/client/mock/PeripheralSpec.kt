@@ -502,20 +502,16 @@ class PeripheralSpec<ID: Any> private constructor(
      * @see ConnectionParameters.Specified.supervisionTimeout
      */
     fun simulateReset() {
+        val supervisionTimeout = connectionParameters?.supervisionTimeoutMillis
+        connectionsCount = 0
         eventHandler?.onReset()
 
         // If the device was connected, notify about disconnection due to link loss.
-        connectionParameters?.supervisionTimeoutMillis?.let { supervisionTimeout ->
+        if (supervisionTimeout != null) {
             scope.launch {
                 // Simulate supervision timeout delay before notifying clients.
                 delay(supervisionTimeout)
-
-                // If clients still assume they are connected, notify them about link loss.
-                if (isConnected) {
-                    // TODO Should the connection be dropped immediately, or after supervision timeout? See proximity setter.
-                    connectionsCount = 0
-                    _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.LinkLoss)))
-                }
+                _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.LinkLoss)))
             }
         }
     }
