@@ -158,7 +158,7 @@ abstract class BaseRemoteDescriptor(
         }
 
         // Verify that the descriptor can be written to.
-        require(isReadable()) {
+        require(isWritable()) {
             throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
         }
 
