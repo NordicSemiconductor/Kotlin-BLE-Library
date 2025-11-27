@@ -52,6 +52,8 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+import no.nordicsemi.kotlin.ble.core.util.MergeResult
+import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalUuidApi::class)
@@ -242,7 +244,27 @@ abstract class BaseRemoteCharacteristic(
         }
     }
 
-    final override fun subscribe(): Flow<ByteArray> {
+    final override fun subscribe(): Flow<ByteArray> = subscribe {}
+
+    override suspend fun waitForValueChange(
+        rawDataFilter: (ByteArray) -> Boolean,
+        merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
+        filter: (ByteArray) -> Boolean,
+        trigger: suspend RemoteCharacteristic.() -> Unit,
+    ): ByteArray {
+        // Check whether the characteristic wasn't invalidated.
+        require(owner != null) {
+            throw InvalidAttributeException()
+        }
+
+        return subscribe(trigger)
+            .filter(rawDataFilter)
+            .mergeIndexed(merge)
+            .firstOrNull(filter)
+            ?: throw InvalidAttributeException()
+    }
+
+    private fun subscribe(trigger: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
         require(owner != null) {
             throw InvalidAttributeException()
@@ -254,22 +276,16 @@ abstract class BaseRemoteCharacteristic(
         }
 
         return events
-            .onSubscription { setNotifying(true) }
+            .onSubscription {
+                // First, make sure the notifications or indications are enabled.
+                setNotifying(true)
+                // Then, invoke the trigger to start the peripheral sending value changes.
+                trigger()
+            }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)
             .filter { isNotifying && it.matches() }
             .map { it.value }
-    }
-
-    final override suspend fun waitForValueChange(): ByteArray {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
-
-        return subscribe()
-            .firstOrNull()
-            ?: throw InvalidAttributeException()
     }
 
     final override fun toString(): String = uuid.toString()

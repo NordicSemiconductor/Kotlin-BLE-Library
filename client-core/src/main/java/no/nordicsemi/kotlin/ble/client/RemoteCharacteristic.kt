@@ -41,6 +41,10 @@ import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.defaultWriteType
+import no.nordicsemi.kotlin.ble.core.util.MergeResult
+import no.nordicsemi.kotlin.ble.core.util.chunked
+import no.nordicsemi.kotlin.ble.core.util.merge
+import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 
 /**
  * A GATT characteristic of a service on a remote connected peripheral device.
@@ -57,11 +61,17 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
 
     /**
      * Returns whether the characteristic is notifying or indicating.
+     *
+     * Use [subscribe] or [waitForValueChange] to subscribe for value changes, or
+     * [setNotifying] to enable or disable notifications or indications manually.
      */
     val isNotifying: Boolean
 
     /**
-     * Sets notifications or indications state, depending on the characteristic's properties.
+     * Enables notifications or indications, depending on the characteristic's properties.
+     *
+     * This method writes to the Client Characteristic Configuration Descriptor (CCCD)
+     * belonging to this characteristic to enable or disable notifications or indications.
      *
      * Note, that calling [subscribe] or [waitForValueChange] will enable notifications
      * automatically.
@@ -69,30 +79,69 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * ### Possible race condition
      * If a device is expected to send a notification or indication right after enabling it,
      * there is a risk of missing it. In such cases, it is recommended to use [subscribe] or
-     * [waitForValueChange] instead, which subscribe to incoming messages before enabling
-     * notifications or indications on the peripheral.
+     * [waitForValueChange] before (or instead) calling this method, which subscribes to incoming
+     * messages before enabling them on the peripheral.
      *
+     * ### Example
+     * ```kotlin
+     * remoteCharacteristic.subscribe()
+     *    .onEach { data ->
+     *       // Handle the received data.
+     *    }
+     *    .launchIn(scope)
+     *
+     * // Note, that subscribe() enables notifications on terminal operator (collect, first, etc.).
+     * println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> false
+     *
+     * // Calling setNotifying(true) here ensures that notifications are enabled synchronically.
+     * // When this method returns, notifications are enabled and the characteristic
+     * // is ready to use.
+     * remoteCharacteristic.setNotifying(true)
+     * println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> true
+     * ```
+     * @param enabled True to enable notifications or indications, false to disable them.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      */
     suspend fun setNotifying(enabled: Boolean)
 
     /**
      * Reads the value of the characteristic.
      *
+     * This method suspends until the value is read from the peripheral. Long Read procedure
+     * will be used automatically if the value is longer than the MTU.
+     *
+     * ### Example
+     * ```kotlin
+     * val value: ByteArray = remoteCharacteristic.read()
+     * ```
+     *
      * @return The value of the characteristic.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      */
     suspend fun read(): ByteArray
 
     /**
      * Writes the value of the characteristic.
      *
+     * If [data] is longer than [Peripheral.maximumWriteValueLength] for given [writeType],
+     * the value will be trimmed. To write longer values, [chunked] them and write
+     * subsequent chunks.
+     *
+     * ```kotlin
+     * val data: ByteArray = // ...
+     * val maxLength = peripheral.maximumWriteValueLength(WriteType.WITHOUT_RESPONSE)
+     * data.chunked(maxLength).forEach { chunk ->
+     *     remoteCharacteristic.write(chunk, WriteType.WITHOUT_RESPONSE)
+     * }
+     * ```
      * @param data The data to be written.
      * @param writeType The write type to be used. By default set to the characteristic's
      * default write type based on its properties.
@@ -100,8 +149,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * procedure and the value replied back by the peripheral does not match the value written.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      */
     suspend fun write(
         data: ByteArray,
@@ -111,18 +161,50 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
     /**
      * Subscribes for notifications or indications of the characteristic.
      *
-     * If not already enabled, this method will enable notifications or indications automatically
-     * on subscription.
+     * If not already enabled, this method enables notifications or indications automatically
+     * on subscription, that is when a terminal operator (`collect`, `first`, etc.) is invoked on
+     * the returned flow.
      *
-     * The client will NOT unsubscribe when the flow is closed.
-     * Use [setNotifying] to disable notifications or indications.
+     * It is safe to call [setNotify(true)][setNotifying] after calling this method to
+     * synchronically enable notifications on the peripheral before the flow starts getting collected.
      *
+     * If higher-level packets are sent as multiple notifications or indications, they may be
+     * merged using [merge] or [mergeIndexed] operator.
+     *
+     * ```kotlin
+     * remoteCharacteristic.subscribe()
+     *    // If a packet is split into multiple notifications, merge them.
+     *    .merge { accumulated, received ->
+     *        // [...]
+     *    }
+     *    // Transform the response raw data to a meaningful value.
+     *    .map { bytes -> parse(bytes) }
+     *    .onEach { data ->
+     *       // [...]
+     *    }
+     *    .launchIn(scope)
+     * // Optional: Enable notifications
+     * remoteCharacteristic.setNotifying(true)
+     * // Now the flow is collecting and notifications are enabled.
+     * ```
+     * This way no notification or indication will be missed and it is clear when the characteristic
+     * is ready (connected, subscribed, triggered to send data).
+     *
+     * If [setNotifying] is skipped, it will be called automatically when the flow collection starts.
+     *
+     * @return A flow emitting the raw data of notifications or indications sent from the
+     * characteristic when the value changes. The flow completes when the characteristic
+     * is invalidated, e.g., when the peripheral disconnects, or sends a Service Changed event.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      * @see isNotifying
      * @see setNotifying
+     * @see waitForValueChange
+     * @see merge
+     * @see mergeIndexed
      */
     fun subscribe(): Flow<ByteArray>
 
@@ -130,17 +212,72 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * Waits for the value of the characteristic to change.
      *
      * This method suspends until the value of the characteristic changes.
-     * If the notifications are not enabled, it will enable them automatically.
-     * Use [setNotifying] to disable notifications or indications.
+     * If the notifications or indications are not enabled, this method will enable them
+     * automatically after subscribing for value changes.
      *
-     * @return The new value of the characteristic.
+     * ```kotlin
+     * val newValue = remoteCharacteristic.waitForValueChange(
+     *   trigger = {
+     *       // Write to the characteristic to request new data.
+     *       write(byteArrayOf(0x01))
+     *       // Note: You may also write to other characteristics or descriptors here:
+     *       // anotherCharacteristic.write(byteArrayOf(0x02))
+     *   },
+     *   rawDataFilter = { data ->
+     *       // Accept only packets starting with 0xAA.
+     *       data.isNotEmpty() && data[0] == 0xAA.toByte()
+     *   },
+     *   merge = { accumulator, received, index ->
+     *       // Assume the first byte indicates the total length of the message.
+     *       val expectedLength = if (index == 0) received[1].toInt() else accumulator[1].toInt()
+     *       val newAccumulator = accumulator + received
+     *       if (newAccumulator.size - 2 < expectedLength) {
+     *           // More data expected.
+     *           MergeResult.Accumulate(newAccumulator)
+     *       } else {
+     *           // Full message received.
+     *           MergeResult.Completed(newAccumulator.drop(2)) // Drop the header.
+     *       }
+     *   },
+     *   filter = { merged ->
+     *       // Accept only messages with a valid checksum.
+     *       val checksum = merged.last()
+     *       val calculated = merged.dropLast(1).fold(0.toByte()) { acc, byte -> acc + byte }
+     *       checksum == calculated
+     *   }
+     * )
+     * var response = parse(newValue)
+     * ```
+     *
+     * @param rawDataFilter An optional filter function to evaluate the received notification or
+     * indication. Accepted packets will be sent to merge [merge] operator for further processing.
+     * By default, all received data is accepted.
+     * @param merge Ao optional merge function to combine multiple received values into one.
+     * This method can accumulate received values by returning [MergeResult.Accumulate] until a
+     * complete message is formed, which is then returned as [MergeResult.Completed].
+     * By default, each received value is treated as a complete message.
+     * @param filter An optional filter function to evaluate the merged value. When the function
+     * returns true, the value is returned from this method.
+     * @return The received value of the characteristic.
+     * @param trigger An optional trigger that will be executed once before waiting for the value change.
+     * It can be used to perform an action that may cause the peripheral to send a notification or
+     * indication, e.g., writing to the characteristic to request data. The [trigger] is executed
+     * in the context of the [RemoteCharacteristic], so its methods and properties can be accessed
+     * directly.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      * @see subscribe
      * @see isNotifying
      * @see setNotifying
      */
-    suspend fun waitForValueChange(): ByteArray
+    suspend fun waitForValueChange(
+        rawDataFilter: ((ByteArray) -> Boolean) = { true },
+        merge: suspend (accumulator: ByteArray, received: ByteArray, index: Int) -> MergeResult =
+            { _, rec, _ -> MergeResult.Completed(rec) },
+        filter: ((ByteArray) -> Boolean) = { true },
+        trigger: suspend RemoteCharacteristic.() -> Unit = {},
+    ): ByteArray
 }

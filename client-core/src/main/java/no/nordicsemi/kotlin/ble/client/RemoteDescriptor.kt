@@ -57,8 +57,9 @@ interface RemoteDescriptor: Descriptor {
      * @return The value of the descriptor.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the descriptor has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      */
     suspend fun read(): ByteArray
 
@@ -70,8 +71,9 @@ interface RemoteDescriptor: Descriptor {
      * procedure and the value replied back by the peripheral does not match the value written.
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the descriptor has been invalidated due to
-     * disconnection of service change event.
-     * @throws BluetoothException if the implementation fails, see cause for a reason.
+     * disconnection or service change event.
+     * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
+     * a reason.
      */
     suspend fun write(data: ByteArray)
 }
