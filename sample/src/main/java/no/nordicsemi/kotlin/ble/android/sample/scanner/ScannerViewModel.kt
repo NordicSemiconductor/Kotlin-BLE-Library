@@ -52,7 +52,6 @@ import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -311,15 +310,26 @@ class ScannerViewModel @Inject constructor(
 
     @OptIn(ExperimentalUuidApi::class)
     private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
+        // Services will change multiple times. Initially, the services() will emit null (event 1).
+        // When services are discovered, it will emit the list of services (event 2).
+        // If the services change later, it will emit null again (event 3) and the new list (event 4).
+        // The event index is printed to be able to track which services does this apply to.
+        var event = 0
+
         peripheral.services()
             .onEach { services ->
-                Timber.i("Services changed: $services")
+                // On each services change, increment the event index.
+                event += 1
+                Timber.i("($event) Services changed: $services")
             }
             .filterNotNull()
             .onEach { services ->
+                // Keep the current event fixed in this block.
+                val ce = event
+
                 // Read values of all characteristics.
                 services.forEach { remoteService ->
-                    Timber.i("Reading characteristics of ${remoteService.uuid}:")
+                    Timber.i("($ce) Reading characteristics of ${remoteService.uuid}:")
                     remoteService.characteristics.forEach { remoteCharacteristic ->
                         try {
                             val value = remoteCharacteristic.read()
@@ -341,28 +351,40 @@ class ScannerViewModel @Inject constructor(
 
                 services.forEach { remoteService ->
                     remoteService.characteristics.forEach { remoteCharacteristic ->
-                        Timber.w("Subscribing to ${remoteCharacteristic.uuid}...")
+                        // subscribe() will throw OperationFailedException with reason
+                        // SUBSCRIPTION_NOT_SUPPORTED if the characteristic doesn't support
+                        // notifications or indications.
+                        val expectError = !remoteCharacteristic.isSubscribable()
                         try {
-                            // subscribe() will throw OperationFailedException with reason
-                            // SUBSCRIPTION_NOT_SUPPORTED if the characteristic doesn't support
-                            // notifications or indications.
                             remoteCharacteristic.subscribe()
+                                .onStart {
+                                    // This is called before the notifications are enabled.
+                                    Timber.w("($ce) Subscribing to ${remoteCharacteristic.uuid}...")
+                                }
                                 .onEach { newValue ->
-                                    Timber.i("Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
+                                    // This is called when a notification or indication is received.
+                                    Timber.i("($ce) Value of ${remoteCharacteristic.uuid} changed: 0x${newValue.toHexString()}")
                                 }
                                 .catch { e ->
-                                    Timber.e("Subscription to ${remoteCharacteristic.uuid} failed: ${e.message}")
+                                    // This is called when subscription fails.
+                                    Timber.e("($ce) Subscription to ${remoteCharacteristic.uuid} failed: ${e.message}")
                                 }
                                 .onEmpty {
-                                    Timber.w("No updates from ${remoteCharacteristic.uuid}")
+                                    // This is called when the characteristic sent no notifications.
+                                    Timber.w("($ce) No updates from ${remoteCharacteristic.uuid}")
                                 }
                                 .onCompletion {
-                                    Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
+                                    // This is called when the characteristic becomes invalid,
+                                    // that is on disconnection or service change.
+                                    Timber.d("($ce) Stopped observing updates from ${remoteCharacteristic.uuid}")
                                 }
                                 .launchIn(scope)
-                            Timber.i("Notifications for ${remoteCharacteristic.uuid} are now ${if (remoteCharacteristic.isNotifying) "enabled" else "disabled"}")
+                            // remoteCharacteristic.setNotifying(true)
+                            Timber.i("($ce) Notifications for ${remoteCharacteristic.uuid} are now ${if (remoteCharacteristic.isNotifying) "enabled" else "disabled"}")
                         } catch (e: Exception) {
-                            Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                            if (!expectError) {
+                                Timber.e("($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                            }
                         }
                     }
                 }
@@ -372,19 +394,30 @@ class ScannerViewModel @Inject constructor(
                 val blinkyServiceUuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
                 val blinkyService = services.firstOrNull { it.uuid == blinkyServiceUuid }
                 blinkyService?.let { service ->
+                    val buttonCharacteristicUuid = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
                     val ledCharacteristicUuid = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
+                    val buttonCharacteristic = service.characteristics.firstOrNull { it.uuid == buttonCharacteristicUuid }
                     val ledCharacteristic = service.characteristics.firstOrNull { it.uuid == ledCharacteristicUuid }
+
+                    Timber.i("($ce) Awaiting for button press to start LED blinking...")
+                    val result = buttonCharacteristic?.waitForValueChange {
+                        Timber.i("($ce) Turning LED on...")
+                        ledCharacteristic?.write(byteArrayOf(0x01))
+                    }
+                    Timber.i("($ce) Button change to 0x${result?.toHexString()}")
+
                     ledCharacteristic?.let { led ->
-                        Timber.i("Starting to blink LED...")
+                        Timber.i("($ce) Starting to blink LED...")
                         scope.launch {
                             try {
                                 repeat(10) { i ->
-                                    val newValue = byteArrayOf(((i + 1) % 2).toByte())
+                                    val newValue = byteArrayOf((i % 2).toByte())
+                                    Timber.i("($ce) Writing 0x${newValue.toHexString()} to ${led.uuid}...")
                                     led.write(newValue)
                                     delay(250.milliseconds)
                                 }
                             } catch (e: Exception) {
-                                Timber.e("Failed to write to ${led.uuid}: ${e.message}")
+                                Timber.e("($ce) Failed to write to ${led.uuid}: ${e.message}")
                             }
                         }
                     }
