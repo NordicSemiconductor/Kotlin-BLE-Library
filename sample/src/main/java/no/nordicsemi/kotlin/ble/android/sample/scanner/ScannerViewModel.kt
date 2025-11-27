@@ -410,7 +410,7 @@ class ScannerViewModel @Inject constructor(
                         Timber.i("($ce) Starting to blink LED...")
                         scope.launch {
                             try {
-                                repeat(10) { i ->
+                                repeat(9) { i ->
                                     val newValue = byteArrayOf((i % 2).toByte())
                                     Timber.i("($ce) Writing 0x${newValue.toHexString()} to ${led.uuid}...")
                                     led.write(newValue)
