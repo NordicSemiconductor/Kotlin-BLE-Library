@@ -213,7 +213,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
             logger.warn("Connection update failed with status $status")
             // no return, event must be emitted
         }
-        val newParameters = ConnectionParameters.Connected(interval, latency, timeout)
+        val newParameters = ConnectionParameters.Specified(interval, latency, timeout)
         logger.debug("onConnectionUpdated: {}", newParameters)
         _events.tryEmit(ConnectionParametersChanged(newParameters))
     }

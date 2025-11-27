@@ -39,10 +39,20 @@ import kotlinx.coroutines.flow.flow
 /**
  * Splits the data into chunks of given length. The last chunk may be shorter.
  *
+ * ### Example
+ * ```kotlin
+ * val data = byteArrayOf(1, 2, 3, 4, 5)
+ * val chunks = data.chunked(2)
+ * // chunks: [ [1, 2], [3, 4], [5] ]
+ * ```
+ *
  * @param size The maximum size of a chunk.
  * @return A list of chunks.
  */
 fun ByteArray.chunked(size: Int): List<ByteArray> {
+    require(size > 0) { "Chunk size must be greater than 0." }
+    if (this.isEmpty()) return emptyList()
+    if (this.size <= size) return listOf(this)
     val chunks = mutableListOf<ByteArray>()
     var offset = 0
     while (offset < this.size) {
@@ -56,13 +66,36 @@ fun ByteArray.chunked(size: Int): List<ByteArray> {
 /**
  * Collects the flow of data and emits a new flow of chunked data using the given operation.
  *
+ * This operator can be used to split data into smaller chunks suitable for transmission.
+ * The implementation of the operation is application-specific. Most common use cases are:
+ * * Splitting data into fixed-size packets (`MTU - 3` bytes).
+ * * Splitting data into packets with a header with total length.
+ * * Splitting data with flag in each chunk (*single*, *first*, *middle*, or *last* packet).
+ *
+ * ### Example
+ * ```kotlin
+ * val dataFlow: Flow<ByteArray> = ...
+ * val chunkedFlow = dataFlow.chunk(20) { data, size ->
+ *    val header = data.size.toUShort().toByteArray(order = ByteOrder.BIG_ENDIAN)
+ *    val dataWithHeader = header + data
+ *    dataWithHeader.chunked(size)
+ * }
+ * ```
+ * See [Kotlin Util Library / data](https://github.com/NordicSemiconductor/Kotlin-Util-Library)
+ * for extension functions to convert numbers to byte arrays.
+ *
  * @param size The maximum size of a chunk.
  * @param operation The operation that will split the data into chunks.
  * @return A flow of chunked data.
  */
-fun Flow<ByteArray>.split(size: Int, operation: suspend (data: ByteArray, size: Int) -> List<ByteArray>): Flow<ByteArray> = flow {
-    collect { full ->
-        operation(full, size).forEach { chunk ->
+fun Flow<ByteArray>.chunk(
+    size: Int, operation: suspend (data: ByteArray, size: Int) -> List<ByteArray>
+): Flow<ByteArray> = flow {
+    collect { data ->
+        // Always apply the operation for consistent behavior.
+        // The operation is responsible for correct chunking.
+        val chunks = operation(data, size)
+        chunks.forEach { chunk ->
             emit(chunk)
         }
     }
@@ -71,10 +104,27 @@ fun Flow<ByteArray>.split(size: Int, operation: suspend (data: ByteArray, size: 
 /**
  * Collects the flow of data and emits a new flow of packet of at-most given size.
  *
+ * This operator can be used to split data into smaller chunks suitable for transmission.
+ *
+ * The data is split into chunks of given size. The last chunk may be shorter.
+ *
+ * ### Example
+ * ```kotlin
+ * val maxSize = peripheral.maximumWriteValueLength(writeType = WriteType.WITHOUT_RESPONSE)
+ * val dataFlow: Flow<ByteArray> = ...
+ * dataFlow
+ *   .chunk(maxSize)
+ *   .onEach { chunk ->
+ *       // Send the chunk to the peripheral.
+ *   }
+ *   .launchIn(scope)
+ * ```
+ *
  * @param size The maximum size of a packet.
  * @return A flow of packets.
  */
-fun Flow<ByteArray>.split(size: Int): Flow<ByteArray> = split(size) { data, _ -> data.chunked(size) }
+fun Flow<ByteArray>.chunk(size: Int): Flow<ByteArray> =
+    chunk(size) { data, _ -> data.chunked(size) }
 
 /**
  * Collects the flow of packets and emits a new flow of merged data using the given operation.
@@ -96,17 +146,18 @@ fun Flow<ByteArray>.split(size: Int): Flow<ByteArray> = split(size) { data, _ ->
  * @param operation The operation that will merge the data.
  * @return A flow of merged data.
  */
-fun Flow<ByteArray>.merge(operation: suspend (accumulator: ByteArray, received: ByteArray) -> MergeResult): Flow<ByteArray> = flow {
+fun Flow<ByteArray>.merge(
+    operation: suspend (accumulator: ByteArray, received: ByteArray) -> MergeResult
+): Flow<ByteArray> = flow {
     var accumulator = byteArrayOf()
     collect { received ->
-        accumulator = when (val result = operation(accumulator, received)) {
+        when (val result = operation(accumulator, received)) {
             is MergeResult.Accumulate -> {
-                result.accumulated
+                accumulator = result.accumulated
             }
-
             is MergeResult.Completed -> {
+                accumulator = byteArrayOf()
                 emit(result.result)
-                byteArrayOf()
             }
         }
     }
@@ -132,19 +183,20 @@ fun Flow<ByteArray>.merge(operation: suspend (accumulator: ByteArray, received: 
  * @param operation The operation that will merge the data.
  * @return A flow of merged data.
  */
-fun Flow<ByteArray>.mergeIndexed(operation: suspend (accumulator: ByteArray, received: ByteArray, index: Int) -> MergeResult): Flow<ByteArray> = flow {
+fun Flow<ByteArray>.mergeIndexed(
+    operation: suspend (accumulator: ByteArray, received: ByteArray, index: Int) -> MergeResult
+): Flow<ByteArray> = flow {
     var accumulator = byteArrayOf()
     var index = 0
     collect { received ->
-        accumulator = when (val result = operation(accumulator, received, index++)) {
+        when (val result = operation(accumulator, received, index++)) {
             is MergeResult.Accumulate -> {
-                result.accumulated
+                accumulator = result.accumulated
             }
-
             is MergeResult.Completed -> {
-                emit(result.result)
                 index = 0
-                byteArrayOf()
+                accumulator = byteArrayOf()
+                emit(result.result)
             }
         }
     }

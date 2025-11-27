@@ -40,7 +40,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
@@ -79,6 +80,8 @@ import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
+import no.nordicsemi.kotlin.ble.core.util.MergeResult
+import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 import org.jetbrains.annotations.Range
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -148,7 +151,7 @@ private class StubExecutor(
     }
 
     override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
-        _events.emit(ConnectionParametersChanged(ConnectionParameters.Connected(15, 0, 0)))
+        _events.emit(ConnectionParametersChanged(ConnectionParameters.Specified(15, 0, 0)))
         return true
     }
 
@@ -327,13 +330,24 @@ private class StubRemoteCharacteristic(
         else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
     }
 
-    override suspend fun subscribe(): Flow<ByteArray> = when {
+    override fun subscribe(): Flow<ByteArray> = subscribe {}
+
+    override suspend fun waitForValueChange(
+        rawDataFilter: (ByteArray) -> Boolean,
+        merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
+        filter: (ByteArray) -> Boolean,
+        trigger: suspend RemoteCharacteristic.() -> Unit,
+    ): ByteArray = subscribe(trigger)
+        .filter(rawDataFilter)
+        .mergeIndexed(merge)
+        .firstOrNull(filter)
+        ?: throw InvalidAttributeException()
+
+    private fun subscribe(trigger: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> = when {
         owner == null -> throw InvalidAttributeException()
-        isSubscribable() -> _value.filter { _isNotifying }
+        isSubscribable() -> _value.filter { _isNotifying }.onStart { trigger() }
         else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
     }
-
-    override suspend fun waitForValueChange(): ByteArray = subscribe().first()
 
     override fun toString(): String = uuid.toString()
 }

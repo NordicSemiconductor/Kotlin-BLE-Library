@@ -43,6 +43,7 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicScope
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
+import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -167,7 +168,13 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
 
     override suspend fun write(data: ByteArray, writeType: WriteType) {}
 
-    override suspend fun subscribe(): Flow<ByteArray> = emptyFlow()
+    override fun subscribe(): Flow<ByteArray> = emptyFlow()
 
-    override suspend fun waitForValueChange(): ByteArray = byteArrayOf()
+    override suspend fun waitForValueChange(
+        rawDataFilter: (ByteArray) -> Boolean,
+        merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
+        filter: (ByteArray) -> Boolean,
+        trigger: suspend RemoteCharacteristic.() -> Unit,
+    ): ByteArray = byteArrayOf()
+        .also { trigger() }
 }

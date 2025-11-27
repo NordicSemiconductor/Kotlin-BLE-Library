@@ -47,6 +47,7 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.ConnectionParametersChanged
 import no.nordicsemi.kotlin.ble.client.ConnectionStateChanged
 import no.nordicsemi.kotlin.ble.client.GattEvent
@@ -323,6 +324,7 @@ open class Peripheral(
 
             // Direct connection gives more options to configure the connection.
             is CentralManager.ConnectionOptions.Direct -> {
+                val now = System.currentTimeMillis()
                 try {
                     val state = await(
                         action = { impl.connect(false, options.preferredPhy) },
@@ -346,8 +348,23 @@ open class Peripheral(
                             initiateConnection()
                         }
                         is ConnectionState.Disconnected -> {
+                            val reason = state.reason!!
+                            // A connection may timeout for 3 reasons: Direct(timeout), withTimeout,
+                            // or internal timeout (error 133/147 after ~30s). The library should
+                            // report all 3 cases the same way: as a TimeoutCancellationException.
+                            // Error 147 was added in API 35: https://developer.android.com/reference/android/bluetooth/BluetoothGatt#GATT_CONNECTION_TIMEOUT
+                            // Before, a connection timeout was reported as error 133.
+                            if (reason is Reason.Unknown && (reason.status == 133 || reason.status == 147)) {
+                                val elapsed = System.currentTimeMillis() - now
+                                // Default timeout for direct connection is 30 seconds. Let's use 25.
+                                if (elapsed >= 25000) {
+                                    // The connection timeout should behave just as a timeout defined
+                                    // by the user with withTimeout or Direct(timeout=...).
+                                    withTimeout(0) {}
+                                    // ^ throws TimeoutCancellationException("Timed out immediately")!!!
+                                }
+                            }
                             check(options.retry > 0) {
-                                val reason = state.reason!!
                                 logger.warn("Connection attempt failed (reason: {})", reason)
                                 _state.update { state }
                                 throw ConnectionFailedException(reason)
@@ -360,8 +377,9 @@ open class Peripheral(
                         else -> {}
                     }
                 } catch (e: TimeoutCancellationException) {
-                    logger.warn("Connection attempt timed out after {}", options.timeout)
-                    _state.update { ConnectionState.Disconnected(Reason.Timeout(options.timeout)) }
+                    val elapsed = System.currentTimeMillis() - now
+                    logger.warn("Connection attempt timed out after {}", e.timeout ?: elapsed.milliseconds)
+                    _state.update { ConnectionState.Disconnected(Reason.Timeout(e.timeout ?: elapsed.milliseconds)) }
                     close()
                     throw e
                 } catch (e: CancellationException) {

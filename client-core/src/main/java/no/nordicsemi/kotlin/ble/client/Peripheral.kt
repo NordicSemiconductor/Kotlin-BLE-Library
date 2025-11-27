@@ -472,6 +472,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param uuids An optional list of service UUID to filter the results. If empty, all services
      *        will be returned. Some platforms may do partial service discovery and return only
      *        services with given UUIDs.
+     * @return A state flow with the list of services, or `null` if the device is not connected,
+     * or the services have been invalidated.
      */
     @OptIn(ExperimentalUuidApi::class)
     fun services(uuids: List<Uuid> = emptyList()): StateFlow<List<RemoteService>?> {

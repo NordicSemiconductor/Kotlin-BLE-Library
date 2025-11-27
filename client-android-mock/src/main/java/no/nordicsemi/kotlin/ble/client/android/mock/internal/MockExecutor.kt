@@ -36,6 +36,7 @@ package no.nordicsemi.kotlin.ble.client.android.mock.internal
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -48,6 +49,7 @@ import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import org.jetbrains.annotations.Range
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * A mock implementation of [Peripheral] for Android.
@@ -73,6 +75,19 @@ open class MockExecutor(
     override val bondState = _bondState.asStateFlow()
 
     // Implementation
+
+    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+        if (autoConnect) {
+            // There is no timeout for auto connect attempts.
+            super.connect(true, preferredPhy)
+        } else {
+            // Android has a timeout of 30 seconds for connection attempts.
+            // User may set a shorter timeout in ConnectionOptions.Direct.
+            withTimeout(30.seconds) {
+                super.connect(false, preferredPhy)
+            }
+        }
+    }
 
     override suspend fun createBond(): Boolean {
         TODO("Not yet implemented")
@@ -162,33 +177,33 @@ open class MockExecutor(
         return true
     }
 
-    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Connected = when (this) {
-        ConnectionPriority.BALANCED -> ConnectionParameters.Connected(
+    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Specified = when (this) {
+        ConnectionPriority.BALANCED -> ConnectionParameters.Specified(
             connectionInterval = 24,
-            slaveLatency = 0,
+            latency = 0,
             supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
         )
         ConnectionPriority.HIGH -> if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.MARSHMALLOW) {
-            ConnectionParameters.Connected(
+            ConnectionParameters.Specified(
                 connectionInterval = 9,
-                slaveLatency = 0,
+                latency = 0,
                 supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
             )
         } else {
-            ConnectionParameters.Connected(
+            ConnectionParameters.Specified(
                 connectionInterval = 6,
-                slaveLatency = 0,
+                latency = 0,
                 supervisionTimeout = 2000
             )
         }
-        ConnectionPriority.LOW_POWER -> ConnectionParameters.Connected(
+        ConnectionPriority.LOW_POWER -> ConnectionParameters.Specified(
             connectionInterval = 80,
-            slaveLatency = 2,
+            latency = 2,
             supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
         )
-        ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Connected(
+        ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Specified(
             connectionInterval = 24,
-            slaveLatency = 0,
+            latency = 0,
             supervisionTimeout = 500
         )
     }
