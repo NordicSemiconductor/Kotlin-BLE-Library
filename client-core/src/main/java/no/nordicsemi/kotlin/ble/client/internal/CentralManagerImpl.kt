@@ -40,12 +40,14 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.newCoroutineContext
 import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.ScanResult
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
+import kotlin.coroutines.EmptyCoroutineContext
 
 /**
  * Base implementation of [CentralManager].
@@ -67,13 +69,12 @@ abstract class CentralManagerImpl<
     protected val scope: CoroutineScope,
 ): CentralManager<ID, P, EX, F, SR> {
     private var closeJob: Job
-    private lateinit var internalScope: CoroutineScope
+    private var internalScope = CoroutineScope(scope.newCoroutineContext(EmptyCoroutineContext))
 
     init {
         // Make sure the Central Manager gets closed when its scope gets cancelled.
         // This coroutine gets cancelled when close() is called or when the scope gets cancelled.
-        closeJob = scope.launch {
-            internalScope = this
+        closeJob = internalScope.launch {
             try { awaitCancellation() }
             finally { withContext(NonCancellable) { close() } }
         }
