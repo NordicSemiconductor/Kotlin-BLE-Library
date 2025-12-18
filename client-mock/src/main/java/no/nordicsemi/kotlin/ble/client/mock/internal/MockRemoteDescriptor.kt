@@ -210,17 +210,28 @@ class MockRemoteDescriptor(
                         val match = truncatedData.contentEquals(result.value)
                         // When not in Reliable Write, Long Write automatically executes or
                         // aborts all prepared writes.
+                        var result: WriteResponse = WriteResponse.Success
                         if (!useReliableWrite) {
-                            eventHandler.onExecuteWriteRequest(match)
+                            result = eventHandler.onExecuteWriteRequest(match)
                             delay(connectionInterval)
                         }
                         if (!match) {
                             throw ValueDoesNotMatchException()
                         }
-                        emit(CharacteristicWrite(
-                            characteristic = this@MockRemoteDescriptor,
-                            status = OperationStatus.SUCCESS,
-                        ))
+                        when (result) {
+                            is WriteResponse.Success -> {
+                                emit(CharacteristicWrite(
+                                    characteristic = this@MockRemoteDescriptor,
+                                    status = OperationStatus.SUCCESS,
+                                ))
+                            }
+                            is WriteResponse.Failure -> {
+                                emit(CharacteristicWrite(
+                                    characteristic = this@MockRemoteDescriptor,
+                                    status = result.status,
+                                ))
+                            }
+                        }
                     }
 
                     is PrepareWriteResponse.Failure -> {
@@ -240,7 +251,7 @@ class MockRemoteDescriptor(
                         // Value 0x00-00 is used to disable both.
                         // Any other value is RFU and ignored.
                         if (data.size == 2 && data[0] >= 0 && data[0] <= 1 && data[1] == 0.toByte()) {
-                            descriptor.enabled == data[1] > 0
+                            descriptor.enabled = data[1] > 0
                         }
                         WriteResponse.Success
                     }

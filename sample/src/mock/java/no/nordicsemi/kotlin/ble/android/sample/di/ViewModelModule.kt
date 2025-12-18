@@ -165,7 +165,7 @@ object ViewModelModule {
                         )
                         ledHandle = Characteristic(
                             uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
-                            properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE_WITHOUT_RESPONSE,
+                            properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,//_WITHOUT_RESPONSE,
                             permissions = Permission.READ and Permission.WRITE,
                         ) {
                             // CCCD is added automatically
@@ -304,7 +304,7 @@ object ViewModelModule {
 
     @Provides
     fun providesAdvertiser(environment: MockEnvironment): BluetoothLeAdvertiser {
-        return BluetoothLeAdvertiser.Factory.mock(environment)
+        return BluetoothLeAdvertiser.mock(environment)
     }
 
     private val beacon = PeripheralSpec.simulatePeripheral(
@@ -325,7 +325,7 @@ object ViewModelModule {
 
     @Provides
     fun provideCentralManager(scope: CoroutineScope, environment: MockEnvironment): CentralManager {
-        return CentralManager.Factory.mock(scope, environment)
+        return CentralManager.mock(scope, environment)
             .apply {
                 simulatePeripherals(listOf(blinky, beacon))
             }
