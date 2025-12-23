@@ -122,6 +122,7 @@ open class Peripheral(
          * @return True if connection priority was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean
 
         /**
@@ -133,6 +134,7 @@ open class Peripheral(
          * @return True if MTU was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean
 
         /**
@@ -147,6 +149,7 @@ open class Peripheral(
          * @return True if PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean
 
         /**
@@ -157,27 +160,37 @@ open class Peripheral(
          * @return True if reading PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun readPhy(): Boolean
 
         /**
          * This method should initiate a reliable write transaction.
          *
          * No event is expected to be emitted to [events] flow.
+         *
+         * @return True if the operation was successfully; false otherwise.
          */
+        @IgnorableReturnValue
         fun beginReliableWrite(): Boolean
 
         /**
          * This method should execute all queued reliable write operations.
          *
          * The result should be reported by emitting [ReliableWriteCompleted] event to [events] flow.
+         *
+         * @return True if the operation was successfully; false otherwise.
          */
+        @IgnorableReturnValue
         suspend fun executeReliableWrite(): Boolean
 
         /**
          * This method should abort a reliable write transaction.
          *
          * The result should be reported by emitting [ReliableWriteCompleted] event to [events] flow.
+         *
+         * @return True if the operation was successfully; false otherwise.
          */
+        @IgnorableReturnValue
         suspend fun abortReliableWrite(): Boolean
 
         /**
@@ -191,6 +204,7 @@ open class Peripheral(
          * @return True if bond was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun createBond(): Boolean
 
         /**
@@ -205,6 +219,7 @@ open class Peripheral(
          * @return True if removing bond information has been initiated successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun removeBond(): Boolean
 
         /**
@@ -212,6 +227,7 @@ open class Peripheral(
          *
          * @return True if cache was cleared successfully; false otherwise.
          */
+        @IgnorableReturnValue
         suspend fun refreshCache(): Boolean
     }
 
@@ -560,17 +576,18 @@ open class Peripheral(
      * @throws PeripheralNotConnectedException If the device is not connected.
      * @throws OperationFailedException If MTU could not be requested.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @see maximumWriteValueLength
      */
     suspend fun requestHighestValueLength() {
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        check(mtu == ATT_MTU_DEFAULT) {
+        check(!mtuRequested) {
             logger.warn("MTU has been already requested")
             return
         }
         mtuRequested = true
-        OperationMutex.withLock {
+        val _ = OperationMutex.withLock {
             logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
             impl.events
                 .onSubscription {
@@ -763,7 +780,7 @@ open class Peripheral(
         check(!impl.isClosed) {
             throw PeripheralClosedException()
         }
-        OperationMutex.withLock {
+        val _ = OperationMutex.withLock {
             logger.trace("Refreshing cache")
             impl.events
                 .onSubscription {
@@ -788,7 +805,7 @@ open class Peripheral(
         if (hasBondInformation) {
             return
         }
-        OperationMutex.withLock {
+        val _ = OperationMutex.withLock {
             logger.trace("Creating bond")
             impl.bondState
                 .onSubscription {
@@ -828,7 +845,7 @@ open class Peripheral(
         if (!hasBondInformation) {
             return
         }
-        OperationMutex.withLock {
+        val _ = OperationMutex.withLock {
             logger.trace("Removing bond information")
             impl.bondState
                 .onSubscription {

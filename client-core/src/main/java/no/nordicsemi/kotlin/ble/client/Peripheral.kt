@@ -183,6 +183,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @return True if service discovery was requested successfully; false otherwise.
          */
         @OptIn(ExperimentalUuidApi::class)
+        @IgnorableReturnValue
         suspend fun discoverServices(uuids: List<Uuid>): Boolean
 
         /**
@@ -193,6 +194,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @return True if RSSI was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun readRssi(): Boolean
 
         /**
@@ -204,6 +206,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @return True if disconnection was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
+        @IgnorableReturnValue
         suspend fun disconnect(): Boolean
 
         /**
@@ -233,6 +236,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param condition The condition to meet, which takes the current state as an argument.
      * @throws TimeoutCancellationException If the timeout is set and the condition is not met.
      */
+    @IgnorableReturnValue
     protected suspend fun await(
         action: suspend () -> Unit,
         condition: suspend (ConnectionState) -> Boolean,
@@ -332,7 +336,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Invalidates current GATT services.
      */
     private fun invalidateServices() {
-        _services.value?.onEach { it.owner = null }
+        _services.value?.forEach { it.owner = null }
         _services.update { null }
         servicesDiscovered = false
         if (OperationMutex.holdsLock(ServicesChanged)) {

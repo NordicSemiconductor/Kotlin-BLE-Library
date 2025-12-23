@@ -34,7 +34,7 @@
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer

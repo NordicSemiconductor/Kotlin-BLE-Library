@@ -35,17 +35,13 @@ package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withTimeoutOrNull
 import no.nordicsemi.kotlin.ble.android.mock.LatestApi
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
@@ -57,15 +53,14 @@ import no.nordicsemi.kotlin.ble.client.android.internal.CentralManagerImpl
 import no.nordicsemi.kotlin.ble.client.android.internal.ConjunctionFilter
 import no.nordicsemi.kotlin.ble.client.android.internal.match
 import no.nordicsemi.kotlin.ble.client.android.mock.MockCentralManager
-import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.Proximity
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.core.Manager
-import no.nordicsemi.kotlin.ble.core.Manager.State.UNKNOWN
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
 
@@ -77,17 +72,13 @@ import kotlin.time.Duration
  */
 open class MockCentralManagerImpl(
     scope: CoroutineScope,
-    private val environment: MockEnvironment = LatestApi(),
-): MockCentralManager, CentralManagerImpl(scope) {
+    private val environment: MockAndroidEnvironment = LatestApi(),
+): MockCentralManager, CentralManagerImpl(scope, environment) {
     private val logger = LoggerFactory.getLogger(MockCentralManagerImpl::class.java)
 
     // Simulation methods
     private var peripheralSpecs = mutableListOf<PeripheralSpec<String>>()
     private val mockAdvertiser = MockBluetoothLeAdvertiser<String>(scope)
-
-    override fun simulatePowerOn() = simulateStateChange(Manager.State.POWERED_ON)
-
-    override fun simulatePowerOff() = simulateStateChange(Manager.State.POWERED_OFF)
 
     override fun simulatePeripherals(peripherals: List<PeripheralSpec<String>>) {
         require(peripheralSpecs.isEmpty()) {
@@ -104,16 +95,13 @@ open class MockCentralManagerImpl(
         peripherals
             .filter { it.isKnown }
             .forEach {
-                managedPeripherals.put(
-                    key = it.identifier,
-                    value = Peripheral(
-                        scope = scope,
-                        impl = MockExecutor(
-                            peripheralSpec = it,
-                            name = it.name,
-                            environment = environment,
-                            advertisements = mockAdvertiser.events,
-                        )
+                managedPeripherals[it.identifier] = Peripheral(
+                    scope = scope,
+                    impl = MockExecutor(
+                        peripheralSpec = it,
+                        name = it.name,
+                        environment = environment,
+                        advertisements = mockAdvertiser.events,
                     )
                 )
             }
@@ -126,49 +114,9 @@ open class MockCentralManagerImpl(
         peripheralSpecs.clear()
     }
 
-    /**
-     * Simulates a state change in the central manager.
-     *
-     * @throws ManagerClosedException If the central manager has been closed.
-     * @throws BluetoothUnavailableException If Bluetooth is not supported on the device.
-     */
-    private fun simulateStateChange(newState: Manager.State) {
-        require(environment.isBluetoothSupported) {
-            throw BluetoothUnavailableException()
-        }
-
-        ensureOpen()
-
-        // Ignore if the state has not changed.
-        if (newState == state.value)
-            return
-
-        logger.info("Bluetooth state changed: ${state.value} -> $newState")
-        _state.update { newState }
-    }
-
     // Implementation
-    private val _state = MutableStateFlow(
-        when {
-            !environment.isBluetoothSupported -> Manager.State.UNSUPPORTED
-            !environment.isBluetoothEnabled -> Manager.State.POWERED_OFF
-            else -> Manager.State.POWERED_ON
-        }
-    )
     override val state: StateFlow<Manager.State>
-        get() = _state.asStateFlow()
-
-    override fun checkConnectPermission() {
-        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothConnectPermissionGranted) {
-            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
-        }
-    }
-
-    override fun checkScanningPermission() {
-        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothScanPermissionGranted) {
-            throw SecurityException("BLUETOOTH_SCAN permission not granted")
-        }
-    }
+        get() = environment.bluetoothState
 
     override fun getPeripheralsById(ids: List<String>): List<Peripheral> {
         // Ensure the central manager has not been closed.
@@ -296,7 +244,7 @@ open class MockCentralManagerImpl(
 
                     // If the `neverForLocation` flag is set, check if the device is a beacon.
                     if (!environment.isLocationRequiredForScanning &&
-                        environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.S &&
+                        environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.S &&
                         result.isBeacon) {
                         return@collect
                     }
@@ -366,9 +314,6 @@ open class MockCentralManagerImpl(
         // Ignore if already closed.
         if (!isOpen) return
         super.close()
-
-        // Set the state to unknown.
-        _state.update { UNKNOWN }
     }
 
     // ---- Private implementation ----
@@ -385,7 +330,7 @@ open class MockCentralManagerImpl(
                 val c = address[i]
                 when (i % 3) {
                     0, 1 -> {
-                        if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'F')) {
+                        if ((c in '0'..'9') || (c in 'A'..'F')) {
                             // hex character, OK
                             break
                         }

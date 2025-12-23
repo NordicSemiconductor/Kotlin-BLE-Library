@@ -53,6 +53,7 @@ android {
 
 dependencies {
     api(project(":advertiser-core-android"))
+    api(project(":environment-android"))
 
     api(libs.androidx.annotation)
     api(libs.androidx.core.ktx)

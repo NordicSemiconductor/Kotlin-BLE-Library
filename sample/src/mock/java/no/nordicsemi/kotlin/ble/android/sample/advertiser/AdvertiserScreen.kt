@@ -58,6 +58,6 @@ fun AdvertiserScreen() {
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
             .padding(top = 16.dp, bottom = 32.dp),
-        sdkVersion = vm.sdkVersion,
+        environment = vm.environment,
     )
 }

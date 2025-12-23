@@ -45,6 +45,7 @@ import kotlinx.coroutines.withContext
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.ScanResult
+import no.nordicsemi.kotlin.ble.core.Environment
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.coroutines.EmptyCoroutineContext
@@ -67,6 +68,7 @@ abstract class CentralManagerImpl<
     SR: ScanResult<*, *>,
 >(
     protected val scope: CoroutineScope,
+    private val environment: Environment,
 ): CentralManager<ID, P, EX, F, SR> {
     private var closeJob: Job
     private var internalScope = CoroutineScope(scope.newCoroutineContext(EmptyCoroutineContext))

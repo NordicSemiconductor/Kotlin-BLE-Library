@@ -73,7 +73,7 @@ open class DescriptorDefinition(
  */
 @OptIn(ExperimentalUuidApi::class)
 class CCCD(
-    val enabled: Boolean = false,
+    var enabled: Boolean = false,
     instanceId: Int,
 ): DescriptorDefinition(
     uuid = Descriptor.CLIENT_CHAR_CONF_UUID,

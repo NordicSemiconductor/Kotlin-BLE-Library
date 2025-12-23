@@ -33,7 +33,6 @@ package no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo
 
 import android.bluetooth.le.AdvertisingSet
 import android.bluetooth.le.AdvertisingSetCallback
-import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -44,6 +43,7 @@ import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedExcept
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
@@ -56,13 +56,12 @@ import kotlin.time.Duration.Companion.milliseconds
  * Class responsible for starting advertisements on Android API level >= 26.
  *
  * @constructor Creates an instance of an advertiser.
- *
- * @param context An Application context.
+ * @param environment The Android-specific environment to use for the advertiser.
  */
 @RequiresApi(Build.VERSION_CODES.O)
 internal class BluetoothLeAdvertiserOreo(
-    context: Context,
-) : NativeBluetoothLeAdvertiser(context) {
+    environment: NativeAndroidEnvironment,
+) : NativeBluetoothLeAdvertiser(environment) {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserOreo::class.java)
 
     override suspend fun startAdvertising(

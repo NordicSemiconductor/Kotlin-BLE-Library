@@ -40,7 +40,7 @@ import no.nordicsemi.kotlin.ble.core.Peer
 /**
  * Returns a flow that emits only distinct peers.
  */
-fun <ID, T: Peer<ID>> Flow<T>.distinct(): Flow<T> = flow {
+fun <ID: Any, T: Peer<ID>> Flow<T>.distinct(): Flow<T> = flow {
     val set = mutableSetOf<ID>()
     collect { value ->
         if (set.add(value.identifier)) {

@@ -43,7 +43,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
@@ -80,6 +80,7 @@ import kotlin.uuid.Uuid
 object ViewModelModule {
     /** Handle of the Button characteristic. */
     private var buttonHandle: Int? = null
+
     /** Handle of the LED characteristic. */
     private var ledHandle: Int? = null
 
@@ -91,11 +92,12 @@ object ViewModelModule {
      *
      * The device has one characteristic for the Button (read/notify) and one for the LED (read/write).
      */
-    private val blinkyImpl: PeripheralSpecEventHandler = object: PeripheralSpecEventHandler {
+    private val blinkyImpl: PeripheralSpecEventHandler = object : PeripheralSpecEventHandler {
         /** Checks whether the byte array represents "ON" state. */
         private fun ByteArray.isOn() = isNotEmpty() && this[0] != 0.toByte()
         /** Converts the Boolean to a byte array. */
-        private fun Boolean.toBytes(): ByteArray = if (this) byteArrayOf(0x01) else byteArrayOf(0x00)
+        private fun Boolean.toBytes(): ByteArray =
+            if (this) byteArrayOf(0x01) else byteArrayOf(0x00)
 
         /** Current state of the LED. */
         private var isLedOn: Boolean = false
@@ -165,7 +167,7 @@ object ViewModelModule {
                         )
                         ledHandle = Characteristic(
                             uuid = Uuid.parse("00001525-1212-EFDE-1523-785FEABCD123"),
-                            properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE_WITHOUT_RESPONSE,
+                            properties = CharacteristicProperty.READ and CharacteristicProperty.WRITE,//_WITHOUT_RESPONSE,
                             permissions = Permission.READ and Permission.WRITE,
                         ) {
                             // CCCD is added automatically
@@ -176,11 +178,13 @@ object ViewModelModule {
                 CoroutineScope(Dispatchers.IO).launch {
                     // Request shorter supervision timeout.
                     delay(5000)
-                    blinky.simulateConnectionParametersRequest(ConnectionParameters(
-                        connectionInterval = 30.milliseconds,
-                        latency = 4,
-                        supervisionTimeout = 1.seconds,
-                    ))
+                    blinky.simulateConnectionParametersRequest(
+                        ConnectionParameters(
+                            connectionInterval = 30.milliseconds,
+                            latency = 4,
+                            supervisionTimeout = 1.seconds,
+                        )
+                    )
                     // Simulate a reset after a while. The Peripheral should get disconnection
                     // event after 1 second (supervision timeout).
                     delay(2000)
@@ -240,7 +244,10 @@ object ViewModelModule {
                 delay = 4.seconds,
                 timeout = 10.seconds,
             ) {
-                Flags(AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE, AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED)
+                Flags(
+                    AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE,
+                    AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED
+                )
                 CompleteLocalName("HR Sensor")
                 ServiceUuid(Uuid.fromShortUuid(0x1809))
                 ServiceUuid(Uuid.fromShortUuid(0x180A))
@@ -294,19 +301,6 @@ object ViewModelModule {
             }
         }
 
-    @Provides
-    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
-            }
-    }
-
-    @Provides
-    fun providesAdvertiser(environment: MockEnvironment): BluetoothLeAdvertiser {
-        return BluetoothLeAdvertiser.Factory.mock(environment)
-    }
-
     private val beacon = PeripheralSpec.simulatePeripheral(
         identifier = "11:22:33:44:55:66",
         proximity = Proximity.NEAR
@@ -324,8 +318,24 @@ object ViewModelModule {
     }
 
     @Provides
-    fun provideCentralManager(scope: CoroutineScope, environment: MockEnvironment): CentralManager {
-        return CentralManager.Factory.mock(scope, environment)
+    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
+        return CloseableCoroutineScope(SupervisorJob())
+            .also { closeableCoroutineScope ->
+                lifecycle.addOnClearedListener(closeableCoroutineScope)
+            }
+    }
+
+    @Provides
+    fun providesAdvertiser(environment: MockAndroidEnvironment): BluetoothLeAdvertiser {
+        return BluetoothLeAdvertiser.mock(environment)
+    }
+
+    @Provides
+    fun provideCentralManager(
+        scope: CoroutineScope,
+        environment: MockAndroidEnvironment
+    ): CentralManager {
+        return CentralManager.mock(scope, environment)
             .apply {
                 simulatePeripherals(listOf(blinky, beacon))
             }

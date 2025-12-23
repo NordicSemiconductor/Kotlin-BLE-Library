@@ -54,8 +54,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.android.sample.view.ExposedDropdownMenu
 import no.nordicsemi.kotlin.ble.android.sample.view.LabeledSwitch
 import no.nordicsemi.kotlin.ble.android.sample.view.Title
@@ -66,6 +68,7 @@ import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -75,7 +78,7 @@ fun AdvertiserView(
     onStopClicked: () -> Unit,
     errorMessage: String?,
     modifier: Modifier = Modifier,
-    sdkVersion: Int = Build.VERSION.SDK_INT,
+    environment: AndroidEnvironment,
 ) {
     Column(
         modifier = modifier,
@@ -174,7 +177,7 @@ fun AdvertiserView(
                     LabeledSwitch(
                         title = "Advertising Extension",
                         subtitle = "Requires Android 8+",
-                        enabled = !isAdvertising && sdkVersion >= Build.VERSION_CODES.O,
+                        enabled = !isAdvertising && environment.androidSdkVersion >= Build.VERSION_CODES.O,
                         checked = !legacy,
                         onCheckedChange = { legacy = !legacy },
                         modifier = Modifier.padding(horizontal = 16.dp),
@@ -205,7 +208,7 @@ fun AdvertiserView(
                             LabeledSwitch(
                                 title = "Discoverable",
                                 subtitle = "Requires Android 14+",
-                                enabled = !isAdvertising && sdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
+                                enabled = !isAdvertising && environment.androidSdkVersion >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE,
                                 checked = discoverable,
                                 onCheckedChange = { discoverable = !discoverable },
                                 modifier = Modifier.padding(horizontal = 16.dp),
@@ -267,7 +270,9 @@ fun AdvertiserView(
         errorMessage?.let {
             Text(
                 text = it,
-                color = MaterialTheme.colorScheme.error
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
@@ -309,13 +314,14 @@ fun AdvertiserView(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun PreviewAdvertiserScreen() {
     AdvertiserView(
         isAdvertising = false,
         onStartClicked = { },
         onStopClicked = { },
-        errorMessage = "Error!"
+        errorMessage = "Error!",
+        environment = MockAndroidEnvironment.Api31()
     )
 }

@@ -37,7 +37,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withTimeout
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
@@ -48,6 +48,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import org.jetbrains.annotations.Range
 import kotlin.time.Duration.Companion.seconds
 
@@ -63,7 +64,7 @@ import kotlin.time.Duration.Companion.seconds
 open class MockExecutor(
     peripheralSpec: PeripheralSpec<String>,
     name: String?,
-    private val environment: MockEnvironment,
+    private val environment: MockAndroidEnvironment,
     advertisements: Flow<MockScanResult<String>>,
 ): MockExecutor(peripheralSpec, name, environment, advertisements), Peripheral.Executor {
     override val type: PeripheralType = peripheralSpec.type
@@ -109,7 +110,7 @@ open class MockExecutor(
             }
 
             // Prior to Android Oreo there is no callback for connection parameters change.
-            if (environment.androidSdkVersion < MockEnvironment.AndroidSdkVersion.OREO) {
+            if (environment.androidSdkVersion < AndroidEnvironment.SdkVersion.OREO) {
                 gatt.onConnectionUpdated()
             }
             return true
@@ -123,7 +124,7 @@ open class MockExecutor(
 
     override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         gatt?.let { gatt ->
-            if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) {
+            if (environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO) {
                 gatt.setPreferredPhy(txPhy, rxPhy, phyOptions)
             } else {
                 gatt.setPreferredPhy(
@@ -177,17 +178,17 @@ open class MockExecutor(
         return true
     }
 
-    private fun ConnectionPriority.toConnectionParameters(environment: MockEnvironment): ConnectionParameters.Specified = when (this) {
+    private fun ConnectionPriority.toConnectionParameters(environment: MockAndroidEnvironment): ConnectionParameters.Specified = when (this) {
         ConnectionPriority.BALANCED -> ConnectionParameters.Specified(
             connectionInterval = 24,
             latency = 0,
-            supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+            supervisionTimeout = if (environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO) 500 else 2000
         )
-        ConnectionPriority.HIGH -> if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.MARSHMALLOW) {
+        ConnectionPriority.HIGH -> if (environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.MARSHMALLOW) {
             ConnectionParameters.Specified(
                 connectionInterval = 9,
                 latency = 0,
-                supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+                supervisionTimeout = if (environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO) 500 else 2000
             )
         } else {
             ConnectionParameters.Specified(
@@ -199,7 +200,7 @@ open class MockExecutor(
         ConnectionPriority.LOW_POWER -> ConnectionParameters.Specified(
             connectionInterval = 80,
             latency = 2,
-            supervisionTimeout = if (environment.androidSdkVersion >= MockEnvironment.AndroidSdkVersion.OREO) 500 else 2000
+            supervisionTimeout = if (environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO) 500 else 2000
         )
         ConnectionPriority.DIGITAL_CAR_KEY -> ConnectionParameters.Specified(
             connectionInterval = 24,

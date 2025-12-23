@@ -33,7 +33,7 @@ package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.internal.MockBluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 
 /**
  * Creates an instance of a mock [BluetoothLeAdvertiser] for Android.
@@ -45,7 +45,7 @@ import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
  */
 @Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.mock(
-    environment: MockEnvironment = MockEnvironment.Api31(),
+    environment: MockAndroidEnvironment = MockAndroidEnvironment.Api31(),
 ): BluetoothLeAdvertiser = MockBluetoothLeAdvertiser(
     environment = environment
 )

@@ -1,0 +1,174 @@
+/*
+ * Copyright (c) 2025, Nordic Semiconductor
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list
+ * of conditions and the following disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package no.nordicsemi.kotlin.ble.environment.android
+
+import android.Manifest
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.os.Build
+import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
+import androidx.core.location.LocationManagerCompat
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.environment.android.internal.toState
+import org.jetbrains.annotations.Range
+import org.slf4j.LoggerFactory
+
+/**
+ * This is the environment of a native Android device.
+ *
+ * All parameters are read from the device properties.
+ *
+ * @param context The Android context, used to access system services.
+ */
+class NativeAndroidEnvironment(
+    context: Context,
+): AndroidEnvironment {
+    private val logger = LoggerFactory.getLogger(NativeAndroidEnvironment::class.java)
+
+    /**
+     * Application context.
+     */
+    val applicationContext: Context = context.applicationContext
+    /**
+     * Location manager.
+     *
+     * If `null`, the Location is not supported on the device.
+     */
+    val locationManager: LocationManager? = ContextCompat.getSystemService(applicationContext, LocationManager::class.java)
+    /**
+     * Bluetooth manager.
+     *
+     * If `null`, Bluetooth is not supported on the device.
+     */
+    val bluetoothManager: BluetoothManager? = ContextCompat.getSystemService(applicationContext, BluetoothManager::class.java)
+
+    /**
+     * State of the Bluetooth adapter.
+     *
+     * This is a [kotlinx.coroutines.flow.MutableStateFlow] that emits the current state of the Bluetooth adapter.
+     * The state is updated when the adapter state changes.
+     */
+    private val _bluetoothState =
+        MutableStateFlow(bluetoothManager?.adapter?.state?.toState() ?: Manager.State.UNSUPPORTED)
+    override val bluetoothState: StateFlow<Manager.State>
+        get() = _bluetoothState.asStateFlow()
+
+    /**
+     * Broadcast receiver that listens for Bluetooth state changes and emits [bluetoothState].
+     */
+    private val stateBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val oldState = _bluetoothState.value
+            val newState = bluetoothManager?.adapter?.state?.toState() ?: Manager.State.UNKNOWN
+
+            // Ignore if the state has not changed.
+            if (oldState != newState) {
+                logger.info("Bluetooth state changed: $oldState -> $newState")
+                _bluetoothState.update { newState }
+            }
+        }
+    }
+
+    init {
+        // Register a broadcast receiver to monitor Bluetooth state changes.
+        val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
+        ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
+    }
+
+    override fun close() {
+        applicationContext.unregisterReceiver(stateBroadcastReceiver)
+    }
+
+    override val androidSdkVersion = Build.VERSION.SDK_INT
+    override var deviceName: String
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        get() = bluetoothManager?.adapter?.name ?: throw BluetoothUnavailableException()
+        @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+        set(value) {
+            val adapter = requireNotNull(bluetoothManager?.adapter) {
+                throw BluetoothUnavailableException()
+            }
+            adapter.name = value
+        }
+
+    override val isBluetoothSupported: Boolean
+        get() = bluetoothManager?.adapter != null
+    override val isBluetoothEnabled: Boolean
+        get() = bluetoothManager?.adapter?.isEnabled ?: false
+    override val isLocationRequiredForScanning = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+    override val isLocationPermissionGranted: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                applicationContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    override val isLocationEnabled: Boolean
+        get() = locationManager != null && LocationManagerCompat.isLocationEnabled(locationManager)
+    override val isLe2MPhySupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                bluetoothManager?.adapter?.isLe2MPhySupported ?: false
+    override val isLeCodedPhySupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                bluetoothManager?.adapter?.isLeCodedPhySupported ?: false
+    override val isBluetoothScanPermissionGranted: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+    override val isBluetoothConnectPermissionGranted: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+    override val isBluetoothAdvertisePermissionGranted: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED
+    override val isLePeriodicAdvertisingSupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                bluetoothManager?.adapter?.isLePeriodicAdvertisingSupported ?: false
+    override val isLeExtendedAdvertisingSupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                bluetoothManager?.adapter?.isLeExtendedAdvertisingSupported ?: false
+    override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+                    bluetoothManager?.adapter?.leMaximumAdvertisingDataLength ?: 31
+                else 31
+    override val isMultipleAdvertisementSupported: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
+                bluetoothManager?.adapter?.isMultipleAdvertisementSupported ?: false
+}

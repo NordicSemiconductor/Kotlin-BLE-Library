@@ -134,6 +134,7 @@ interface ServiceScope {
      * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         uuid: Uuid,
         properties: Set<CharacteristicProperty> = emptySet(),
@@ -161,6 +162,7 @@ interface ServiceScope {
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         shortUuid: Int,
         properties: Set<CharacteristicProperty> = emptySet(),
@@ -191,6 +193,7 @@ interface ServiceScope {
      * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         uuid: Uuid,
         properties: Set<CharacteristicProperty>,
@@ -222,6 +225,7 @@ interface ServiceScope {
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         shortUuid: Int,
         properties: Set<CharacteristicProperty>,
@@ -248,6 +252,7 @@ interface ServiceScope {
      * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         uuid: Uuid,
         property: CharacteristicProperty,
@@ -275,6 +280,7 @@ interface ServiceScope {
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         shortUuid: Int,
         property: CharacteristicProperty,
@@ -299,6 +305,7 @@ interface ServiceScope {
      * @return The handle number of the characteristic.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         uuid: Uuid,
         property: CharacteristicProperty,
@@ -324,6 +331,7 @@ interface ServiceScope {
      * @see ServiceScope.Characteristic
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Characteristic(
         shortUuid: Int,
         property: CharacteristicProperty,
@@ -396,6 +404,7 @@ interface CharacteristicScope {
      * @return The handle number of the descriptor.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Descriptor(uuid: Uuid, permissions: Set<Permission> = emptySet()): Int
 
     /**
@@ -415,6 +424,7 @@ interface CharacteristicScope {
      * @see CharacteristicScope.Descriptor
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Descriptor(shortUuid: Int, permissions: Set<Permission> = emptySet()) =
         Descriptor(Uuid.fromShortUuid(shortUuid), permissions)
 
@@ -434,6 +444,7 @@ interface CharacteristicScope {
      * @return The handle number of the descriptor.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Descriptor(uuid: Uuid, permission: Permission) =
         Descriptor(uuid, setOf(permission))
 
@@ -454,6 +465,7 @@ interface CharacteristicScope {
      * @see CharacteristicScope.Descriptor
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun Descriptor(shortUuid: Int, permission: Permission) =
         Descriptor(Uuid.fromShortUuid(shortUuid), permission)
 
@@ -470,6 +482,7 @@ interface CharacteristicScope {
      * @param writable Whether the descriptor is writable.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun CharacteristicUserDescriptionDescriptor(
         description: String,
         writable: Boolean = false
@@ -488,6 +501,7 @@ interface CharacteristicScope {
      * @param enabled Whether notifications/indications are enabled initially.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun ClientCharacteristicConfigurationDescriptor(enabled: Boolean = false): Int
 
     /**
@@ -505,6 +519,7 @@ interface CharacteristicScope {
      * @param writableAuxiliaries Whether writable auxiliaries are supported.
      */
     @Suppress("FunctionName")
+    @IgnorableReturnValue
     fun CharacteristicExtendedPropertiesDescriptor(
         reliableWrite: Boolean = false,
         writableAuxiliaries: Boolean = false

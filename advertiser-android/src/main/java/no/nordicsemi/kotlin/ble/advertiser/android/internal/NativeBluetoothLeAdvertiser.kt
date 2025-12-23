@@ -31,72 +31,28 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android.internal
 
-import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
-import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
-import androidx.annotation.RequiresPermission
-import androidx.core.content.ContextCompat
 import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 
 internal abstract class NativeBluetoothLeAdvertiser(
-    private val context: Context,
-): BluetoothLeAdvertiser() {
+    private val environment: NativeAndroidEnvironment,
+): BluetoothLeAdvertiser(environment) {
 
     private val bluetoothAdapter: BluetoothAdapter?
-        get() {
-            val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
-            return manager?.adapter
-        }
+        get() = environment.bluetoothManager?.adapter
 
     protected val bluetoothLeAdvertiser: android.bluetooth.le.BluetoothLeAdvertiser?
         get() = bluetoothAdapter?.bluetoothLeAdvertiser
-
-    @get:RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
-    @set:RequiresPermission(allOf = [Manifest.permission.BLUETOOTH_CONNECT])
-    override var name: String?
-        set(value) {
-            require(value != null)
-            bluetoothAdapter?.name = value
-        }
-        get() {
-            checkConnectPermission()
-            return bluetoothAdapter?.name
-        }
-
-    override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int =
-        if (!legacy && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            bluetoothAdapter?.leMaximumAdvertisingDataLength ?: 31
-        } else {
-            31
-        }
-
-    override val isLeExtendedAdvertisingSupported: Boolean
-        get() = when {
-            Build.VERSION.SDK_INT >= 35 /* Vanilla Ice Cream */ ->
-                bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
-
-            // When checking support for max advertising events up until Android 15
-            // the BluetoothLeAdvertiser was checking if periodic advertising is supported,
-            // not extended advertising:
-            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ->
-                bluetoothAdapter?.isLePeriodicAdvertisingSupported == true &&
-                bluetoothAdapter?.isLeExtendedAdvertisingSupported == true
-
-            // Before Android Oreo Extended Advertising wasn't supported.
-            else -> false
-        }
 
     override val validator: AdvertisingDataValidator
         get() {
             val bluetoothAdapter = bluetoothAdapter
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1 && bluetoothAdapter != null)
                 AdvertisingDataValidator(
-                    deviceName = nameOrNull ?: "",
+                    deviceName = environment.deviceNameOrNull ?: "",
                     isLe2MPhySupported = bluetoothAdapter.isLe2MPhySupported,
                     isLeCodedPhySupported = bluetoothAdapter.isLeCodedPhySupported,
                     // Up until Android 15 BluetoothLeAdvertiser was checking
@@ -107,7 +63,7 @@ internal abstract class NativeBluetoothLeAdvertiser(
                 )
             else
                 AdvertisingDataValidator(
-                    deviceName = nameOrNull ?: "",
+                    deviceName = environment.deviceNameOrNull ?: "",
                     isLe2MPhySupported = false,
                     isLeCodedPhySupported = false,
                     isLeExtendedAdvertisingSupported = false,
@@ -119,20 +75,4 @@ internal abstract class NativeBluetoothLeAdvertiser(
         get() = AdvertisingParametersValidator(
             androidSdkVersion = Build.VERSION.SDK_INT,
         )
-
-    override fun isBluetoothEnabled() = bluetoothAdapter?.isEnabled == true
-
-    override fun checkConnectPermission() {
-        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
-            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
-        }
-    }
-
-    override fun checkAdvertisePermission() {
-        check(Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED) {
-            throw SecurityException("BLUETOOTH_ADVERTISE permission not granted")
-        }
-    }
 }

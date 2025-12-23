@@ -32,43 +32,29 @@
 package no.nordicsemi.kotlin.ble.android.sample.di
 
 import android.content.Context
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.ViewModelLifecycle
-import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
-import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
-import no.nordicsemi.kotlin.ble.advertiser.android.native
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
-import no.nordicsemi.kotlin.ble.client.android.CentralManager
-import no.nordicsemi.kotlin.ble.client.android.native
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.environment.android.NativeAndroidEnvironment
 
 @Module
-@InstallIn(ViewModelComponent::class)
-object ViewModelModule {
+@InstallIn(ActivityRetainedComponent::class)
+object EnvironmentModule {
 
     @Provides
-    fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
-            // Cancel the scope when the ViewModel is cleared.
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
-            }
+    fun provideEnvironment(@ApplicationContext context: Context): NativeAndroidEnvironment {
+        return NativeAndroidEnvironment(context)
     }
+}
 
-    @Provides
-    fun providesAdvertiser(environment: NativeAndroidEnvironment): BluetoothLeAdvertiser {
-        return BluetoothLeAdvertiser.Factory.native(environment)
-    }
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+abstract class AndroidEnvironmentModule {
 
-    @Provides
-    fun provideCentralManager(environment: NativeAndroidEnvironment, scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.native(scope, environment)
-    }
+    @Binds
+    abstract fun bindEnvironment(environment: NativeAndroidEnvironment): AndroidEnvironment
 }
