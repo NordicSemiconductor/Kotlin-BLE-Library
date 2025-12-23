@@ -34,7 +34,7 @@
 package no.nordicsemi.kotlin.ble.client.android
 
 import no.nordicsemi.kotlin.ble.client.CentralManager
-import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration

@@ -48,6 +48,7 @@ nordicNexusPublishing {
 
 dependencies {
     api(project(":client-core"))
+    api(project(":core-android"))
 
     implementation(libs.slf4j)
 

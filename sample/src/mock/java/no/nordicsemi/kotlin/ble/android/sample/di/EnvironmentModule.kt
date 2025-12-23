@@ -31,27 +31,28 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.di
 
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
+import dagger.hilt.android.components.ActivityRetainedComponent
 // import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.android.mock.MockAdvertiser
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 // import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import timber.log.Timber
 import javax.inject.Named
 
 @Module
-@InstallIn(SingletonComponent::class)
-class SdkModule {
+@InstallIn(ActivityRetainedComponent::class)
+object EnvironmentModule {
 
     @Provides
-    @Named("sdkVersion")
-    fun provideSdkVersion() = 23 // Build.VERSION.SDK_INT
+    fun providesEnvironment(): MockAndroidEnvironment {
+        // Define the mock SDK version.
+        val sdkVersion = 35
 
-    @Provides
-    fun providesEnvironment(@Named("sdkVersion") sdkVersion: Int): MockEnvironment {
         // Setting an advertiser callback allows to simulate different behaviors
         // of the advertiser, such as returning a different TX power, or failing.
         val advertiser: MockAdvertiser = { requestedTxPower, advertisingData, scanResponse ->
@@ -66,10 +67,10 @@ class SdkModule {
 
         // Return an environment based on the mock SDK version.
         fun Int.toMockEnvironment() = when (this) {
-            in 21..22 -> MockEnvironment.Api21(advertiser = advertiser)
-            in 23..25 -> MockEnvironment.Api23(advertiser = advertiser)
-            in 26..30 -> MockEnvironment.Api26(advertiser = advertiser)
-            else -> MockEnvironment.Api31(
+            in 21..22 -> MockAndroidEnvironment.Api21(advertiser = advertiser)
+            in 23..25 -> MockAndroidEnvironment.Api23(advertiser = advertiser)
+            in 26..30 -> MockAndroidEnvironment.Api26(advertiser = advertiser)
+            else -> MockAndroidEnvironment.Api31(
                 advertiser = advertiser,
 
                 // Uncomment to disable LE Coded PHY support.
@@ -91,4 +92,12 @@ class SdkModule {
         return sdkVersion.toMockEnvironment()
     }
 
+}
+
+@Module
+@InstallIn(ActivityRetainedComponent::class)
+abstract class AndroidEnvironmentModule {
+
+    @Binds
+    abstract fun bindEnvironment(environment: MockAndroidEnvironment): AndroidEnvironment
 }

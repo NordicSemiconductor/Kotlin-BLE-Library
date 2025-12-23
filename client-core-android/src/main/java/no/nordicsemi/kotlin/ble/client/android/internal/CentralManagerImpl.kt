@@ -38,18 +38,21 @@ import no.nordicsemi.kotlin.ble.client.android.CentralManager.ConnectionOptions
 import no.nordicsemi.kotlin.ble.client.android.ConjunctionFilterScope
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
-import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.Manager
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 
 /**
  * Android-specific implementation of a central manager interface.
  *
  * @param scope The coroutine scope.
+ * @param environment The Android-specific environment to use for the central manager.
  */
 abstract class CentralManagerImpl(
     scope: CoroutineScope,
-): CentralManagerImpl<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope),
+    private val environment: AndroidEnvironment,
+): CentralManagerImpl<String, Peripheral, Peripheral.Executor, ConjunctionFilterScope, ScanResult>(scope, environment),
     CentralManager {
 
     /**
@@ -57,14 +60,22 @@ abstract class CentralManagerImpl(
      *
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    protected abstract fun checkConnectPermission()
+    fun checkConnectPermission() {
+        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothConnectPermissionGranted) {
+            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
+        }
+    }
 
     /**
      * Checks whether the BLUETOOTH_SCAN permission is granted.
      *
      * @throws SecurityException If BLUETOOTH_SCAN permission is denied.
      */
-    protected abstract fun checkScanningPermission()
+    fun checkScanningPermission() {
+        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothScanPermissionGranted) {
+            throw SecurityException("BLUETOOTH_SCAN permission not granted")
+        }
+    }
 
     /**
      * Connects to the given device.

@@ -31,7 +31,6 @@
 
 package no.nordicsemi.kotlin.ble.client.android.internal
 
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
@@ -48,7 +47,6 @@ import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
-import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
@@ -59,14 +57,6 @@ import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import android.bluetooth.le.ScanResult as NativeScanResult
-
-internal fun Int.toState(): Manager.State = when (this) {
-    BluetoothAdapter.STATE_ON -> Manager.State.POWERED_ON
-    BluetoothAdapter.STATE_TURNING_ON,
-    BluetoothAdapter.STATE_TURNING_OFF,
-    BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
-    else -> Manager.State.UNKNOWN
-}
 
 internal fun Int.toBondState(): BondState = when (this) {
     BluetoothDevice.BOND_BONDED -> BondState.BONDED

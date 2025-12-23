@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -31,17 +31,16 @@
 
 package no.nordicsemi.kotlin.ble.core.mock
 
+import no.nordicsemi.kotlin.ble.core.Environment
+
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
- * @property deviceName The device local device name.
- * @property isBluetoothSupported Whether Bluetooth is supported on the device.
- * @property isBluetoothEnabled Whether Bluetooth is enabled.
- * @property reportsConnectionParameters Whether the environment reports connection parameters.
+ * @property reportsConnectionParameters Whether the device reports connection parameters.
  */
-open class MockEnvironment(
-    var deviceName: String,
-    val isBluetoothSupported: Boolean,
-    val isBluetoothEnabled: Boolean,
+abstract class MockEnvironment(
+    override val deviceName: String,
+    override val isBluetoothSupported: Boolean,
+    override val isBluetoothEnabled: Boolean,
     val reportsConnectionParameters: Boolean
-)
+) : Environment

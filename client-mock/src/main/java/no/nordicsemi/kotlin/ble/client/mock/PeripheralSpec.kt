@@ -1177,7 +1177,7 @@ class PeripheralSpec<ID: Any> private constructor(
             isPhyCodedSupported: Boolean = false,
             eventHandler: PeripheralSpecEventHandler,
             services: MockServerScope.() -> Unit,
-        ): Builder<ID> = setConnectionParameters(
+        ) = setConnectionParameters(
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
             preferredSupervisionTimeout = preferredSupervisionTimeout,
@@ -1240,7 +1240,7 @@ class PeripheralSpec<ID: Any> private constructor(
             eventHandler: PeripheralSpecEventHandler,
             actualServices: (MockServerScope.() -> Unit)? = null,
             cachedServices: (MockServerScope.() -> Unit),
-        ): Builder<ID> = setConnectionParameters(
+        ) = setConnectionParameters(
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
             preferredSupervisionTimeout = preferredSupervisionTimeout,
@@ -1308,7 +1308,7 @@ class PeripheralSpec<ID: Any> private constructor(
             eventHandler: PeripheralSpecEventHandler,
             actualServices: (MockServerScope.() -> Unit)? = null,
             cachedServices: (MockServerScope.() -> Unit),
-        ): Builder<ID> = setConnectionParameters(
+        ) = setConnectionParameters(
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
             preferredSupervisionTimeout = preferredSupervisionTimeout,
@@ -1372,7 +1372,7 @@ class PeripheralSpec<ID: Any> private constructor(
             maxAttMtu: @Range(from = 23L, to = 517L) Int = 498,
             maxL2capMtu: @Range(from = 27L, to = 251L) Int = 251,
             isPhyLe2MSupported: Boolean = true,
-        ): Builder<ID> = setConnectionParameters(
+        ) = setConnectionParameters(
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
             preferredSupervisionTimeout = preferredSupervisionTimeout,
@@ -1428,7 +1428,7 @@ class PeripheralSpec<ID: Any> private constructor(
             isAdvertisingWhenConnected: Boolean,
             isBeacon: Boolean,
             builder: AdvertisingDataScope.() -> Unit,
-        ): Builder<ID> = apply {
+        ) {
             val advertisingData =
                 AdvertisingDataScopeImpl(parameters.txPowerLevel).apply(builder).build()
             val advertisement = MockAdvertisingSet(
@@ -1459,7 +1459,7 @@ class PeripheralSpec<ID: Any> private constructor(
             maxL2capMtu: Int,
             isPhyLe2MSupported: Boolean,
             isPhyCodedSupported: Boolean = false,
-        ): Builder<ID> = apply {
+        ) {
             require(preferredConnectionInterval.start in 6..3200) { "Min connection interval is out of range." }
             require(preferredConnectionInterval.endInclusive in 6..3200) { "Max connection interval is out of range." }
             require(preferredSlaveLatency in 0..499) { "Slave latency is out of range." }

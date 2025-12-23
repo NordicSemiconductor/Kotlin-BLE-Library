@@ -35,15 +35,51 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.client.android.internal.NativeCentralManagerImpl
-
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 
 /**
  * Creates a [CentralManager] implementation which is using native Android API to
  * scan and connect to physical Bluetooth LE devices.
  *
+ * ### Important
+ * Remember to call [NativeAndroidEnvironment.close] when the environment is no longer needed.
+ * Each [NativeAndroidEnvironment] registers a [android.content.BroadcastReceiver] to be notified
+ * about Bluetooth state changes. Closing it will unregister the receiver.
+ *
+ * @param scope The coroutine scope.
+ * @param environment Native Android environment object.
+ */
+fun CentralManager.Factory.native(
+    scope: CoroutineScope,
+    environment: NativeAndroidEnvironment,
+): CentralManager =
+    NativeCentralManagerImpl(scope, environment)
+
+/**
+ * Creates a [CentralManager] implementation which is using native Android API to
+ * scan and connect to physical Bluetooth LE devices.
+ *
+ * This method creates an instance of [NativeAndroidEnvironment] which gets closed
+ * automatically when the [scope] is cancelled. If an environment instance is needed for multiple
+ * [CentralManager]s, use the other factory method.
+ *
  * @param context Android context, needed to connect to peripherals and listen to system events.
  * @param scope The coroutine scope.
  */
-fun CentralManager.Factory.native(context: Context, scope: CoroutineScope): CentralManager =
-    NativeCentralManagerImpl(context, scope)
+fun CentralManager.Factory.native(
+    context: Context,
+    scope: CoroutineScope,
+): CentralManager {
+    val env = NativeAndroidEnvironment(context)
+    scope.launch {
+        try {
+            awaitCancellation()
+        } finally {
+            env.close()
+        }
+    }
+    return NativeCentralManagerImpl(scope, env)
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,9 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.exception
-
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+package no.nordicsemi.kotlin.ble.core.exception
 
 /**
  * Thrown when Bluetooth is disabled or unavailable on the device.

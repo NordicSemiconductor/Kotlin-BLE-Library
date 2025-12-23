@@ -33,7 +33,6 @@ package no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy
 
 import android.bluetooth.le.AdvertiseCallback
 import android.bluetooth.le.AdvertiseSettings
-import android.content.Context
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -47,6 +46,7 @@ import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
@@ -57,12 +57,11 @@ import kotlin.time.Duration
  * Class responsible for starting advertisements on Android API level < 26.
  *
  * @constructor Creates an instance of an advertiser.
- *
- * @param context An Application context.
+ * @param environment The Android-specific environment to use for the advertiser.
  */
 internal class BluetoothLeAdvertiserLegacy(
-    context: Context,
-) : NativeBluetoothLeAdvertiser(context) {
+    environment: NativeAndroidEnvironment,
+) : NativeBluetoothLeAdvertiser(environment) {
     private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserLegacy::class.java)
 
     override suspend fun startAdvertising(

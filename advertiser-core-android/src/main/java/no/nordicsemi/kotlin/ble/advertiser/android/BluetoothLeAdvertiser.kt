@@ -29,6 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package no.nordicsemi.kotlin.ble.advertiser.android
 
 import kotlinx.coroutines.CancellableContinuation
@@ -39,6 +41,7 @@ import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.android.internal.AdvertisingDataScopeImpl
 import org.jetbrains.annotations.Range
 import kotlin.coroutines.resumeWithException
@@ -51,9 +54,14 @@ import kotlin.time.Duration
  * For example, it is not possible to set the local device name on Android. The name of the device
  * is used, and user can only control whether it should be included in the advertising data.
  *
- * Use [name] property to get or set the device name (it will affect all applications).
+ * Use [AndroidEnvironment.deviceName] property to get or set the device name
+ * (it will affect all applications).
+ *
+ * @param environment The Android-specific environment to use for the advertiser.
  */
-abstract class BluetoothLeAdvertiser: BluetoothLeAdvertiser<AdvertisingPayload> {
+abstract class BluetoothLeAdvertiser(
+    private val environment: AndroidEnvironment,
+): BluetoothLeAdvertiser<AdvertisingPayload> {
 
     companion object Factory
 
@@ -175,29 +183,17 @@ abstract class BluetoothLeAdvertiser: BluetoothLeAdvertiser<AdvertisingPayload> 
     )
 
     /**
-     * The local Bluetooth adapter name, or null on error.
-     *
-     * This name that is advertised as local name when included in the advertising data.
-     *
-     * @throws IllegalArgumentException If the name set is null.
-     * @throws SecurityException If the BLUETOOTH_CONNECT permission is denied.
-     */
-    abstract var name: String?
-
-    /**
-     * The local Bluetooth adapter name, or null on error.
-     *
-     * @see name
-     */
-    val nameOrNull: String?
-        get() = try { name } catch (_: Exception) { null }
-
-    /**
      * The maximum advertising data length supported by the Bluetooth adapter.
      *
      * @param legacy Whether the legacy advertising data length should be returned.
      */
-    abstract fun getMaximumAdvertisingDataLength(legacy: Boolean): Int
+    fun getMaximumAdvertisingDataLength(legacy: Boolean): Int {
+        if (!environment.isBluetoothSupported) return 0
+        if (legacy ||
+            environment.androidSdkVersion < AndroidEnvironment.SdkVersion.OREO ||
+            !environment.isLeExtendedAdvertisingSupported) return 31
+        return environment.leMaximumAdvertisingDataLength
+    }
 
     /**
      * Validator for the advertising data.
@@ -212,26 +208,50 @@ abstract class BluetoothLeAdvertiser: BluetoothLeAdvertiser<AdvertisingPayload> 
     /**
      * Checks if Bluetooth adapter is enabled.
      */
-    protected abstract fun isBluetoothEnabled(): Boolean
+    protected fun isBluetoothEnabled(): Boolean =
+        environment.isBluetoothSupported && environment.isBluetoothEnabled
 
     /**
-     * Checks if the BLUETOOTH_CONNECT permission is granted.
+     * Checks whether the BLUETOOTH_CONNECT permission is granted.
      *
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    protected abstract fun checkConnectPermission()
+    protected fun checkConnectPermission() {
+        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothConnectPermissionGranted) {
+            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
+        }
+    }
 
     /**
      * Checks if the BLUETOOTH_ADVERTISE permission is granted.
      *
      * @throws SecurityException If BLUETOOTH_ADVERTISE permission is denied.
      */
-    protected abstract fun checkAdvertisePermission()
+    protected fun checkAdvertisePermission() {
+        check(!environment.requiresBluetoothRuntimePermissions || environment.isBluetoothAdvertisePermissionGranted) {
+            throw SecurityException("BLUETOOTH_SCAN permission not granted")
+        }
+    }
 
     /**
      * Checks if the LE Extended Advertising is supported.
      */
-    protected abstract val isLeExtendedAdvertisingSupported: Boolean
+    protected val isLeExtendedAdvertisingSupported: Boolean
+        get() = when {
+            environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.VANILLA_ICE_CREAM ->
+                environment.isLeExtendedAdvertisingSupported
+
+            // When checking support for max advertising events up until Android 15
+            // the BluetoothLeAdvertiser was checking if periodic advertising is supported,
+            // not extended advertising:
+            // https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeAdvertiser.java;l=556?q=BluetoothLeAdvertiser
+            environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO ->
+                environment.isLePeriodicAdvertisingSupported &&
+                environment.isLeExtendedAdvertisingSupported
+
+            // Before Android Oreo Extended Advertising wasn't supported.
+            else -> false
+        }
 
     protected fun CancellableContinuation<Unit>.resumeWithReason(
         reason: AdvertisingNotStartedException.Reason

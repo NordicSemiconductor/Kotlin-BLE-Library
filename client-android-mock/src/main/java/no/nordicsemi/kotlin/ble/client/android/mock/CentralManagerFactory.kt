@@ -35,11 +35,10 @@ package no.nordicsemi.kotlin.ble.client.android.mock
 
 import kotlinx.coroutines.CoroutineScope
 import no.nordicsemi.kotlin.ble.android.mock.LatestApi
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.internal.MockCentralManagerImpl
 import no.nordicsemi.kotlin.ble.client.mock.SimulationProvider
-import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
 
 /**
  * Creates a mock implementation of a [CentralManager] that can emulate scanning and connecting
@@ -53,5 +52,5 @@ import no.nordicsemi.kotlin.ble.client.mock.internal.MockBluetoothLeAdvertiser
  */
 fun CentralManager.Factory.mock(
     scope: CoroutineScope,
-    environment: MockEnvironment = LatestApi(),
+    environment: MockAndroidEnvironment = LatestApi(),
 ): MockCentralManager = MockCentralManagerImpl(scope, environment)

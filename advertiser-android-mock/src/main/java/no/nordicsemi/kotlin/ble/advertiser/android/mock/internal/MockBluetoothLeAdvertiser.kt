@@ -41,7 +41,7 @@ import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.android.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import org.slf4j.Logger
@@ -55,12 +55,12 @@ import kotlin.time.Duration
  * Use this implementation to emulate Bluetooth LE advertising in tests.
  *
  * @property environment The mock environment. When advertising is requested,
- * the [MockEnvironment.advertiser]callback will be invoked to obtain the TX power level.
+ * the [MockAndroidEnvironment.advertiser] callback will be invoked to obtain the TX power level.
  * To emulate a failure, the callback should return a [Result.failure] with [AdvertisingNotStartedException].
  */
 internal class MockBluetoothLeAdvertiser(
-    private val environment: MockEnvironment,
-): BluetoothLeAdvertiser() {
+    private val environment: MockAndroidEnvironment,
+): BluetoothLeAdvertiser(environment) {
     private val logger: Logger = LoggerFactory.getLogger(MockBluetoothLeAdvertiser::class.java)
 
     override suspend fun startAdvertising(
@@ -111,31 +111,9 @@ internal class MockBluetoothLeAdvertiser(
         }
     }
 
-    override var name: String?
-        set(value) {
-            require(value != null)
-            environment.deviceName = value
-        }
-        get() {
-            checkConnectPermission()
-            return environment.deviceName
-        }
-
-    override fun getMaximumAdvertisingDataLength(legacy: Boolean): Int {
-        if (!environment.isBluetoothSupported) return 0
-        if (legacy ||
-            environment.androidSdkVersion < 26 /* Oreo */ ||
-            !environment.isLeExtendedAdvertisingSupported) return 31
-        return environment.leMaximumAdvertisingDataLength
-    }
-
-    override val isLeExtendedAdvertisingSupported: Boolean
-        get() = environment.androidSdkVersion >= 26 /* Oreo */ &&
-                environment.isLeExtendedAdvertisingSupported
-
     override val validator: AdvertisingDataValidator
         get() = AdvertisingDataValidator(
-                    deviceName = nameOrNull ?: "",
+                    deviceName = environment.deviceNameOrNull ?: "",
                     isLe2MPhySupported = environment.isLe2MPhySupported,
                     isLeCodedPhySupported = environment.isLeCodedPhySupported,
                     isLeExtendedAdvertisingSupported = environment.isLeExtendedAdvertisingSupported,
@@ -146,21 +124,4 @@ internal class MockBluetoothLeAdvertiser(
         get() = AdvertisingParametersValidator(
                     androidSdkVersion = environment.androidSdkVersion,
                 )
-
-    override fun isBluetoothEnabled(): Boolean =
-        environment.isBluetoothSupported && environment.isBluetoothEnabled
-
-    override fun checkConnectPermission() {
-        if (environment.androidSdkVersion >= 31 /* S */ &&
-            !environment.isBluetoothConnectPermissionGranted) {
-            throw SecurityException("BLUETOOTH_CONNECT permission not granted")
-        }
-    }
-
-    override fun checkAdvertisePermission() {
-        if (environment.androidSdkVersion >= 31 /* S */ &&
-            !environment.isBluetoothAdvertisePermissionGranted) {
-            throw SecurityException("BLUETOOTH_ADVERTISE permission not granted")
-        }
-    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,21 +29,19 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.android.sample.di
+package no.nordicsemi.kotlin.ble.core
 
-import android.os.Build
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Named
-
-@Module
-@InstallIn(SingletonComponent::class)
-class SdkModule {
-
-    @Provides
-    @Named("sdkVersion")
-    fun provideSdkVersion() = Build.VERSION.SDK_INT
-
+/**
+ * A base interface for local environment.
+ *
+ * The environment is used to capabilities of the local device, native or mock.
+ *
+ * @property deviceName The name of the local device.
+ * @property isBluetoothSupported Whether Bluetooth is supported.
+ * @property isBluetoothEnabled Whether Bluetooth is enabled.
+ */
+interface Environment {
+    val deviceName: String
+    val isBluetoothSupported: Boolean
+    val isBluetoothEnabled: Boolean
 }

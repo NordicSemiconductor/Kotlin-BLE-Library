@@ -44,7 +44,7 @@ import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.Proximity
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
-import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
+import no.nordicsemi.kotlin.ble.core.Environment
 
 class MockBluetoothLeAdvertiser<ID: Any>(
     private val scope: CoroutineScope,
@@ -58,7 +58,7 @@ class MockBluetoothLeAdvertiser<ID: Any>(
      * Simulates advertising for given peripheral specs.
      *
      * This implementation emits advertising events just as specified in the [PeripheralSpec]s.
-     * It does not take under consideration the [MockEnvironment], i.e. packets using
+     * It does not take under consideration the [Environment], i.e. packets using
      * LE Coded PHY will advertise and it is up to the scanner to filter them or not.
      *
      * @param scope The coroutine scope to run the advertising simulation in.

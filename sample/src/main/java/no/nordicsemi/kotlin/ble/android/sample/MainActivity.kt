@@ -14,7 +14,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -29,6 +28,8 @@ import no.nordicsemi.kotlin.ble.android.sample.advertiser.AdvertiserScreen
 import no.nordicsemi.kotlin.ble.android.sample.menu.MenuScreen
 import no.nordicsemi.kotlin.ble.android.sample.scanner.ScannerScreen
 import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import javax.inject.Inject
 
 const val NAV_MENU = "Menu"
 const val NAV_ADVERTISER = "Advertiser"
@@ -36,6 +37,8 @@ const val NAV_SCANNER = "Scanner"
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject
+    lateinit var environment: AndroidEnvironment
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -94,5 +97,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        environment.close()
     }
 }

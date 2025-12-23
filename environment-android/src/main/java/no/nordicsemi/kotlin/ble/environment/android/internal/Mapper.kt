@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,44 +29,15 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.kotlin.android)
-    alias(libs.plugins.nordic.nexus.android)
-}
+package no.nordicsemi.kotlin.ble.environment.android.internal
 
-group = "no.nordicsemi.kotlin.ble"
+import android.bluetooth.BluetoothAdapter
+import no.nordicsemi.kotlin.ble.core.Manager
 
-nordicNexusPublishing {
-    POM_ARTIFACT_ID = "client-android"
-    POM_NAME = "Bluetooth LE Client Module for Android"
-    POM_DESCRIPTION = "A main module of Kotlin BLE Library providing Android-specific functionality for scanning, connecting and interacting with Bluetooth LE peripherals."
-    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-}
-
-android {
-    namespace = "no.nordicsemi.kotlin.ble.client.android"
-}
-
-dependencies {
-    api(project(":client-core-android"))
-    api(project(":environment-android"))
-
-    api(libs.androidx.annotation)
-    api(libs.kotlinx.coroutines.android)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.slf4j)
-}
-
-dokka {
-    dokkaSourceSets.named("main") {
-        includes.from("Module.md")
-        perPackageOption {
-            matchingRegex.set("no.nordicsemi.kotlin.ble.client.android.internal")
-            suppress.set(true)
-        }
-    }
+internal fun Int.toState(): Manager.State = when (this) {
+    BluetoothAdapter.STATE_ON -> Manager.State.POWERED_ON
+    BluetoothAdapter.STATE_TURNING_ON,
+    BluetoothAdapter.STATE_TURNING_OFF,
+    BluetoothAdapter.STATE_OFF -> Manager.State.POWERED_OFF
+    else -> Manager.State.UNKNOWN
 }

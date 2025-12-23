@@ -33,9 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.client.mock
 
-import no.nordicsemi.kotlin.ble.client.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.Manager
-import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 
 /**
  * This class allows simulating events which would normally be emitted by the real central manager.
@@ -43,22 +41,6 @@ import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
  * @property ID The type of the peripheral identifier.
  */
 interface SimulationProvider<ID: Any> {
-
-    /**
-     * Simulates turning on Bluetooth adapter on the device.
-     *
-     * @throws ManagerClosedException If the central manager has been closed.
-     * @throws BluetoothUnavailableException If Bluetooth is not supported on the device.
-     */
-    fun simulatePowerOn()
-
-    /**
-     * Simulates turning off Bluetooth adapter on the device.
-     *
-     * @throws ManagerClosedException If the central manager has been closed.
-     * @throws BluetoothUnavailableException If Bluetooth is not supported on the device.
-     */
-    fun simulatePowerOff()
 
     /**
      * Sets a list of simulated peripherals.

@@ -44,9 +44,9 @@ import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import timber.log.Timber
 import javax.inject.Inject
-import javax.inject.Named
 import kotlin.time.Duration.Companion.seconds
 
 @HiltViewModel
@@ -55,7 +55,7 @@ class AdvertiserViewModel @Inject constructor(
     // We're not using ViewModelScope. For test purposes it's better to create a custom Scope,
     // also connected to the ViewModel lifecycle, but which can be replaced in tests.
     private val scope: CoroutineScope,
-    @param:Named("sdkVersion") val sdkVersion: Int,
+    val environment: AndroidEnvironment,
 ): ViewModel() {
     private val _isAdvertising = MutableStateFlow(false)
     var isAdvertising = _isAdvertising.asStateFlow()
@@ -92,7 +92,7 @@ class AdvertiserViewModel @Inject constructor(
                     Timber.i("Tx power: $txPower")
                     _isAdvertising.update { true }
                 }
-            } catch (e: CancellationException) {
+            } catch (_: CancellationException) {
                 Timber.i("Advertising cancelled")
             } catch (e: Exception) {
                 Timber.e(e, "Advertising failed")
