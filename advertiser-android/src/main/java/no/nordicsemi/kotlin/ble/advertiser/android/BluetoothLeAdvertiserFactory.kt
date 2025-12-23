@@ -32,9 +32,7 @@
 package no.nordicsemi.kotlin.ble.advertiser.android
 
 import android.content.Context
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
+import android.os.Build
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
@@ -55,7 +53,7 @@ fun BluetoothLeAdvertiser.Factory.native(
     environment: NativeAndroidEnvironment,
     forceLegacy: Boolean = false
 ): BluetoothLeAdvertiser = when {
-    !forceLegacy && environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO ->
+    !forceLegacy && Build.VERSION.SDK_INT >= AndroidEnvironment.SdkVersion.OREO ->
         BluetoothLeAdvertiserOreo(environment)
     else -> BluetoothLeAdvertiserLegacy(environment)
 }
@@ -67,27 +65,14 @@ fun BluetoothLeAdvertiser.Factory.native(
  * Limited functionality is available prior to Android O.
  *
  * @param context An application context.
- * @param scope The coroutine scope.
  * @param forceLegacy If set to true, the legacy implementation will be used on Android O and newer.
  * @return Instance of [BluetoothLeAdvertiser].
  */
 @Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.native(
     context: Context,
-    scope: CoroutineScope,
     forceLegacy: Boolean = false
 ): BluetoothLeAdvertiser {
-    val env = NativeAndroidEnvironment(context)
-    scope.launch {
-        try {
-            awaitCancellation()
-        } finally {
-            env.close()
-        }
-    }
-    return when {
-        !forceLegacy && env.androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO ->
-            BluetoothLeAdvertiserOreo(env)
-        else -> BluetoothLeAdvertiserLegacy(env)
-    }
+    val env = NativeAndroidEnvironment.getInstance(context)
+    return native(env, forceLegacy)
 }

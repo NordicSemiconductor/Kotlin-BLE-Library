@@ -62,10 +62,33 @@ import org.slf4j.LoggerFactory
  *
  * @param context The Android context, used to access system services.
  */
-class NativeAndroidEnvironment(
+class NativeAndroidEnvironment private constructor(
     context: Context,
 ): AndroidEnvironment {
     private val logger = LoggerFactory.getLogger(NativeAndroidEnvironment::class.java)
+
+    companion object {
+        /** Singleton instance of the environment. */
+        private lateinit var instance: NativeAndroidEnvironment
+
+        /**
+         * Get the singleton instance of the environment.
+         *
+         * ### Important
+         * When first time created, the environment registers a [BroadcastReceiver] to
+         * listen to Bluetooth state changes. Make sure to call [close] to unregister the receiver.
+         *
+         * @param context The Android context, used to access system services. This can be any
+         * [Context], as only the [Context.getApplicationContext] will be used.
+         * @return The singleton instance of the environment.
+         */
+        fun getInstance(context: Context): NativeAndroidEnvironment {
+            if (!::instance.isInitialized) {
+                instance = NativeAndroidEnvironment(context)
+            }
+            return instance
+        }
+    }
 
     /**
      * Application context.
@@ -113,12 +136,18 @@ class NativeAndroidEnvironment(
 
     init {
         // Register a broadcast receiver to monitor Bluetooth state changes.
+        println("AAA Registering broadcast receiver")
         val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
     }
 
     override fun close() {
-        applicationContext.unregisterReceiver(stateBroadcastReceiver)
+        try {
+            println("AAA Unregistering broadcast receiver")
+            applicationContext.unregisterReceiver(stateBroadcastReceiver)
+        } catch (_: IllegalArgumentException) {
+            // Ignore
+        }
     }
 
     override val androidSdkVersion = Build.VERSION.SDK_INT

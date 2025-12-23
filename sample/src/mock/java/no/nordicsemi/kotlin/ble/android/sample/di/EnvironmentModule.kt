@@ -35,6 +35,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.ActivityRetainedLifecycle
 import dagger.hilt.android.components.ActivityRetainedComponent
 // import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.android.mock.MockAdvertiser
@@ -42,14 +43,15 @@ import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 // import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import timber.log.Timber
-import javax.inject.Named
 
 @Module
 @InstallIn(ActivityRetainedComponent::class)
 object EnvironmentModule {
 
     @Provides
-    fun providesEnvironment(): MockAndroidEnvironment {
+    fun providesEnvironment(
+        lifecycle: ActivityRetainedLifecycle
+    ): MockAndroidEnvironment {
         // Define the mock SDK version.
         val sdkVersion = 35
 
@@ -90,6 +92,10 @@ object EnvironmentModule {
             )
         }
         return sdkVersion.toMockEnvironment()
+            // Make sure the environment is closed when the lifecycle is cleared.
+            .also { env ->
+                lifecycle.addOnClearedListener { env.close() }
+            }
     }
 
 }
