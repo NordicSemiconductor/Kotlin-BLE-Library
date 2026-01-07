@@ -19,7 +19,7 @@
     },
     {
       "matchPackageNames": [
-        "/androidx.hilt/"
+        "/no.nordicsemi.android.gradle/"
       ],
       "enabled": false
     }
