@@ -111,7 +111,3 @@ include(":client-android-mock")
 //include(":test")
 
 include(":sample")
-
-//if (file("../Android-Common-Libraries").exists()) {
-//    includeBuild("../Android-Common-Libraries")
-//}
