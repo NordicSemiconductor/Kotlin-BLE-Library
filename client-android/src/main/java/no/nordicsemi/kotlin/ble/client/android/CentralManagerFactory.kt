@@ -33,7 +33,6 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
-import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.internal.NativeCentralManagerImpl
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
@@ -42,26 +41,11 @@ import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
  * Creates a [CentralManager] implementation which is using native Android API to
  * scan and connect to physical Bluetooth LE devices.
  *
+ * @param environment Native Android environment object. Use [NativeAndroidEnvironment.instance].
+ * Remember to call [NativeAndroidEnvironment.close] to unregister the broadcast receiver.
  * @param scope The coroutine scope.
- * @param environment Native Android environment object.
  */
 fun CentralManager.Factory.native(
     environment: NativeAndroidEnvironment,
     scope: CoroutineScope,
-): CentralManager =
-    NativeCentralManagerImpl(scope, environment)
-
-/**
- * Creates a [CentralManager] implementation which is using native Android API to
- * scan and connect to physical Bluetooth LE devices.
- *
- * @param context Android context, needed to connect to peripherals and listen to system events.
- * @param scope The coroutine scope.
- */
-fun CentralManager.Factory.native(
-    context: Context,
-    scope: CoroutineScope,
-): CentralManager {
-    val env = NativeAndroidEnvironment.getInstance(context)
-    return NativeCentralManagerImpl(scope, env)
-}
+): CentralManager = NativeCentralManagerImpl(scope, environment)

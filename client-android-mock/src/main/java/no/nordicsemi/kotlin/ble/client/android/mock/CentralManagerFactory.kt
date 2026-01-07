@@ -47,10 +47,10 @@ import no.nordicsemi.kotlin.ble.client.mock.SimulationProvider
  * Use [MockCentralManager.simulatePeripherals] to set up mock peripherals and other
  * methods from [SimulationProvider] to control the simulation.
  *
+ * @param environment The environment to use for the mock, defaults to the latest supported API.
  * @param scope The coroutine scope.
- * @property environment The environment to use for the mock, defaults to the latest supported API.
  */
 fun CentralManager.Factory.mock(
-    scope: CoroutineScope,
     environment: MockAndroidEnvironment = LatestApi(),
+    scope: CoroutineScope,
 ): MockCentralManager = MockCentralManagerImpl(scope, environment)

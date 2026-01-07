@@ -136,14 +136,12 @@ class NativeAndroidEnvironment private constructor(
 
     init {
         // Register a broadcast receiver to monitor Bluetooth state changes.
-        println("AAA Registering broadcast receiver")
         val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
     }
 
     override fun close() {
         try {
-            println("AAA Unregistering broadcast receiver")
             applicationContext.unregisterReceiver(stateBroadcastReceiver)
         } catch (_: IllegalArgumentException) {
             // Ignore

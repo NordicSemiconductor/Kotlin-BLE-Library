@@ -39,12 +39,12 @@ import dagger.hilt.android.components.ViewModelComponent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
 import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
 import no.nordicsemi.kotlin.ble.client.mock.ConnectionResult
@@ -319,9 +319,9 @@ object ViewModelModule {
 
     @Provides
     fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
+        return CoroutineScope(SupervisorJob())
+            .also { scope ->
+                lifecycle.addOnClearedListener { scope.cancel() }
             }
     }
 
@@ -332,10 +332,10 @@ object ViewModelModule {
 
     @Provides
     fun provideCentralManager(
+        environment: MockAndroidEnvironment,
         scope: CoroutineScope,
-        environment: MockAndroidEnvironment
     ): CentralManager {
-        return CentralManager.mock(scope, environment)
+        return CentralManager.mock(environment, scope)
             .apply {
                 simulatePeripherals(listOf(blinky, beacon))
             }
