@@ -162,8 +162,6 @@ class NativeAndroidEnvironment private constructor(
 
     override val isBluetoothSupported: Boolean
         get() = bluetoothManager?.adapter != null
-    override val isBluetoothEnabled: Boolean
-        get() = bluetoothManager?.adapter?.isEnabled ?: false
     override val isLocationRequiredForScanning = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
     override val isLocationPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&

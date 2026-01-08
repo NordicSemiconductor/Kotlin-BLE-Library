@@ -243,9 +243,10 @@ open class MockCentralManagerImpl(
                     }
 
                     // If the `neverForLocation` flag is set, check if the device is a beacon.
-                    if (!environment.isLocationRequiredForScanning &&
-                        environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.S &&
-                        result.isBeacon) {
+                    val neverForLocationSet =
+                        !environment.isLocationRequiredForScanning &&
+                         environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.S
+                    if (neverForLocationSet && result.isBeacon) {
                         return@collect
                     }
 

@@ -52,12 +52,12 @@ import org.jetbrains.annotations.Range
  * @property isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
  * @property isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
  * @property isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
+ * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
  * @property isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
  * @property isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
  * @property isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
  * @property leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
  * if LE Extended Advertising feature is supported.
- * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
  */
 interface AndroidEnvironment : Environment {
     /**
@@ -79,6 +79,10 @@ interface AndroidEnvironment : Environment {
     }
 
     val bluetoothState: StateFlow<Manager.State>
+
+    override val isBluetoothEnabled: Boolean
+        get() = bluetoothState.value == Manager.State.POWERED_ON
+
     val deviceNameOrNull: String?
         get() = try { deviceName } catch (_: Exception) { null }
 
@@ -90,11 +94,11 @@ interface AndroidEnvironment : Environment {
     val isLeCodedPhySupported: Boolean
     val isBluetoothScanPermissionGranted: Boolean
     val isBluetoothConnectPermissionGranted: Boolean
+    val isBluetoothAdvertisePermissionGranted: Boolean
     val isMultipleAdvertisementSupported: Boolean
     val isLeExtendedAdvertisingSupported: Boolean
     val isLePeriodicAdvertisingSupported: Boolean
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int
-    val isBluetoothAdvertisePermissionGranted: Boolean
 
     /**
      * Whether the device requires runtime permissions to use Bluetooth.

@@ -112,11 +112,11 @@ sealed class MockAndroidEnvironment(
     override val isLeCodedPhySupported: Boolean = false,
     override val isBluetoothScanPermissionGranted: Boolean = false,
     override val isBluetoothConnectPermissionGranted: Boolean = false,
+    override val isBluetoothAdvertisePermissionGranted: Boolean = false,
     override val isMultipleAdvertisementSupported: Boolean, // TODO this is not used
     override val isLeExtendedAdvertisingSupported: Boolean = false,
     override val isLePeriodicAdvertisingSupported: Boolean = false,
     override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
-    override val isBluetoothAdvertisePermissionGranted: Boolean = false,
     val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val issueOnlyOneActiveScan: Boolean = false, // Nexus 4 issue
     val issueIncorrectL2capTxMtu: Boolean = false, // Samsung A8 Tab issue
@@ -142,7 +142,8 @@ sealed class MockAndroidEnvironment(
     )
     override val bluetoothState = _bluetoothState.asStateFlow()
 
-    override val isBluetoothEnabled = bluetoothState.value == Manager.State.POWERED_ON
+    override val isBluetoothEnabled: Boolean
+        get() = bluetoothState.value == Manager.State.POWERED_ON
 
     /**
      * Simulates turning on Bluetooth adapter on the mock device.
@@ -384,9 +385,10 @@ sealed class MockAndroidEnvironment(
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
      * advertising on LE Coded PHY as Primary PHY.
      * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
+     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
+     * @param isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
      * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
      * to estimate device location. By default, `neverForLocation` flag is assumed.
-     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
      * @param isLocationPermissionGranted Whether the fine location permission is granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
