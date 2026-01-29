@@ -395,11 +395,4 @@ private fun ByteArray.matches(data: ByteArray, mask: ByteArray?): Boolean {
     return true
 }
 
-fun List<ScanFilter>.match(scanResult: ScanResult): Boolean {
-    forEach { filter ->
-        if (filter.matches(scanResult)) {
-            return true
-        }
-    }
-    return false
-}
+fun List<ScanFilter>.match(scanResult: ScanResult): Boolean = any { it.matches(scanResult) }
