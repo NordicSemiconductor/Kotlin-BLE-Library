@@ -108,6 +108,7 @@ object ViewModelModule {
          */
         private var isButtonPressed = false
             set(value) {
+                field = value
                 buttonHandle?.let {
                     Timber.i("[Blinky] Simulating Button ${if (value) "clicked" else "released"}")
                     blinky.simulateValueUpdate(it, value.toBytes())
