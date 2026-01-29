@@ -250,8 +250,8 @@ object ViewModelModule {
                     AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED
                 )
                 CompleteLocalName("HR Sensor")
-                ServiceUuid(Uuid.fromShortUuid(0x1809))
-                ServiceUuid(Uuid.fromShortUuid(0x180A))
+                ServiceUuid(shortUuid = 0x1809)
+                ServiceUuid(shortUuid = 0x180A)
             }
             connectable(
                 name = "Nordic_Blinky",
@@ -311,9 +311,11 @@ object ViewModelModule {
                 connectable = false,
                 interval = 1.seconds,
             ),
+            // Beacons are excluded if "neverForLocation" flag is disabled.
+            isBeacon = true,
         ) {
             CompleteLocalName("Nordic_Beacon")
-            ServiceUuid(Uuid.fromShortUuid(0xFEAA)) // Eddystone UUID
+            ServiceUuid(shortUuid = 0xFEAA) // Eddystone UUID
             IncludeTxPowerLevel()
         }
     }
@@ -335,11 +337,9 @@ object ViewModelModule {
     fun provideCentralManager(
         environment: MockAndroidEnvironment,
         scope: CoroutineScope,
-    ): CentralManager {
-        return CentralManager.mock(environment, scope)
-            .apply {
-                simulatePeripherals(listOf(blinky, beacon))
-            }
-    }
+    ): CentralManager = CentralManager.mock(environment, scope)
+        .apply {
+            simulatePeripherals(listOf(blinky, beacon))
+        }
 
 }
