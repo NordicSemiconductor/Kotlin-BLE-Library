@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Nordic Semiconductor
+ * Copyright (c) 2024, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,15 +29,35 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.core.mock
+plugins {
+    alias(libs.plugins.nordic.library.compose)
+    alias(libs.plugins.nordic.nexus.android)
+}
 
-import no.nordicsemi.kotlin.ble.core.Environment
+group = "no.nordicsemi.kotlin.ble"
 
-/**
- * A mock environment that can be used to test the behavior of the Central Manager.
- *
- * @property reportsConnectionParameters Whether the device reports connection parameters.
- */
-interface MockEnvironment : Environment {
-    val reportsConnectionParameters: Boolean
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "environment-android-mock-compose"
+    POM_NAME = "Android Mock Environment for Compose"
+    POM_DESCRIPTION = "Set of Jetpack Compose utilities for Mock Environment for Android."
+    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+}
+
+android {
+    namespace = "no.nordicsemi.kotlin.ble.environment.android.mock.compose"
+}
+
+dependencies {
+    api(project(":core-android-mock"))
+    
+    implementation(libs.androidx.activity.compose)
+}
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
 }

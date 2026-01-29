@@ -40,14 +40,16 @@ import org.jetbrains.annotations.Range
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
  * @property bluetoothState A flow emitting the current Bluetooth state.
- * @property deviceNameOrNull The local Bluetooth adapter name, or null if the required permission
- * is not granted.
+ * @property locationState A flow emitting the state of the location service, *true* when enabled,
+ * *false* otherwise.
+ * Location service is required to scan for Bluetooth LE beacons when
+ * [isLocationRequiredForScanning] is *true*.
+ * @property isLocationRequiredForScanning Whether location is required to scan for Bluetooth LE devices.
+ * @property isLocationPermissionGranted Whether the `ACCESS_FINE_LOCATION` permission is granted.
+ * @property isLocationEnabled Whether location service is enabled on the device.
  * @property androidSdkVersion The Android SDK version.
  * @property deviceName The name of the device, used for Bluetooth LE advertising if local name is set.
- * Reading and setting the name requires Bluetooth Connect permission.
- * @property isLocationRequiredForScanning Whether location is required to scan for Bluetooth devices.
- * @property isLocationPermissionGranted Whether the fine location permission is granted.
- * @property isLocationEnabled Whether location service is enabled on the device.
+ * Reading and setting the name requires `BLUETOOTH_CONNECT` permission.
  * @property isLe2MPhySupported Whether LE 2M PHY is supported on the device.
  * @property isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
  * @property isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
@@ -79,17 +81,21 @@ interface AndroidEnvironment : Environment {
     }
 
     val bluetoothState: StateFlow<Manager.State>
-
     override val isBluetoothEnabled: Boolean
         get() = bluetoothState.value == Manager.State.POWERED_ON
 
-    val deviceNameOrNull: String?
-        get() = try { deviceName } catch (_: Exception) { null }
+    /**
+     * Sends an intent to enable Bluetooth adapter on the device.
+     */
+    fun enableBluetooth()
+
+    val locationState: StateFlow<Boolean>
+    val isLocationEnabled: Boolean
+        get() = locationState.value
 
     val androidSdkVersion: Int
     val isLocationRequiredForScanning: Boolean
     val isLocationPermissionGranted: Boolean
-    val isLocationEnabled: Boolean
     val isLe2MPhySupported: Boolean
     val isLeCodedPhySupported: Boolean
     val isBluetoothScanPermissionGranted: Boolean
@@ -101,12 +107,26 @@ interface AndroidEnvironment : Environment {
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int
 
     /**
+     * The local Bluetooth adapter name, or *null* if the required permission is not granted.
+     */
+    val deviceNameOrNull: String?
+        get() = try { deviceName } catch (_: Exception) { null }
+
+    /**
      * Whether the device requires runtime permissions to use Bluetooth.
      *
      * See: [Bluetooth permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions)
      */
     val requiresBluetoothRuntimePermissions: Boolean
         get() = androidSdkVersion >= SdkVersion.S
+
+    /**
+     * Whether the device supports runtime permissions.
+     *
+     * See: [Request runtime permissions](https://developer.android.com/training/permissions/requesting)
+     */
+    val supportsRuntimePermissions: Boolean
+        get() = androidSdkVersion >= SdkVersion.MARSHMALLOW
 
     /**
      * Unregisters the broadcast receiver that listens for Bluetooth state changes.
