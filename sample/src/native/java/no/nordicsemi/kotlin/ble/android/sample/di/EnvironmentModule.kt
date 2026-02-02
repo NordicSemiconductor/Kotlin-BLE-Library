@@ -39,6 +39,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.ActivityRetainedLifecycle
 import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 
@@ -46,12 +47,13 @@ import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 @InstallIn(ActivityRetainedComponent::class)
 object EnvironmentModule {
 
+    @ActivityRetainedScoped
     @Provides
     fun provideEnvironment(
         @ApplicationContext context: Context,
         lifecycle: ActivityRetainedLifecycle
     ): NativeAndroidEnvironment {
-        return NativeAndroidEnvironment.getInstance(context)
+        return NativeAndroidEnvironment.getInstance(context, isNeverForLocationFlagSet = true)
             // Make sure the environment is closed when the lifecycle is cleared.
             // This will unregister the broadcast receiver.
             .also { env ->

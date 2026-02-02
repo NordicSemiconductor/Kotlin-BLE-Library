@@ -36,6 +36,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.ViewModelLifecycle
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +45,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
 import no.nordicsemi.kotlin.ble.client.mock.ConnectionResult
@@ -67,7 +67,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.and
-import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -320,6 +320,7 @@ object ViewModelModule {
         }
     }
 
+    @ViewModelScoped
     @Provides
     fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
         return CoroutineScope(SupervisorJob())
@@ -328,11 +329,13 @@ object ViewModelModule {
             }
     }
 
+    @ViewModelScoped
     @Provides
     fun providesAdvertiser(environment: MockAndroidEnvironment): BluetoothLeAdvertiser {
         return BluetoothLeAdvertiser.mock(environment)
     }
 
+    @ViewModelScoped
     @Provides
     fun provideCentralManager(
         environment: MockAndroidEnvironment,

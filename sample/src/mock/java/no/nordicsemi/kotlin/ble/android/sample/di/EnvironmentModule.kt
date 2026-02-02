@@ -37,10 +37,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.ActivityRetainedLifecycle
 import dagger.hilt.android.components.ActivityRetainedComponent
+import dagger.hilt.android.scopes.ActivityRetainedScoped
 // import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.android.mock.MockAdvertiser
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAdvertiser
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 // import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import timber.log.Timber
 
@@ -48,6 +49,7 @@ import timber.log.Timber
 @InstallIn(ActivityRetainedComponent::class)
 object EnvironmentModule {
 
+    @ActivityRetainedScoped
     @Provides
     fun providesEnvironment(
         lifecycle: ActivityRetainedLifecycle
