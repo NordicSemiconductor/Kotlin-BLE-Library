@@ -67,7 +67,7 @@ import org.slf4j.LoggerFactory
  */
 class NativeAndroidEnvironment private constructor(
     context: Context,
-    isNeverForLocationFlagSet: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
+    isNeverForLocationFlagSet: Boolean,
 ): AndroidEnvironment {
     private val logger = LoggerFactory.getLogger(NativeAndroidEnvironment::class.java)
 
@@ -76,7 +76,7 @@ class NativeAndroidEnvironment private constructor(
         private lateinit var instance: NativeAndroidEnvironment
 
         /**
-         * Get the singleton instance of the environment.
+         * Creates or returns the singleton instance of the Android native environment.
          *
          * ### Important
          * When first time created, the environment registers a [BroadcastReceiver] to
@@ -84,11 +84,17 @@ class NativeAndroidEnvironment private constructor(
          *
          * @param context The Android context, used to access system services. This can be any
          * [Context], as only the [Context.getApplicationContext] will be used.
+         * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+         * to estimate device location. This should be set if the `BLUETOOTH_SCAN` permission is declared with
+         * `neverForLocation` flag.
          * @return The singleton instance of the environment.
          */
-        fun getInstance(context: Context): NativeAndroidEnvironment {
+        fun getInstance(
+            context: Context,
+            isNeverForLocationFlagSet: Boolean,
+        ): NativeAndroidEnvironment {
             if (!::instance.isInitialized) {
-                instance = NativeAndroidEnvironment(context)
+                instance = NativeAndroidEnvironment(context, isNeverForLocationFlagSet)
             }
             return instance
         }
