@@ -83,7 +83,6 @@ dependencyResolutionManagement {
 rootProject.name = "Kotlin BLE Library"
 
 include(":environment-android")
-include(":environment-android-mock-compose")
 
 include(":core")
 include(":core-mock")
