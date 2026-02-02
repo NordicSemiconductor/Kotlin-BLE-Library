@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,9 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
-package no.nordicsemi.kotlin.ble.android.mock
+package no.nordicsemi.kotlin.ble.environment.android.mock
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,7 +38,6 @@ import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
-import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment.SdkVersion
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import org.jetbrains.annotations.Range
@@ -151,14 +148,14 @@ sealed class MockAndroidEnvironment(
     /**
      * Simulates turning on Bluetooth adapter on the mock device.
      *
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     fun simulatePowerOn() = simulateStateChange(Manager.State.POWERED_ON)
 
     /**
      * Simulates turning off Bluetooth adapter on the mock device.
      *
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     fun simulatePowerOff() = simulateStateChange(Manager.State.POWERED_OFF)
 
@@ -166,7 +163,7 @@ sealed class MockAndroidEnvironment(
      * Simulates changing Bluetooth adapter state on the mock device.
      *
      * @param newState The new state of the Bluetooth adapter.
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     private fun simulateStateChange(newState: Manager.State) {
         require(isBluetoothSupported) {
@@ -232,7 +229,7 @@ sealed class MockAndroidEnvironment(
             _deviceName = value
         }
 
-    override var reportsConnectionParameters = androidSdkVersion >= SdkVersion.OREO
+    override var reportsConnectionParameters = androidSdkVersion == AndroidEnvironment.SdkVersion.Companion.OREO
 
     override fun close() {
         // Empty
@@ -263,7 +260,7 @@ sealed class MockAndroidEnvironment(
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.LOLLIPOP,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.LOLLIPOP,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -309,7 +306,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion =SdkVersion.MARSHMALLOW,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.MARSHMALLOW,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -376,7 +373,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.OREO,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.OREO,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -466,7 +463,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.S,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.S,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,

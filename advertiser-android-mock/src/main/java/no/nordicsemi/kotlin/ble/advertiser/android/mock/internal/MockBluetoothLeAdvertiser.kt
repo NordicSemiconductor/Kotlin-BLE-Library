@@ -41,9 +41,9 @@ import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingDataValidator
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParametersValidator
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume

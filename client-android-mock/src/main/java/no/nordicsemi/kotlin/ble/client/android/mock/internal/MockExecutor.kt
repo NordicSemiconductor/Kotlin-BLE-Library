@@ -37,7 +37,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withTimeout
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
@@ -49,6 +48,7 @@ import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import org.jetbrains.annotations.Range
 import kotlin.time.Duration.Companion.seconds
 
