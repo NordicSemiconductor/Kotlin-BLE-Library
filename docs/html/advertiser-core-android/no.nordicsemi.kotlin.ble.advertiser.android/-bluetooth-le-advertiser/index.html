@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha11
+        <div class="library-version" id="library-version">2.0.0-alpha13
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -94,24 +94,24 @@
   <div class="breadcrumbs"><a href="../../index.html">advertiser-core-android</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.advertiser.android</a><span class="delimiter">/</span><span class="current">BluetoothLeAdvertiser</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Bluetooth</span><wbr><span>Le</span><wbr><span><span>Advertiser</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">BluetoothLeAdvertiser</a> : <a href="../../../advertiser-core/no.nordicsemi.kotlin.ble.advertiser/-bluetooth-le-advertiser/index.html">BluetoothLeAdvertiser</a><span class="token operator">&lt;</span><a href="../-advertising-payload/index.html">AdvertisingPayload</a><span class="token operator">&gt; </span></div><p class="paragraph">Base advertiser interface for Android.</p><p class="paragraph">This interface extends <a href="index.html">BluetoothLeAdvertiser</a> and adds Android-specific methods. For example, it is not possible to set the local device name on Android. The name of the device is used, and user can only control whether it should be included in the advertising data.</p><p class="paragraph">Use <a href="name.html">name</a> property to get or set the device name (it will affect all applications).</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">class </span><a href="index.html">BluetoothLeAdvertiser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">environment<span class="token operator">: </span><a href="../../../core-android/no.nordicsemi.kotlin.ble.core.android/-android-environment/index.html">AndroidEnvironment</a></span></span><span class="token punctuation">)</span> : <a href="../../../advertiser-core/no.nordicsemi.kotlin.ble.advertiser/-bluetooth-le-advertiser/index.html">BluetoothLeAdvertiser</a><span class="token operator">&lt;</span><a href="../-advertising-payload/index.html">AdvertisingPayload</a><span class="token operator">&gt; </span></div><p class="paragraph">Base advertiser interface for Android.</p><p class="paragraph">This interface extends <a href="index.html">BluetoothLeAdvertiser</a> and adds Android-specific methods. For example, it is not possible to set the local device name on Android. The name of the device is used, and user can only control whether it should be included in the advertising data.</p><p class="paragraph">Use <a href="../../../core/no.nordicsemi.kotlin.ble.core/-environment/device-name.html">AndroidEnvironment.deviceName</a> property to get or set the device name (it will affect all applications).</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":advertiser-core-android/main" data-filterable-set=":advertiser-core-android/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>environment</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The Android-specific environment to use for the advertiser.</p></div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="525644337%2FConstructors%2F1045418449" anchor-label="BluetoothLeAdvertiser" id="525644337%2FConstructors%2F1045418449" data-filterable-set=":advertiser-core-android/main"></a>
+        <div class="table"><a data-name="-1615740423%2FConstructors%2F1045418449" anchor-label="BluetoothLeAdvertiser" id="-1615740423%2FConstructors%2F1045418449" data-filterable-set=":advertiser-core-android/main"></a>
           <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":advertiser-core-android/main" data-filterable-set=":advertiser-core-android/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-bluetooth-le-advertiser.html"><span>Bluetooth</span><wbr><span>Le</span><wbr><span><span>Advertiser</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="525644337%2FConstructors%2F1045418449"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1615740423%2FConstructors%2F1045418449"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">environment<span class="token operator">: </span><a href="../../../core-android/no.nordicsemi.kotlin.ble.core.android/-android-environment/index.html">AndroidEnvironment</a></span></span><span class="token punctuation">)</span></div></div></div>
                 </div>
               </div>
             </div>
@@ -131,40 +131,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-factory/index.html">Factory</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-32967828%2FProperties%2F1045418449" anchor-label="name" id="-32967828%2FProperties%2F1045418449" data-filterable-set=":advertiser-core-android/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":advertiser-core-android/main" data-filterable-set=":advertiser-core-android/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="name.html"><span><span>name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-32967828%2FProperties%2F1045418449"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The local Bluetooth adapter name, or null on error.</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-412054206%2FProperties%2F1045418449" anchor-label="nameOrNull" id="-412054206%2FProperties%2F1045418449" data-filterable-set=":advertiser-core-android/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":advertiser-core-android/main" data-filterable-set=":advertiser-core-android/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="name-or-null.html"><span>name</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-412054206%2FProperties%2F1045418449"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="name-or-null.html">nameOrNull</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The local Bluetooth adapter name, or null on error.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -198,7 +164,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-maximum-advertising-data-length.html"><span class="token function">getMaximumAdvertisingDataLength</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">legacy<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The maximum advertising data length supported by the Bluetooth adapter.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-core-android/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-maximum-advertising-data-length.html"><span class="token function">getMaximumAdvertisingDataLength</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">legacy<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The maximum advertising data length supported by the Bluetooth adapter.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -217,7 +183,7 @@
                     <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
                         Dokka
                     </a>
-                    <div>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</div>
+                    <div>Copyright © 2022 - 2026 Nordic Semiconductor ASA. All Rights Reserved.</div>
                 </div>
             </div>
         </div>

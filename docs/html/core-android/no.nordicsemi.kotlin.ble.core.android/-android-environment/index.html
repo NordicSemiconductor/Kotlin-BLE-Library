@@ -1,0 +1,495 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>AndroidEnvironment</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Kotlin BLE Library
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">2.0.0-alpha13
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core-android/main">jvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core-android/main" data-filter=":core-android/main">
+                                <span class="checkbox--icon"></span>
+                                jvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Kotlin BLE Library
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="core-android::no.nordicsemi.kotlin.ble.core.android/AndroidEnvironment///PointingToDeclaration//-509516991">
+  <div class="breadcrumbs"><a href="../../index.html">core-android</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.core.android</a><span class="delimiter">/</span><span class="current">AndroidEnvironment</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Android</span><wbr><span><span>Environment</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">AndroidEnvironment</a> : <a href="../../../core/no.nordicsemi.kotlin.ble.core/-environment/index.html">Environment</a></div><p class="paragraph">A mock environment that can be used to test the behavior of the Central Manager.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="1096656926%2FClasslikes%2F-509516991" anchor-label="SdkVersion" id="1096656926%2FClasslikes%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-sdk-version/index.html"><span>Sdk</span><wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1096656926%2FClasslikes%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-sdk-version/index.html">SdkVersion</a></div><div class="brief "><p class="paragraph">Android SDK versions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="238421542%2FProperties%2F-509516991" anchor-label="androidSdkVersion" id="238421542%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="android-sdk-version.html"><span>android</span><wbr><span>Sdk</span><wbr><span><span>Version</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="238421542%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="android-sdk-version.html">androidSdkVersion</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The Android SDK version.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-140575356%2FProperties%2F-509516991" anchor-label="bluetoothState" id="-140575356%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="bluetooth-state.html"><span>bluetooth</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-140575356%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="bluetooth-state.html">bluetoothState</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="../../../core/no.nordicsemi.kotlin.ble.core/-manager/-state/index.html">Manager.State</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A flow emitting the current Bluetooth state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1422345046%2FProperties%2F-509516991" anchor-label="deviceName" id="-1422345046%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1422345046%2FProperties%2F-509516991"><span>device</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1422345046%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="index.html#-1422345046%2FProperties%2F-509516991">deviceName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-192637156%2FProperties%2F-509516991" anchor-label="deviceNameOrNull" id="-192637156%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="device-name-or-null.html"><span>device</span><wbr><span>Name</span><wbr><span>Or</span><wbr><span><span>Null</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-192637156%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="device-name-or-null.html">deviceNameOrNull</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">The local Bluetooth adapter name, or <i>null</i> if the required permission is not granted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1702217366%2FProperties%2F-509516991" anchor-label="isBluetoothAdvertisePermissionGranted" id="-1702217366%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-bluetooth-advertise-permission-granted.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span>Advertise</span><wbr><span>Permission</span><wbr><span><span>Granted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1702217366%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-bluetooth-advertise-permission-granted.html">isBluetoothAdvertisePermissionGranted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <code class="lang-kotlin">BLUETOOTH_ADVERTISE</code> permission is granted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-596352275%2FProperties%2F-509516991" anchor-label="isBluetoothConnectPermissionGranted" id="-596352275%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-bluetooth-connect-permission-granted.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span>Connect</span><wbr><span>Permission</span><wbr><span><span>Granted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-596352275%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-bluetooth-connect-permission-granted.html">isBluetoothConnectPermissionGranted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <code class="lang-kotlin">BLUETOOTH_CONNECT</code> permission is granted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1062787510%2FProperties%2F-509516991" anchor-label="isBluetoothEnabled" id="-1062787510%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-bluetooth-enabled.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1062787510%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="is-bluetooth-enabled.html">isBluetoothEnabled</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="575796188%2FProperties%2F-509516991" anchor-label="isBluetoothScanPermissionGranted" id="575796188%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-bluetooth-scan-permission-granted.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span>Scan</span><wbr><span>Permission</span><wbr><span><span>Granted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="575796188%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-bluetooth-scan-permission-granted.html">isBluetoothScanPermissionGranted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <code class="lang-kotlin">BLUETOOTH_SCAN</code> permission is granted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1588874015%2FProperties%2F-509516991" anchor-label="isBluetoothSupported" id="-1588874015%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1588874015%2FProperties%2F-509516991"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1588874015%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="index.html#-1588874015%2FProperties%2F-509516991">isBluetoothSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-419724580%2FProperties%2F-509516991" anchor-label="isLe2MPhySupported" id="-419724580%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-le2-m-phy-supported.html"><span>is</span><wbr><span>Le2MPhy</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-419724580%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-le2-m-phy-supported.html">isLe2MPhySupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether LE 2M PHY is supported on the device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1989910318%2FProperties%2F-509516991" anchor-label="isLeCodedPhySupported" id="-1989910318%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-le-coded-phy-supported.html"><span>is</span><wbr><span>Le</span><wbr><span>Coded</span><wbr><span>Phy</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1989910318%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-le-coded-phy-supported.html">isLeCodedPhySupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether LE Coded PHY is supported on the device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="394247233%2FProperties%2F-509516991" anchor-label="isLeExtendedAdvertisingSupported" id="394247233%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-le-extended-advertising-supported.html"><span>is</span><wbr><span>Le</span><wbr><span>Extended</span><wbr><span>Advertising</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="394247233%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-le-extended-advertising-supported.html">isLeExtendedAdvertisingSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether LE Extended Advertising feature is supported.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="494725663%2FProperties%2F-509516991" anchor-label="isLePeriodicAdvertisingSupported" id="494725663%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-le-periodic-advertising-supported.html"><span>is</span><wbr><span>Le</span><wbr><span>Periodic</span><wbr><span>Advertising</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="494725663%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-le-periodic-advertising-supported.html">isLePeriodicAdvertisingSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether LE Periodic Advertising feature is supported.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-200662127%2FProperties%2F-509516991" anchor-label="isLocationEnabled" id="-200662127%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-location-enabled.html"><span>is</span><wbr><span>Location</span><wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-200662127%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="is-location-enabled.html">isLocationEnabled</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether location service is enabled on the device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-133704442%2FProperties%2F-509516991" anchor-label="isLocationPermissionGranted" id="-133704442%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-location-permission-granted.html"><span>is</span><wbr><span>Location</span><wbr><span>Permission</span><wbr><span><span>Granted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-133704442%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-location-permission-granted.html">isLocationPermissionGranted</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the <code class="lang-kotlin">ACCESS_FINE_LOCATION</code> permission is granted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-435947241%2FProperties%2F-509516991" anchor-label="isLocationRequiredForScanning" id="-435947241%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-location-required-for-scanning.html"><span>is</span><wbr><span>Location</span><wbr><span>Required</span><wbr><span>For</span><wbr><span><span>Scanning</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-435947241%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-location-required-for-scanning.html">isLocationRequiredForScanning</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether location is required to scan for Bluetooth LE devices.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1245640860%2FProperties%2F-509516991" anchor-label="isMultipleAdvertisementSupported" id="-1245640860%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-multiple-advertisement-supported.html"><span>is</span><wbr><span>Multiple</span><wbr><span>Advertisement</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1245640860%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="is-multiple-advertisement-supported.html">isMultipleAdvertisementSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether multi advertisement is supported by the chipset.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1634613754%2FProperties%2F-509516991" anchor-label="leMaximumAdvertisingDataLength" id="1634613754%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="le-maximum-advertising-data-length.html"><span>le</span><wbr><span>Maximum</span><wbr><span>Advertising</span><wbr><span>Data</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1634613754%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="le-maximum-advertising-data-length.html">leMaximumAdvertisingDataLength</a><span class="token operator">: </span><span><span class="token annotation builtin">@</span><span data-unresolved-link="org.jetbrains.annotations/Range///PointingToDeclaration/"><span class="token annotation builtin">Range</span></span><span class="token punctuation">(</span><span>from<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">31</span></span><span class="token punctuation">, </span></span><wbr><span>to<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">1650</span></span></span><wbr><span class="token punctuation">)</span>&nbsp;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The maximum LE advertising data length in bytes, if LE Extended Advertising feature is supported.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1843605193%2FProperties%2F-509516991" anchor-label="locationState" id="-1843605193%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="location-state.html"><span>location</span><wbr><span><span>State</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1843605193%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="location-state.html">locationState</a><span class="token operator">: </span><span data-unresolved-link="kotlinx.coroutines.flow/StateFlow///PointingToDeclaration/">StateFlow</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A flow emitting the state of the location service, <i>true</i> when enabled, <i>false</i> otherwise. Location service is required to scan for Bluetooth LE beacons when <a href="is-location-required-for-scanning.html">isLocationRequiredForScanning</a> is <i>true</i>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1705002055%2FProperties%2F-509516991" anchor-label="requiresBluetoothRuntimePermissions" id="1705002055%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="requires-bluetooth-runtime-permissions.html"><span>requires</span><wbr><span>Bluetooth</span><wbr><span>Runtime</span><wbr><span><span>Permissions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1705002055%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="requires-bluetooth-runtime-permissions.html">requiresBluetoothRuntimePermissions</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the device requires runtime permissions to use Bluetooth.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-959900041%2FProperties%2F-509516991" anchor-label="supportsRuntimePermissions" id="-959900041%2FProperties%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="supports-runtime-permissions.html"><span>supports</span><wbr><span>Runtime</span><wbr><span><span>Permissions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-959900041%2FProperties%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="supports-runtime-permissions.html">supportsRuntimePermissions</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the device supports runtime permissions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="-1108541797%2FFunctions%2F-509516991" anchor-label="close" id="-1108541797%2FFunctions%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="close.html"><span><span>close</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1108541797%2FFunctions%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="close.html"><span class="token function">close</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Unregisters the broadcast receiver that listens for Bluetooth state changes.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="4939784%2FFunctions%2F-509516991" anchor-label="enableBluetooth" id="4939784%2FFunctions%2F-509516991" data-filterable-set=":core-android/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core-android/main" data-filterable-set=":core-android/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="enable-bluetooth.html"><span>enable</span><wbr><span><span>Bluetooth</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="4939784%2FFunctions%2F-509516991"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-android/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="enable-bluetooth.html"><span class="token function">enableBluetooth</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sends an intent to enable Bluetooth adapter on the device.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>Copyright © 2022 - 2026 Nordic Semiconductor ASA. All Rights Reserved.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
