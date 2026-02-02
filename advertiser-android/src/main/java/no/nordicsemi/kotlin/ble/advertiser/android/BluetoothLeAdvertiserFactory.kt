@@ -31,7 +31,6 @@
 
 package no.nordicsemi.kotlin.ble.advertiser.android
 
-import android.content.Context
 import android.os.Build
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.legacy.BluetoothLeAdvertiserLegacy
 import no.nordicsemi.kotlin.ble.advertiser.android.internal.oreo.BluetoothLeAdvertiserOreo
@@ -56,23 +55,4 @@ fun BluetoothLeAdvertiser.Factory.native(
     !forceLegacy && Build.VERSION.SDK_INT >= AndroidEnvironment.SdkVersion.OREO ->
         BluetoothLeAdvertiserOreo(environment)
     else -> BluetoothLeAdvertiserLegacy(environment)
-}
-
-/**
- * Creates an instance of [BluetoothLeAdvertiser] for Android.
- *
- * The implementation differs based on Android version.
- * Limited functionality is available prior to Android O.
- *
- * @param context An application context.
- * @param forceLegacy If set to true, the legacy implementation will be used on Android O and newer.
- * @return Instance of [BluetoothLeAdvertiser].
- */
-@Suppress("unused")
-fun BluetoothLeAdvertiser.Factory.native(
-    context: Context,
-    forceLegacy: Boolean = false
-): BluetoothLeAdvertiser {
-    val env = NativeAndroidEnvironment.getInstance(context)
-    return native(env, forceLegacy)
 }
