@@ -229,7 +229,7 @@ sealed class MockAndroidEnvironment(
             _deviceName = value
         }
 
-    override var reportsConnectionParameters = androidSdkVersion == AndroidEnvironment.SdkVersion.Companion.OREO
+    override var reportsConnectionParameters = androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO
 
     override fun close() {
         // Empty

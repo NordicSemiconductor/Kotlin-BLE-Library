@@ -110,7 +110,7 @@ open class MockExecutor(
             }
 
             // Prior to Android Oreo there is no callback for connection parameters change.
-            if (environment.androidSdkVersion < AndroidEnvironment.SdkVersion.OREO) {
+            if (!environment.reportsConnectionParameters) {
                 gatt.onConnectionUpdated()
             }
             return true
