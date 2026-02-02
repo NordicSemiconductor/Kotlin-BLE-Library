@@ -34,11 +34,11 @@
 package no.nordicsemi.kotlin.ble.client.android.mock
 
 import kotlinx.coroutines.CoroutineScope
-import no.nordicsemi.kotlin.ble.android.mock.LatestApi
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.internal.MockCentralManagerImpl
 import no.nordicsemi.kotlin.ble.client.mock.SimulationProvider
+import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 
 /**
  * Creates a mock implementation of a [CentralManager] that can emulate scanning and connecting
@@ -47,10 +47,10 @@ import no.nordicsemi.kotlin.ble.client.mock.SimulationProvider
  * Use [MockCentralManager.simulatePeripherals] to set up mock peripherals and other
  * methods from [SimulationProvider] to control the simulation.
  *
+ * @param environment The environment to use for the mock, defaults to the latest supported API.
  * @param scope The coroutine scope.
- * @property environment The environment to use for the mock, defaults to the latest supported API.
  */
 fun CentralManager.Factory.mock(
-    scope: CoroutineScope,
     environment: MockAndroidEnvironment = LatestApi(),
+    scope: CoroutineScope,
 ): MockCentralManager = MockCentralManagerImpl(scope, environment)

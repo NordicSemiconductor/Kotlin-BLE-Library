@@ -38,9 +38,6 @@ import no.nordicsemi.kotlin.ble.core.Environment
  *
  * @property reportsConnectionParameters Whether the device reports connection parameters.
  */
-abstract class MockEnvironment(
-    override val deviceName: String,
-    override val isBluetoothSupported: Boolean,
-    override val isBluetoothEnabled: Boolean,
+interface MockEnvironment : Environment {
     val reportsConnectionParameters: Boolean
-) : Environment
+}

@@ -61,11 +61,44 @@ import org.slf4j.LoggerFactory
  * All parameters are read from the device properties.
  *
  * @param context The Android context, used to access system services.
+ * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+ * to estimate device location. This should be set if the `BLUETOOTH_SCAN` permission is declared with
+ * `neverForLocation` flag.
  */
-class NativeAndroidEnvironment(
+class NativeAndroidEnvironment private constructor(
     context: Context,
+    isNeverForLocationFlagSet: Boolean,
 ): AndroidEnvironment {
     private val logger = LoggerFactory.getLogger(NativeAndroidEnvironment::class.java)
+
+    companion object {
+        /** Singleton instance of the environment. */
+        private lateinit var instance: NativeAndroidEnvironment
+
+        /**
+         * Creates or returns the singleton instance of the Android native environment.
+         *
+         * ### Important
+         * When first time created, the environment registers a [BroadcastReceiver] to
+         * listen to Bluetooth state changes. Make sure to call [close] to unregister the receiver.
+         *
+         * @param context The Android context, used to access system services. This can be any
+         * [Context], as only the [Context.getApplicationContext] will be used.
+         * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+         * to estimate device location. This should be set if the `BLUETOOTH_SCAN` permission is declared with
+         * `neverForLocation` flag.
+         * @return The singleton instance of the environment.
+         */
+        fun getInstance(
+            context: Context,
+            isNeverForLocationFlagSet: Boolean,
+        ): NativeAndroidEnvironment {
+            if (!::instance.isInitialized) {
+                instance = NativeAndroidEnvironment(context, isNeverForLocationFlagSet)
+            }
+            return instance
+        }
+    }
 
     /**
      * Application context.
@@ -95,10 +128,16 @@ class NativeAndroidEnvironment(
     override val bluetoothState: StateFlow<Manager.State>
         get() = _bluetoothState.asStateFlow()
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    override fun enableBluetooth() {
+        val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        applicationContext.startActivity(intent)
+    }
+
     /**
      * Broadcast receiver that listens for Bluetooth state changes and emits [bluetoothState].
      */
-    private val stateBroadcastReceiver = object : BroadcastReceiver() {
+    private val bluetoothStateBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val oldState = _bluetoothState.value
             val newState = bluetoothManager?.adapter?.state?.toState() ?: Manager.State.UNKNOWN
@@ -111,14 +150,44 @@ class NativeAndroidEnvironment(
         }
     }
 
+    private val _locationState =
+        MutableStateFlow(locationManager != null && LocationManagerCompat.isLocationEnabled(locationManager))
+    override val locationState: StateFlow<Boolean>
+        get() = _locationState.asStateFlow()
+
+    /**
+     * Broadcast receiver that listens for Location state changes and emits [locationState].
+     */
+    private val locationStateBroadcastReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val oldState = _locationState.value
+            val newState = locationManager != null && LocationManagerCompat.isLocationEnabled(locationManager)
+
+            // Ignore if the state has not changed.
+            if (oldState != newState) {
+                logger.info("Location state changed: $oldState -> $newState")
+                _locationState.update { newState }
+            }
+        }
+    }
+
     init {
-        // Register a broadcast receiver to monitor Bluetooth state changes.
+        // Register a broadcast receivers to monitor Bluetooth and Location state changes.
         val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
-        ContextCompat.registerReceiver(applicationContext, stateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(applicationContext, bluetoothStateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
+
+        val monitorLocationState = IntentFilter(LocationManager.MODE_CHANGED_ACTION)
+        ContextCompat.registerReceiver(applicationContext, locationStateBroadcastReceiver, monitorLocationState, ContextCompat.RECEIVER_EXPORTED)
     }
 
     override fun close() {
-        applicationContext.unregisterReceiver(stateBroadcastReceiver)
+        // Unregister the broadcast receivers.
+        try {
+            applicationContext.unregisterReceiver(bluetoothStateBroadcastReceiver)
+        } catch (_: IllegalArgumentException) { /* Ignore */ }
+        try {
+            applicationContext.unregisterReceiver(locationStateBroadcastReceiver)
+        } catch (_: IllegalArgumentException) { /* Ignore */ }
     }
 
     override val androidSdkVersion = Build.VERSION.SDK_INT
@@ -135,14 +204,14 @@ class NativeAndroidEnvironment(
 
     override val isBluetoothSupported: Boolean
         get() = bluetoothManager?.adapter != null
-    override val isBluetoothEnabled: Boolean
-        get() = bluetoothManager?.adapter?.isEnabled ?: false
-    override val isLocationRequiredForScanning = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+    // This flag is set on Android 6 (Marshmallow) - 11 (Q),
+    // and on Android 12+ (S) if `userPermissionFlags` contains `neverForLocation` flag.
+    override val isLocationRequiredForScanning =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+       (Build.VERSION.SDK_INT <  Build.VERSION_CODES.S || !isNeverForLocationFlagSet)
     override val isLocationPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
                 applicationContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    override val isLocationEnabled: Boolean
-        get() = locationManager != null && LocationManagerCompat.isLocationEnabled(locationManager)
     override val isLe2MPhySupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 bluetoothManager?.adapter?.isLe2MPhySupported ?: false

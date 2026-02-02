@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,9 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
-package no.nordicsemi.kotlin.ble.android.mock
+package no.nordicsemi.kotlin.ble.environment.android.mock
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,9 +38,7 @@ import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
-import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment.SdkVersion
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
-import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import org.jetbrains.annotations.Range
 import org.slf4j.LoggerFactory
@@ -85,14 +81,22 @@ private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
+ * @property isLocationPermissionGranted Whether the fine location permission is granted.
+ * The permission can be set to true to emulate it being granted in runtime.
+ * @property isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
+ * The permission can be set to true to emulate it being granted in runtime.
+ * @property isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
+ * The permission can be set to true to emulate it being granted in runtime.
+ * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
+ * The permission can be set to true to emulate it being granted in runtime.
  * @property isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
  * advertising on LE Coded PHY as Primary PHY.
- * @property issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+ * @property issueOnlyOneActiveScan Some early Android devices were sending only one *Scan Request*
  * message for a single device per scan. Non-connectable devices were reported continuously, but
  * connectable devices were reported only once. The client had to stop and start scanning again
  * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
  * @property issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
- * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+ * packets on *L2CAP* in the *LLCP Data Length Update* procedure, while later trying to send 251 bytes.
  * This causes the peripheral to terminate the connection. This flag simulates this issue.
  * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
  * @property advertiser A callback that will be called when the app requests to advertise.
@@ -103,20 +107,20 @@ private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
 sealed class MockAndroidEnvironment(
     override val androidSdkVersion: Int,
     deviceName: String,
-    isBluetoothSupported: Boolean,
+    override val isBluetoothSupported: Boolean,
     isBluetoothEnabled: Boolean,
+    isLocationEnabled: Boolean = false,
     override val isLocationRequiredForScanning: Boolean = false,
-    override val isLocationPermissionGranted: Boolean = false,
-    override val isLocationEnabled: Boolean = false,
+    isLocationPermissionGranted: Boolean = false,
+    isBluetoothScanPermissionGranted: Boolean = false,
+    isBluetoothConnectPermissionGranted: Boolean = false,
+    isBluetoothAdvertisePermissionGranted: Boolean = false,
     override val isLe2MPhySupported: Boolean = false,
     override val isLeCodedPhySupported: Boolean = false,
-    override val isBluetoothScanPermissionGranted: Boolean = false,
-    override val isBluetoothConnectPermissionGranted: Boolean = false,
     override val isMultipleAdvertisementSupported: Boolean, // TODO this is not used
     override val isLeExtendedAdvertisingSupported: Boolean = false,
     override val isLePeriodicAdvertisingSupported: Boolean = false,
     override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
-    override val isBluetoothAdvertisePermissionGranted: Boolean = false,
     val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val issueOnlyOneActiveScan: Boolean = false, // Nexus 4 issue
     val issueIncorrectL2capTxMtu: Boolean = false, // Samsung A8 Tab issue
@@ -125,43 +129,41 @@ sealed class MockAndroidEnvironment(
     // until the PHY request completes. It works in nRF Connect when SD is triggered manually.
     val advertiser: MockAdvertiser,
     val scanner: MockScanner,
-): AndroidEnvironment, MockEnvironment(
-    deviceName = deviceName,
-    isBluetoothSupported = isBluetoothSupported,
-    isBluetoothEnabled = isBluetoothEnabled,
-    reportsConnectionParameters = androidSdkVersion >= SdkVersion.OREO
-) {
+): AndroidEnvironment, MockEnvironment {
     private val logger = LoggerFactory.getLogger(MockAndroidEnvironment::class.java)
 
-    private val _bluetoothState = MutableStateFlow(
-        when {
-            !isBluetoothSupported -> Manager.State.UNSUPPORTED
-            !isBluetoothEnabled -> Manager.State.POWERED_OFF
-            else -> Manager.State.POWERED_ON
-        }
-    )
-    override val bluetoothState = _bluetoothState.asStateFlow()
+    // Allow granting permissions in runtime.
+    override var isLocationPermissionGranted: Boolean = isLocationPermissionGranted
+        set(value) { field = field || value && supportsRuntimePermissions }
 
-    override val isBluetoothEnabled = bluetoothState.value == Manager.State.POWERED_ON
+    override var isBluetoothScanPermissionGranted: Boolean = isBluetoothScanPermissionGranted
+        set(value) { field = field || value && requiresBluetoothRuntimePermissions }
+
+    override var isBluetoothConnectPermissionGranted: Boolean = isBluetoothConnectPermissionGranted
+        set(value) { field = field || value && requiresBluetoothRuntimePermissions }
+
+    override var isBluetoothAdvertisePermissionGranted: Boolean = isBluetoothAdvertisePermissionGranted
+        set(value) { field = field || value && requiresBluetoothRuntimePermissions }
 
     /**
      * Simulates turning on Bluetooth adapter on the mock device.
      *
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     fun simulatePowerOn() = simulateStateChange(Manager.State.POWERED_ON)
 
     /**
      * Simulates turning off Bluetooth adapter on the mock device.
      *
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     fun simulatePowerOff() = simulateStateChange(Manager.State.POWERED_OFF)
 
     /**
-     * Simulates a state change in the central manager.
+     * Simulates changing Bluetooth adapter state on the mock device.
      *
-     * @throws BluetoothUnavailableException If [isBluetoothSupported] is false.
+     * @param newState The new state of the Bluetooth adapter.
+     * @throws no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException If [isBluetoothSupported] is false.
      */
     private fun simulateStateChange(newState: Manager.State) {
         require(isBluetoothSupported) {
@@ -174,6 +176,36 @@ sealed class MockAndroidEnvironment(
             _bluetoothState.update { newState }
         }
     }
+
+    /**
+     * Simulates turning on/off location service on the mock device.
+     *
+     * Enabled location is required to scan for Bluetooth LE devices when [isLocationRequiredForScanning]
+     * is *true*. This is from Android 6.0 (Marshmallow) to Android 12 (S), where a new flag
+     * `neverForLocation` was added to `BLUETOOTH_SCAN` permission allowing to scan for non-beacon
+     * devices.
+     *
+     * @param newState The new state of the Location service.
+     */
+    fun simulateLocationState(newState: Boolean) {
+        _locationState.update { newState }
+    }
+
+    private val _bluetoothState = MutableStateFlow(
+        when {
+            !isBluetoothSupported -> Manager.State.UNSUPPORTED
+            !isBluetoothEnabled -> Manager.State.POWERED_OFF
+            else -> Manager.State.POWERED_ON
+        }
+    )
+    override val bluetoothState = _bluetoothState.asStateFlow()
+
+    override fun enableBluetooth() {
+        simulatePowerOn()
+    }
+
+    private val _locationState = MutableStateFlow(isLocationEnabled)
+    override val locationState = _locationState.asStateFlow()
 
     private var _deviceName: String = deviceName
     override var deviceName: String
@@ -196,6 +228,8 @@ sealed class MockAndroidEnvironment(
             require(value.isNotEmpty())
             _deviceName = value
         }
+
+    override var reportsConnectionParameters = androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO
 
     override fun close() {
         // Empty
@@ -226,7 +260,7 @@ sealed class MockAndroidEnvironment(
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.LOLLIPOP,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.LOLLIPOP,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -245,7 +279,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
-     * @param isLocationPermissionGranted Whether the fine location permission is granted.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
@@ -272,7 +306,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion =SdkVersion.MARSHMALLOW,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.MARSHMALLOW,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -305,7 +339,7 @@ sealed class MockAndroidEnvironment(
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
      * advertising on LE Coded PHY as Primary PHY.
-     * @param isLocationPermissionGranted Whether the fine location permission is granted.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
@@ -339,7 +373,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.OREO,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.OREO,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -383,11 +417,15 @@ sealed class MockAndroidEnvironment(
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
      * advertising on LE Coded PHY as Primary PHY.
-     * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
+     * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is
+     * initially granted.
+     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is
+     * initially granted.
+     * @param isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is
+     * initially granted.
      * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
      * to estimate device location. By default, `neverForLocation` flag is assumed.
-     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
-     * @param isLocationPermissionGranted Whether the fine location permission is granted.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
@@ -425,7 +463,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = SdkVersion.S,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.S,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,

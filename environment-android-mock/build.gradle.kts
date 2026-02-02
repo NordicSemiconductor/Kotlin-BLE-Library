@@ -29,37 +29,32 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.android.sample.advertiser
+plugins {
+    alias(libs.plugins.nordic.kotlin.jvm)
+    alias(libs.plugins.nordic.nexus.jvm)
+}
 
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+group = "no.nordicsemi.kotlin.ble"
 
-@Composable
-fun AdvertiserScreen() {
-    val vm = hiltViewModel<AdvertiserViewModel>()
-    val state by vm.isAdvertising.collectAsStateWithLifecycle()
-    val error by vm.error.collectAsStateWithLifecycle()
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "environment-android-mock"
+    POM_NAME = "Mock Android Environment Module"
+    POM_DESCRIPTION = "A part of Kotlin BLE Library providing a mock Android-specific environment implementation."
+    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+}
 
-    // Native implementation requires Bluetooth.
-    // Switch to 'mock' flavor to use the mock implementation, where no native Bluetooth
-    // is required, and the SDK version can be customized.
-    AdvertiserView(
-        isAdvertising = state,
-        onStartClicked = vm::startAdvertising,
-        onStopClicked = vm::stopAdvertising,
-        errorMessage = error,
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
-            .padding(top = 16.dp, bottom = 32.dp),
-    )
+dependencies {
+    api(project(":core-mock"))
+    api(project(":core-android"))
+
+    implementation(libs.slf4j)
+}
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
+    }
 }

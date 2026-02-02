@@ -40,8 +40,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.withTimeoutOrNull
-import no.nordicsemi.kotlin.ble.android.mock.LatestApi
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
 import no.nordicsemi.kotlin.ble.client.MonitoringEvent
 import no.nordicsemi.kotlin.ble.client.RangeEvent
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
@@ -61,6 +59,8 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import org.slf4j.LoggerFactory
 import kotlin.time.Duration
 
@@ -243,9 +243,10 @@ open class MockCentralManagerImpl(
                     }
 
                     // If the `neverForLocation` flag is set, check if the device is a beacon.
-                    if (!environment.isLocationRequiredForScanning &&
-                        environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.S &&
-                        result.isBeacon) {
+                    val neverForLocationSet =
+                        !environment.isLocationRequiredForScanning &&
+                         environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.S
+                    if (neverForLocationSet && result.isBeacon) {
                         return@collect
                     }
 

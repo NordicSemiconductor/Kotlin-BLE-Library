@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,17 +29,40 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.android.sample.util
+plugins {
+    alias(libs.plugins.nordic.library.compose)
+    alias(libs.plugins.nordic.nexus.android)
+}
 
-import dagger.hilt.android.lifecycle.RetainedLifecycle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.cancel
-import kotlin.coroutines.CoroutineContext
+group = "no.nordicsemi.kotlin.ble"
 
-class CloseableCoroutineScope(context: CoroutineContext) : CoroutineScope, RetainedLifecycle.OnClearedListener {
-    override val coroutineContext: CoroutineContext = context
+nordicNexusPublishing {
+    POM_ARTIFACT_ID = "core-compose"
+    POM_NAME = "Utils for Compose"
+    POM_DESCRIPTION = "Set of utilities for Jetpack Compose."
+    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+}
 
-    override fun onCleared() {
-        coroutineContext.cancel()
+android {
+    namespace = "no.nordicsemi.kotlin.ble.core.compose"
+}
+
+dependencies {
+    api(project(":core-android"))
+    // These 2 dependencies are optional. At least one of them has to
+    // be added to the final project with "implementation".
+    compileOnly(project(":environment-android"))
+    compileOnly(project(":environment-android-mock"))
+
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.compose.runtime)
+}
+
+dokka {
+    dokkaSourceSets.named("main") {
+        includes.from("Module.md")
     }
 }

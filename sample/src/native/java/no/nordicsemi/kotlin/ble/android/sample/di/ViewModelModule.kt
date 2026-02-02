@@ -31,44 +31,47 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.di
 
-import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.ViewModelLifecycle
 import dagger.hilt.android.components.ViewModelComponent
-import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.awaitCancellation
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.cancel
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.native
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.native
-import no.nordicsemi.kotlin.environment.android.NativeAndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 
 @Module
 @InstallIn(ViewModelComponent::class)
 object ViewModelModule {
 
+    @ViewModelScoped
     @Provides
     fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
+        return CoroutineScope(SupervisorJob())
             // Cancel the scope when the ViewModel is cleared.
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
+            .also { scope ->
+                lifecycle.addOnClearedListener {
+                    println("AAA Cancelling scope!")
+                    scope.cancel()
+                }
             }
     }
 
+    @ViewModelScoped
     @Provides
     fun providesAdvertiser(environment: NativeAndroidEnvironment): BluetoothLeAdvertiser {
-        return BluetoothLeAdvertiser.Factory.native(environment)
+        return BluetoothLeAdvertiser.native(environment)
     }
 
+    @ViewModelScoped
     @Provides
     fun provideCentralManager(environment: NativeAndroidEnvironment, scope: CoroutineScope): CentralManager {
-        return CentralManager.Factory.native(scope, environment)
+        return CentralManager.native(environment, scope)
     }
 }

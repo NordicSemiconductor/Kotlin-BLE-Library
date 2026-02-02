@@ -84,10 +84,10 @@ interface CentralManager<
     /**
      * Scans for Bluetooth LE devices.
      *
-     * The scan will be stopped after the given period of time or when the flow is cancelled.
+     * The scan will be stopped after the given period of time or when the flow is canceled.
      *
-     * @param timeout The scan duration. By default the scan will run until the flow is closed.
-     * @param filter The filter to apply. By default no filter is applied.
+     * @param timeout The scan duration. By default, the scan will run until the flow is closed.
+     * @param filter The filter to apply. By default, no filter is applied.
      * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
@@ -101,10 +101,10 @@ interface CentralManager<
      * This method will emit events when the monitoring device enters or leaves the range of a
      * peripheral advertising packets matching given filter.
      *
-     * The scan will be stopped after the given period of time or when the flow is cancelled.
+     * The scan will be stopped after the given period of time or when the flow is canceled.
      *
-     * @param timeout The scan duration. By default the scan will run until the flow is closed.
-     * @param filter The filter to apply. By default no filter is applied.
+     * @param timeout The scan duration. By default, the scan will run until the flow is closed.
+     * @param filter The filter to apply. By default, no filter is applied.
      * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.
@@ -120,7 +120,7 @@ interface CentralManager<
      *
      * The flow is closed automatically when the peripheral leaves range of the monitoring device.
      * @param peripheral The peripheral to range.
-     * @param timeout The scan duration. By default the scan will run until the flow is closed.
+     * @param timeout The scan duration. By default, the scan will run until the flow is closed.
      * @throws ManagerClosedException If the central manager has been closed.
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If the permission to scan is denied.

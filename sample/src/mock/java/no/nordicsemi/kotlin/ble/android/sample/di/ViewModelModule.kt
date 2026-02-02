@@ -36,15 +36,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.ViewModelLifecycle
 import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.scopes.ViewModelScoped
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.mock
-import no.nordicsemi.kotlin.ble.android.mock.MockAndroidEnvironment
-import no.nordicsemi.kotlin.ble.android.sample.util.CloseableCoroutineScope
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.mock.mock
 import no.nordicsemi.kotlin.ble.client.mock.ConnectionResult
@@ -67,7 +67,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.and
-import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
+import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -108,6 +108,7 @@ object ViewModelModule {
          */
         private var isButtonPressed = false
             set(value) {
+                field = value
                 buttonHandle?.let {
                     Timber.i("[Blinky] Simulating Button ${if (value) "clicked" else "released"}")
                     blinky.simulateValueUpdate(it, value.toBytes())
@@ -249,8 +250,8 @@ object ViewModelModule {
                     AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED
                 )
                 CompleteLocalName("HR Sensor")
-                ServiceUuid(Uuid.fromShortUuid(0x1809))
-                ServiceUuid(Uuid.fromShortUuid(0x180A))
+                ServiceUuid(shortUuid = 0x1809)
+                ServiceUuid(shortUuid = 0x180A)
             }
             connectable(
                 name = "Nordic_Blinky",
@@ -285,7 +286,7 @@ object ViewModelModule {
                             reliableWrite = true,
                             writableAuxiliaries = true
                         )
-                        // A custom descriptor with write-only property. Just for fun.
+                        // A custom descriptor with read-only permission. Just for fun.
                         // TODO Reading this should trigger bonding
                         Descriptor(Uuid.random(), permission = Permission.READ_ENCRYPTED)
                     }
@@ -310,35 +311,38 @@ object ViewModelModule {
                 connectable = false,
                 interval = 1.seconds,
             ),
+            // Beacons are excluded if "neverForLocation" flag is disabled.
+            isBeacon = true,
         ) {
             CompleteLocalName("Nordic_Beacon")
-            ServiceUuid(Uuid.fromShortUuid(0xFEAA)) // Eddystone UUID
+            ServiceUuid(shortUuid = 0xFEAA) // Eddystone UUID
             IncludeTxPowerLevel()
         }
     }
 
+    @ViewModelScoped
     @Provides
     fun provideViewModelCoroutineScope(lifecycle: ViewModelLifecycle): CoroutineScope {
-        return CloseableCoroutineScope(SupervisorJob())
-            .also { closeableCoroutineScope ->
-                lifecycle.addOnClearedListener(closeableCoroutineScope)
+        return CoroutineScope(SupervisorJob())
+            .also { scope ->
+                lifecycle.addOnClearedListener { scope.cancel() }
             }
     }
 
+    @ViewModelScoped
     @Provides
     fun providesAdvertiser(environment: MockAndroidEnvironment): BluetoothLeAdvertiser {
         return BluetoothLeAdvertiser.mock(environment)
     }
 
+    @ViewModelScoped
     @Provides
     fun provideCentralManager(
+        environment: MockAndroidEnvironment,
         scope: CoroutineScope,
-        environment: MockAndroidEnvironment
-    ): CentralManager {
-        return CentralManager.mock(scope, environment)
-            .apply {
-                simulatePeripherals(listOf(blinky, beacon))
-            }
-    }
+    ): CentralManager = CentralManager.mock(environment, scope)
+        .apply {
+            simulatePeripherals(listOf(blinky, beacon))
+        }
 
 }
