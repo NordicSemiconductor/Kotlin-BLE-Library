@@ -321,7 +321,7 @@ veryLongData.chunked(length).forEach {
 }
 ```
 
-Sometimes, a write to a characteristic is expected to trigger a notification or an indication.
+Sometimes, a write operation to a characteristic is expected to trigger a notification or an indication.
 If the notification is sent immediately, the library may not be able to subscribe for it before
 it is received, resulting in data lost. In such situation, use `waitForValueChange`:
 
@@ -369,8 +369,8 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
             }
             .launchIn(scope)
     } catch (e: Exception) {
-        // An exception is thrown when a characteristic does not have NOTFY or INDICATE property,
-        // has no Client Characterisitc Configuration descriptor, or an error occurs.
+        // An exception is thrown when a characteristic does not have NOTIFY or INDICATE property,
+        // has no Client Characteristic Configuration descriptor, or an error occurs.
         Timber.e("Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
     }
 }
