@@ -39,7 +39,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha11
+        <div class="library-version" id="library-version">2.0.0-alpha13
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -94,73 +94,54 @@
   <div class="breadcrumbs"><a href="../../index.html">core-mock</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.core.mock</a><span class="delimiter">/</span><span class="current">MockEnvironment</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Mock</span><wbr><span><span>Environment</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">MockEnvironment</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>deviceName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isBluetoothSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>isBluetoothEnabled<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>reportsConnectionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div><p class="paragraph">A mock environment that can be used to test the behavior of the Central Manager.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">MockEnvironment</a> : <a href="../../../core/no.nordicsemi.kotlin.ble.core/-environment/index.html">Environment</a></div><p class="paragraph">A mock environment that can be used to test the behavior of the Central Manager.</p></div></div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
-      <div data-togglable="CONSTRUCTOR">
-        <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="-1302463030%2FConstructors%2F-1005916826" anchor-label="MockEnvironment" id="-1302463030%2FConstructors%2F-1005916826" data-filterable-set=":core-mock/main"></a>
-          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":core-mock/main" data-filterable-set=":core-mock/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="-mock-environment.html"><span>Mock</span><wbr><span><span>Environment</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1302463030%2FConstructors%2F-1005916826"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">deviceName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">isBluetoothSupported<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">isBluetoothEnabled<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">reportsConnectionParameters<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="1421682726%2FProperties%2F-1005916826" anchor-label="deviceName" id="1421682726%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
+        <div class="table"><a data-name="-1422345046%2FProperties%2F-1005916826" anchor-label="deviceName" id="-1422345046%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":core-mock/main" data-filterable-set=":core-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="device-name.html"><span>device</span><wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1421682726%2FProperties%2F-1005916826"></span>
+                  <div><a href="index.html#-1422345046%2FProperties%2F-1005916826"><span>device</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1422345046%2FProperties%2F-1005916826"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">var </span><a href="device-name.html">deviceName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">The device local device name.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="index.html#-1422345046%2FProperties%2F-1005916826">deviceName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1419311702%2FProperties%2F-1005916826" anchor-label="isBluetoothEnabled" id="-1419311702%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
+<a data-name="1515705902%2FProperties%2F-1005916826" anchor-label="isBluetoothEnabled" id="1515705902%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":core-mock/main" data-filterable-set=":core-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="is-bluetooth-enabled.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Enabled</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1419311702%2FProperties%2F-1005916826"></span>
+                  <div><a href="index.html#1515705902%2FProperties%2F-1005916826"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Enabled</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1515705902%2FProperties%2F-1005916826"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-bluetooth-enabled.html">isBluetoothEnabled</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether Bluetooth is enabled.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="index.html#1515705902%2FProperties%2F-1005916826">isBluetoothEnabled</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-347277987%2FProperties%2F-1005916826" anchor-label="isBluetoothSupported" id="-347277987%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
+<a data-name="-1588874015%2FProperties%2F-1005916826" anchor-label="isBluetoothSupported" id="-1588874015%2FProperties%2F-1005916826" data-filterable-set=":core-mock/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":core-mock/main" data-filterable-set=":core-mock/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="is-bluetooth-supported.html"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Supported</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-347277987%2FProperties%2F-1005916826"></span>
+                  <div><a href="index.html#-1588874015%2FProperties%2F-1005916826"><span>is</span><wbr><span>Bluetooth</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1588874015%2FProperties%2F-1005916826"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="is-bluetooth-supported.html">isBluetoothSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether Bluetooth is supported on the device.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="index.html#-1588874015%2FProperties%2F-1005916826">isBluetoothSupported</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -175,7 +156,7 @@
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="reports-connection-parameters.html">reportsConnectionParameters</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the environment reports connection parameters.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core-mock/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="reports-connection-parameters.html">reportsConnectionParameters</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the device reports connection parameters.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -194,7 +175,7 @@
                     <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
                         Dokka
                     </a>
-                    <div>Copyright © 2022 - 2025 Nordic Semiconductor ASA. All Rights Reserved.</div>
+                    <div>Copyright © 2022 - 2026 Nordic Semiconductor ASA. All Rights Reserved.</div>
                 </div>
             </div>
         </div>

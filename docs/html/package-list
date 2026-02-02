@@ -29,7 +29,11 @@ no.nordicsemi.kotlin.ble.core.exception
 no.nordicsemi.kotlin.ble.core.util
 module:core-android
 no.nordicsemi.kotlin.ble.core.android
-module:core-android-mock
-no.nordicsemi.kotlin.ble.android.mock
 module:core-mock
 no.nordicsemi.kotlin.ble.core.mock
+module:environment-android
+no.nordicsemi.kotlin.ble.environment.android
+module:environment-android-compose
+no.nordicsemi.kotlin.ble.environment.android.compose
+module:environment-android-mock
+no.nordicsemi.kotlin.ble.environment.android.mock
