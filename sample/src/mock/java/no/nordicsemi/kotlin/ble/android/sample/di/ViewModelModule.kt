@@ -286,7 +286,7 @@ object ViewModelModule {
                             reliableWrite = true,
                             writableAuxiliaries = true
                         )
-                        // A custom descriptor with write-only property. Just for fun.
+                        // A custom descriptor with read-only permission. Just for fun.
                         // TODO Reading this should trigger bonding
                         Descriptor(Uuid.random(), permission = Permission.READ_ENCRYPTED)
                     }
