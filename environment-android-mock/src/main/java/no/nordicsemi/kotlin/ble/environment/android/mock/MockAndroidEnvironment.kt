@@ -260,7 +260,7 @@ sealed class MockAndroidEnvironment(
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.LOLLIPOP,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.LOLLIPOP,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -306,7 +306,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.MARSHMALLOW,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.MARSHMALLOW,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -373,7 +373,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.OREO,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.OREO,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
@@ -463,7 +463,7 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan: Boolean = false,
         issueIncorrectL2capTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
-        androidSdkVersion = AndroidEnvironment.SdkVersion.Companion.S,
+        androidSdkVersion = AndroidEnvironment.SdkVersion.S,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
