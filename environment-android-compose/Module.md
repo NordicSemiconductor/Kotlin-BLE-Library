@@ -1,8 +1,8 @@
-# Module environment-android-mock-compose
+# Module environment-android-compose
 
 Set of Jetpack Compose utilities for Mock Environment on Android.
 
-# Package no.nordicsemi.kotlin.ble.android.compose
+# Package no.nordicsemi.kotlin.ble.environment.android.compose
 
 This package contains helper Composables to apply mock environment in tests.
 
