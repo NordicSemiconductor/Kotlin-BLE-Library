@@ -70,7 +70,7 @@ private const val ACCESS_FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATIO
  * )
  * CompositionLocalProvider(values = LocalEnvironmentOwner provides environment) {
  *     Content(
- *        environment = LocalEnvironment.current,
+ *        environment = LocalEnvironmentOwner.current,
  *     )
  * }
  * ```
