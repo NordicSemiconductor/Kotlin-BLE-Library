@@ -24,10 +24,14 @@ android {
 }
 
 dependencies {
-    implementation(project(":advertiser-android"))
-    implementation(project(":advertiser-android-mock"))
-    implementation(project(":client-android"))
-    implementation(project(":client-android-mock"))
+    // Add dependencies to native implementations in "native" flavor.
+    "nativeImplementation"(project(":advertiser-android"))
+    "nativeImplementation"(project(":client-android"))
+    // For "mock" flavor, use the mock implementations.
+    "mockImplementation"(project(":advertiser-android-mock"))
+    "mockImplementation"(project(":client-android-mock"))
+    // For debug, let's use mock (for Previews).
+    "debugImplementation"(project(":environment-android-mock"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

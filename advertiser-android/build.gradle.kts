@@ -63,11 +63,7 @@ dependencies {
 }
 
 dokka {
-    dokkaSourceSets.named("main") {
+    dokkaSourceSets.configureEach {
         includes.from("Module.md")
-        perPackageOption {
-            matchingRegex.set("no.nordicsemi.kotlin.ble.advertiser.android.internal")
-            suppress.set(true)
-        }
     }
 }
