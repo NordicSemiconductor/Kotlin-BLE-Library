@@ -97,8 +97,8 @@ include(":advertiser-android")
 include(":advertiser-android-mock")
 
 include(":client-core")
+include(":client-core-mock")
 include(":client-core-android")
-include(":client-mock")
 include(":client-android")
 include(":client-android-mock")
 
