@@ -143,7 +143,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * }
      * ```
      * @param data The data to be written.
-     * @param writeType The write type to be used. By default set to the characteristic's
+     * @param writeType The write type to be used. By default, it is set to the characteristic's
      * default write type based on its properties.
      * @throws ValueDoesNotMatchException if the value was sent using *Long Write* or *Reliable Write*
      * procedure and the value replied back by the peripheral does not match the value written.

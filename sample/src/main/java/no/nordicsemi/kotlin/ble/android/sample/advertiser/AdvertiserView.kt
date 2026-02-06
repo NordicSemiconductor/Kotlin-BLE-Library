@@ -50,6 +50,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -90,7 +91,7 @@ fun AdvertiserView(
         var txPowerLevelMenuExpanded by rememberSaveable { mutableStateOf(false) }
         var txPowerLevel by rememberSaveable { mutableIntStateOf(TxPowerLevel.MEDIUM) }
         var intervalMenuExpanded by rememberSaveable { mutableStateOf(false) }
-        var interval by rememberSaveable { mutableStateOf(AdvertisingInterval.MEDIUM.inWholeMilliseconds) }
+        var interval by rememberSaveable { mutableLongStateOf(AdvertisingInterval.MEDIUM.inWholeMilliseconds) }
         var anonymous by rememberSaveable { mutableStateOf(false) }
         var scannable by rememberSaveable { mutableStateOf(false) }
         var discoverable by rememberSaveable { mutableStateOf(false) }

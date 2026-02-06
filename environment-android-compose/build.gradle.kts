@@ -62,7 +62,7 @@ dependencies {
 }
 
 dokka {
-    dokkaSourceSets.named("main") {
+    dokkaSourceSets.configureEach {
         includes.from("Module.md")
     }
 }

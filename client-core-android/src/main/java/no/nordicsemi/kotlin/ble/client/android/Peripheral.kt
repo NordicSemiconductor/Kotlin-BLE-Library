@@ -495,7 +495,7 @@ open class Peripheral(
      * Controller can override these settings.
      *
      * @param txPhy The preferred transmitter PHY.
-     * @param rxPhy The preferred receiver PHY. By default it is the same as [txPhy].
+     * @param rxPhy The preferred receiver PHY. By default, it is the same as [txPhy].
      * @param phyOptions The preferred coding to use when transmitting on the LE Coded PHY.
      * @return The PHYs in use after the change.
      * @throws PeripheralNotConnectedException If the device is not connected.

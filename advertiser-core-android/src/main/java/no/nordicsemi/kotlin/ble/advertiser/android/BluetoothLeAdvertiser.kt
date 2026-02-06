@@ -81,7 +81,7 @@ abstract class BluetoothLeAdvertiser(
      * @param parameters Advertising parameters describing how the data are to be advertised.
      * @param payload Advertising data to be broadcast.
      * @param timeout The advertising time limit. May not exceed 180.000 ms on Android 5-7 and
-     * 655.350 ms on Android 8+. By default there is no timeout set.
+     * 655.350 ms on Android 8+. By default, there is no timeout set.
      * @param block A block that will be called when the advertising is started. The block will
      * receive the actual TX power (in dBm) used for advertising.
      * @throws SecurityException If the BLUETOOTH_ADVERTISE permission is denied.
