@@ -41,12 +41,6 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.ksp) apply false
 
-    // This plugin is used to generate Dokka documentation.
-    alias(libs.plugins.kotlin.dokka) apply false
-    // This applies Nordic look & feel to generated Dokka documentation.
-    // https://github.com/NordicSemiconductor/Android-Gradle-Plugins/blob/main/plugins/src/main/kotlin/NordicDokkaPlugin.kt
-    alias(libs.plugins.nordic.dokka) apply true
-
     // Nordic plugins are defined in https://github.com/NordicSemiconductor/Android-Gradle-Plugins
     alias(libs.plugins.nordic.application) apply false
     alias(libs.plugins.nordic.application.compose) apply false
@@ -58,6 +52,12 @@ plugins {
     alias(libs.plugins.nordic.feature) apply false
     alias(libs.plugins.nordic.nexus.android) apply false
     alias(libs.plugins.nordic.nexus.jvm) apply false
+
+    // This plugin is used to generate Dokka documentation.
+    alias(libs.plugins.kotlin.dokka) apply false
+    // This applies Nordic look & feel to generated Dokka documentation.
+    // https://github.com/NordicSemiconductor/Android-Gradle-Plugins/blob/main/plugins/src/main/kotlin/NordicDokkaPlugin.kt
+    alias(libs.plugins.nordic.dokka) apply true
 }
 
 // Configure main Dokka page
