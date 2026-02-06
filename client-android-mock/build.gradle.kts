@@ -47,7 +47,7 @@ nordicNexusPublishing {
 }
 
 dependencies {
-    api(project(":client-mock"))
+    api(project(":client-core-mock"))
     api(project(":client-core-android"))
     api(project(":environment-android-mock"))
 
