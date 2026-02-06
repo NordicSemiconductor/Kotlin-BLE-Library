@@ -86,7 +86,7 @@ object LocalEnvironmentOwner {
         get() = LocalEnvironment.current?: run {
             val context = LocalContext.current
             return try {
-                NativeAndroidEnvironment.getInstance(context,Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                NativeAndroidEnvironment.getInstance(context, isNeverForLocationFlagSet = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
             } catch (e: NoClassDefFoundError) {
                 try {
                     LatestApi()

@@ -50,7 +50,7 @@ interface BluetoothLeAdvertiser<
      *
      * @param connectable Whether the advertising should be connectable.
      * @param payload Advertising data to be broadcast.
-     * @param timeout The advertising time limit. By default there is no timeout set.
+     * @param timeout The advertising time limit. By default, there is no timeout set.
      * @param block A block that will be called when the advertising is started. The block will
      * receive the actual TX power (in dBm) used for advertising.
      * @throws SecurityException If the required permission is denied.

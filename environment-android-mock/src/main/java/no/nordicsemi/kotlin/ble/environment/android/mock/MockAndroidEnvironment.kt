@@ -29,6 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package no.nordicsemi.kotlin.ble.environment.android.mock
 
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,14 +46,24 @@ import org.jetbrains.annotations.Range
 import org.slf4j.LoggerFactory
 
 /**
- * The environment for the latest Android API.
+ * A type alias for the lastest Android API.
+ *
+ * Currently, this is set to [MockAndroidEnvironment.Api31] and will change in the future to match
+ * the latest Android API, when available.
+ *
+ * Note, that ApiXX is also valid for APIs greater than XX. A new type is only added when there's
+ * a significant change in the Bluetooth-related API.
  */
 typealias LatestApi = MockAndroidEnvironment.Api31
+
 /**
- * A type for a mock advertiser.
+ * A callback used for a mock advertiser.
  *
  * This callback is called when the app requests the mock Bluetooth LE advertiser to advertise.
- * It should return the TX power level used for mock advertising, in dBm.
+ *
+ * It should return an emulated value of TX power level used for mock advertising, in dBm, which
+ * will be delivered the callback block given in `BluetoothLeAdvertiser.advertise(...)` method.
+ *
  * Valid values are from -127 to +1 dBm.
  */
 typealias MockAdvertiser = (requestedTxPower: Int, advertisingData: AdvertisingDataDefinition, scanResponse: AdvertisingDataDefinition?) -> Result<Int>
@@ -62,7 +74,7 @@ private val DEFAULT_MOCK_ADVERTISER: MockAdvertiser = { requestedTxPower, _, _ -
 }
 
 /**
- * A type for a mock scanner.
+ * A callback used for a mock scanner.
  *
  * This callback is called when the mock central manager requests a scan for Bluetooth LE devices.
  *
@@ -403,7 +415,7 @@ sealed class MockAndroidEnvironment(
      *
      * See:
      * * [Bluetooth Permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions)
-     * * [`neverForLocation flag`](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions#assert-never-for-location)
+     * * [`neverForLocation` flag](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions#assert-never-for-location)
      *
      * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
@@ -486,6 +498,20 @@ sealed class MockAndroidEnvironment(
         issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
     )
 
+    /**
+     * A mock environment for the Nexus 4.
+     *
+     * This device may only use active scanning once per scan session for a given device. That means,
+     * that Scan Request is only sent once per discovered connectable device, resulting in only a
+     * single scan record received from such devices.
+     *
+     * @param deviceName The device name, by default set to "Nexus 4".
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     */
     class Nexus4(
         deviceName: String = "Nexus 4",
         isBluetoothEnabled: Boolean = true,
@@ -502,6 +528,30 @@ sealed class MockAndroidEnvironment(
         issueOnlyOneActiveScan = true,
     )
 
+    /**
+     * A mock environment for the Samsung A8 with Android 14.
+     *
+     * That device fails to properly negotiate the Maximum Transfer Usage (MTU) and Data Length
+     * Extension (DLE). It incorrectly claims, that can only transfer 27 bytes in a single LL packet,
+     * while later trying to send 251 bytes.
+     *
+     * This causes the peer device to terminate the connection. A workaround for that is not requesting
+     * MTU higher than 23 (maximum value length equal to 20 bytes).
+     *
+     * @param deviceName The device name, by default set to "Samsung A8".
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
+     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
+     * @param isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
+     * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+     * to estimate device location. By default, `neverForLocation` flag is assumed.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
+     * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     */
     class SamsungA8(
         deviceName: String = "Samsung A8",
         isBluetoothEnabled: Boolean = true,

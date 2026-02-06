@@ -1085,7 +1085,7 @@ class PeripheralSpec<ID: Any> private constructor(
          *
          * @param parameters The advertising parameters.
          * @param delay The delay before the advertising starts.
-         * @param timeout The advertising timeout, since the start of advertising. By default set to infinite.
+         * @param timeout The advertising timeout, since the start of advertising. By default, set to infinite.
          * @param isAdvertisingWhenConnected Whether the device should advertise when connected.
          * @param isBeacon Whether the device is a beacon which can reveal user's location, that is
          * an iBeacon or Eddystone beacon. On Android 12+ such advertisements require location
