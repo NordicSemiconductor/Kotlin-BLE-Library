@@ -18,7 +18,6 @@
         }
       }
     </script>
-<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
 <script type="text/javascript" src="../scripts/sourceset_dependencies.js" async></script>
 <link href="../styles/style.css" rel="Stylesheet">
 <link href="../styles/main.css" rel="Stylesheet">
@@ -43,7 +42,7 @@
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
-                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":advertiser-android/main">androidJvm</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":advertiser-android/release">release</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
                 <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
@@ -54,9 +53,9 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":advertiser-android/main" data-filter=":advertiser-android/main">
+                                <input type="checkbox" class="checkbox--input" id=":advertiser-android/release" data-filter=":advertiser-android/release">
                                 <span class="checkbox--icon"></span>
-                                androidJvm
+                                release
                             </label>
                         </li>
                 </ul>
@@ -90,29 +89,29 @@
         </nav>
         <div id="resizer" class="resizer" data-item-type="BAR"></div>
         <div id="main" data-item-type="SECTION" role="main">
-<div class="main-content" id="content" pageids="advertiser-android::////PointingToDeclaration//1450877692">
+<div class="main-content" id="content" pageids="advertiser-android::////PointingToDeclaration//-1020717493">
   <div class="breadcrumbs"></div>
   <div class="cover ">
     <h1 class="cover"><span><span>advertiser-android</span></span></h1>
-    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-android/main"><p class="paragraph">Android implementation for the Bluetooth Low Energy advertiser.</p></div></div>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":advertiser-android/release"><p class="paragraph">Android implementation for the Bluetooth Low Energy advertiser.</p><h2 class="">Overview</h2><p class="paragraph">This package contains the native Android implementation of the Bluetooth Low Energy advertiser.</p><p class="paragraph">Bluetooth LE advertising is available since Android 5 Lollipop, and has been extended in Android 8 Oreo with adding Advertising Extension.</p><h2 class="">Usage</h2><p class="paragraph">This section shows how to use the native Android implementation of the Bluetooth Low Energy advertiser.</p><h3 class="">Advertiser</h3><p class="paragraph">Create an instance of the <code class="lang-kotlin">BluetoothLeAdvertiser</code>.</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">val advertiser = BluetoothLeAdvertiser.native(environment)</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div><h3 class="">Starting advertising</h3><p class="paragraph">Begin Bluetooth LE advertising by providing the parameters and advertising data:</p><div class="sample-container"><pre><code class="block lang-kotlin" theme="idea">scope.launch {<br>    try {<br>        advertiser.advertise(<br>            parameters = parameters,<br>            payload = AdvertisingPayload(<br>                advertisingData = {<br>                    // Include the device's name.<br>                    IncludeLocalName()<br>                    // Environmental Sensing Service UUID.<br>                    ServiceUuid(0x181A)<br>                },<br>                scanResponse = {<br>                    // Temperature characteristic UUID: 22'C.<br>                    ServiceData(0x2A6E, byteArrayOf(22))<br>                },<br>            ),<br>            timeout = 3.seconds,<br>        ) { txPower -&gt;<br>            // This callback is called when the advertising starts.<br>            // The parameter is the actual TX power used for advertising, in dBm.<br>            Timber.i("Tx power: $txPower")<br>        }<br>    } catch (_: CancellationException) {<br>        Timber.i("Advertising cancelled")<br>    } catch (e: Exception) {<br>        Timber.e(e, "Advertising failed")<br>    }<br>}</code></pre><span class="copy-tooltip"><div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div><span class="copy-icon"></span></span></div></div></div>
   </div>
   <h2 class="">Packages</h2>
-  <div class="table"><a data-name="2055114984%2FPackages%2F1450877692" anchor-label="no.nordicsemi.kotlin.ble.advertiser.android" id="2055114984%2FPackages%2F1450877692" data-filterable-set=":advertiser-android/main"></a>
-    <div class="table-row table-row_platform-tagged" data-filterable-current=":advertiser-android/main" data-filterable-set=":advertiser-android/main">
+  <div class="table"><a data-name="2055114984%2FPackages%2F-1020717493" anchor-label="no.nordicsemi.kotlin.ble.advertiser.android" id="2055114984%2FPackages%2F-1020717493" data-filterable-set=":advertiser-android/release"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":advertiser-android/release" data-filterable-set=":advertiser-android/release">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="no.nordicsemi.kotlin.ble.advertiser.android/index.html">no.nordicsemi.kotlin.ble.advertiser.android</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2055114984%2FPackages%2F1450877692"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2055114984%2FPackages%2F-1020717493"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">androidJvm</div>
+              <div class="platform-tag jvm-like">release</div>
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="2055114984%2FPackages%2F1450877692" anchor-label="no.nordicsemi.kotlin.ble.advertiser.android" id="2055114984%2FPackages%2F1450877692" data-filterable-set=":advertiser-android/main"></a>
+        <div><span class="brief-comment"><a data-name="2055114984%2FPackages%2F-1020717493" anchor-label="no.nordicsemi.kotlin.ble.advertiser.android" id="2055114984%2FPackages%2F-1020717493" data-filterable-set=":advertiser-android/release"></a>
             <p class="paragraph">This package contains a Factory method to create an Android implementation for the Bluetooth LE Advertiser.</p>
           </span></div>
       </div>
