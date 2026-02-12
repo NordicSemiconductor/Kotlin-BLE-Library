@@ -109,7 +109,11 @@ open class Peripheral(
         /** The Bluetooth device type of the remote device. */
         val type: PeripheralType
 
-        /** Bonding state as a state flow. */
+        /**
+         * Bonding state as a state flow.
+         *
+         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+         */
         val bondState: StateFlow<BondState>
 
         /**
@@ -875,7 +879,7 @@ open class Peripheral(
      *
      * #### Security Note
      * State [BondState.BONDED] does not guarantee that the connection to the device is secure.
-     * Some Android devices allow connecting to bonded devices without restoring encryption
+     * Some Android devices allow connecting to bonded devices without restoring encryption,
      * or they remove the bond information when it fails.
      */
     val bondState: StateFlow<BondState>
