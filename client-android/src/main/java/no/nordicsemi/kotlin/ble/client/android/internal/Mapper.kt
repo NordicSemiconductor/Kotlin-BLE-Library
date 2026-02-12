@@ -101,8 +101,9 @@ internal fun Int.errorCodeToReason(): ScanningFailedToStartException.Reason = wh
 internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice, name: String?) -> Peripheral): ScanResult? {
     val scanRecord = scanRecord ?: return null
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val deviceName = try { device.name } catch (_: SecurityException) { null }
         ScanResult(
-            peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
+            peripheral = peripheral(device, scanRecord.deviceName ?: deviceName),
             isConnectable =  isConnectable,
             advertisingData = scanRecord.toAdvertisementData(),
             rssi = rssi,
