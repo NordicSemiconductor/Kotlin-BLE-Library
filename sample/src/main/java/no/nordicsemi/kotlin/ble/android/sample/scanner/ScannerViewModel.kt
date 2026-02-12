@@ -57,6 +57,7 @@ import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
@@ -400,6 +401,8 @@ class ScannerViewModel @Inject constructor(
                     val ledCharacteristic = service.characteristics.firstOrNull { it.uuid == ledCharacteristicUuid }
 
                     Timber.i("($ce) Awaiting for button press to start LED blinking...")
+                    // Note: This may throw InvalidAttributeException if the device gets
+                    //       disconnected or invalidates services during awaiting button press.
                     val result = buttonCharacteristic?.waitForValueChange {
                         Timber.i("($ce) Turning LED on...")
                         ledCharacteristic?.write(byteArrayOf(0x01))
@@ -421,6 +424,15 @@ class ScannerViewModel @Inject constructor(
                             }
                         }
                     }
+                }
+            }
+            .catch {
+                if (it is InvalidAttributeException) {
+                    // InvalidAttributeException is thrown when the peripheral is disconnected
+                    // or services got invalidated when a notification is awaited (waitForValueChange).
+                    Timber.w("Services invalidated during an operation")
+                } else {
+                    Timber.e("Operation failed: ${it.message}")
                 }
             }
             .onCompletion {
