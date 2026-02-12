@@ -63,6 +63,8 @@ dependencies {
     "mockImplementation"(project(":client-android-mock"))
     // For debug, let's use mock (for Previews).
     "debugImplementation"(project(":environment-android-mock"))
+    // This is to provide the Environment for Composables.
+    implementation(project(":environment-android-compose"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

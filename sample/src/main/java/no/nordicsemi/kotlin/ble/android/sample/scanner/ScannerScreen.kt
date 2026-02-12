@@ -31,6 +31,8 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.scanner
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -47,7 +49,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,9 +63,12 @@ import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 
 @Composable
 fun ScannerScreen() {
+    val environment = LocalEnvironmentOwner.current
     val vm = hiltViewModel<ScannerViewModel>()
     val state by vm.state.collectAsStateWithLifecycle()
     val devices by vm.peripherals.collectAsStateWithLifecycle()
@@ -75,22 +83,51 @@ fun ScannerScreen() {
     ) {
         Text(text = "Bluetooth state: $state")
 
-        // Both Bluetooth and Location permissions are granted.
-        // We can now start scanning.
-        ScannerView(
-            devices = devices,
-            isScanning = isScanning,
-            onStartScan = {
-                if (!isScanning)
-                    vm.onScanRequested()
-                else
-                    vm.onStopScanRequested()
-            },
-            onPeripheralClicked = vm::onPeripheralSelected,
-            onBondRequested = vm::onBondRequested,
-            onRemoveBondRequested = vm::onRemoveBondRequested,
-            onClearCacheRequested = vm::onClearCacheRequested,
+        // Scanning requires BLUETOOTH_SCAN permission, but
+        // reading device name or bond state requires BLUETOOTH_CONNECT permission.
+        val permissions = arrayOf(
+            AndroidEnvironment.Permission.BLUETOOTH_SCAN,
+            AndroidEnvironment.Permission.BLUETOOTH_CONNECT,
         )
+        var permissionGranted by remember {
+            mutableStateOf(environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted)
+        }
+        val launcher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestMultiplePermissions(),
+            onResult = {
+                // This may not work.
+                // permissionGranted = it.values.all { true }
+                // Use this instead:
+                permissionGranted = environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted
+            }
+        )
+
+        if (permissionGranted) {
+            // Both Bluetooth and Location permissions are granted.
+            // We can now start scanning.
+            ScannerView(
+                devices = devices,
+                isScanning = isScanning,
+                onStartScan = {
+                    if (!isScanning)
+                        vm.onScanRequested()
+                    else
+                        vm.onStopScanRequested()
+                },
+                onPeripheralClicked = vm::onPeripheralSelected,
+                onBondRequested = vm::onBondRequested,
+                onRemoveBondRequested = vm::onRemoveBondRequested,
+                onClearCacheRequested = vm::onClearCacheRequested,
+            )
+        } else {
+            Button(
+                onClick = {
+                    launcher.launch(permissions)
+                }
+            ) {
+                Text("Grant required permissions")
+            }
+        }
     }
 }
 

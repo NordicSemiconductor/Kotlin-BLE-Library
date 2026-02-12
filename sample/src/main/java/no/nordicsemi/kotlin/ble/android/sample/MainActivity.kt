@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -29,6 +30,7 @@ import no.nordicsemi.kotlin.ble.android.sample.menu.MenuScreen
 import no.nordicsemi.kotlin.ble.android.sample.scanner.ScannerScreen
 import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 import javax.inject.Inject
 
 const val NAV_MENU = "Menu"
@@ -55,43 +57,46 @@ class MainActivity : ComponentActivity() {
                 val backStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = backStackEntry?.destination?.route
 
-                Scaffold(
-                    topBar = {
-                        TopAppBar(
-                            // TODO: Titles should go from strings.xml
-                            title = { Text(text = currentRoute ?: NAV_MENU) },
-                            navigationIcon = {
-                                // Show the home icon only on the main menu
-                                if (currentRoute != NAV_MENU) {
-                                    IconButton(
-                                        onClick = { navController.popBackStack() }
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                                            contentDescription = "Navigate back",
-                                        )
+                // Note the plural in "valueS = " below. The Environment owner provides an array of values.
+                CompositionLocalProvider(values = LocalEnvironmentOwner provides environment) {
+                    Scaffold(
+                        topBar = {
+                            TopAppBar(
+                                // TODO: Titles should go from strings.xml
+                                title = { Text(text = currentRoute ?: NAV_MENU) },
+                                navigationIcon = {
+                                    // Show the home icon only on the main menu
+                                    if (currentRoute != NAV_MENU) {
+                                        IconButton(
+                                            onClick = { navController.popBackStack() }
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                                                contentDescription = "Navigate back",
+                                            )
+                                        }
                                     }
-                                }
-                            },
-                        )
-                    },
-                    contentWindowInsets = WindowInsets.statusBars,
-                ) { paddings ->
-                    NavHost(
-                        modifier = Modifier.padding(paddings),
-                        navController = navController,
-                        startDestination = NAV_MENU
-                    ) {
-                        composable(NAV_MENU) {
-                            MenuScreen(
-                                onMenuClicked = { navController.navigate(it) }
+                                },
                             )
-                        }
-                        composable(NAV_ADVERTISER) {
-                            AdvertiserScreen()
-                        }
-                        composable(NAV_SCANNER) {
-                            ScannerScreen()
+                        },
+                        contentWindowInsets = WindowInsets.statusBars,
+                    ) { paddings ->
+                        NavHost(
+                            modifier = Modifier.padding(paddings),
+                            navController = navController,
+                            startDestination = NAV_MENU
+                        ) {
+                            composable(NAV_MENU) {
+                                MenuScreen(
+                                    onMenuClicked = { navController.navigate(it) }
+                                )
+                            }
+                            composable(NAV_ADVERTISER) {
+                                AdvertiserScreen()
+                            }
+                            composable(NAV_SCANNER) {
+                                ScannerScreen()
+                            }
                         }
                     }
                 }
