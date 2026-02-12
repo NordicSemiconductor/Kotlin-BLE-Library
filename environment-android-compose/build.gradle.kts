@@ -37,9 +37,9 @@ plugins {
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "core-compose"
+    POM_ARTIFACT_ID = "environment-android-compose"
     POM_NAME = "Utils for Compose"
-    POM_DESCRIPTION = "Set of utilities for Jetpack Compose."
+    POM_DESCRIPTION = "Set of utilities for Jetpack Compose integration on Android."
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
@@ -47,7 +47,7 @@ nordicNexusPublishing {
 }
 
 android {
-    namespace = "no.nordicsemi.kotlin.ble.core.compose"
+    namespace = "no.nordicsemi.kotlin.ble.environment.android.compose"
 }
 
 dependencies {
