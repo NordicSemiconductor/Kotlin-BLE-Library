@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.RemoteService
@@ -69,7 +70,7 @@ fun DeviceServices(services: List<RemoteService>?) {
 
 @OptIn(ExperimentalUuidApi::class)
 @Composable
-private fun Service(service: RemoteService) {
+private fun Service(service: AnyRemoteService) {
     Column(
         modifier = Modifier.indent(12.dp, MaterialTheme.colorScheme.primary)
     ) {
@@ -80,6 +81,13 @@ private fun Service(service: RemoteService) {
         if (service.characteristics.isNotEmpty()) {
             service.characteristics.forEach { characteristic ->
                 Characteristic(characteristic)
+
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+        }
+        if (service.includedServices.isNotEmpty()) {
+            service.includedServices.forEach { service ->
+                Service(service)
 
                 Spacer(modifier = Modifier.height(4.dp))
             }
@@ -143,6 +151,7 @@ private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color): Modifier {
         .padding(start = strokeWidth * 1.25f)
 }
 
+@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDeviceServices() {
@@ -155,6 +164,22 @@ private fun PreviewDeviceServices() {
                 Characteristic(0x2A01)
             },
             PreviewRemoteService(0x1801),
+            // LED Button Service
+            PreviewRemoteService(
+                uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123"),
+            ) {
+                // Button Characteristic
+                Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
+                // LED Characteristic
+                Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
+                // Another LED Button Service inside! What a surprise!
+                IncludedService(
+                    uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+                ) {
+                    Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
+                    Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
+                }
+            }
         )
     )
 }
