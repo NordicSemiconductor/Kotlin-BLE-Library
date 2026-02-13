@@ -37,6 +37,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
+import android.bluetooth.BluetoothGattService
 import androidx.annotation.Keep
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -102,7 +103,14 @@ internal class NativeGattCallback: BluetoothGattCallback() {
             _events.tryEmit(ServicesDiscovered(emptyList()))
             return
         }
-        _events.tryEmit(ServicesDiscovered(services.map { NativeRemoteService(gatt, it, events) }))
+        val remoteServices = services
+            // For some reason, secondary services are not only listed as included services
+            // under the root service, but also on the main list. Skip them.
+            // They will be added as IncludedService inside the NativeRemoteService.
+            .filter { it.type == BluetoothGattService.SERVICE_TYPE_PRIMARY }
+            // Map each primary BluetoothGattService to NativeRemoteService.
+            .map { NativeRemoteService(gatt, it, events) }
+        _events.tryEmit(ServicesDiscovered(remoteServices))
     }
 
     override fun onServiceChanged(gatt: BluetoothGatt) {
