@@ -29,6 +29,8 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+@file:Suppress("unused")
+
 package no.nordicsemi.kotlin.ble.core.android
 
 import kotlinx.coroutines.flow.StateFlow
@@ -63,21 +65,34 @@ import org.jetbrains.annotations.Range
  */
 interface AndroidEnvironment : Environment {
     /**
+     * Android permissions.
+     *
+     * The constants are useful to request permissions on devices running older Android version,
+     * i.e. using mock implementation.
+     */
+    object Permission {
+        /** Bluetooth Connect permission. */
+        const val BLUETOOTH_CONNECT = "android.permission.BLUETOOTH_CONNECT"
+        /** Bluetooth Scan permission. */
+        const val BLUETOOTH_SCAN = "android.permission.BLUETOOTH_SCAN"
+        /** Bluetooth Advertise permission. */
+        const val BLUETOOTH_ADVERTISE = "android.permission.BLUETOOTH_ADVERTISE"
+    }
+
+    /**
      * Android SDK versions.
      */
-    class SdkVersion {
-        companion object {
-            /** Android 5.0 */
-            const val LOLLIPOP = 21
-            /** Android 6.0 */
-            const val MARSHMALLOW = 23
-            /** Android 8.0 */
-            const val OREO = 26
-            /** Android 12 */
-            const val S = 31
-            /** Android 15 */
-            const val VANILLA_ICE_CREAM = 35
-        }
+    object SdkVersion {
+        /** Android 5.0 */
+        const val LOLLIPOP = 21
+        /** Android 6.0 */
+        const val MARSHMALLOW = 23
+        /** Android 8.0 */
+        const val OREO = 26
+        /** Android 12 */
+        const val S = 31
+        /** Android 15 */
+        const val VANILLA_ICE_CREAM = 35
     }
 
     val bluetoothState: StateFlow<Manager.State>

@@ -57,7 +57,9 @@ import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.IncludedService
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -320,7 +322,7 @@ class ScannerViewModel @Inject constructor(
             .onEach { services ->
                 // On each services change, increment the event index.
                 event += 1
-                Timber.i("($event) Services changed: $services")
+                Timber.i("($event) Services changed: ${services?.map { it.uuid to it.isPrimary }}")
             }
             .filterNotNull()
             .onEach { services ->
@@ -392,7 +394,9 @@ class ScannerViewModel @Inject constructor(
                 // Check if LED Button service is available.
                 // If so, blink the LED 5 times.
                 val blinkyServiceUuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
-                val blinkyService = services.firstOrNull { it.uuid == blinkyServiceUuid }
+                val blinkyService = services.firstOrNull {
+                    it.uuid == blinkyServiceUuid && it.isPrimary
+                }
                 blinkyService?.let { service ->
                     val buttonCharacteristicUuid = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
                     val ledCharacteristicUuid = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
@@ -400,6 +404,8 @@ class ScannerViewModel @Inject constructor(
                     val ledCharacteristic = service.characteristics.firstOrNull { it.uuid == ledCharacteristicUuid }
 
                     Timber.i("($ce) Awaiting for button press to start LED blinking...")
+                    // Note: This may throw InvalidAttributeException if the device gets
+                    //       disconnected or invalidates services during awaiting button press.
                     val result = buttonCharacteristic?.waitForValueChange {
                         Timber.i("($ce) Turning LED on...")
                         ledCharacteristic?.write(byteArrayOf(0x01))
@@ -421,6 +427,15 @@ class ScannerViewModel @Inject constructor(
                             }
                         }
                     }
+                }
+            }
+            .catch {
+                if (it is InvalidAttributeException) {
+                    // InvalidAttributeException is thrown when the peripheral is disconnected
+                    // or services got invalidated when a notification is awaited (waitForValueChange).
+                    Timber.w("Services invalidated during an operation")
+                } else {
+                    Timber.e("Operation failed: ${it.message}")
                 }
             }
             .onCompletion {

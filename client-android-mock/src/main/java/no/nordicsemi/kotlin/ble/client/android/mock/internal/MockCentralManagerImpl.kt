@@ -157,7 +157,7 @@ open class MockCentralManagerImpl(
         // - known peripherals with bond information
         // - peripherals that have not been scanned yet, but are bonded (PeripheralSpec.isBonded == true)
         // Should we just iterate over peripheral specs, we would miss those that were bonded
-        // in in runtime and would make all specs "known" (available for retrieval).
+        // in runtime and would make all specs "known" (available for retrieval).
         // Should we iterate only managed, we would miss devices that were defined as bonded,
         // but were not scanned yet.
         val managedBondedPeripherals = managedPeripherals.values
