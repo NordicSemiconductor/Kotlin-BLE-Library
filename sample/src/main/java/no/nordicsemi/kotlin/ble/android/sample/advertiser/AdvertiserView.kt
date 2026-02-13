@@ -118,7 +118,6 @@ fun AdvertiserView(
             )
 
             AnimatedVisibility(visible = propertiesVisible) {
-
                 Column(
                     modifier = Modifier.padding(vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),

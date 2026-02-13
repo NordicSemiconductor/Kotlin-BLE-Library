@@ -121,92 +121,10 @@ fun ScannerScreen() {
             )
         } else {
             Button(
-                onClick = {
-                    launcher.launch(permissions)
-                }
+                onClick = {  launcher.launch(permissions) }
             ) {
                 Text("Grant required permissions")
             }
         }
     }
-}
-
-@Composable
-fun ScannerView(
-    devices: List<Peripheral>,
-    isScanning: Boolean,
-    onStartScan: () -> Unit,
-    onPeripheralClicked: (Peripheral) -> Unit,
-    onBondRequested: (Peripheral) -> Unit,
-    onRemoveBondRequested: (Peripheral) -> Unit,
-    onClearCacheRequested: (Peripheral) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Button(
-                onClick = onStartScan,
-                enabled = true,//!isScanning,
-                modifier = Modifier.weight(1f),
-            ) {
-                Text(text = if (isScanning) "Stop scan" else "Start scan")
-            }
-
-            AnimatedVisibility(visible = isScanning) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(start = 16.dp),
-                )
-            }
-        }
-
-        if (devices.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Tap on a device to connect.")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        HorizontalDivider()
-
-        DeviceList(
-            modifier = Modifier.fillMaxSize(),
-            devices = devices,
-            onItemClick = onPeripheralClicked,
-            onBondRequested = onBondRequested,
-            onRemoveBondRequested = onRemoveBondRequested,
-            onClearCacheRequested = onClearCacheRequested,
-            contentPadding = PaddingValues(bottom = 56.dp, top = 16.dp),
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ScannerScreenPreview() {
-    val scope = rememberCoroutineScope()
-    ScannerView(
-        devices = listOf(
-            PreviewPeripheral(
-                scope = scope,
-                address = "00:11:22:33:44:55",
-                name = "Device 1",
-                state = ConnectionState.Connected,
-            ),
-            PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
-            PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
-        ),
-        isScanning = true,
-        onStartScan = {},
-        onPeripheralClicked = {},
-        onBondRequested = {},
-        onRemoveBondRequested = {},
-        onClearCacheRequested = {},
-    )
 }

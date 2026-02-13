@@ -55,7 +55,6 @@ class AdvertiserViewModel @Inject constructor(
     // We're not using ViewModelScope. For test purposes it's better to create a custom Scope,
     // also connected to the ViewModel lifecycle, but which can be replaced in tests.
     private val scope: CoroutineScope,
-    val environment: AndroidEnvironment,
 ): ViewModel() {
     private val _isAdvertising = MutableStateFlow(false)
     var isAdvertising = _isAdvertising.asStateFlow()
