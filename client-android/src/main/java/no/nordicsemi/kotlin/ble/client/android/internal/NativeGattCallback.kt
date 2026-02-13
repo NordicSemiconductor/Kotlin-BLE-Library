@@ -81,7 +81,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
 
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         logger.debug("onConnectionStateChange: status=$status, newState=$newState")
-        // Pixel 4 with Android 12 does returns status 0 when link is lost to a device.
+        // Pixel 4 with Android 12 does return status 0 when link is lost to a device.
         // Newer versions (Pixel 7 with Android 16) report status 8 (timeout) in the same case.
         val betterStatus = if (
                 newState == BluetoothGatt.STATE_DISCONNECTED &&
