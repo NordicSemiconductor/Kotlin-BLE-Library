@@ -67,7 +67,7 @@ class PreviewRemoteService: RemoteService {
 
     override val includedServices: List<RemoteIncludedService>
         get() = definition?.includedServices?.map {
-            PreviewInnerRemoteService(
+            PreviewIncludedRemoteService(
                 service = this,
                 uuid = it.uuid,
                 definition = it,
@@ -146,12 +146,12 @@ class PreviewRemoteService: RemoteService {
 }
 
 @ExperimentalUuidApi
-class PreviewInnerRemoteService internal constructor(
+class PreviewIncludedRemoteService internal constructor(
     override val service: AnyRemoteService,
     override val uuid: Uuid,
     override val instanceId: Int = 0,
     private val definition: ServiceDefinition,
-) : RemoteIncludedService {
+): RemoteIncludedService {
 
     override val characteristics: List<RemoteCharacteristic>
         get() = definition.characteristics.map {
@@ -164,7 +164,7 @@ class PreviewInnerRemoteService internal constructor(
         }
     override val includedServices: List<RemoteIncludedService>
         get() = definition.includedServices.map {
-            PreviewInnerRemoteService(
+            PreviewIncludedRemoteService(
                 service = this,
                 uuid = it.uuid,
                 definition = it,
