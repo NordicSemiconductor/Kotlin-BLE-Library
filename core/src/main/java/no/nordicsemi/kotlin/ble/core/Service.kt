@@ -82,12 +82,22 @@ interface AnyService<C: Characteristic<*>>: Service<C> {
      * The owner is set to null when the service was invalidated.
      */
     val owner: Peer<*>?
+
+    /**
+     * Whether the service is a primary service.
+     *
+     * A primary service is a root service that is not included in any other service.
+     */
+    val isPrimary: Boolean
 }
 
 /**
  * An interface representing a primary service.
  */
-interface PrimaryService<C: Characteristic<*>>: AnyService<C>
+interface PrimaryService<C: Characteristic<*>>: AnyService<C> {
+    override val isPrimary: Boolean
+        get() = true
+}
 
 /**
  * An interface representing a service included in another service.
@@ -104,4 +114,7 @@ interface IncludedService<C: Characteristic<*>>: AnyService<C> {
 
     override val owner: Peer<*>?
         get() = service.owner
+
+    override val isPrimary: Boolean
+        get() = false
 }
