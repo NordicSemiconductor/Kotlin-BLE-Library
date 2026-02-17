@@ -586,7 +586,7 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        check(!mtuRequested) {
+        check(mtu == ATT_MTU_DEFAULT) {
             logger.warn("MTU has been already requested")
             return
         }
