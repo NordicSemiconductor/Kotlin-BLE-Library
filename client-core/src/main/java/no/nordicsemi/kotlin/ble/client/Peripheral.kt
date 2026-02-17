@@ -296,7 +296,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 gattEventCollector = null
                 close()
             }
-            // Peripheral will also be closed if the scope gets cancelled.
+            // Peripheral will also be closed if the scope gets canceled.
             .launchIn(scope)
     }
 
@@ -305,7 +305,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      */
     protected fun close() {
         // Cancel the event collector.
-        // If the collector was already cancelled or wasn't started, close the executor.
+        // If the collector was already canceled or wasn't started, close the executor.
         gattEventCollector?.cancel() ?: run {
             handleDisconnection()
             handleClose()
@@ -325,8 +325,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
-     * This method is called when the peripheral is closed, that is it is disconnected
-     * and will not try to reconnect.
+     * This method is called when the peripheral is closed.
+     *
+     * In this state the peripheral is disconnected and will not try to reconnect.
      */
     protected open fun handleClose() {
         // Empty default implementation.
@@ -509,7 +510,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
-     * The maximum amount of data, in bytes, that can be send to a characteristic in a single write
+     * The maximum amount of data, in bytes, that can be sent to a characteristic in a single write
      * operation.
      *
      * Maximum value length depends on [WriteType] and is calculated as:
