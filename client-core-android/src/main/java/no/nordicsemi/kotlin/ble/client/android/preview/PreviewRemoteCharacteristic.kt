@@ -168,7 +168,9 @@ class PreviewRemoteCharacteristic : RemoteCharacteristic {
 
     override suspend fun write(data: ByteArray, writeType: WriteType) {}
 
-    override fun subscribe(): Flow<ByteArray> = emptyFlow()
+    override fun subscribe(
+        onSubscription: suspend RemoteCharacteristic.() -> Unit
+    ): Flow<ByteArray> = emptyFlow()
 
     override suspend fun waitForValueChange(
         rawDataFilter: (ByteArray) -> Boolean,
