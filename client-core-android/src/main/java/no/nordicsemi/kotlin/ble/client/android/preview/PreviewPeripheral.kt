@@ -330,8 +330,6 @@ private class StubRemoteCharacteristic(
         else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
     }
 
-    override fun subscribe(): Flow<ByteArray> = subscribe {}
-
     override suspend fun waitForValueChange(
         rawDataFilter: (ByteArray) -> Boolean,
         merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
@@ -343,9 +341,9 @@ private class StubRemoteCharacteristic(
         .firstOrNull(filter)
         ?: throw InvalidAttributeException()
 
-    private fun subscribe(trigger: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> = when {
+    override fun subscribe(onSubscription: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> = when {
         owner == null -> throw InvalidAttributeException()
-        isSubscribable() -> _value.filter { _isNotifying }.onStart { trigger() }
+        isSubscribable() -> _value.filter { _isNotifying }.onStart { onSubscription() }
         else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
     }
 

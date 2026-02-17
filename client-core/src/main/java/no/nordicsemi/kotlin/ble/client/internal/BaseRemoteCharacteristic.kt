@@ -244,27 +244,20 @@ abstract class BaseRemoteCharacteristic(
         }
     }
 
-    final override fun subscribe(): Flow<ByteArray> = subscribe {}
-
     override suspend fun waitForValueChange(
         rawDataFilter: (ByteArray) -> Boolean,
         merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
         filter: (ByteArray) -> Boolean,
         trigger: suspend RemoteCharacteristic.() -> Unit,
-    ): ByteArray {
-        // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
-            throw InvalidAttributeException()
-        }
+    ): ByteArray = subscribe(trigger)
+        .filter(rawDataFilter)
+        .mergeIndexed(merge)
+        .firstOrNull(filter)
+        ?: throw InvalidAttributeException()
 
-        return subscribe(trigger)
-            .filter(rawDataFilter)
-            .mergeIndexed(merge)
-            .firstOrNull(filter)
-            ?: throw InvalidAttributeException()
-    }
-
-    private fun subscribe(trigger: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> {
+    override fun subscribe(
+        onSubscription: suspend RemoteCharacteristic.() -> Unit
+    ): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
         require(owner != null) {
             throw InvalidAttributeException()
@@ -279,8 +272,8 @@ abstract class BaseRemoteCharacteristic(
             .onSubscription {
                 // First, make sure the notifications or indications are enabled.
                 setNotifying(true)
-                // Then, invoke the trigger to start the peripheral sending value changes.
-                trigger()
+                // Then, invoke the user callback.
+                onSubscription()
             }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)

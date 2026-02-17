@@ -34,13 +34,13 @@
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.defaultWriteType
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.chunked
 import no.nordicsemi.kotlin.ble.core.util.merge
@@ -165,17 +165,29 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * on subscription, that is when a terminal operator (`collect`, `first`, etc.) is invoked on
      * the returned flow.
      *
-     * It is safe to call [setNotify(true)][setNotifying] after calling this method to
-     * synchronically enable notifications on the peripheral before the flow starts getting collected.
+     * [onSubscription] callback is invoked when the notifications or indications have been
+     * enabled successfully.
      *
      * If higher-level packets are sent as multiple notifications or indications, they may be
      * merged using [merge] or [mergeIndexed] operator.
      *
      * ```kotlin
-     * remoteCharacteristic.subscribe()
+     * // The Completable Deferred allows to synchronously await until the notifications are enabled.
+     * val deferred = CompletableDeferred<Unit>()
+     *
+     * // Enable notifications or indications and handle them.
+     * remoteCharacteristic
+     *    .subscribe {
+     *        // Notifications are enabled and being collected.
+     *        deferred.complete(Unit)
+     *    }
+     *    // Catch subscription errors, i.e. OperationFailedException(reason=Subscribe not permitted)
+     * 	  .catch {
+     * 	      deferred.completeExceptionally(it)
+     * 	  }
      *    // If a packet is split into multiple notifications, merge them.
      *    .merge { accumulated, received ->
-     *        // [...]
+     *       // [...]
      *    }
      *    // Transform the response raw data to a meaningful value.
      *    .map { bytes -> parse(bytes) }
@@ -183,15 +195,14 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *       // [...]
      *    }
      *    .launchIn(scope)
-     * // Optional: Enable notifications
-     * remoteCharacteristic.setNotifying(true)
-     * // Now the flow is collecting and notifications are enabled.
+     * // Synchronously await until the notifications are enabled while still collecting them.
+     * deferred.await()
      * ```
-     * This way no notification or indication will be missed and it is clear when the characteristic
+     * This way no notification or indication will be missed, and it is clear when the characteristic
      * is ready (connected, subscribed, triggered to send data).
      *
-     * If [setNotifying] is skipped, it will be called automatically when the flow collection starts.
-     *
+     * @param onSubscription An optional callback that is invoked when the notifications or
+     * indications have been enabled successfully.
      * @return A flow emitting the raw data of notifications or indications sent from the
      * characteristic when the value changes. The flow completes when the characteristic
      * is invalidated, e.g., when the peripheral disconnects, or sends a Service Changed event.
@@ -206,7 +217,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @see merge
      * @see mergeIndexed
      */
-    fun subscribe(): Flow<ByteArray>
+    fun subscribe(onSubscription: suspend RemoteCharacteristic.() -> Unit = {}): Flow<ByteArray>
 
     /**
      * Waits for the value of the characteristic to change.
