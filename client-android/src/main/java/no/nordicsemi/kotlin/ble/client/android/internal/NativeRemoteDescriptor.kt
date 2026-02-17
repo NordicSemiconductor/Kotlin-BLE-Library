@@ -71,6 +71,7 @@ internal class NativeRemoteDescriptor(
             val result = gatt.writeDescriptor(descriptor, data)
             when (result) {
                 BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
+
                 BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
                     throw OperationFailedException(OperationStatus.BUSY)
                 else ->
