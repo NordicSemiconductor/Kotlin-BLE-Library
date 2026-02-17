@@ -182,9 +182,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *        deferred.complete(Unit)
      *    }
      *    // Catch subscription errors, i.e. OperationFailedException(reason=Subscribe not permitted)
-     * 	  .catch {
-     * 	      deferred.completeExceptionally(it)
-     * 	  }
+     *    .catch {
+     *        deferred.completeExceptionally(it)
+     *    }
      *    // If a packet is split into multiple notifications, merge them.
      *    .merge { accumulated, received ->
      *       // [...]
