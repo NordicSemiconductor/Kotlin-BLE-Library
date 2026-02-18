@@ -73,31 +73,42 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * This method writes to the Client Characteristic Configuration Descriptor (CCCD)
      * belonging to this characteristic to enable or disable notifications or indications.
      *
-     * Note, that calling [subscribe] or [waitForValueChange] will enable notifications
-     * automatically.
+     * Note: [subscribe] or [waitForValueChange] enable notifications automatically.
      *
-     * ### Possible race condition
-     * If a device is expected to send a notification or indication right after enabling it,
-     * there is a risk of missing it. In such cases, it is recommended to use [subscribe] or
-     * [waitForValueChange] before (or instead) calling this method, which subscribes to incoming
-     * messages before enabling them on the peripheral.
+     * ### Example
+     *
+     * This snippet shows how the notifications can be enabled and disabled synchronously:
+     *
+     * ```kotlin
+     * remoteCharacteristic.setNotifying(true)
+     * println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> true
+     * ```
+     *
+     * ## Race Condition Warning
+     *
+     * Using `setNotifying(true)` can lead to a race condition where the peripheral sends a
+     * notification before the app is ready to collect it, causing the first value to be missed.
+     *
+     * **It is strongly recommended to use [subscribe] or [waitForValueChange] instead.**
+     * These Flow-based APIs guarantee that the listener is active *before* notifications are
+     * enabled on the peripheral, preventing data loss.
      *
      * ### Example
      * ```kotlin
-     * remoteCharacteristic.subscribe()
-     *    .onEach { data ->
-     *       // Handle the received data.
+     * remoteCharacteristic
+     *    .subscribe {
+     *       // Here, the notifications are 100% enabled.
+     *       println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> true
      *    }
-     *    .launchIn(scope)
+     *    .catch {
+     *       // Catch an exception if subscribe() failed.
+     *    }
+     *    .collect {
+     *        // [...]
+     *    }
      *
-     * // Note, that subscribe() enables notifications on terminal operator (collect, first, etc.).
+     * // The Flow is cold. Notifications are not yet enabled.
      * println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> false
-     *
-     * // Calling setNotifying(true) here ensures that notifications are enabled synchronically.
-     * // When this method returns, notifications are enabled and the characteristic
-     * // is ready to use.
-     * remoteCharacteristic.setNotifying(true)
-     * println("Notifications are enabled: ${remoteCharacteristic.isNotifying}") // -> true
      * ```
      * @param enabled True to enable notifications or indications, false to disable them.
      * @throws OperationFailedException if the operation failed.
@@ -182,9 +193,9 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *        deferred.complete(Unit)
      *    }
      *    // Catch subscription errors, i.e. OperationFailedException(reason=Subscribe not permitted)
-     * 	  .catch {
-     * 	      deferred.completeExceptionally(it)
-     * 	  }
+     *    .catch {
+     *        deferred.completeExceptionally(it)
+     *    }
      *    // If a packet is split into multiple notifications, merge them.
      *    .merge { accumulated, received ->
      *       // [...]
