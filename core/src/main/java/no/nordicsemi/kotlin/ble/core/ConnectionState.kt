@@ -106,7 +106,7 @@ sealed class ConnectionState {
             data object InsufficientAuthentication: Reason()
             /** The device got out of range or has turned off. */
             data object LinkLoss: Reason()
-            /** Connection attempt was cancelled.  */
+            /** Connection attempt was canceled.  */
             data object Cancelled: Reason()
             /**
              * Connection attempt was aborted due to an unsupported address.

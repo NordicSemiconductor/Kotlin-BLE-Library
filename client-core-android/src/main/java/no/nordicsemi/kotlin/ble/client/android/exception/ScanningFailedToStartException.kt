@@ -56,7 +56,12 @@ class ScanningFailedToStartException(val reason: Reason):
         data object ApplicationRegistrationFailed: Reason()
         /** Fails to start scan as BLE scan with the same settings is already started by the app. */
         data object AlreadyStarted: Reason()
-        /** Fails to start scan as application tries to scan too frequently. */
+        /**
+         * Fails to start scan as application tries to scan too frequently.
+         *
+         * This reason will not be reported due to a limitation on Android side:
+         * [link](https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/framework/java/android/bluetooth/le/BluetoothLeScanner.java;l=430?q=BluetoothLeScanner).
+         */
         data object ScanningTooFrequently: Reason()
         /**
          * Unknown error.

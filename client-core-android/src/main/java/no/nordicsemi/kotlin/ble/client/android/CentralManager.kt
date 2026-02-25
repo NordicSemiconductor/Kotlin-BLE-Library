@@ -33,9 +33,12 @@
 
 package no.nordicsemi.kotlin.ble.client.android
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import no.nordicsemi.kotlin.ble.client.CentralManager
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -62,7 +65,7 @@ interface CentralManager:
     fun getBondedPeripherals(): List<Peripheral>
 
     /**
-     * Connects to the given peripheral using default connection options.
+     * Establishes Bluetooth LE connection to the peripheral using default connection options.
      *
      * @param peripheral The peripheral to connect to.
      * @throws ManagerClosedException If the central manager has been closed.
@@ -70,6 +73,10 @@ interface CentralManager:
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
      * by scanning, ranging, or using methods [getPeripheralsById] or [getBondedPeripherals].
+     * @throws ConnectionFailedException If connection failed. See [ConnectionFailedException.reason]
+     * for a reason.
+     * @throws CancellationException If the coroutine was canceled.
+     * @throws TimeoutCancellationException If the connection attempt timed out.
      * @see [ConnectionOptions.Default]
      */
     override suspend fun connect(peripheral: Peripheral) {
@@ -77,7 +84,9 @@ interface CentralManager:
     }
 
     /**
-     * Connects to the given peripheral.
+     * Establishes Bluetooth LE connection to the peripheral.
+     *
+     * This method does nothing if the device is already connected.
      *
      * @param peripheral The peripheral to connect to.
      * @param options Connection options.
@@ -85,7 +94,11 @@ interface CentralManager:
      * @throws BluetoothUnavailableException If Bluetooth is disabled or not available.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
-     * by scanning, ranging, or using methods [getPeripheralsById] or [getBondedPeripherals].
+     * by scanning, [getPeripheralsById] or [getBondedPeripherals].
+     * @throws ConnectionFailedException If connection failed. See [ConnectionFailedException.reason]
+     * for a reason.
+     * @throws CancellationException If the coroutine was canceled.
+     * @throws TimeoutCancellationException If the connection attempt timed out.
      */
     suspend fun connect(peripheral: Peripheral, options: ConnectionOptions)
 
@@ -119,8 +132,8 @@ interface CentralManager:
          * range and available. It does not allow to set a connection timeout and will not retry
          * on failure.
          *
-         * In general, the first ever connection to a device should be direct and subsequent connections
-         * to known devices should be invoked with the this option.
+         * In general, the first ever connection to a device should be direct and subsequent
+         * connections to known devices should be invoked with this option.
          */
         data class AutoConnect(
             override val automaticallyRequestHighestValueLength: Boolean = false

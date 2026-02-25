@@ -269,8 +269,14 @@ open class Peripheral(
     /**
      * Initiates a connection to the peripheral.
      *
+     * This is a no-op if the peripheral is already connected.
+     *
      * @param options The connection options.
+     * @throws ConnectionFailedException If connection failed. See [ConnectionFailedException.reason]
+     * for a reason.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws CancellationException If the coroutine was canceled.
+     * @throws TimeoutCancellationException If the connection attempt timed out.
      */
     internal suspend fun connect(options: CentralManager.ConnectionOptions) {
         // Check if the peripheral isn't already connected or has a pending connection.
@@ -369,7 +375,7 @@ open class Peripheral(
                         }
                         is ConnectionState.Disconnected -> {
                             val reason = state.reason!!
-                            // A connection may timeout for 3 reasons: Direct(timeout), withTimeout,
+                            // A connection may time out for 3 reasons: Direct(timeout), withTimeout,
                             // or internal timeout (error 133/147 after ~30s). The library should
                             // report all 3 cases the same way: as a TimeoutCancellationException.
                             // Error 147 was added in API 35: https://developer.android.com/reference/android/bluetooth/BluetoothGatt#GATT_CONNECTION_TIMEOUT
