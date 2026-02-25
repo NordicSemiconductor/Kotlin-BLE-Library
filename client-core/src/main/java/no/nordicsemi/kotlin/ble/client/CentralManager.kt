@@ -33,11 +33,14 @@
 
 package no.nordicsemi.kotlin.ble.client
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
 import no.nordicsemi.kotlin.ble.client.exception.ScanningException
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
 
@@ -129,7 +132,7 @@ interface CentralManager<
     fun range(peripheral: P, timeout: Duration = Duration.INFINITE): Flow<RangeEvent<P>>
 
     /**
-     * Connects to the given device.
+     * Establishes Bluetooth LE connection to the peripheral using default connection options.
      *
      * @param peripheral The peripheral to connect to.
      * @throws ManagerClosedException If the central manager has been closed.
@@ -137,6 +140,10 @@ interface CentralManager<
      * @throws SecurityException If the permission to connect to a peripheral is denied.
      * @throws IllegalArgumentException If the Peripheral wasn't acquired from this manager
      * by scanning, ranging, or using [getPeripheralsById] method.
+     * @throws ConnectionFailedException If connection failed. See [ConnectionFailedException.reason]
+     * for a reason.
+     * @throws CancellationException If the coroutine was canceled.
+     * @throws TimeoutCancellationException If the connection attempt timed out.
      */
     suspend fun connect(peripheral: P)
 
