@@ -55,6 +55,7 @@ import no.nordicsemi.kotlin.ble.client.MtuChanged
 import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.PhyChanged
 import no.nordicsemi.kotlin.ble.client.ReliableWriteCompleted
+import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.android.Peripheral.Executor
 import no.nordicsemi.kotlin.ble.client.android.exception.BondingFailedException
@@ -912,8 +913,8 @@ open class Peripheral(
         get() = (newState as? ConnectionState.Disconnected)?.let {
             // Returned error is 0x08 (TIMEOUT).
             it.reason == Reason.LinkLoss &&
-            // This happens before the services are discovered, so the services list is empty,
-            _services.value.isNullOrEmpty() &&
+            // This happens before the services are discovered,
+            _services.value !is RemoteServices.Discovered &&
             // ...but after the app is notified about change to PHY LE 2M.
             phy.value?.txPhy == Phy.PHY_LE_2M
         } ?: false

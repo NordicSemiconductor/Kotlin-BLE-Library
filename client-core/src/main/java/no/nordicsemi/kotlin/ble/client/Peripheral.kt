@@ -108,8 +108,10 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     val state = _state.asStateFlow()
 
     /** Current list of GATT services. */
-    protected var _services: MutableStateFlow<List<RemoteService>?> = MutableStateFlow(
+    protected var _services: MutableStateFlow<RemoteServices> = MutableStateFlow(
         value = impl.takeIf { it.initialState == ConnectionState.Connected }?.initialServices
+            ?.let { RemoteServices.Discovered(it) }
+            ?: RemoteServices.Unknown
     )
 
     /**
@@ -337,8 +339,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Invalidates current GATT services.
      */
     private fun invalidateServices() {
-        _services.value?.forEach { it.owner = null }
-        _services.update { null }
+        _services.value.invalidate()
+        _services.update { RemoteServices.Unknown }
         servicesDiscovered = false
         if (OperationMutex.holdsLock(ServicesChanged)) {
             try {
@@ -395,16 +397,25 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 } catch (e: IllegalStateException) {
                     logger.warn(e.message)
                 }
-                if (event.services.isEmpty()) {
-                    logger.warn("Service discovery failed")
-                    invalidateServices()
-                    return
-                }
                 logger.info("Services discovered")
                 _services.update {
                     // Assign the owner to each service, making them valid.
+                    RemoteServices.Discovered(
                     event.services.onEach { it.owner = this }
+                    )
                 }
+            }
+
+            is ServiceDiscoveryFailed -> {
+                try {
+                    // Unlocks the lock locked in `discoverServices` below.
+                    OperationMutex.unlock(ServicesChanged)
+                } catch (e: IllegalStateException) {
+                    logger.warn(e.message)
+                }
+                logger.warn("Service discovery failed")
+                invalidateServices()
+                _services.update { RemoteServices.Failed(event.reason) }
             }
 
             else -> { /* Ignore */ }
@@ -443,6 +454,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     logger.warn(e.message)
                 }
                 logger.trace("Discovering services")
+                _services.update { RemoteServices.Discovering }
                 impl.discoverServices(uuids)
             }
         }
@@ -481,7 +493,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * or the services have been invalidated.
      */
     @OptIn(ExperimentalUuidApi::class)
-    fun services(uuids: List<Uuid> = emptyList()): StateFlow<List<RemoteService>?> {
+    fun services(uuids: List<Uuid> = emptyList()): StateFlow<RemoteServices> {
         // Mark that service discovery was requested. This is useful when the peripheral
         // reconnects but the services observer was already set.
         serviceDiscoveryRequested = true
@@ -497,16 +509,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             return _services.asStateFlow()
         }
 
-        // A method to filter services by UUIDs.
-        fun List<RemoteService>.filterBy(uuids: List<Uuid>): List<RemoteService> {
-            return filter { service -> uuids.any { it == service.uuid } }
-        }
-
         // If there is a filter, create a new flow that will emit filtered services only.
-        val filteredServices = _services.value?.filterBy(uuids)
+        val filteredState = _services.value.filteredBy(uuids)
         return _services
-            .map { it?.filterBy(uuids) }
-            .stateIn(scope, SharingStarted.Lazily, filteredServices)
+            .map { it.filteredBy(uuids) }
+            .stateIn(scope, SharingStarted.Lazily, filteredState)
     }
 
     /**

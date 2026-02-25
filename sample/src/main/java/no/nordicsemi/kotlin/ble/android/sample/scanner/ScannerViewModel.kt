@@ -46,12 +46,14 @@ import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -321,9 +323,9 @@ class ScannerViewModel @Inject constructor(
             .onEach { services ->
                 // On each services change, increment the event index.
                 event += 1
-                Timber.i("($event) Services changed: ${services?.map { it.uuid to it.isPrimary }}")
+                Timber.i("($event) Services changed: $services")
             }
-            .filterNotNull()
+            .mapNotNull { (it as? RemoteServices.Discovered)?.services }
             .onEach { services ->
                 // Keep the current event fixed in this block.
                 val ce = event
