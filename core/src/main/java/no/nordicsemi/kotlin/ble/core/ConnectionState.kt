@@ -139,6 +139,11 @@ sealed class ConnectionState {
              * @property duration The duration of the timeout.
              */
             data class Timeout(val duration: Duration): Reason()
+            /**
+             * The disconnection happened because (at least) one of the required services was
+             * not found on the device.
+             */
+            data object RequiredServiceNotFound: Reason()
         }
 
         /**
