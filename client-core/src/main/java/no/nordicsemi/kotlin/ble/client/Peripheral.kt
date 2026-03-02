@@ -574,11 +574,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * ## Example
      *
-     * In this example, the app is connecting to a Heart Rate device with optional Sensor Location
-     * and HR Control Point characteristics. It updates the location using `locationFlow` and
+     * In this example, the app is connecting to a Heart Rate device with an optional Sensor Location
+     * and HR Control Point characteristics. It updates the UI using `locationFlow` and
      * receives Reset button events using `resetButtonEvents`.
      *
-     *  ```kotlin
+     * ```kotlin
      * peripheral.profile(
      *    serviceUuid = HeartRateProfile.heartRateServiceUuid,
      *    required = true
