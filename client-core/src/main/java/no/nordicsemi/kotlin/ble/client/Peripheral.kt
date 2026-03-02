@@ -413,7 +413,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 } catch (e: IllegalStateException) {
                     logger.warn(e.message)
                 }
-                logger.warn("Service discovery failed")
+                logger.warn("Service discovery failed: ${event.reason}")
                 invalidateServices()
                 _services.update { RemoteServices.Failed(event.reason) }
             }
@@ -481,16 +481,41 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     // Public API implementation
 
     /**
-     * Returns a flow with a list of services discovered on the device.
+     * Returns a flow emitting [RemoteServices] events.
      *
-     * The flow emits `null` when the device is not connected. The list will be updated when the
-     * services are discovered.
+     * ### State machine
+     *
+     * Initially, the state is [Unknown][RemoteServices.Unknown]. Shortly after calling [services]
+     * the flow will emit [Discovering][RemoteServices.Discovering] state, followed by
+     * [Discovered][RemoteServices.Discovered] state, or (unlikely) [Failed][RemoteServices.Failed]
+     * state, where the reason of the failure is given as a parameter
+     * [Failed.reason][RemoteServices.Failed.reason].
+     *
+     * When in [Discovered][RemoteServices.Discovered] or [Failed][RemoteServices.Failed], and the
+     * service will get invalidated, either due to a disconnection or Service Change indication
+     * sent from the remote peripheral, the state will transition to [Unknown][RemoteServices.Unknown].
+     *
+     * Service change will automatically request service discovery, which, when complete, will emit
+     * [Discovered][RemoteServices.Discovered] state with new set of services.
+     *
+     * ```
+     *                           (Initial state)
+     *                                  │
+     *        ┌───────────────>      Unknown     <────────────────┐
+     *        │                         │                         │
+     * (disconnection)     (service discovery started)    (disconnection)
+     *        │                         ↓                         │
+     *     Failed <─────────────── Discovering ────────────> Discovered
+     *
+     * ```
      *
      * @param uuids An optional list of service UUID to filter the results. If empty, all services
      *        will be returned. Some platforms may do partial service discovery and return only
      *        services with given UUIDs.
-     * @return A state flow with the list of services, or `null` if the device is not connected,
-     * or the services have been invalidated.
+     * @return A state flow with the current state of service discovery process. If the method
+     * was called with a [uuids] filter, the [RemoteServices.Discovered] state will contain only
+     * services with given UUIDs, otherwise it will contain all services returned by the
+     * system. If the returned list is empty, the service was not found on the peripheral.
      */
     @OptIn(ExperimentalUuidApi::class)
     fun services(uuids: List<Uuid> = emptyList()): StateFlow<RemoteServices> {
