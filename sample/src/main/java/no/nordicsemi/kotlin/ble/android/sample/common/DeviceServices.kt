@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
-import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewRemoteService
@@ -60,10 +60,23 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Composable
-fun DeviceServices(services: List<RemoteService>?) {
-    Column {
-        services?.forEach { service ->
-            Service(service)
+fun DeviceServices(services: RemoteServices) {
+    when (services) {
+        is RemoteServices.Unknown -> {
+            Text(text = "Unknown")
+        }
+        is RemoteServices.Discovering -> {
+            Text(text = "Discovering...")
+        }
+        is RemoteServices.Discovered -> {
+            Column {
+                services.services.forEach { service ->
+                    Service(service)
+                }
+            }
+        }
+        is RemoteServices.Failed -> {
+            Text(text = "$services")
         }
     }
 }
@@ -154,43 +167,54 @@ private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color): Modifier {
 @OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
+private fun PreviewDeviceServices_discovery() {
+    DeviceServices(RemoteServices.Discovering)
+}
+
+@OptIn(ExperimentalUuidApi::class)
+@Preview(showBackground = true)
+@Composable
 private fun PreviewDeviceServices() {
     DeviceServices(
-        listOf(
-            PreviewRemoteService(0x1800) {
-                Characteristic(0x2A00, CharacteristicProperty.NOTIFY) {
-                    CharacteristicUserDescriptionDescriptor("Example")
-                }
-                Characteristic(0x2A01)
-            },
-            PreviewRemoteService(0x1801),
-            // LED Button Service
-            PreviewRemoteService(
-                uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123"),
-            ) {
-                // Button Characteristic
-                Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
-                // LED Characteristic
-                Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
-                // Another LED Button Service inside! What a surprise!
-                IncludedService(
-                    uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+        RemoteServices.Discovered(
+            services = listOf(
+                PreviewRemoteService(0x1800) {
+                    Characteristic(0x2A00, CharacteristicProperty.NOTIFY) {
+                        CharacteristicUserDescriptionDescriptor("Example")
+                    }
+                    Characteristic(0x2A01)
+                },
+                PreviewRemoteService(0x1801),
+                // LED Button Service
+                PreviewRemoteService(
+                    uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123"),
                 ) {
+                    // Button Characteristic
                     Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
+                    // LED Characteristic
                     Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
+                    // Another LED Button Service inside! What a surprise!
+                    IncludedService(
+                        uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+                    ) {
+                        Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
+                        Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
+                    }
                 }
-            }
+            )
         )
     )
 }
 
+@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewCharacteristics() {
     Characteristic(
         characteristic = PreviewRemoteCharacteristic(0x2A00) {
-            Descriptor(0x2901)
-            Descriptor(0x2902)
+            CharacteristicUserDescriptionDescriptor("Description")
+            ClientCharacteristicConfigurationDescriptor()
+            Descriptor(Uuid.random())
         }
     )
 }

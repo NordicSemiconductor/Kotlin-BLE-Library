@@ -76,6 +76,13 @@ data class ConnectionStateChanged(val newState: ConnectionState) : GattEvent() {
 data class ServicesDiscovered(val services: List<RemoteService>) : GattEvent()
 
 /**
+ * Event indicating that the service discovery has failed.
+ *
+ * @param reason The reason of the failure.
+ */
+data class ServiceDiscoveryFailed(val reason: RemoteServices.Failed.Reason) : GattEvent()
+
+/**
  * Event indicating that the services have changed.
  */
 data object ServicesChanged : GattEvent()

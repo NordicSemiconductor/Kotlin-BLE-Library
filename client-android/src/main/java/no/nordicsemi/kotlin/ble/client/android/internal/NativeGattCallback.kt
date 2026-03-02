@@ -48,7 +48,9 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.MtuChanged
 import no.nordicsemi.kotlin.ble.client.PhyChanged
 import no.nordicsemi.kotlin.ble.client.ReliableWriteCompleted
+import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.RssiRead
+import no.nordicsemi.kotlin.ble.client.ServiceDiscoveryFailed
 import no.nordicsemi.kotlin.ble.client.ServicesChanged
 import no.nordicsemi.kotlin.ble.client.ServicesDiscovered
 import no.nordicsemi.kotlin.ble.client.internal.CharacteristicChanged
@@ -94,13 +96,18 @@ internal class NativeGattCallback: BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         logger.debug("onServicesDiscovered: status=$status")
+        if (status != BluetoothGatt.GATT_SUCCESS) {
+            logger.warn("Services discovery failed with status $status")
+            _events.tryEmit(ServiceDiscoveryFailed(RemoteServices.Failed.Reason.Unknown(status)))
+            return
+        }
         // Expect status to be GATT_SUCCESS (0) and at least 2 services:
         // - Generic Access
         // - Generic Attribute
         val services = gatt.services
-        if (status != BluetoothGatt.GATT_SUCCESS || services.size < 2) {
-            logger.warn("Services discovery failed with status $status")
-            _events.tryEmit(ServicesDiscovered(emptyList()))
+        if (services.size < 2) {
+            logger.warn("Services discovery returned ${services.size} services (>= 2 expected)")
+            _events.tryEmit(ServiceDiscoveryFailed(RemoteServices.Failed.Reason.EmptyResult))
             return
         }
         val remoteServices = services
