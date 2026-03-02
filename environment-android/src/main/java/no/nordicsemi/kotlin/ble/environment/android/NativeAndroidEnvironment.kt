@@ -131,6 +131,7 @@ class NativeAndroidEnvironment private constructor(
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     override fun enableBluetooth() {
         val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         applicationContext.startActivity(intent)
     }
 
