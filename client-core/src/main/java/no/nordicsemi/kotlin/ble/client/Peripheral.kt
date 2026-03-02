@@ -37,6 +37,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -543,6 +545,193 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         return _services
             .map { it.filteredBy(uuids) }
             .stateIn(scope, SharingStarted.Lazily, filteredState)
+    }
+
+    /**
+     * Adds a profile implementation on the peripheral.
+     *
+     * ## Overview
+     *
+     * This method can be used to separate the Bluetooth LE profile interface from the rest of the app.
+     * It allows to split different device features (profiles) in separate coroutines.
+     *
+     * This method can be called multiple times for different profiles, i.e. Battery Profile and
+     * Heart Rate Profile.
+     *
+     * The [block] should contain the profile implementation. When the connection is lost, the scope
+     * is canceled with a cause set to [PeripheralNotConnectedException]. When the block completes,
+     * either normally, or exceptionally, the peripheral will get disconnected as if [disconnect]
+     * was closed (with [reason][ConnectionState.Disconnected.reason] set to
+     * [Success][ConnectionState.Disconnected.Reason.Success]).
+     *
+     * If the block throws a [NoSuchElementException] (using `service.characteristics.first { ... }`)
+     * or [IllegalArgumentException] (using `require(...)`), the connection will be terminated
+     * with the [reason][ConnectionState.Disconnected.reason] set to
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * If more than one GATT services are discovered with the same [serviceUuid], the [block] will
+     * be called only for the first one found.
+     *
+     * ## Example
+     *
+     * In this example, the app is connecting to a Heart Rate device with optional Sensor Location
+     * and HR Control Point characteristics. It updates the location using `locationFlow` and
+     * receives Reset button events using `resetButtonEvents`.
+     *
+     *  ```kotlin
+     * peripheral.profile(
+     *    serviceUuid = HeartRateProfile.heartRateServiceUuid,
+     *    required = true
+     * ) { hrmService ->
+     *    // 1. Validate the service.
+     *
+     *    // HRM characteristic is required.
+     *    val hrMeasurement = hrmService.characteristics
+     *       .first { it.uuid = HeartRateProfile.heartRateMeasurementUuid }
+     *    require(hrMeasurement.isSubscribable()) {
+     *       "HRM characteristic must have the NOTIFY property"
+     *    }
+     *    // Other characteristics are optional.
+     *    val bodySensorLocation = hrmService.characteristics
+     *       .firstOrNull { it.uuid = HeartRateProfile.bodySensorLocationUuid }
+     *    val hrControlPoint = hrmService.characteristics
+     *       .firstOrNull { it.uuid = HeartRateProfile.heartRateControlPointUuid }
+     *
+     *    // 2. Initialize the profile.
+     *
+     *    // Read the sensor location characteristic.
+     *    val location = bodySensorLocation?.read()
+     *       .map { it.toBodySensorLocation() }
+     *       ?: BodySensorLocation.NOT_SUPPORTED
+     *    locationFlow.update { location }
+     *
+     *    // Subscribe to the Heart Rate Measurement characteristic.
+     *    hrMeasurement
+     *       .subscribe {
+     *          // Set up the (optional) Control Point when HRM subscription is complete:
+     *          hrControlPoint?.let { cp ->
+     *              resetButtonEvents
+     *                  .onEach {
+     *                     cp.write(HeartRateControlPoint.RESET)
+     *                  }
+     *                  .launchIn(this)
+     *          }
+     *       }
+     *       .onEach {
+     *          // Update UI or something.
+     *       }
+     *       .launchIn(this)
+     *
+     *    // 3. Await the scope cancellation. The scope will be cancelled when the device disconnects,
+     *    //    or the scope in which this method is called is canceled.
+     *    awaitCancellation()
+     * }
+     * ```
+     *
+     * @param serviceUuid The UUID of the profile service.
+     * @param required Whether the service is required. In example, a Heart Rate app may require
+     * a Heart Rate Service, but also support an optional Battery Service to indicate the battery
+     * level.
+     * @param block The profile implementation.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun profile(
+        serviceUuid: Uuid,
+        required: Boolean = true,
+        block: suspend CoroutineScope.(RemoteService) -> Unit,
+    ) {
+        // Get the current context. This will allow creating a scope, that will get closed
+        // together with the outer scope.
+        val context = currentCoroutineContext()
+        val userScope = CoroutineScope(context)
+
+        // The user job will be started to execute the user block.
+        // It will be canceled when the outer scope is canceled, or when the services get
+        // invalidated (i.e. on disconnect).
+        var userJob: Job? = null
+
+        services(listOf(serviceUuid))
+            // The services flow will initially emit "Unknown" (as the services are not discovered yet).
+            // Upon successful connection the flow will emit "Discovering" followed by:
+            // 1. Discovered - when service discovery was successful.
+            // 2. Unknown - when the device disconnected before service discovery finished.
+            // 3. Failed - when service discovery failed, giving the reason as a parameter.
+            //
+            // Note, that disconnection during service discovery will transition the state to Unknown,
+            // not to Failed. This is to ensure, that whenever the device is disconnected, the
+            // services state is the same.
+            .onEach { state ->
+                when (state) {
+                    is RemoteServices.Unknown -> {
+                        // When the device gets disconnected, cancel the user job (if running).
+                        userJob?.cancel(CancellationException(PeripheralNotConnectedException()))
+                        // Do not cancel the user scope here. The device may get reconnected.
+                        // User scope is continuing observing the services.
+                    }
+                    is RemoteServices.Discovered -> {
+                        // When services are discovered, check if the profile service exists.
+                        val service = state.services.firstOrNull { it.uuid == serviceUuid }
+                        if (service != null) {
+                            // If the GATT service was found, start the user block in a new job.
+                            // This job wil be canceled with the outer scope, or when the peripheral
+                            // disconnects (throwing PeripheralNotConnectedException).
+                            userJob = userScope.launch {
+                                var isSupported = true
+                                try {
+                                    block(service)
+                                } catch (e: Exception) {
+                                    // The implementation may use require(...) and first(...) methods
+                                    // to verify the service. Catch them and report as if the service
+                                    // was not found.
+                                    when (e) {
+                                        is IllegalArgumentException, is NoSuchElementException -> {
+                                            // Log the stack trace, so origin of the exception is known.
+                                            logger.warn("Profile service validation failed", e)
+                                            isSupported = false
+                                        }
+                                        else -> throw e
+                                    }
+                                } finally {
+                                    userJob = null
+                                    // Don't disconnect if an optional service failed validation.
+                                    val optionalNotSupported = !isSupported && !required
+                                    if (!optionalNotSupported) {
+                                        // Disconnect when user has finished with the profile.
+                                        // Assume, that any possible auto-connect is not used, as then
+                                        // user would have not finished with the profile.
+                                        val reason = if (isSupported)
+                                            ConnectionState.Disconnected.Reason.Success
+                                        else
+                                            ConnectionState.Disconnected.Reason.RequiredServiceNotFound
+                                        disconnect(reason)
+                                    }
+                                    userScope.cancel()
+                                }
+                            }
+                        } else {
+                            // If the required service was not found disconnect, disconnect.
+                            if (required) {
+                                logger.warn("Required service $serviceUuid not found")
+                                disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
+                                userScope.cancel()
+                            } else {
+                                logger.warn("Optional service $serviceUuid not found")
+                                // Do not disconnect or cancel the user scope.
+                                // The device may change its services and the Discovered state
+                                // may be emitted again.
+                            }
+                        }
+                    }
+                    is RemoteServices.Failed -> {
+                        // In case of a service discovery failure, act as if the service was not found.
+                        // TODO Is this expected behavior?
+                        disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
+                        userScope.cancel()
+                    }
+                    else -> { /* Ignore */ }
+                }
+            }
+            .launchIn(userScope)
     }
 
     /**
