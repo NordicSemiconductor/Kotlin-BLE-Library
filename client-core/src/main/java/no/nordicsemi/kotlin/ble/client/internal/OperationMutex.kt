@@ -57,8 +57,7 @@ object OperationMutex {
      * Locks this mutex, suspending caller until the lock is acquired (in other words, while the
      * lock is held elsewhere).
      *
-     *
-     * This suspending function is cancellable: if the Job of the current coroutine is cancelled
+     * This suspending function is cancellable: if the Job of the current coroutine is canceled
      * while this suspending function is waiting, this function immediately resumes with
      * [CancellationException].
      */
