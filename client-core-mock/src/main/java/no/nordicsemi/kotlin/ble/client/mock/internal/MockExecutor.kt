@@ -40,6 +40,7 @@ import no.nordicsemi.kotlin.ble.client.Peripheral
 import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import kotlin.uuid.ExperimentalUuidApi
@@ -100,9 +101,9 @@ open class MockExecutor(
         return gatt?.readRssi() ?: false
     }
 
-    override suspend fun disconnect(): Boolean {
+    override suspend fun disconnect(reason: Reason): Boolean {
         gatt?.let { gatt ->
-            gatt.disconnect()
+            gatt.disconnect(reason)
             return true
         }
         return false
