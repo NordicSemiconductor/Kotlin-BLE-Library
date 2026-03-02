@@ -208,11 +208,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * The result should be reported by emitting [ConnectionStateChanged] event
          * to [events] flow.
          *
+         * @param reason The reason for disconnection, returned by [ConnectionState.Disconnected.reason].
          * @return True if disconnection was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
         @IgnorableReturnValue
-        suspend fun disconnect(): Boolean
+        suspend fun disconnect(reason: ConnectionState.Disconnected.Reason): Boolean
 
         /**
          * Closes the connection to the peripheral.
