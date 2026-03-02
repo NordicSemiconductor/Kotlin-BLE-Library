@@ -65,6 +65,7 @@ import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -542,6 +543,16 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             .map { it.filteredBy(uuids) }
             .stateIn(scope, SharingStarted.Lazily, filteredState)
     }
+
+    /**
+     * Suspends until the peripheral is disconnected.
+     *
+     * @throws CancellationException if the current coroutine is canceled.
+     */
+    @IgnorableReturnValue
+    suspend fun awaitDisconnection(): ConnectionState.Disconnected.Reason? = state
+        .filterIsInstance<ConnectionState.Disconnected>()
+        .first().reason
 
     /**
      * The maximum amount of data, in bytes, that can be sent to a characteristic in a single write
