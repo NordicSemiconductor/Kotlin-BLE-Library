@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -53,6 +54,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
@@ -63,6 +65,7 @@ import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
@@ -542,6 +545,16 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
+     * Suspends until the peripheral is disconnected.
+     *
+     * @throws CancellationException if the current coroutine is canceled.
+     */
+    @IgnorableReturnValue
+    suspend fun awaitDisconnection(): ConnectionState.Disconnected.Reason? = state
+        .filterIsInstance<ConnectionState.Disconnected>()
+        .first().reason
+
+    /**
      * The maximum amount of data, in bytes, that can be sent to a characteristic in a single write
      * operation.
      *
@@ -595,52 +608,75 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * This method does nothing if the peripheral is already disconnected.
      *
+     * Runs in [NonCancellable] coroutine context.
+     *
      * Hint: Use [CentralManager.connect] to connect to the peripheral.
      *
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    suspend fun disconnect() {
-        // Depending on the state...
-        when (state.value) {
-            is ConnectionState.Disconnected -> {
-                // Make sure auto-connection is closed.
-                close()
-                return
-            }
-            is ConnectionState.Disconnecting -> {
-                // Skip..
-            }
-            is ConnectionState.Connecting -> {
-                // Cancel the connection attempt.
-                logger.trace("Cancelling connection to {}", this)
-                _state.update { ConnectionState.Disconnecting }
-            }
-            is ConnectionState.Connected -> {
-                // Disconnect from the peripheral.
-                logger.trace("Disconnecting from {}", this)
-                _state.update { ConnectionState.Disconnecting }
-            }
-        }
+    suspend fun disconnect() = disconnect(ConnectionState.Disconnected.Reason.Success)
 
-        // Disconnect and wait until it is disconnected, then close.
-        try {
-            if (!impl.isClosed) {
-                await(
-                    action = { impl.disconnect() },
-                    condition = { it.isDisconnected },
-                    timeout = 500.milliseconds
+    /**
+     * Disconnects the client from the peripheral returning the given parameter as disconnection
+     * reason.
+     *
+     * This method does nothing if the peripheral is already disconnected.
+     *
+     * Runs in [NonCancellable] coroutine context.
+     *
+     * @param reason The reason for disconnection. Use [Success][ConnectionState.Disconnected.Reason.Success]
+     * when disconnection was initiated by the user.
+     */
+    internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withContext(NonCancellable) {
+        OperationMutex.withLock {
+            // Depending on the state...
+            when (state.value) {
+                is ConnectionState.Disconnected -> {
+                    // Make sure auto-connection is closed.
+                    close()
+                    return@withLock
+                }
+
+                is ConnectionState.Disconnecting -> {
+                    // Skip..
+                }
+
+                is ConnectionState.Connecting -> {
+                    // Cancel the connection attempt.
+                    logger.trace("Cancelling connection to {}", this@Peripheral)
+                    _state.update { ConnectionState.Disconnecting }
+                }
+
+                is ConnectionState.Connected -> {
+                    // Disconnect from the peripheral.
+                    logger.trace("Disconnecting from {}", this@Peripheral)
+                    _state.update { ConnectionState.Disconnecting }
+                }
+            }
+
+            // Disconnect and wait until it is disconnected, then close.
+            try {
+                if (!impl.isClosed) {
+                    await(
+                        action = { impl.disconnect(reason) },
+                        condition = { it.isDisconnected },
+                        timeout = 500.milliseconds
+                    )
+                }
+            } catch (e: TimeoutCancellationException) {
+                if (!isDisconnected) {
+                    logger.warn("Disconnection takes longer than expected, closing")
+                }
+            } finally {
+                close()
+                // If before calling disconnect() the state was not Connected (i.e. Connecting),
+                // the state at this point will be Disconnecting. Change it to Disconnected manually.
+                _state.compareAndSet(
+                    expect = ConnectionState.Disconnecting,
+                    update = ConnectionState.Disconnected(reason)
                 )
+                logger.info("Disconnected from {}", this@Peripheral)
             }
-        } catch (e: TimeoutCancellationException) {
-            if (!isDisconnected) {
-                logger.warn("Disconnection takes longer than expected, closing")
-            }
-        } finally {
-            close()
-            // If before calling disconnect() the state was not Connected (i.e. Connecting),
-            // the state at this point will be Disconnecting. Change it to Disconnected manually.
-            _state.compareAndSet(ConnectionState.Disconnecting, ConnectionState.Disconnected())
-            logger.info("Disconnected from {}", this)
         }
     }
 

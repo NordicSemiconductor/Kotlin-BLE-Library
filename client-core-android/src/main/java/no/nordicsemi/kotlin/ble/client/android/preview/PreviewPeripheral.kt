@@ -192,8 +192,8 @@ private class StubExecutor(
         return true
     }
 
-    override suspend fun disconnect(): Boolean {
-        _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.Success)))
+    override suspend fun disconnect(reason: Reason): Boolean {
+        _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(reason)))
         return true
     }
 
