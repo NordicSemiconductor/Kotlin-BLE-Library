@@ -43,9 +43,10 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
-import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
+import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import org.jetbrains.annotations.Range
@@ -231,9 +232,9 @@ internal class NativeExecutor(
         return gatt?.readRemoteRssi() ?: false
     }
 
-    override suspend fun disconnect(): Boolean {
+    override suspend fun disconnect(reason: Reason): Boolean {
         gatt?.let { gatt ->
-            gattCallback.disconnectRequest = true
+            gattCallback.disconnectReason = reason
             gatt.disconnect()
             return true
         }
@@ -243,7 +244,7 @@ internal class NativeExecutor(
     override fun close() {
         gatt?.let { gatt ->
             this.gatt = null
-            gattCallback.disconnectRequest = false
+            gattCallback.disconnectReason = null
             try {
                 gatt.disconnect()
             } catch (_: Exception) {

@@ -64,10 +64,10 @@ internal fun Int.toBondState(): BondState = when (this) {
     else -> BondState.NONE
 }
 
-internal fun Int.toConnectionState(status: Int): ConnectionState = when (this) {
+internal fun Int.toConnectionState(status: Int, reason: ConnectionState.Disconnected.Reason?): ConnectionState = when (this) {
     BluetoothGatt.STATE_CONNECTED -> ConnectionState.Connected
     BluetoothGatt.STATE_CONNECTING -> ConnectionState.Connecting
-    BluetoothGatt.STATE_DISCONNECTED -> ConnectionState.Disconnected(status.toDisconnectionReason())
+    BluetoothGatt.STATE_DISCONNECTED -> ConnectionState.Disconnected(reason ?: status.toDisconnectionReason())
     BluetoothGatt.STATE_DISCONNECTING -> ConnectionState.Disconnecting
     else -> ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.Unknown(this))
 }

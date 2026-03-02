@@ -59,6 +59,7 @@ import no.nordicsemi.kotlin.ble.client.internal.CharacteristicWrite
 import no.nordicsemi.kotlin.ble.client.internal.DescriptorRead
 import no.nordicsemi.kotlin.ble.client.internal.DescriptorWrite
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
+import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import org.slf4j.LoggerFactory
 
@@ -70,13 +71,13 @@ internal class NativeGattCallback: BluetoothGattCallback() {
     val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
     /**
-     * A flag set when the user initiates terminating the connection.
+     * A requested disconnection reason.
      *
      * Older Android versions don't return status=8 (GATT_CONN_TIMEOUT) when the connection
      * drops due to a link loss. By checking whether it was the user who requested disconnection
      * we can improve the status.
      */
-    var disconnectRequest = false
+    var disconnectReason: ConnectionState.Disconnected.Reason? = null
 
     // Handling connection state updates
 
@@ -89,9 +90,9 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         val betterStatus = if (
                 newState == BluetoothGatt.STATE_DISCONNECTED &&
                 status == BluetoothGatt.GATT_SUCCESS &&
-                !disconnectRequest
+                disconnectReason == null
             ) 0x08 /* GATT_CONN_TIMEOUT */ else status
-        _events.tryEmit(ConnectionStateChanged(newState.toConnectionState(betterStatus)))
+        _events.tryEmit(ConnectionStateChanged(newState.toConnectionState(betterStatus, disconnectReason)))
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {

@@ -802,13 +802,15 @@ class PeripheralSpec<ID: Any> private constructor(
          *
          * @throws IllegalStateException when the device is not connected.
          */
-        suspend fun disconnect() {
+        suspend fun disconnect() = disconnect(Reason.Success)
+
+        internal suspend fun disconnect(reason: Reason) {
             val connectionParameters =
                 checkNotNull(connectionParameters) { "Peripheral not connected." }
             val eventHandler = checkNotNull(eventHandler)
 
             delay(connectionParameters.connectionIntervalMillis)
-            _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(Reason.Success)))
+            _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(reason)))
 
             // One virtual client disconnected.
             connectionsCount -= 1
