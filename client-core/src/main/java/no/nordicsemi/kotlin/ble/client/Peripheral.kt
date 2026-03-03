@@ -511,7 +511,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *        │                         │                         │
      * (disconnection)     (service discovery started)    (disconnection)
      *        │                         ↓                         │
-     *     Failed <─────────────── Discovering ────────────> Discovered
+     *     Failed <── (failure) ─── Discovering ─── (done) ──> Discovered
      *
      * ```
      *
