@@ -548,29 +548,91 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
-     * Adds a profile implementation on the peripheral.
+     * Registers a profile implementation that runs when the specified GATT service is discovered.
      *
      * ## Overview
      *
-     * This method can be used to separate the Bluetooth LE profile interface from the rest of the app.
-     * It allows to split different device features (profiles) in separate coroutines.
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
      *
-     * This method can be called multiple times for different profiles, i.e. Battery Profile and
-     * Heart Rate Profile.
+     * Multiple profiles can be added by calling this method once for each service,
+     * i.e. Battery Profile and Heart Rate Profile.
      *
-     * The [block] should contain the profile implementation. When the connection is lost, the scope
-     * is canceled with a cause set to [PeripheralNotConnectedException]. When the block completes,
-     * either normally, or exceptionally, the peripheral will get disconnected as if [disconnect]
-     * was closed (with [reason][ConnectionState.Disconnected.reason] set to
-     * [Success][ConnectionState.Disconnected.Reason.Success]).
+     * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
+     * The [block] is called in a child coroutine.
      *
-     * If the block throws a [NoSuchElementException] (using `service.characteristics.first { ... }`)
-     * or [IllegalArgumentException] (using `require(...)`), the connection will be terminated
-     * with the [reason][ConnectionState.Disconnected.reason] set to
+     * It is safe and recommended to call this method before connecting the peripheral.
+     *
+     * ## Example
+     *
+     * ```kotlin
+     * override suspend fun connect(
+     *     block: suspend CoroutineScope.(HeartRateProfile.State) -> Unit,
+     * ): Unit = withContext(Dispatchers.IO) {
+     *     // First, register profile.
+     *     peripheral.profile(
+     *         serviceUuid = HeartRateProfile.heartRateServiceUuid,
+     *         required = true,
+     *     ) { remoteService ->
+     *         val state = HeartRateServiceImpl(remoteService, this)
+     *
+     *         // Call the block with the Heart Rare service state, separating Bluetooth LE from the logic.
+     *         block(state)
+     *     }
+     *     // Connect.
+     *     centralManager.connect(peripheral)
+     *
+     *     // Await disconnection.
+     *     peripheral.awaitDisconnection()
+     * }
+     * ```
+     *
+     * See [profile] for more information.
+     *
+     * @param serviceUuid The UUID of the profile service.
+     * @param required Whether the service is required. In example, a Heart Rate app may require
+     * a Heart Rate Service, but also support an optional Battery Service to indicate the battery
+     * level.
+     * @param block The profile implementation.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun profile(
+        serviceUuid: Uuid,
+        required: Boolean = true,
+        block: suspend CoroutineScope.(RemoteService) -> Unit,
+    ) {
+        // Get the current context. This will allow creating a scope, that will get closed
+        // together with the outer scope.
+        val context = currentCoroutineContext()
+        val userScope = CoroutineScope(context)
+
+        profile(serviceUuid, required, userScope, block)
+    }
+
+    /**
+     * Registers a profile implementation that runs when the specified GATT service is discovered.
+     *
+     * ## Overview
+     *
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
+     *
+     * Multiple profiles can be added by calling this method once for each service,
+     * i.e. Battery Profile and Heart Rate Profile.
+     *
+     * The provided [block] is launched as a child coroutine in the given [scope] when a matching
+     * [RemoteService] is emitted by the [services] flow. The launched job is canceled when
+     * the peripheral disconnects (the cancellation cause is [PeripheralNotConnectedException])
+     * or when the job completes. When the `block` finishes (normally or exceptionally) the
+     * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
+     *
+     * ## Validation failures
+     *
+     * If `block` throws [NoSuchElementException] or [IllegalArgumentException] during service
+     * validation, the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
-     * If more than one GATT services are discovered with the same [serviceUuid], the [block] will
-     * be called only for the first one found.
+     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
      *
      * ## Example
      *
@@ -581,7 +643,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * ```kotlin
      * peripheral.profile(
      *    serviceUuid = HeartRateProfile.heartRateServiceUuid,
-     *    required = true
+     *    required = true,
+     *    scope = scope,
      * ) { hrmService ->
      *    // 1. Validate the service.
      *
@@ -632,25 +695,30 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param required Whether the service is required. In example, a Heart Rate app may require
      * a Heart Rate Service, but also support an optional Battery Service to indicate the battery
      * level.
+     * @param scope The coroutine scope to launch the user block in.
      * @param block The profile implementation.
      */
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun profile(
+    fun profile(
         serviceUuid: Uuid,
         required: Boolean = true,
+        scope: CoroutineScope,
         block: suspend CoroutineScope.(RemoteService) -> Unit,
     ) {
-        // Get the current context. This will allow creating a scope, that will get closed
-        // together with the outer scope.
-        val context = currentCoroutineContext()
-        val userScope = CoroutineScope(context)
-
-        // The user job will be started to execute the user block.
-        // It will be canceled when the outer scope is canceled, or when the services get
-        // invalidated (i.e. on disconnect).
+        /**
+         * The user job will be started to execute the user block.
+         * It will be canceled when the outer scope is canceled, or when the services get
+         * invalidated (i.e. on disconnect).
+         */
         var userJob: Job? = null
 
-        services(listOf(serviceUuid))
+        /**
+         * Profile job collects discovered services and launches the user block when given service
+         * was found.
+         */
+        var profileJob: Job? = null
+
+        profileJob = services(listOf(serviceUuid))
             // The services flow will initially emit "Unknown" (as the services are not discovered yet).
             // Upon successful connection the flow will emit "Discovering" followed by:
             // 1. Discovered - when service discovery was successful.
@@ -675,7 +743,18 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                             // If the GATT service was found, start the user block in a new job.
                             // This job wil be canceled with the outer scope, or when the peripheral
                             // disconnects (throwing PeripheralNotConnectedException).
-                            userJob = userScope.launch {
+                            userJob = scope.launch {
+                                /**
+                                 * A flag set to `false` when a [NoSuchElementException] or
+                                 * [IllegalArgumentException] is thrown from the [block].
+                                 *
+                                 * This indicates, that the discovered service does not support the
+                                 * profile, i.e. is missing a characteristic or a property.
+                                 *
+                                 * In that case, if the profile is [required], the device will get
+                                 * disconnected with reason set to
+                                 * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+                                 */
                                 var isSupported = true
                                 try {
                                     block(service)
@@ -705,7 +784,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                             ConnectionState.Disconnected.Reason.RequiredServiceNotFound
                                         disconnect(reason)
                                     }
-                                    userScope.cancel()
+                                    profileJob?.cancel()
                                 }
                             }
                         } else {
@@ -713,7 +792,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                             if (required) {
                                 logger.warn("Required service $serviceUuid not found")
                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
-                                userScope.cancel()
+                                profileJob?.cancel()
                             } else {
                                 logger.warn("Optional service $serviceUuid not found")
                                 // Do not disconnect or cancel the user scope.
@@ -726,12 +805,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         // In case of a service discovery failure, act as if the service was not found.
                         // TODO Is this expected behavior?
                         disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
-                        userScope.cancel()
+                        profileJob?.cancel()
                     }
                     else -> { /* Ignore */ }
                 }
             }
-            .launchIn(userScope)
+            .launchIn(scope)
     }
 
     /**
