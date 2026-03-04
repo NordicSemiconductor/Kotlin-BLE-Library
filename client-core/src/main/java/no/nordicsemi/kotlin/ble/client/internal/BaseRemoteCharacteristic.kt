@@ -81,7 +81,6 @@ abstract class BaseRemoteCharacteristic(
      * value have been met (i.e., the characteristic is readable and not invalidated).
      *
      * @receiver The flow collector to emitting GATT events.
-     * @throws CancellationException when any matching event is emitted.
      * @throws OperationFailedException in case the request has failed.
      */
     abstract suspend fun FlowCollector<GattEvent>.executeRead()
@@ -100,6 +99,7 @@ abstract class BaseRemoteCharacteristic(
      * @throws ValueDoesNotMatchException when the value reported by the peripheral
      * is not equal to the value written. This can only happen when *Long Write* is used
      * or the *Reliable Write* procedure is in progress.
+     * @throws InvalidAttributeException when the characteristic has been invalidated.
      */
     abstract suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType)
 

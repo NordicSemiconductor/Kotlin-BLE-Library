@@ -96,6 +96,7 @@ abstract class BaseRemoteDescriptor(
      * @throws ValueDoesNotMatchException when the value reported by the peripheral
      * is not equal to the value written. This can only happen when *Long Write* is used
      * or the *Reliable Write* procedure is in progress.
+     * @throws InvalidAttributeException when the descriptor has been invalidated.
      */
     abstract suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray)
 
