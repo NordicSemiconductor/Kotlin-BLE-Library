@@ -1,0 +1,207 @@
+/*
+ * Copyright (c) 2026, Nordic Semiconductor
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are
+ * permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of
+ * conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list
+ * of conditions and the following disclaimer in the documentation and/or other materials
+ * provided with the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be
+ * used to endorse or promote products derived from this software without specific prior
+ * written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+ * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+package no.nordicsemi.kotlin.ble.android.sample.scanner.profile.impl
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
+import no.nordicsemi.kotlin.ble.android.sample.scanner.profile.LedButtonProfile
+import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+import timber.log.Timber
+import kotlin.time.Duration.Companion.seconds
+import kotlin.uuid.ExperimentalUuidApi
+
+@OptIn(ExperimentalUuidApi::class)
+class LedButtonServiceImpl(
+    private val ledButtonService: RemoteService,
+    private val scope: CoroutineScope,
+): LedButtonProfile.State {
+    companion object {
+        val LONG_PRESS_TIMEOUT = 2.seconds
+    }
+
+    init {
+        require(ledButtonService.uuid == LedButtonProfile.SERVICE_UUID) {
+            "Unrecognized service UUID: ${ledButtonService.uuid}"
+        }
+    }
+
+    /**
+     * The GATT characteristics of the LED Button Service (LBS) for controlling the LED state on
+     * the remote peripheral.
+     *
+     * Possible values are:
+     * * 0x00 - LED is off.
+     * * 0x01 - LED is on.
+     * @see LedButtonProfile.LED_CHARACTERISTIC_UUID
+     */
+    private var ledCharacteristic: RemoteCharacteristic = ledButtonService.characteristics
+        .first { it.uuid == LedButtonProfile.LED_CHARACTERISTIC_UUID }
+
+    /**
+     * The GATT characteristics of the LED Button Service (LBS) notified when the Button state on
+     * the remote peripheral changes.
+     *
+     * Possible values are:
+     * * 0x00 - Button is released.
+     * * 0x01 - Button is pressed.
+     * @see LedButtonProfile.BUTTON_CHARACTERISTIC_UUID
+     */
+    private var buttonCharacteristic: RemoteCharacteristic = ledButtonService.characteristics
+        .first { it.uuid == LedButtonProfile.BUTTON_CHARACTERISTIC_UUID }
+
+    init {
+        require(ledCharacteristic.isWritable()) {
+            "LED characteristic must have WRITE or WRITE WITHOUT RESPONSE property"
+        }
+        require(buttonCharacteristic.isSubscribable()) {
+            "Button characteristic must have NOTIFY or INDICATE property"
+        }
+    }
+
+    override val led = MutableStateFlow(false)
+        .also { flow ->
+            scope.launch(Dispatchers.IO) {
+                // Read initial state from the characteristic.
+                try {
+                    val rawLedValue = ledCharacteristic.read()
+                    val isOn = rawLedValue.state
+
+                    // Update the local state.
+                    flow.update { isOn }
+                } catch (e: OperationFailedException) {
+                    // In some implementations the LED characteristic is not readable.
+                    Timber.w("Reading LED characteristic failed: ${e.message}")
+                }
+
+                // Whenever the value changes, write the value to the characteristic.
+                flow.collect { value ->
+                    try {
+                        val command = byteArrayOf(if (value) 1 else 0)
+                        ledCharacteristic.write(command)
+                    } catch (_: InvalidAttributeException) {
+                        // This exception is thrown when the device disconnects, or invalidates services.
+                        Timber.w("Services invalidated when writing to LED characteristic")
+                    } catch (e: OperationFailedException) {
+                        // This exception is thrown when the device disconnects, but the client
+                        // doesn't know about it before writing to the characteristic.
+                        // This usually indicates error 133.
+                        Timber.w("Writing to LED characteristic failed: ${e.message}")
+                    } catch (e: BluetoothException) {
+                        // Other errors.
+                        Timber.e("Writing to LED characteristic failed: ${e.message}")
+                    }
+                }
+            }
+        }
+
+    override val buttonState: StateFlow<Boolean> = MutableStateFlow(false)
+        .also { flow ->
+            scope.launch {
+                try {
+                    // Read initial state from the characteristic.
+                    val rawButtonValue = buttonCharacteristic.read()
+                    val pressed = rawButtonValue.state
+
+                    // Update the local state.
+                    flow.update { pressed }
+                } catch (e: OperationFailedException) {
+                    // In some implementations the Button characteristic is not readable.
+                    Timber.w("Reading button characteristic failed: ${e.message}")
+                }
+
+                // By having a local mutable flow we call subscribe() only once.
+                buttonCharacteristic.subscribe()
+                    .collect { flow.emit(it.state) }
+            }
+        }
+
+    override val buttonPressed: Flow<Unit> = flow {
+        /** Flag set when a long press is detected. */
+        var isLongPress = false
+
+        // Drop the initial value, button state is a StateFlow.
+        buttonState.drop(1).collect { pressed ->
+            // If the button was pressed, start a timeout to detect a long press events.
+            if (pressed) {
+                try {
+                    withTimeout(LONG_PRESS_TIMEOUT) {
+                        // Await the button to be released before the timeout.
+                        buttonState.drop(1).filter { !it }.first()
+                    }
+                } catch (_: TimeoutCancellationException) {
+                    // Button has not been released before the time runed out.
+                    isLongPress = true
+                }
+            } else {
+                // If released, emit the event only if it was not a long press.
+                if (!isLongPress) {
+                    emit(Unit)
+                }
+                isLongPress = false
+            }
+        }
+    }
+
+    override val buttonLongPressed: Flow<Unit> = buttonState
+        .flatMapLatest { pressed ->
+            if (pressed) flow {
+                delay(LONG_PRESS_TIMEOUT)
+                emit(Unit)
+            } else emptyFlow()
+        }
+
+    /**
+     * Parses the raw value of LED and Button (0x00 or 0x01) to [Boolean].
+     *
+     * Note: In LED Button Service both LED and Button use the same state encoding.
+     */
+    private val ByteArray.state: Boolean
+        get() = size == 1 && this[0] == 0x01.toByte()
+}
