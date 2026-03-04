@@ -34,9 +34,10 @@ package no.nordicsemi.kotlin.ble.client.exception
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
 /**
- * Thrown when the attribute has been invalidated and cannot be used anymore.
+ * Thrown when the attribute (GATT service, characteristic or a descriptor) has been invalidated
+ * and cannot be used anymore.
  *
- * An attribute may be invalidated when the device has disconnected, the services
+ * An attribute may be invalidated when the device has disconnected, or when the services
  * of the device have changed.
  */
 class InvalidAttributeException: BluetoothException("The attribute has been invalidated and cannot be used anymore")
