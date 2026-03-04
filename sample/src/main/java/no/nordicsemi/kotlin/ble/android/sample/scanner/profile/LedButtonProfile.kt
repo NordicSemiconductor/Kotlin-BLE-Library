@@ -37,11 +37,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+/**
+ * A definition of the LED Button Service (LBS) profile.
+ *
+ * Read more: [Documentation / Peripheral LBS](https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/samples/bluetooth/peripheral_lbs/README.html)
+ */
 @OptIn(ExperimentalUuidApi::class)
 interface LedButtonProfile {
     companion object {
+        /** The LED Button Service UUID. */
         val SERVICE_UUID: Uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+        /** The UUID of the Button characteristic. */
         val BUTTON_CHARACTERISTIC_UUID: Uuid = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
+        /** The UUID of the LED characteristic. */
         val LED_CHARACTERISTIC_UUID: Uuid = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
     }
 

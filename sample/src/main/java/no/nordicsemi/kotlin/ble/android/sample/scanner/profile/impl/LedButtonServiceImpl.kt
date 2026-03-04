@@ -57,6 +57,17 @@ import timber.log.Timber
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
+/**
+ * This class implements the [LedButtonProfile.State] interface.
+ *
+ * The given remote GATT service is validated against the LBS profile requirements:
+ * * Required characteristics (button, LED)
+ * * Required properties (notifications, write, etc.)
+ *
+ * The Bluetooth LE implementation is then exposed as a high-level interface of a device, allowing
+ * to control the device using [led] and [buttonState]. Additional [buttonPressed] and
+ * [buttonLongPressed] events emit when the button is pressed.
+ */
 @OptIn(ExperimentalUuidApi::class)
 class LedButtonServiceImpl(
     private val ledButtonService: RemoteService,
