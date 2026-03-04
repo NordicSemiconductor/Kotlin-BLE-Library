@@ -57,7 +57,6 @@ object ViewModelModule {
             // Cancel the scope when the ViewModel is cleared.
             .also { scope ->
                 lifecycle.addOnClearedListener {
-                    println("AAA Cancelling scope!")
                     scope.cancel()
                 }
             }
