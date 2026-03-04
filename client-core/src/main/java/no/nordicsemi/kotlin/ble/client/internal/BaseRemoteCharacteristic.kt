@@ -181,6 +181,9 @@ abstract class BaseRemoteCharacteristic(
                     } catch (e: OperationFailedException) {
                         // This is thrown when the write request failed before it was sent.
                         throw e
+                    } catch (e: InvalidAttributeException) {
+                        // Thrown when the services have been invalidated.
+                        throw e
                     } catch (e: Exception) {
                         // This is any other exception, i.e. SecurityException, etc.
                         throw BluetoothException(e)
@@ -225,6 +228,9 @@ abstract class BaseRemoteCharacteristic(
                         throw e
                     } catch (e: OperationFailedException) {
                         // This is thrown when the write request failed before it was sent.
+                        throw e
+                    } catch (e: InvalidAttributeException) {
+                        // Thrown when the services have been invalidated.
                         throw e
                     } catch (e: Exception) {
                         // This is any other exception, i.e. SecurityException, etc.

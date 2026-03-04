@@ -31,6 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.client.android.internal
 
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothStatusCodes
@@ -40,6 +41,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
@@ -81,6 +83,8 @@ internal class NativeRemoteCharacteristic(
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+
+            @SuppressLint("SwitchIntDef")
             when (result) {
                 BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
 
@@ -90,7 +94,12 @@ internal class NativeRemoteCharacteristic(
                 BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
                     throw OperationFailedException(OperationStatus.BUSY)
 
-                else -> throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                9, /* BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND */
+                28 /* BluetoothStatusCodes.ERROR_CALLBACK_NOT_REGISTERED */ ->
+                    throw InvalidAttributeException()
+
+                else ->
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR, result)
             }
         } else {
             characteristic.value = data

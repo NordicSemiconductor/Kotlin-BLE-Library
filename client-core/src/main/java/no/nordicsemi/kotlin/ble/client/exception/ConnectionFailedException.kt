@@ -39,7 +39,7 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
 /**
  * Thrown when the connection to the peripheral has failed.
  *
- * @property reason The reason why the connection attempt failed.
+ * @property reason The reason of the failure.
  */
 class ConnectionFailedException(
     val reason: ConnectionState.Disconnected.Reason

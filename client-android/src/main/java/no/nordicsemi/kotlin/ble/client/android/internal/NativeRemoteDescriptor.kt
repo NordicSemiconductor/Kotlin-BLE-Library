@@ -41,6 +41,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
@@ -69,13 +70,20 @@ internal class NativeRemoteDescriptor(
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val result = gatt.writeDescriptor(descriptor, data)
+
+            @SuppressLint("SwitchIntDef")
             when (result) {
                 BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
 
                 BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                    throw OperationFailedException(OperationStatus.BUSY)
+                    throw OperationFailedException(OperationStatus.BUSY, result)
+
+                9, /* BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND */
+                28 /* BluetoothStatusCodes.ERROR_CALLBACK_NOT_REGISTERED */ ->
+                    throw InvalidAttributeException()
+
                 else ->
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR, result)
             }
         } else {
             descriptor.value = data
