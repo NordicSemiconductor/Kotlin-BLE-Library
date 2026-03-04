@@ -641,6 +641,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * receives Reset button events using `resetButtonEvents`.
      *
      * ```kotlin
+     * // Helper methods.
+     * val RemoteService.heartRateMeasurement: RemoteCharacteristic? = characteristics
+     *    .firstOrNull { it.uuid = HeartRateProfile.heartRateMeasurementUuid }
+     * val RemoteService.heartRateControlPoint: RemoteCharacteristic? = characteristics
+     *    .firstOrNull { it.uuid = HeartRateProfile.heartRateControlPointUuid }
+     * val RemoteService.bodySensorLocation: RemoteCharacteristic? = characteristics
+     *    .firstOrNull { it.uuid = HeartRateProfile.bodySensorLocationUuid }
+     *
+     * // LBS profile implementation.
      * peripheral.profile(
      *    serviceUuid = HeartRateProfile.heartRateServiceUuid,
      *    required = true,
@@ -649,16 +658,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *    // 1. Validate the service.
      *
      *    // HRM characteristic is required.
-     *    val hrMeasurement = hrmService.characteristics
-     *       .first { it.uuid = HeartRateProfile.heartRateMeasurementUuid }
+     *    val hrMeasurement = requireNotNull(hrmService.heartRateMeasurement) {
+     *       "HRM characteristic not found"
+     *    }
      *    require(hrMeasurement.isSubscribable()) {
      *       "HRM characteristic must have the NOTIFY property"
      *    }
      *    // Other characteristics are optional.
-     *    val bodySensorLocation = hrmService.characteristics
-     *       .firstOrNull { it.uuid = HeartRateProfile.bodySensorLocationUuid }
-     *    val hrControlPoint = hrmService.characteristics
-     *       .firstOrNull { it.uuid = HeartRateProfile.heartRateControlPointUuid }
+     *    val hrControlPoint = hrmService.heartRateControlPoint
+     *    val bodySensorLocation = hrmService.bodySensorLocation
      *
      *    // 2. Initialize the profile.
      *
@@ -745,8 +753,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                             // disconnects (throwing PeripheralNotConnectedException).
                             userJob = scope.launch {
                                 /**
-                                 * A flag set to `false` when a [NoSuchElementException] or
-                                 * [IllegalArgumentException] is thrown from the [block].
+                                 * A flag set to `false` when a [IllegalArgumentException] is
+                                 * thrown from the [block].
                                  *
                                  * This indicates, that the discovered service does not support the
                                  * profile, i.e. is missing a characteristic or a property.
@@ -759,11 +767,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                 try {
                                     block(service)
                                 } catch (e: Exception) {
-                                    // The implementation may use require(...) and first(...) methods
+                                    // The implementation may use require(...) methods
                                     // to verify the service. Catch them and report as if the service
                                     // was not found.
                                     when (e) {
-                                        is IllegalArgumentException, is NoSuchElementException -> {
+                                        is IllegalArgumentException -> {
                                             // Log the stack trace, so origin of the exception is known.
                                             logger.warn("Profile service validation failed", e)
                                             isSupported = false
