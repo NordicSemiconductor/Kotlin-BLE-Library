@@ -721,7 +721,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
-     * Registers a profile implementation that runs when the specified GATT service is discovered.
+     * Registers a profile implementation that runs when the specified GATT services are discovered.
      *
      * ## Overview
      *
