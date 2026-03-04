@@ -620,16 +620,16 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * Multiple profiles can be added by calling this method once for each service,
      * i.e. Battery Profile and Heart Rate Profile.
      *
-     * The provided [block] is launched as a child coroutine in the given [scope] when a matching
+     * The provided [block] is launched on a child coroutine in the given [scope] when a matching
      * [RemoteService] is emitted by the [services] flow. The launched job is canceled when
      * the peripheral disconnects (the cancellation cause is [PeripheralNotConnectedException])
      * or when the job completes. When the `block` finishes (normally or exceptionally) the
      * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
      *
-     * ## Validation failures
+     * ## Validation
      *
-     * If `block` throws [NoSuchElementException] or [IllegalArgumentException] during service
-     * validation, the connection will be terminated with reason
+     * If `block` throws [IllegalArgumentException] during service validation, the connection will
+     * be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
@@ -700,9 +700,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * ```
      *
      * @param serviceUuid The UUID of the profile service.
-     * @param required Whether the service is required. In example, a Heart Rate app may require
-     * a Heart Rate Service, but also support an optional Battery Service to indicate the battery
-     * level.
+     * @param required Whether the service is required by the app. In example, a Heart Rate app
+     * may require a Heart Rate Service, but also support an optional Battery Service to indicate
+     * the battery level.
      * @param scope The coroutine scope to launch the user block in.
      * @param block The profile implementation.
      */
@@ -712,7 +712,210 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         required: Boolean = true,
         scope: CoroutineScope,
         block: suspend CoroutineScope.(RemoteService) -> Unit,
+    ) = profile(
+        requiredServiceUuids = listOf(serviceUuid),
+        required = required,
+        scope = scope
+    ) { services ->
+        block(services.first())
+    }
+
+    /**
+     * Registers a profile implementation that runs when the specified GATT service is discovered.
+     *
+     * ## Overview
+     *
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
+     *
+     * Multiple profiles can be added by calling this method once for each service,
+     * i.e. Battery Profile and Heart Rate Profile.
+     *
+     * Note, that this overload of the `profile` method returns all [RemoteService]s matching
+     * any of the [requiredServiceUuids] or [optionalServiceUuids], even if multiple instances
+     * of the same service were discovered.
+     *
+     * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
+     * The [block] is called in a child coroutine.
+     *
+     * It is safe and recommended to call this method before connecting the peripheral.
+     *
+     * ## Example
+     *
+     * ```kotlin
+     * override suspend fun connect(
+     *     block: suspend CoroutineScope.(HeartRateProfile.State) -> Unit,
+     * ): Unit = withContext(Dispatchers.IO) {
+     *     // First, register profile.
+     *     peripheral.profile(
+     *         requiredServiceUuids = listOf(
+     *            ProximityProfile.linkLossServiceUuid
+     *         ),
+     *         optionalServiceUuids = listOf(
+     *            ProximityProfile.immediateAlertServiceUuid,
+     *            ProximityProfile.txPowerServiceUuid,
+     *         ),
+     *         required = true,
+     *     ) { remoteServices ->
+     *         val state = ProximityProfile(remoteServices, this)
+     *
+     *         // Call the block with the Proximity profile state, separating Bluetooth LE from the logic.
+     *         block(state)
+     *     }
+     *     // Connect.
+     *     centralManager.connect(peripheral)
+     *
+     *     // Await disconnection.
+     *     peripheral.awaitDisconnection()
+     * }
+     * ```
+     *
+     * See [profile] for more information.
+     *
+     * @param requiredServiceUuids The list of UUIDs of the GATT services required by the profile.
+     * @param optionalServiceUuids The list of UUIDs of the optional GATT services.
+     * @param required Whether support for this profile is required by the app. In example,
+     * a Heart Rate app may require a Heart Rate Profile, but also support an optional
+     * Battery Profile to indicate the battery level. If `true` (default), and at least one of the
+     * required services is not found on the peripheral, the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     * If `false`, the [block] won't be called, but the connection won't be terminated.
+     * @param block The profile implementation.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun profile(
+        requiredServiceUuids: List<Uuid>,
+        optionalServiceUuids: List<Uuid> = emptyList(),
+        required: Boolean = true,
+        block: suspend CoroutineScope.(List<RemoteService>) -> Unit,
     ) {
+        // Get the current context. This will allow creating a scope, that will get closed
+        // together with the outer scope.
+        val context = currentCoroutineContext()
+        val userScope = CoroutineScope(context)
+
+        profile(requiredServiceUuids, optionalServiceUuids, required, userScope, block)
+    }
+
+    /**
+     * Registers a profile implementation that runs when the specified GATT services are discovered.
+     *
+     * ## Overview
+     *
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
+     *
+     * Multiple profiles can be added by calling this method once for each group of services,
+     * i.e. Battery Profile and Heart Rate Profile.
+     *
+     * Note, that this overload of the `profile` method returns all [RemoteService]s matching
+     * any of the [requiredServiceUuids] or [optionalServiceUuids], even if multiple instances
+     * of the same service were discovered.
+     *
+     * The provided [block] is launched on a child coroutine in the given [scope] when all matching
+     * [RemoteService]s are emitted by the [services] flow. The launched job is canceled when
+     * the peripheral disconnects (the cancellation cause is [PeripheralNotConnectedException])
+     * or when the job completes. When the `block` finishes (normally or exceptionally) the
+     * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
+     *
+     * ## Validation
+     *
+     * If `block` throws [IllegalArgumentException] during service validation, the connection will
+     * be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * ## Example
+     *
+     * In this example, the app is connecting to a Heart Rate device with an optional Sensor Location
+     * and HR Control Point characteristics. It updates the UI using `locationFlow` and
+     * receives Reset button events using `resetButtonEvents`.
+     *
+     * ```kotlin
+     * // Helper methods.
+     * val List<RemoteService>.linkLossService: RemoteService? = services
+     *    .firstOrNull { it.uuid = ProximityProfile.linkLossServiceUuid }
+     * val List<RemoteService>.immediateAlertService: RemoteService? = services
+     *    .firstOrNull { it.uuid = ProximityProfile.immediateAlertServiceUuid }
+     * val List<RemoteService>.txPowerService: RemoteService? = services
+     *    .firstOrNull { it.uuid = ProximityProfile.txPowerServiceUuid }
+     *
+     * val RemoteService.alertLevel: RemoteCharacteristic? = characteristics
+     *    .firstOrNull { it.uuid = ProximityProfile.alertLevelUuid }
+     * val RemoteService.txPowerLevel: RemoteCharacteristic? = characteristics
+     *    .firstOrNull { it.uuid = ProximityProfile.txPowerLevelUuid }
+     *
+     * // Proximity profile implementation.
+     * peripheral.profile(
+     *    requiredServiceUuids = listOf(
+     *       ProximityProfile.linkLossServiceUuid
+     *    ),
+     *    optionalServiceUuids = listOf(
+     *       ProximityProfile.immediateAlertServiceUuid,
+     *       ProximityProfile.txPowerServiceUuid,
+     *    ),
+     *    required = true,
+     *    scope = scope,
+     * ) { services ->
+     *    // 1. Validate the services.
+     *
+     *    // Link Loss Service is required.
+     *    val linkLossAlertLevel = requireNotNull(services.linkLossService?.alertLevel) {
+     *       "Link Loss Alert Level characteristic not found"
+     *    }
+     *    require(linkLossAlertLevel.isWritable()) {
+     *       "Link Loss Alert Level characteristic must have the WRITE property"
+     *    }
+     *
+     *    // Other services are optional, but can only be used when both are found.
+     *    val immediateAlertService = services.immediateAlertService
+     *    val txPowerService = services.txPowerService
+     *    val optionalServicesSupported = immediateAlertService != null && txPowerService != null
+     *
+     *    // [...]
+     *
+     *    // 2. Initialize the profile.
+     *
+     *    // Write Link Loss Alert Level.
+     *    linkLossAlertLevel?.write(ProximityProfile.ALERT_HIGH)
+     *
+     *    // Set up immediate alert.
+     *    if (optionalServicesSupported) {
+     *       buttonState
+     *          .onEach {
+     *             immediateAlertService?.alertLevel?.let { level ->
+     *                level.write(ProximityProfile.ALERT_HIGH)
+     *             }
+     *          }
+     *          .launchIn(this)
+     *    }
+     *
+     *    // 3. Await the scope cancellation. The scope will be cancelled when the device disconnects,
+     *    //    or the scope in which this method is called is canceled.
+     *    awaitCancellation()
+     * }
+     * ```
+     *
+     * @param requiredServiceUuids The list of UUIDs of the GATT services required by the profile.
+     * @param optionalServiceUuids The list of UUIDs of the optional GATT services.
+     * @param required Whether support for this profile is required by the app. In example,
+     * a Heart Rate app may require a Heart Rate Profile, but also support an optional
+     * Battery Profile to indicate the battery level. If `true` (default), and at least one of the
+     * required services is not found on the peripheral, the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     * If `false`, the [block] won't be called, but the connection won't be terminated.
+     * @param scope The coroutine scope to launch the user block in.
+     * @param block The profile implementation.
+     */
+    @OptIn(ExperimentalUuidApi::class)
+    fun profile(
+        requiredServiceUuids: List<Uuid>,
+        optionalServiceUuids: List<Uuid> = emptyList(),
+        required: Boolean = true,
+        scope: CoroutineScope,
+        block: suspend CoroutineScope.(List<RemoteService>) -> Unit,
+    ) {
+        require(requiredServiceUuids.isNotEmpty()) { "Service UUIDs list cannot be empty" }
+
         /**
          * The user job will be started to execute the user block.
          * It will be canceled when the outer scope is canceled, or when the services get
@@ -726,7 +929,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          */
         var profileJob: Job? = null
 
-        profileJob = services(listOf(serviceUuid))
+        profileJob = services(requiredServiceUuids + optionalServiceUuids)
             // The services flow will initially emit "Unknown" (as the services are not discovered yet).
             // Upon successful connection the flow will emit "Discovering" followed by:
             // 1. Discovered - when service discovery was successful.
@@ -745,9 +948,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         // User scope is continuing observing the services.
                     }
                     is RemoteServices.Discovered -> {
-                        // When services are discovered, check if the profile service exists.
-                        val service = state.services.firstOrNull { it.uuid == serviceUuid }
-                        if (service != null) {
+                        // When services are discovered, check if all required services were discovered.
+                        val missingServices = requiredServiceUuids.filter { serviceUuid ->
+                            state.services.none { service -> service.uuid == serviceUuid }
+                        }
+                        if (missingServices.isEmpty()) {
                             // If the GATT service was found, start the user block in a new job.
                             // This job wil be canceled with the outer scope, or when the peripheral
                             // disconnects (throwing PeripheralNotConnectedException).
@@ -765,7 +970,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                  */
                                 var isSupported = true
                                 try {
-                                    block(service)
+                                    block(state.services)
                                 } catch (e: Exception) {
                                     // The implementation may use require(...) methods
                                     // to verify the service. Catch them and report as if the service
@@ -798,11 +1003,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         } else {
                             // If the required service was not found disconnect, disconnect.
                             if (required) {
-                                logger.warn("Required service $serviceUuid not found")
+                                logger.warn("Required services not supported, missing: $missingServices")
                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
                                 profileJob?.cancel()
                             } else {
-                                logger.warn("Optional service $serviceUuid not found")
+                                logger.warn("Optional services not supported, missing: $missingServices")
                                 // Do not disconnect or cancel the user scope.
                                 // The device may change its services and the Discovered state
                                 // may be emitted again.
