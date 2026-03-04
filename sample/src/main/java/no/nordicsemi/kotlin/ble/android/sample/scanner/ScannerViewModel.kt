@@ -36,6 +36,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +44,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.filterNot
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -52,7 +53,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onEmpty
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import no.nordicsemi.kotlin.ble.android.sample.scanner.profile.LedButtonProfile
+import no.nordicsemi.kotlin.ble.android.sample.scanner.profile.impl.LedButtonServiceImpl
 import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
@@ -69,7 +74,6 @@ import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -180,12 +184,48 @@ class ScannerViewModel @Inject constructor(
 
                             // The first time the app connects to the peripheral it needs to initiate
                             // observers for various parameters.
-                            // The observers will get cancelled when the connection scope gets cancelled,
+                            // The observers will get canceled when the connection scope gets canceled,
                             // that is when the device is manually disconnected in case of auto connect,
                             // or disconnects for any reason when auto connect was false.
                             observerPhy(peripheral, this)
                             observeConnectionParameters(peripheral, this)
                             observerServices(peripheral, this)
+
+                            installLbsProfile(peripheral, required = false) { state ->
+                                // When the Button is long-clicked, cancel the profile scope.
+                                // This will disconnect the device.
+                                state.buttonLongPressed
+                                    .onEach {
+                                        Timber.w("LBS: Long button press detected, closing profile")
+                                        cancel()
+                                    }
+                                    .launchIn(this)
+
+                                // Tapping Button starts and stops blinking LED.
+                                Timber.v("LBS: Click Button to toggle LED blinking, Long Click to disconnect")
+                                while (isActive) {
+                                    state.buttonPressed.firstOrNull() ?: break
+
+                                    // Blink until the button is pressed again.
+                                    val blinking = launch {
+                                        while (isActive) {
+                                            // We use NonCancellable to make sure the LED doesn't
+                                            // quick-blink when turned off.
+                                            withContext(NonCancellable) {
+                                                state.led.value = true
+                                                delay(250.milliseconds)
+                                                state.led.value = false
+                                                delay(250.milliseconds)
+                                            }
+                                        }
+                                    }
+                                    state.buttonPressed.firstOrNull()
+                                    blinking.cancel()
+                                }
+                                // There's no need to await cancellation, as the loop ends only
+                                // on cancellation.
+                                // awaitCancellation()
+                            }
                         } catch (e: Exception) {
                             Timber.e(e, "Connection attempt failed")
                             connectionScopeMap.remove(peripheral)?.cancel()
@@ -398,48 +438,6 @@ class ScannerViewModel @Inject constructor(
                             }
                         }
                     }
-
-                    // Check if LED Button service is available.
-                    // If so, blink the LED 5 times.
-                    val blinkyServiceUuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
-                    val blinkyService = services.firstOrNull {
-                        it.uuid == blinkyServiceUuid && it.isPrimary
-                    }
-                    blinkyService?.let { service ->
-                        val buttonCharacteristicUuid =
-                            Uuid.parse("00001524-1212-efde-1523-785feabcd123")
-                        val ledCharacteristicUuid =
-                            Uuid.parse("00001525-1212-efde-1523-785feabcd123")
-                        val buttonCharacteristic =
-                            service.characteristics.firstOrNull { it.uuid == buttonCharacteristicUuid }
-                        val ledCharacteristic =
-                            service.characteristics.firstOrNull { it.uuid == ledCharacteristicUuid }
-
-                        Timber.i("($ce) Awaiting for button press to start LED blinking...")
-                        // Note: This may throw InvalidAttributeException if the device gets
-                        //       disconnected or invalidates services during awaiting button press.
-                        val result = buttonCharacteristic?.waitForValueChange {
-                            Timber.i("($ce) Turning LED on...")
-                            ledCharacteristic?.write(byteArrayOf(0x01))
-                        }
-                        Timber.i("($ce) Button change to 0x${result?.toHexString()}")
-
-                        ledCharacteristic?.let { led ->
-                            Timber.i("($ce) Starting to blink LED...")
-                            scope.launch {
-                                try {
-                                    repeat(9) { i ->
-                                        val newValue = byteArrayOf((i % 2).toByte())
-                                        Timber.i("($ce) Writing 0x${newValue.toHexString()} to ${led.uuid}...")
-                                        led.write(newValue)
-                                        delay(250.milliseconds)
-                                    }
-                                } catch (e: Exception) {
-                                    Timber.e("($ce) Failed to write to ${led.uuid}: ${e.message}")
-                                }
-                            }
-                        }
-                    }
                 } catch (_: InvalidAttributeException) {
                     // InvalidAttributeException is thrown when the peripheral is disconnected
                     // or services got invalidated when a notification is awaited (waitForValueChange).
@@ -457,6 +455,22 @@ class ScannerViewModel @Inject constructor(
                 Timber.d("Service collection completed")
             }
             .launchIn(scope)
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private suspend fun installLbsProfile(
+        peripheral: Peripheral,
+        required: Boolean,
+        block: suspend CoroutineScope.(LedButtonProfile.State) -> Unit,
+    ) {
+        peripheral.profile(
+            serviceUuid = LedButtonProfile.SERVICE_UUID,
+            required = required,
+        ) { lbs ->
+            val state = LedButtonServiceImpl(lbs, scope)
+            Timber.i("LBS: LED Button Service found")
+            block(state)
+        }
     }
 
     private fun observePeripheralState(peripheral: Peripheral, scope: CoroutineScope) {
