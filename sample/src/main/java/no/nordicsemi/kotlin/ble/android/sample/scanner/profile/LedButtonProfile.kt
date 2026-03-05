@@ -34,6 +34,7 @@ package no.nordicsemi.kotlin.ble.android.sample.scanner.profile
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -45,6 +46,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 interface LedButtonProfile {
     companion object {
+        /** If a button is pressed for more than this value it is reported as long press. */
+        val LONG_PRESS_TIMEOUT = 2.seconds
         /** The LED Button Service UUID. */
         val SERVICE_UUID: Uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
         /** The UUID of the Button characteristic. */
@@ -70,10 +73,14 @@ interface LedButtonProfile {
         /**
          * The current state of the button.
          *
+         * This flow emits the current state of the button: `true` when pressed and `false` when
+         * released.
+         *
+         * Use [buttonPressed] and [buttonLongPressed] flows to handle button events.
          * @see buttonPressed
          * @see buttonLongPressed
          */
-        val buttonState: StateFlow<Boolean>
+        val button: StateFlow<Boolean>
 
         /**
          * The flow of button click events.
@@ -85,7 +92,7 @@ interface LedButtonProfile {
         /**
          * The flow of long button clicks events.
          *
-         * This flow emits an event when the button is pressed for 2 seconds.
+         * This flow emits an event when the button is pressed for [2 seconds].
          */
         val buttonLongPressed: Flow<Unit>
     }

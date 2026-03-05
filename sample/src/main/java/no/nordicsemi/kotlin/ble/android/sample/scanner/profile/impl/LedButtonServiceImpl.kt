@@ -65,7 +65,7 @@ import kotlin.uuid.ExperimentalUuidApi
  * * Required properties (notifications, write, etc.)
  *
  * The Bluetooth LE implementation is then exposed as a high-level interface of a device, allowing
- * to control the device using [led] and [buttonState]. Additional [buttonPressed] and
+ * to control the device using [led] and [button]. Additional [buttonPressed] and
  * [buttonLongPressed] events emit when the button is pressed.
  */
 @OptIn(ExperimentalUuidApi::class)
@@ -73,10 +73,6 @@ class LedButtonServiceImpl(
     private val ledButtonService: RemoteService,
     private val scope: CoroutineScope,
 ): LedButtonProfile.State {
-    companion object {
-        val LONG_PRESS_TIMEOUT = 2.seconds
-    }
-
     init {
         require(ledButtonService.uuid == LedButtonProfile.SERVICE_UUID) {
             "Unrecognized service UUID: ${ledButtonService.uuid}"
@@ -138,7 +134,7 @@ class LedButtonServiceImpl(
                         ledCharacteristic.write(command)
                     } catch (_: InvalidAttributeException) {
                         // This exception is thrown when the device disconnects, or invalidates services.
-                        Timber.w("Services invalidated when writing to LED characteristic")
+                        Timber.w("Services invalidated before writing to LED characteristic")
                     } catch (e: OperationFailedException) {
                         // This exception is thrown when the device disconnects, but the client
                         // doesn't know about it before writing to the characteristic.
@@ -152,7 +148,7 @@ class LedButtonServiceImpl(
             }
         }
 
-    override val buttonState: StateFlow<Boolean> = MutableStateFlow(false)
+    override val button: StateFlow<Boolean> = MutableStateFlow(false)
         .also { flow ->
             scope.launch {
                 try {
@@ -178,13 +174,13 @@ class LedButtonServiceImpl(
         var isLongPress = false
 
         // Drop the initial value, button state is a StateFlow.
-        buttonState.drop(1).collect { pressed ->
+        button.drop(1).collect { pressed ->
             // If the button was pressed, start a timeout to detect a long press events.
             if (pressed) {
                 try {
-                    withTimeout(LONG_PRESS_TIMEOUT) {
+                    withTimeout(LedButtonProfile.LONG_PRESS_TIMEOUT) {
                         // Await the button to be released before the timeout.
-                        buttonState.drop(1).filter { !it }.first()
+                        button.drop(1).filter { !it }.first()
                     }
                 } catch (_: TimeoutCancellationException) {
                     // Button has not been released before the time runed out.
@@ -200,10 +196,10 @@ class LedButtonServiceImpl(
         }
     }
 
-    override val buttonLongPressed: Flow<Unit> = buttonState
+    override val buttonLongPressed: Flow<Unit> = button
         .flatMapLatest { pressed ->
             if (pressed) flow {
-                delay(LONG_PRESS_TIMEOUT)
+                delay(LedButtonProfile.LONG_PRESS_TIMEOUT)
                 emit(Unit)
             } else emptyFlow()
         }
