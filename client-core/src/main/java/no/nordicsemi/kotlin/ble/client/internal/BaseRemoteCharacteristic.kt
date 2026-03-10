@@ -131,12 +131,12 @@ abstract class BaseRemoteCharacteristic(
 
         // Verify that the characteristic can be subscribed to.
         require(isSubscribable()) {
-            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED, 0x6) // BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
         }
 
         // Check if the CCCD descriptor exists.
         val cccd = descriptors.cccd()
-            ?: throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+            ?: throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED, 0x6) // BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
 
         // Enable handling of notifications or indications locally.
         try {
@@ -166,7 +166,7 @@ abstract class BaseRemoteCharacteristic(
 
         // Verify that the characteristic can be read.
         require(isReadable()) {
-            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED, 0x2) // BluetoothGatt.GATT_READ_NOT_PERMITTED)
         }
 
         // Read the characteristic value and await the result.
@@ -196,7 +196,7 @@ abstract class BaseRemoteCharacteristic(
                 ?.let {
                     when (it.status) {
                         OperationStatus.SUCCESS -> it.value
-                        else -> throw OperationFailedException(it.status)
+                        else -> throw OperationFailedException(it.status, it.errorCode)
                     }
                 }
                 ?: throw InvalidAttributeException()
@@ -211,7 +211,7 @@ abstract class BaseRemoteCharacteristic(
 
         // Verify that the characteristic can be written.
         require(isWritable()) {
-            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED, 0x3) // BluetoothGatt.GATT_WRITE_NOT_PERMITTED)
         }
 
         // Write the characteristic value and await the result.
@@ -243,7 +243,7 @@ abstract class BaseRemoteCharacteristic(
                 .firstOrNull()
                 ?.let {
                     check(it.status == OperationStatus.SUCCESS) {
-                        throw OperationFailedException(it.status)
+                        throw OperationFailedException(it.status, it.errorCode)
                     }
                 }
                 ?: throw InvalidAttributeException()
@@ -271,7 +271,7 @@ abstract class BaseRemoteCharacteristic(
 
         // Verify that the characteristic can be subscribed to.
         require(isSubscribable() && descriptors.cccd() != null) {
-            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED, 0x6) // BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED)
         }
 
         return events

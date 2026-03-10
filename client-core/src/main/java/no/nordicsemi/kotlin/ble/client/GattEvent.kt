@@ -142,8 +142,9 @@ data class ConnectionParametersChanged(val newParameters: ConnectionParameters) 
  * It ensures that either all prepared writes are committed or none of them.
  *
  * @param status The operation status.
+ * @param errorCode The error code.
  */
-data class ReliableWriteCompleted(val status: OperationStatus) : GattEvent()
+data class ReliableWriteCompleted(val status: OperationStatus, val errorCode: Int) : GattEvent()
 
 /**
  * Event type used by implementations.

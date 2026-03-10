@@ -716,7 +716,7 @@ open class Peripheral(
                         OperationStatus.SUCCESS -> logger.info("Reliable write executed successfully")
                         else -> {
                             logger.warn("Reliable write failed: {}", it.status)
-                            throw OperationFailedException(it.status)
+                            throw OperationFailedException(it.status, it.errorCode)
                         }
                     }
                 } ?: throw PeripheralNotConnectedException()
@@ -758,7 +758,7 @@ open class Peripheral(
                         OperationStatus.SUCCESS -> logger.info("Reliable write aborted successfully")
                         else -> {
                             logger.warn("Aborting reliable write failed: {}", it.status)
-                            throw OperationFailedException(it.status)
+                            throw OperationFailedException(it.status, it.errorCode)
                         }
                     }
                 } ?: throw PeripheralNotConnectedException()

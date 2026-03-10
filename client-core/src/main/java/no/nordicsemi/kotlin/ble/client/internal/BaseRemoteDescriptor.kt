@@ -119,7 +119,7 @@ abstract class BaseRemoteDescriptor(
 
         // Verify that the descriptor can be read.
         require(isReadable()) {
-            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED, 0x2) // BluetoothGatt.GATT_READ_NOT_PERMITTED
         }
 
         return OperationMutex.withLock {
@@ -148,7 +148,7 @@ abstract class BaseRemoteDescriptor(
                 ?.let {
                     when (it.status) {
                         OperationStatus.SUCCESS -> it.value
-                        else -> throw OperationFailedException(it.status)
+                        else -> throw OperationFailedException(it.status, it.errorCode)
                     }
                 }
                 ?: throw InvalidAttributeException()
@@ -163,7 +163,7 @@ abstract class BaseRemoteDescriptor(
 
         // Verify that the descriptor can be written to.
         require(isWritable()) {
-            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+            throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED, 0x3) // BluetoothGatt.GATT_WRITE_NOT_PERMITTED
         }
 
         OperationMutex.withLock {
@@ -194,7 +194,7 @@ abstract class BaseRemoteDescriptor(
                 .firstOrNull()
                 ?.let {
                     check(it.status.isSuccess) {
-                        throw OperationFailedException(it.status)
+                        throw OperationFailedException(it.status, it.errorCode)
                     }
                 }
                 ?: throw InvalidAttributeException()
