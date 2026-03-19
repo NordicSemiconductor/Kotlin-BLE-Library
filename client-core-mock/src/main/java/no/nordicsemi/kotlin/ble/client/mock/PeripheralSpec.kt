@@ -224,7 +224,7 @@ class PeripheralSpec<ID: Any> private constructor(
                 mtu = 23
                 l2capMtu = 27
                 connectionParameters = ConnectionParameters.Specified(
-                    connectionInterval = preferredConnectionInterval!!.start,
+                    connectionInterval = preferredConnectionInterval!!.first,
                     latency = preferredSlaveLatency!!,
                     supervisionTimeout = preferredSupervisionTimeout!!
                 )
@@ -1462,8 +1462,8 @@ class PeripheralSpec<ID: Any> private constructor(
             isPhyLe2MSupported: Boolean,
             isPhyCodedSupported: Boolean = false,
         ) {
-            require(preferredConnectionInterval.start in 6..3200) { "Min connection interval is out of range." }
-            require(preferredConnectionInterval.endInclusive in 6..3200) { "Max connection interval is out of range." }
+            require(preferredConnectionInterval.first in 6..3200) { "Min connection interval is out of range." }
+            require(preferredConnectionInterval.last in 6..3200) { "Max connection interval is out of range." }
             require(preferredSlaveLatency in 0..499) { "Slave latency is out of range." }
             require(preferredSupervisionTimeout in 10..3200) { "Supervision timeout is out of range." }
             require(maxAttMtu in 23..517) { "Max ATT MTU is out of range." }
