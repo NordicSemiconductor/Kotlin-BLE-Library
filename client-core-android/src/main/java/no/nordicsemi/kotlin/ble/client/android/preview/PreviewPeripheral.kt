@@ -182,13 +182,13 @@ private class StubExecutor(
 
     override suspend fun executeReliableWrite(): Boolean {
         isReliableWriteEnabled = false
-        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS))
+        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS, 0))
         return true
     }
 
     override suspend fun abortReliableWrite(): Boolean {
         isReliableWriteEnabled = false
-        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS))
+        _events.emit(ReliableWriteCompleted(status = OperationStatus.SUCCESS, 0))
         return true
     }
 
@@ -303,7 +303,7 @@ private class StubRemoteCharacteristic(
     override suspend fun setNotifying(enabled: Boolean) = when {
         owner == null -> throw InvalidAttributeException()
         isSubscribable() -> _isNotifying = enabled
-        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED, 0x6) // BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
     }
 
     override val descriptors: List<RemoteDescriptor> = descriptors
@@ -321,13 +321,13 @@ private class StubRemoteCharacteristic(
     override suspend fun read(): ByteArray = when {
         owner == null -> throw InvalidAttributeException()
         isReadable() -> _value.value
-        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED, 0x2) // BluetoothGatt.GATT_READ_NOT_PERMITTED
     }
 
     override suspend fun write(data: ByteArray, writeType: WriteType) = when {
         owner == null -> throw InvalidAttributeException()
         isWritable() -> _value.update { data }
-        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED, 0x3) // BluetoothGatt.GATT_WRITE_NOT_PERMITTED
     }
 
     override suspend fun waitForValueChange(
@@ -344,7 +344,7 @@ private class StubRemoteCharacteristic(
     override fun subscribe(onSubscription: suspend RemoteCharacteristic.() -> Unit): Flow<ByteArray> = when {
         owner == null -> throw InvalidAttributeException()
         isSubscribable() -> _value.filter { _isNotifying }.onStart { onSubscription() }
-        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.SUBSCRIBE_NOT_PERMITTED, 0x6) // BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED
     }
 
     override fun toString(): String = uuid.toString()
@@ -367,13 +367,13 @@ private class StubRemoteDescriptor(
     override suspend fun read(): ByteArray = when {
         owner == null -> throw InvalidAttributeException()
         isReadable() -> value
-        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.READ_NOT_PERMITTED, 0x2) // BluetoothGatt.GATT_READ_NOT_PERMITTED
     }
 
     override suspend fun write(data: ByteArray) = when {
         owner == null -> throw InvalidAttributeException()
         isWritable() -> value = data
-        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+        else -> throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED, 0x3) // BluetoothGatt.GATT_WRITE_NOT_PERMITTED
     }
 
     override fun toString(): String = uuid.toString()

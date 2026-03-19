@@ -144,7 +144,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         status: Int
     ) {
         logger.debug("onCharacteristicRead: characteristic={}, value={}, status={}", characteristic.uuid, value.toHexString(), status)
-        _events.tryEmit(CharacteristicRead(characteristic, value, status.toOperationStatus()))
+        _events.tryEmit(CharacteristicRead(characteristic, value, status.toOperationStatus(), status))
     }
 
     override fun onCharacteristicWrite(
@@ -153,7 +153,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         status: Int
     ) {
         logger.debug("onCharacteristicWrite: characteristic={}, status={}", characteristic.uuid, status)
-        _events.tryEmit(CharacteristicWrite(characteristic, status.toOperationStatus()))
+        _events.tryEmit(CharacteristicWrite(characteristic, status.toOperationStatus(), status))
     }
 
     override fun onDescriptorRead(
@@ -163,7 +163,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         value: ByteArray
     ) {
         logger.debug("onDescriptorRead: descriptor={}, value={}, status={}", descriptor.uuid, value.toHexString(), status)
-        _events.tryEmit(DescriptorRead(descriptor, value, status.toOperationStatus()))
+        _events.tryEmit(DescriptorRead(descriptor, value, status.toOperationStatus(), status))
     }
 
     override fun onDescriptorWrite(
@@ -172,14 +172,14 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         status: Int
     ) {
         logger.debug("onDescriptorWrite: descriptor={}, status={}", descriptor.uuid, status)
-        _events.tryEmit(DescriptorWrite(descriptor, status.toOperationStatus()))
+        _events.tryEmit(DescriptorWrite(descriptor, status.toOperationStatus(), status))
     }
 
     // Note, this is called when Reliable Write was executed or aborted.
     // There is no way to distinguish between the two without keeping state.
     override fun onReliableWriteCompleted(gatt: BluetoothGatt, status: Int) {
         logger.debug("onReliableWriteCompleted: status=$status")
-        _events.tryEmit(ReliableWriteCompleted(status.toOperationStatus()))
+        _events.tryEmit(ReliableWriteCompleted(status.toOperationStatus(), status))
     }
 
     // Handling connection parameter updates
