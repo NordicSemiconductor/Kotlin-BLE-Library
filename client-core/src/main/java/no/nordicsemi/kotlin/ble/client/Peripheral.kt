@@ -375,6 +375,9 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 if (_state.value == event.newState) {
                     return
                 }
+                if (event.disconnected) {
+                    logger.info("Disconnected from {}", this)
+                }
                 _state.update { event.newState }
                 when (event.newState) {
                     is ConnectionState.Connected -> {
@@ -1157,7 +1160,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     expect = ConnectionState.Disconnecting,
                     update = ConnectionState.Disconnected(reason)
                 )
-                logger.info("Disconnected from {}", this@Peripheral)
             }
         }
     }
