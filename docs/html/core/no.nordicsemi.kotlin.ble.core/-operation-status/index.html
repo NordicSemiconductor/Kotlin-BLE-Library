@@ -38,7 +38,7 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha16
+        <div class="library-version" id="library-version">2.0.0-alpha17
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
@@ -93,354 +93,474 @@
   <div class="breadcrumbs"><a href="../../index.html">core</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.core</a><span class="delimiter">/</span><span class="current">OperationStatus</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Operation</span><wbr><span><span>Status</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">enum </span><a href="index.html">OperationStatus</a> : <a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><a href="index.html">OperationStatus</a><span class="token operator">&gt; </span></div><p class="paragraph">GATT operation status.</p><p class="paragraph">Some of the status codes are defined by the Bluetooth Specification, others are used only in the library to indicate specific conditions.</p><p class="paragraph">Read more in Bluetooth Specification, Vol 3 (Host), Part F (ATT), 3.4.1.1 ATT_ERROR_RSP: <a href="https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/attribute-protocol--att-.html#UUID-eefd3e8d-9b16-3af8-1fb4-fa90f52262e8">link</a>.</p></div></div>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">OperationStatus</a></div><p class="paragraph">GATT operation status.</p><p class="paragraph">Some of the status codes are defined by the Bluetooth Specification, others are used only in the library to indicate specific conditions.</p><p class="paragraph">Read more in Bluetooth Specification, Vol 3 (Host), Part F (ATT), 3.4.1.1 ATT_ERROR_RSP: <a href="https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/attribute-protocol--att-.html#UUID-eefd3e8d-9b16-3af8-1fb4-fa90f52262e8">link</a>.</p><h4 class="tableheader">Inheritors</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-success/index.html">Success</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-handle/index.html">InvalidHandle</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-read-not-permitted/index.html">ReadNotPermitted</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-write-not-permitted/index.html">WriteNotPermitted</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-pdu/index.html">InvalidPdu</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-insufficient-authentication/index.html">InsufficientAuthentication</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-request-not-supported/index.html">RequestNotSupported</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-offset/index.html">InvalidOffset</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-insufficient-authorization/index.html">InsufficientAuthorization</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-prepare-queue-full/index.html">PrepareQueueFull</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-attribute-not-found/index.html">AttributeNotFound</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-attribute-not-long/index.html">AttributeNotLong</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-encryption-key-too-short/index.html">EncryptionKeyTooShort</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-attribute-length/index.html">InvalidAttributeLength</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unlikely-error/index.html">UnlikelyError</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-insufficient-encryption/index.html">InsufficientEncryption</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-insufficient-resources/index.html">InsufficientResources</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-value-not-allowed/index.html">ValueNotAllowed</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-application-error/index.html">ApplicationError</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-profile-error/index.html">ProfileError</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-unknown-error/index.html">UnknownError</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-request-failed/index.html">RequestFailed</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-busy/index.html">Busy</a></div></span></div><div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-subscribe-not-permitted/index.html">SubscribeNotPermitted</a></div></span></div><div></div></div></div></div></div></div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="ENTRY">Entries</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
-      <div data-togglable="ENTRY">
-        <h2 class="tableheader">Entries</h2>
-        <div class="table"><a data-name="-1348153204%2FClasslikes%2F-431355489" anchor-label="SUCCESS" id="-1348153204%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+      <div data-togglable="TYPE">
+        <h2 class="tableheader">Types</h2>
+        <div class="table"><a data-name="373179470%2FClasslikes%2F-431355489" anchor-label="ApplicationError" id="373179470%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-s-u-c-c-e-s-s/index.html">SUCCESS</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1348153204%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-application-error/index.html"><span>Application</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="373179470%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-s-u-c-c-e-s-s/index.html">SUCCESS</a></div></div><div class="brief "><p class="paragraph">A GATT operation completed successfully.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-application-error/index.html">ApplicationError</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>code<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">A generic application level error.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-98180305%2FClasslikes%2F-431355489" anchor-label="INVALID_HANDLE" id="-98180305%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="786622033%2FClasslikes%2F-431355489" anchor-label="AttributeNotFound" id="786622033%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-v-a-l-i-d_-h-a-n-d-l-e/index.html">INVALID_HANDLE</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-98180305%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-attribute-not-found/index.html"><span>Attribute</span><wbr><span>Not</span><wbr><span><span>Found</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="786622033%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-v-a-l-i-d_-h-a-n-d-l-e/index.html">INVALID_HANDLE</a></div></div><div class="brief "><p class="paragraph">The attribute handle given was not valid on this server.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-attribute-not-found/index.html">AttributeNotFound</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">No attribute found within the given attribute handle range.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1315946142%2FClasslikes%2F-431355489" anchor-label="READ_NOT_PERMITTED" id="-1315946142%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-530068077%2FClasslikes%2F-431355489" anchor-label="AttributeNotLong" id="-530068077%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-r-e-a-d_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">READ_NOT_PERMITTED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1315946142%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-attribute-not-long/index.html"><span>Attribute</span><wbr><span>Not</span><wbr><span><span>Long</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-530068077%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-r-e-a-d_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">READ_NOT_PERMITTED</a></div></div><div class="brief "><p class="paragraph">GATT read operation is not permitted.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-attribute-not-long/index.html">AttributeNotLong</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The attribute cannot be read using the <i>Long Read</i> procedure.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1533065813%2FClasslikes%2F-431355489" anchor-label="WRITE_NOT_PERMITTED" id="1533065813%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-693655667%2FClasslikes%2F-431355489" anchor-label="Busy" id="-693655667%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-w-r-i-t-e_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">WRITE_NOT_PERMITTED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1533065813%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-busy/index.html"><span><span>Busy</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-693655667%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-w-r-i-t-e_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">WRITE_NOT_PERMITTED</a></div></div><div class="brief "><p class="paragraph">GATT write operation is not permitted.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-busy/index.html">Busy</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Device is busy.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1444594142%2FClasslikes%2F-431355489" anchor-label="INVALID_PDU" id="-1444594142%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-296900610%2FClasslikes%2F-431355489" anchor-label="ClientCharacteristicConfigurationDescriptorImproperlyConfigured" id="-296900610%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-v-a-l-i-d_-p-d-u/index.html">INVALID_PDU</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1444594142%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-client-characteristic-configuration-descriptor-improperly-configured/index.html"><span>Client</span><wbr><span>Characteristic</span><wbr><span>Configuration</span><wbr><span>Descriptor</span><wbr><span>Improperly</span><wbr><span><span>Configured</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-296900610%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-v-a-l-i-d_-p-d-u/index.html">INVALID_PDU</a></div></div><div class="brief "><p class="paragraph">The attribute PDU was invalid.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-client-characteristic-configuration-descriptor-improperly-configured/index.html">ClientCharacteristicConfigurationDescriptorImproperlyConfigured</a> : <a href="-profile-error/index.html">OperationStatus.ProfileError</a></div><div class="brief "><p class="paragraph">Client Characteristic Configuration Descriptor Improperly Configured.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-871375203%2FClasslikes%2F-431355489" anchor-label="INSUFFICIENT_AUTHENTICATION" id="-871375203%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-393320646%2FClasslikes%2F-431355489" anchor-label="ConnectionCongested" id="-393320646%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n/index.html">INSUFFICIENT_AUTHENTICATION</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-871375203%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-connection-congested/index.html"><span>Connection</span><wbr><span><span>Congested</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-393320646%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-a-u-t-h-e-n-t-i-c-a-t-i-o-n/index.html">INSUFFICIENT_AUTHENTICATION</a></div></div><div class="brief "><p class="paragraph">Insufficient authentication for a given operation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-connection-congested/index.html">ConnectionCongested</a> : <a href="-application-error/index.html">OperationStatus.ApplicationError</a></div><div class="brief "><p class="paragraph">A remote device connection is congested.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="670601179%2FClasslikes%2F-431355489" anchor-label="REQUEST_NOT_SUPPORTED" id="670601179%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="1624664025%2FClasslikes%2F-431355489" anchor-label="ConnectionTimeout" id="1624664025%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-r-e-q-u-e-s-t_-n-o-t_-s-u-p-p-o-r-t-e-d/index.html">REQUEST_NOT_SUPPORTED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="670601179%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-connection-timeout/index.html"><span>Connection</span><wbr><span><span>Timeout</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1624664025%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-r-e-q-u-e-s-t_-n-o-t_-s-u-p-p-o-r-t-e-d/index.html">REQUEST_NOT_SUPPORTED</a></div></div><div class="brief "><p class="paragraph">The given request is not supported.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-connection-timeout/index.html">ConnectionTimeout</a> : <a href="-application-error/index.html">OperationStatus.ApplicationError</a></div><div class="brief "><p class="paragraph">GATT connection timed out, likely due to the remote device being out of range or not advertising as connectable.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-735197094%2FClasslikes%2F-431355489" anchor-label="INVALID_OFFSET" id="-735197094%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1789114728%2FClasslikes%2F-431355489" anchor-label="EncryptionKeyTooShort" id="-1789114728%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-v-a-l-i-d_-o-f-f-s-e-t/index.html">INVALID_OFFSET</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-735197094%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-encryption-key-too-short/index.html"><span>Encryption</span><wbr><span>Key</span><wbr><span>Too</span><wbr><span><span>Short</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1789114728%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-v-a-l-i-d_-o-f-f-s-e-t/index.html">INVALID_OFFSET</a></div></div><div class="brief "><p class="paragraph">A read or write operation was requested with an invalid offset.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-encryption-key-too-short/index.html">EncryptionKeyTooShort</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The Encryption Key Size used for encrypting this link is too short.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="982038908%2FClasslikes%2F-431355489" anchor-label="INSUFFICIENT_AUTHORIZATION" id="982038908%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-882996082%2FClasslikes%2F-431355489" anchor-label="GattError" id="-882996082%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-a-u-t-h-o-r-i-z-a-t-i-o-n/index.html">INSUFFICIENT_AUTHORIZATION</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="982038908%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-gatt-error/index.html"><span>Gatt</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-882996082%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-a-u-t-h-o-r-i-z-a-t-i-o-n/index.html">INSUFFICIENT_AUTHORIZATION</a></div></div><div class="brief "><p class="paragraph">Insufficient authorization for a given operation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-gatt-error/index.html">GattError</a> : <a href="-application-error/index.html">OperationStatus.ApplicationError</a></div><div class="brief "><p class="paragraph">Most generic GATT error code.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1702268716%2FClasslikes%2F-431355489" anchor-label="PREPARE_QUEUE_FULL" id="-1702268716%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-530294613%2FClasslikes%2F-431355489" anchor-label="InsufficientAuthentication" id="-530294613%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-p-r-e-p-a-r-e_-q-u-e-u-e_-f-u-l-l/index.html">PREPARE_QUEUE_FULL</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1702268716%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-insufficient-authentication/index.html"><span>Insufficient</span><wbr><span><span>Authentication</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-530294613%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-p-r-e-p-a-r-e_-q-u-e-u-e_-f-u-l-l/index.html">PREPARE_QUEUE_FULL</a></div></div><div class="brief "><p class="paragraph">The prepare write queue is full.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-insufficient-authentication/index.html">InsufficientAuthentication</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Insufficient authentication for a given operation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-2044096004%2FClasslikes%2F-431355489" anchor-label="ATTRIBUTE_NOT_FOUND" id="-2044096004%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="1395493798%2FClasslikes%2F-431355489" anchor-label="InsufficientAuthorization" id="1395493798%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-a-t-t-r-i-b-u-t-e_-n-o-t_-f-o-u-n-d/index.html">ATTRIBUTE_NOT_FOUND</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2044096004%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-insufficient-authorization/index.html"><span>Insufficient</span><wbr><span><span>Authorization</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1395493798%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-a-t-t-r-i-b-u-t-e_-n-o-t_-f-o-u-n-d/index.html">ATTRIBUTE_NOT_FOUND</a></div></div><div class="brief "><p class="paragraph">No attribute found within the given attribute handle range.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-insufficient-authorization/index.html">InsufficientAuthorization</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Insufficient authorization for a given operation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="551477706%2FClasslikes%2F-431355489" anchor-label="ATTRIBUTE_NOT_LONG" id="551477706%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="660678400%2FClasslikes%2F-431355489" anchor-label="InsufficientEncryption" id="660678400%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-a-t-t-r-i-b-u-t-e_-n-o-t_-l-o-n-g/index.html">ATTRIBUTE_NOT_LONG</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="551477706%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-insufficient-encryption/index.html"><span>Insufficient</span><wbr><span><span>Encryption</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="660678400%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-a-t-t-r-i-b-u-t-e_-n-o-t_-l-o-n-g/index.html">ATTRIBUTE_NOT_LONG</a></div></div><div class="brief "><p class="paragraph">The attribute cannot be read using the <i>Long Read</i> procedure.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-insufficient-encryption/index.html">InsufficientEncryption</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Insufficient encryption for a given operation.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1310416652%2FClasslikes%2F-431355489" anchor-label="ENCRYPTION_KEY_TOO_SHORT" id="-1310416652%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="2025537146%2FClasslikes%2F-431355489" anchor-label="InsufficientResources" id="2025537146%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-e-n-c-r-y-p-t-i-o-n_-k-e-y_-t-o-o_-s-h-o-r-t/index.html">ENCRYPTION_KEY_TOO_SHORT</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1310416652%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-insufficient-resources/index.html"><span>Insufficient</span><wbr><span><span>Resources</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2025537146%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-e-n-c-r-y-p-t-i-o-n_-k-e-y_-t-o-o_-s-h-o-r-t/index.html">ENCRYPTION_KEY_TOO_SHORT</a></div></div><div class="brief "><p class="paragraph">The Encryption Key Size used for encrypting this link is too short.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-insufficient-resources/index.html">InsufficientResources</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Insufficient Resources to complete the request.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="141193104%2FClasslikes%2F-431355489" anchor-label="INVALID_ATTRIBUTE_LENGTH" id="141193104%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-786170661%2FClasslikes%2F-431355489" anchor-label="InvalidAttributeLength" id="-786170661%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-v-a-l-i-d_-a-t-t-r-i-b-u-t-e_-l-e-n-g-t-h/index.html">INVALID_ATTRIBUTE_LENGTH</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="141193104%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-invalid-attribute-length/index.html"><span>Invalid</span><wbr><span>Attribute</span><wbr><span><span>Length</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-786170661%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-v-a-l-i-d_-a-t-t-r-i-b-u-t-e_-l-e-n-g-t-h/index.html">INVALID_ATTRIBUTE_LENGTH</a></div></div><div class="brief "><p class="paragraph">A write operation exceeds the maximum length of the attribute.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-invalid-attribute-length/index.html">InvalidAttributeLength</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">A write operation exceeds the maximum length of the attribute.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="295634309%2FClasslikes%2F-431355489" anchor-label="UNLIKELY_ERROR" id="295634309%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-392098179%2FClasslikes%2F-431355489" anchor-label="InvalidHandle" id="-392098179%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-u-n-l-i-k-e-l-y_-e-r-r-o-r/index.html">UNLIKELY_ERROR</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="295634309%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-invalid-handle/index.html"><span>Invalid</span><wbr><span><span>Handle</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-392098179%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-u-n-l-i-k-e-l-y_-e-r-r-o-r/index.html">UNLIKELY_ERROR</a></div></div><div class="brief "><p class="paragraph">The attribute request that was requested has encountered an error that was unlikely, and therefore could not be completed as requested.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-invalid-handle/index.html">InvalidHandle</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The attribute handle given was not valid on this server.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-193324312%2FClasslikes%2F-431355489" anchor-label="INSUFFICIENT_ENCRYPTION" id="-193324312%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-626878862%2FClasslikes%2F-431355489" anchor-label="InvalidOffset" id="-626878862%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-e-n-c-r-y-p-t-i-o-n/index.html">INSUFFICIENT_ENCRYPTION</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-193324312%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-invalid-offset/index.html"><span>Invalid</span><wbr><span><span>Offset</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-626878862%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-e-n-c-r-y-p-t-i-o-n/index.html">INSUFFICIENT_ENCRYPTION</a></div></div><div class="brief "><p class="paragraph">Insufficient encryption for a given operation.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-invalid-offset/index.html">InvalidOffset</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">A read or write operation was requested with an invalid offset.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1821526440%2FClasslikes%2F-431355489" anchor-label="INSUFFICIENT_RESOURCES" id="1821526440%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="50348892%2FClasslikes%2F-431355489" anchor-label="InvalidPdu" id="50348892%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-r-e-s-o-u-r-c-e-s/index.html">INSUFFICIENT_RESOURCES</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1821526440%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-invalid-pdu/index.html"><span>Invalid</span><wbr><span><span>Pdu</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="50348892%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-i-n-s-u-f-f-i-c-i-e-n-t_-r-e-s-o-u-r-c-e-s/index.html">INSUFFICIENT_RESOURCES</a></div></div><div class="brief "><p class="paragraph">Insufficient Resources to complete the request.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-invalid-pdu/index.html">InvalidPdu</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The attribute PDU was invalid.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-814824649%2FClasslikes%2F-431355489" anchor-label="VALUE_NOT_ALLOWED" id="-814824649%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="1188314158%2FClasslikes%2F-431355489" anchor-label="OutOfRange" id="1188314158%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-v-a-l-u-e_-n-o-t_-a-l-l-o-w-e-d/index.html">VALUE_NOT_ALLOWED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-814824649%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-out-of-range/index.html"><span>Out</span><wbr><span>Of</span><wbr><span><span>Range</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1188314158%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-v-a-l-u-e_-n-o-t_-a-l-l-o-w-e-d/index.html">VALUE_NOT_ALLOWED</a></div></div><div class="brief "><p class="paragraph">The attribute parameter value was not allowed.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-out-of-range/index.html">OutOfRange</a> : <a href="-profile-error/index.html">OperationStatus.ProfileError</a></div><div class="brief "><p class="paragraph">Out of Range.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1049648320%2FClasslikes%2F-431355489" anchor-label="SUBSCRIBE_NOT_PERMITTED" id="1049648320%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1804122099%2FClasslikes%2F-431355489" anchor-label="PrepareQueueFull" id="-1804122099%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-s-u-b-s-c-r-i-b-e_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">SUBSCRIBE_NOT_PERMITTED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1049648320%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-prepare-queue-full/index.html"><span>Prepare</span><wbr><span>Queue</span><wbr><span><span>Full</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1804122099%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-s-u-b-s-c-r-i-b-e_-n-o-t_-p-e-r-m-i-t-t-e-d/index.html">SUBSCRIBE_NOT_PERMITTED</a></div></div><div class="brief "><p class="paragraph">The characteristic does not support subscribing for value change.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-prepare-queue-full/index.html">PrepareQueueFull</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The prepare write queue is full.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="160545150%2FClasslikes%2F-431355489" anchor-label="CONNECTION_CONGESTED" id="160545150%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1538334929%2FClasslikes%2F-431355489" anchor-label="ProcedureAlreadyInProgress" id="-1538334929%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-c-o-n-n-e-c-t-i-o-n_-c-o-n-g-e-s-t-e-d/index.html">CONNECTION_CONGESTED</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="160545150%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-procedure-already-in-progress/index.html"><span>Procedure</span><wbr><span>Already</span><wbr><span>In</span><wbr><span><span>Progress</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1538334929%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-c-o-n-n-e-c-t-i-o-n_-c-o-n-g-e-s-t-e-d/index.html">CONNECTION_CONGESTED</a></div></div><div class="brief "><p class="paragraph">A remote device connection is congested.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-procedure-already-in-progress/index.html">ProcedureAlreadyInProgress</a> : <a href="-profile-error/index.html">OperationStatus.ProfileError</a></div><div class="brief "><p class="paragraph">Procedure Already in Progress.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="248230808%2FClasslikes%2F-431355489" anchor-label="BUSY" id="248230808%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="450791783%2FClasslikes%2F-431355489" anchor-label="ProfileError" id="450791783%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-b-u-s-y/index.html">BUSY</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="248230808%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-profile-error/index.html"><span>Profile</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="450791783%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-b-u-s-y/index.html">BUSY</a></div></div><div class="brief "><p class="paragraph">Device is busy.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-profile-error/index.html">ProfileError</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>code<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Common Profile and Service Error Codes.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="2144208418%2FClasslikes%2F-431355489" anchor-label="GATT_ERROR" id="2144208418%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-929288437%2FClasslikes%2F-431355489" anchor-label="ReadNotPermitted" id="-929288437%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-g-a-t-t_-e-r-r-o-r/index.html">GATT_ERROR</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2144208418%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-read-not-permitted/index.html"><span>Read</span><wbr><span>Not</span><wbr><span><span>Permitted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-929288437%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-g-a-t-t_-e-r-r-o-r/index.html">GATT_ERROR</a></div></div><div class="brief "><p class="paragraph">Most generic GATT error code.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-read-not-permitted/index.html">ReadNotPermitted</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">GATT read operation is not permitted.</p></div></div></div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-195982724%2FClasslikes%2F-431355489" anchor-label="UNKNOWN_ERROR" id="-195982724%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="ENTRY" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="603874928%2FClasslikes%2F-431355489" anchor-label="RequestFailed" id="603874928%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="-u-n-k-n-o-w-n_-e-r-r-o-r/index.html">UNKNOWN_ERROR</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-195982724%2FClasslikes%2F-431355489"></span>
+                  <div><a href="-request-failed/index.html"><span>Request</span><wbr><span><span>Failed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="603874928%2FClasslikes%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><div class="block"><a href="-u-n-k-n-o-w-n_-e-r-r-o-r/index.html">UNKNOWN_ERROR</a></div></div><div class="brief "><p class="paragraph">Unknown error.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-request-failed/index.html">RequestFailed</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">An unknown internal error occurred when executing the operation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1545292718%2FClasslikes%2F-431355489" anchor-label="RequestNotSupported" id="-1545292718%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-request-not-supported/index.html"><span>Request</span><wbr><span>Not</span><wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1545292718%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-request-not-supported/index.html">RequestNotSupported</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The given request is not supported.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="422867341%2FClasslikes%2F-431355489" anchor-label="SubscribeNotPermitted" id="422867341%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-subscribe-not-permitted/index.html"><span>Subscribe</span><wbr><span>Not</span><wbr><span><span>Permitted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="422867341%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-subscribe-not-permitted/index.html">SubscribeNotPermitted</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The characteristic does not support subscribing for value change.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="655875641%2FClasslikes%2F-431355489" anchor-label="Success" id="655875641%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-success/index.html"><span><span>Success</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="655875641%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-success/index.html">Success</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">A GATT operation completed successfully.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2095834040%2FClasslikes%2F-431355489" anchor-label="UnknownError" id="-2095834040%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unknown-error/index.html"><span>Unknown</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2095834040%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">data </span><span class="token keyword">class </span><a href="-unknown-error/index.html">UnknownError</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>code<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Unknown error.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1272484303%2FClasslikes%2F-431355489" anchor-label="UnlikelyError" id="-1272484303%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-unlikely-error/index.html"><span>Unlikely</span><wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1272484303%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-unlikely-error/index.html">UnlikelyError</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The attribute request that was requested has encountered an error that was unlikely, and therefore could not be completed as requested.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-635940618%2FClasslikes%2F-431355489" anchor-label="ValueNotAllowed" id="-635940618%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-value-not-allowed/index.html"><span>Value</span><wbr><span>Not</span><wbr><span><span>Allowed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-635940618%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-value-not-allowed/index.html">ValueNotAllowed</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">The attribute parameter value was not allowed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="111529368%2FClasslikes%2F-431355489" anchor-label="WriteNotPermitted" id="111529368%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-write-not-permitted/index.html"><span>Write</span><wbr><span>Not</span><wbr><span><span>Permitted</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="111529368%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-write-not-permitted/index.html">WriteNotPermitted</a> : <a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">GATT write operation is not permitted.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1895868712%2FClasslikes%2F-431355489" anchor-label="WriteRequestRejected" id="-1895868712%2FClasslikes%2F-431355489" data-filterable-set=":core/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-write-request-rejected/index.html"><span>Write</span><wbr><span>Request</span><wbr><span><span>Rejected</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1895868712%2FClasslikes%2F-431355489"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-write-request-rejected/index.html">WriteRequestRejected</a> : <a href="-profile-error/index.html">OperationStatus.ProfileError</a></div><div class="brief "><p class="paragraph">Write Request Rejected.</p></div></div></div>
                 </div>
               </div>
             </div>
@@ -449,17 +569,17 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-304158791%2FProperties%2F-431355489" anchor-label="entries" id="-304158791%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
+        <div class="table"><a data-name="887975780%2FProperties%2F-431355489" anchor-label="code" id="887975780%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
           <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
-                  <div><a href="entries.html"><span><span>entries</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-304158791%2FProperties%2F-431355489"></span>
+                  <div><a href="code.html"><span><span>code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="887975780%2FProperties%2F-431355489"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="entries.html">entries</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.enums/-enum-entries/index.html">EnumEntries</a><span class="token operator">&lt;</span><a href="index.html">OperationStatus</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a representation of an immutable list of all enum entries, in the order they're declared.</p></div></div></div>
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">val </span><a href="code.html">code</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
                 </div>
               </div>
             </div>
@@ -479,36 +599,6 @@
               </div>
             </div>
           </div>
-<a data-name="-372974862%2FProperties%2F-431355489" anchor-label="name" id="-372974862%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../-write-type/-s-i-g-n-e-d/index.html#-372974862%2FProperties%2F-431355489"><span><span>name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-372974862%2FProperties%2F-431355489"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-write-type/-s-i-g-n-e-d/index.html#-372974862%2FProperties%2F-431355489">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-739389684%2FProperties%2F-431355489" anchor-label="ordinal" id="-739389684%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="../-write-type/-s-i-g-n-e-d/index.html#-739389684%2FProperties%2F-431355489"><span><span>ordinal</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-739389684%2FProperties%2F-431355489"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-write-type/-s-i-g-n-e-d/index.html#-739389684%2FProperties%2F-431355489">ordinal</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       <div data-togglable="FUNCTION">
@@ -524,36 +614,6 @@
               <div>
                 <div class="title">
                   <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1659046531%2FFunctions%2F-431355489" anchor-label="valueOf" id="1659046531%2FFunctions%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="value-of.html"><span>value</span><wbr><span><span>Of</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1659046531%2FFunctions%2F-431355489"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="value-of.html"><span class="token function">valueOf</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">OperationStatus</a></div><div class="brief "><p class="paragraph">Returns the enum constant of this type with the specified name. The string must match exactly an identifier used to declare an enum constant in this type. (Extraneous whitespace characters are not permitted.)</p></div></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="329918671%2FFunctions%2F-431355489" anchor-label="values" id="329918671%2FFunctions%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="values.html"><span><span>values</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="329918671%2FFunctions%2F-431355489"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="values.html"><span class="token function">values</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="index.html">OperationStatus</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns an array containing the constants of this enum type, in the order they're declared.</p></div></div></div>
                 </div>
               </div>
             </div>
