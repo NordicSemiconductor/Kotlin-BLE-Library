@@ -121,8 +121,8 @@ class MockRemoteCharacteristic(
                 Characteristic.APPEARANCE -> ReadResponse.Success(peripheralSpec.appearance!!.toByteArray())
                 Characteristic.PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS -> {
                     val preferredConnectionInterval = peripheralSpec.preferredConnectionInterval!!
-                    val minInterval = preferredConnectionInterval.start
-                    val maxInterval = preferredConnectionInterval.endInclusive
+                    val minInterval = preferredConnectionInterval.first
+                    val maxInterval = preferredConnectionInterval.last
                     val slaveLatency = peripheralSpec.preferredSlaveLatency!!
                     val supervisionTimeout = peripheralSpec.preferredSupervisionTimeout!!
                     ReadResponse.Success(
