@@ -209,7 +209,7 @@ object ViewModelModule {
             when (characteristic.instanceId) {
                 buttonHandle -> ReadResponse.Success(isButtonPressed.toBytes())
                 ledHandle -> ReadResponse.Success(isLedOn.toBytes())
-                else -> ReadResponse.Failure(OperationStatus.READ_NOT_PERMITTED)
+                else -> ReadResponse.Failure(OperationStatus.ReadNotPermitted)
             }
     }
 

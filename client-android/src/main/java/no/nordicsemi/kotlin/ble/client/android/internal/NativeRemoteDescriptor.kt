@@ -62,7 +62,7 @@ internal class NativeRemoteDescriptor(
     override suspend fun FlowCollector<GattEvent>.executeRead() {
         val success = gatt.readDescriptor(descriptor)
         check(success) {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
@@ -76,14 +76,14 @@ internal class NativeRemoteDescriptor(
                 BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
 
                 BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                    throw OperationFailedException(OperationStatus.BUSY, result)
+                    throw OperationFailedException(OperationStatus.Busy)
 
                 9, /* BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND */
                 28 /* BluetoothStatusCodes.ERROR_CALLBACK_NOT_REGISTERED */ ->
                     throw InvalidAttributeException()
 
                 else ->
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR, result)
+                    throw OperationFailedException(OperationStatus.UnknownError(result))
             }
         } else {
             descriptor.value = data
@@ -94,7 +94,7 @@ internal class NativeRemoteDescriptor(
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             val success = gatt.writeDescriptor(descriptor)
             check(success) {
-                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
         }
     }

@@ -1041,7 +1041,7 @@ class PeripheralSpec<ID: Any> private constructor(
             val eventHandler = checkNotNull(eventHandler)
             when (val response = eventHandler.onExecuteWriteRequest(execute)) {
                 is WriteResponse.Success -> {
-                    _events.emit(ReliableWriteCompleted(OperationStatus.SUCCESS))
+                    _events.emit(ReliableWriteCompleted(OperationStatus.Success))
                 }
 
                 is WriteResponse.Failure -> {

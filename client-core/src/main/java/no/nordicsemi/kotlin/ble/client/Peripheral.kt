@@ -1073,7 +1073,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             impl.events
                 .onSubscription {
                     if (!impl.readRssi()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }

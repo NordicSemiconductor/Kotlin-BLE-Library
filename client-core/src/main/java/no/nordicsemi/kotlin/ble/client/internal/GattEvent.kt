@@ -54,7 +54,6 @@ class CharacteristicRead(
     characteristic: Any,
     val value: ByteArray,
     val status: OperationStatus,
-    val errorCode: Int,
 ): OperationEvent(characteristic)
 
 class CharacteristicWrite(
@@ -62,7 +61,6 @@ class CharacteristicWrite(
     //       when mock implementation is used.
     characteristic: Any,
     val status: OperationStatus,
-    val errorCode: Int,
 ): OperationEvent(characteristic)
 
 class DescriptorRead(
@@ -71,7 +69,6 @@ class DescriptorRead(
     descriptor: Any,
     val value: ByteArray,
     val status: OperationStatus,
-    val errorCode: Int,
 ): OperationEvent(descriptor)
 
 class DescriptorWrite(
@@ -79,5 +76,4 @@ class DescriptorWrite(
     //       when mock implementation is used.
     descriptor: Any,
     val status: OperationStatus,
-    val errorCode: Int,
 ): OperationEvent(descriptor)
