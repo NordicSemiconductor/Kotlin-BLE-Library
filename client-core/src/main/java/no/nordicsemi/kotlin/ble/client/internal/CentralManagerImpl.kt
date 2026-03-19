@@ -74,8 +74,8 @@ abstract class CentralManagerImpl<
     private var internalScope = CoroutineScope(scope.newCoroutineContext(EmptyCoroutineContext))
 
     init {
-        // Make sure the Central Manager gets closed when its scope gets cancelled.
-        // This coroutine gets cancelled when close() is called or when the scope gets cancelled.
+        // Make sure the Central Manager gets closed when its scope gets canceled.
+        // This coroutine gets cancelled when close() is called or when the scope gets canceled.
         closeJob = internalScope.launch {
             try { awaitCancellation() }
             finally { withContext(NonCancellable) { close() } }
@@ -111,7 +111,7 @@ abstract class CentralManagerImpl<
         return managedPeripherals.getOrPut(id) {
             factory(id).also { newPeripheral ->
                 // Make sure the new peripheral is closed when the manager gets closed or
-                // the scope gets cancelled.
+                // the scope gets canceled.
                 state
                     .filter { it != Manager.State.POWERED_ON }
                     .onEach {
@@ -119,7 +119,7 @@ abstract class CentralManagerImpl<
                         newPeripheral.forceClose()
                     }
                     .onCompletion {
-                        // Close the peripheral when the scope is cancelled.
+                        // Close the peripheral when the scope is canceled.
                         newPeripheral.forceClose()
                     }
                     .launchIn(internalScope)

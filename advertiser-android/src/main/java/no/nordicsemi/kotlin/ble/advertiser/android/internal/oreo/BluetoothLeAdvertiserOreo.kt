@@ -181,7 +181,7 @@ internal class BluetoothLeAdvertiserOreo(
                     return@suspendCancellableCoroutine
                 }
 
-                // Cancel the advertising when the coroutine is cancelled.
+                // Cancel the advertising when the coroutine is canceled.
                 continuation.invokeOnCancellation {
                     logger.info("Advertising cancelled: stopping advertising")
                     bluetoothLeAdvertiser?.stopAdvertisingSet(callback)

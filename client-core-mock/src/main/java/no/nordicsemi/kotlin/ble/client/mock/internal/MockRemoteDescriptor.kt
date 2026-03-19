@@ -193,7 +193,7 @@ class MockRemoteDescriptor(
         // which uses number of Prepare Write Requests followed by an Execute Write Request,
         // but this is only emulated by calculating longer transfer time.
         // Notifying the event handler is done before the simulated delay,
-        // as we need to know whether the write was successful or not.
+        // as we need to know whether the write operation was successful or not.
         // We assume, that possible error was sent after first Prepare Write Request,
         // so only one connection interval delay is added below in case of failure.
         when (useLongWrite || useReliableWrite) {
@@ -206,7 +206,7 @@ class MockRemoteDescriptor(
                         val duration =
                             peripheralSpec.estimateTransferDuration(data, true)
                         delay(duration)
-                        // Validate received data. In case of a incorrect data, throw an exception.
+                        // Validate received data. In case of an incorrect data, throw an exception.
                         val match = truncatedData.contentEquals(result.value)
                         // When not in Reliable Write, Long Write automatically executes or
                         // aborts all prepared writes.

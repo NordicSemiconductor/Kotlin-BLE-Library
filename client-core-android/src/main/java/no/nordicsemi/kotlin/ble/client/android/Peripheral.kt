@@ -769,7 +769,7 @@ open class Peripheral(
      * Refreshes the cached GATT database associated with the peripheral and starts new service
      * discovery automatically.
      *
-     * All observers subscribed to invalidated attributes will be cancelled. The flows returned
+     * All observers subscribed to invalidated attributes will be canceled. The flows returned
      * by [services] will emit an empty list of services following by updated list of services
      * when the new service discovery is complete.
      *
