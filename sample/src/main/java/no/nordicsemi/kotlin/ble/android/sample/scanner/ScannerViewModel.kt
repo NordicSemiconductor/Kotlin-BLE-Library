@@ -489,7 +489,7 @@ class ScannerViewModel @Inject constructor(
                     is ConnectionState.Disconnected -> {
                         // Just for testing, wait with cancelling the scope to get all the logs.
                         delay(500)
-                        // Cancel connection scope, so that previously launched jobs are cancelled.
+                        // Cancel connection scope, so that previously launched jobs are canceled.
                         connectionScopeMap.remove(peripheral)?.cancel()
                     }
 

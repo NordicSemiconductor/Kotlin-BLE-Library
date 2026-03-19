@@ -213,7 +213,7 @@ scope.launch {
     
         // The first time the app connects to the peripheral it needs to initiate
         // observers for various parameters.
-        // The observers will get cancelled when the connection scope gets cancelled,
+        // The observers will get canceled when the connection scope is canceled,
         // that is when the device is manually disconnected in case of auto connect,
         // or disconnects for any reason when auto connect was false.
         peripheral.phy

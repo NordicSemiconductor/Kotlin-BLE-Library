@@ -279,7 +279,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 when {
                     // In case of a disconnection event...
                     event is ConnectionStateChanged && event.newState is ConnectionState.Disconnected -> {
-                        // ...when the connection was terminated using disconnect() or cancelled,
+                        // ...when the connection was terminated using disconnect() or canceled,
                         // or the closeWhenDisconnected flag was set (no automatic reconnection),
                         // or connection failed due to insufficient authentication (bond info removed from peer),
                         // process the event and cancel the collector.
@@ -696,7 +696,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *       }
      *       .launchIn(this)
      *
-     *    // 3. Await the scope cancellation. The scope will be cancelled when the device disconnects,
+     *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
      *    //    or the scope in which this method is called is canceled.
      *    awaitCancellation()
      * }
@@ -892,7 +892,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *          .launchIn(this)
      *    }
      *
-     *    // 3. Await the scope cancellation. The scope will be cancelled when the device disconnects,
+     *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
      *    //    or the scope in which this method is called is canceled.
      *    awaitCancellation()
      * }

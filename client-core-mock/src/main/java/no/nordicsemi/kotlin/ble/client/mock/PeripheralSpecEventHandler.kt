@@ -160,7 +160,7 @@ sealed class PrepareWriteResponse {
      *
      * @param value Confirmation of the value to written to the characteristic. This should be
      * the same as the value sent in the [PeripheralSpecEventHandler.onPrepareWriteRequest] if
-     * the write was received correctly, or different to indicate a transmission error.
+     * the value was received correctly, or different to indicate a transmission error.
      */
     data class Success(val value: ByteArray) : PrepareWriteResponse() {
 
@@ -205,16 +205,18 @@ interface PeripheralSpecEventHandler {
      * Called when a connection request is made to the mock peripheral.
      *
      * By default, the connection request is accepted.
+     *
      * @param preferredPhy The list of PHYs preferred by the central.
      * @return The result of the connection request, by default [ConnectionResult.Accept].
      */
-    // Note: This cannot be suspended! It can request MTU, bonding, PHY update, etc, but in a coroutine.
+    // Note: This cannot be suspended! It can request MTU, bonding, PHY update, etc., but in a coroutine.
     fun onConnectionRequest(preferredPhy: List<Phy>): ConnectionResult {
         return ConnectionResult.Accept
     }
 
     /**
      * Called when the connection is lost.
+     *
      * @param reason The reason for the disconnection.
      */
     fun onConnectionLost(reason: DisconnectionReason) {
@@ -226,7 +228,7 @@ interface PeripheralSpecEventHandler {
      *
      * This method is called when user calls [PeripheralSpec.simulateReset].
      *
-     * All existing connections will timeout. [onConnectionLost] will NOT be called.
+     * All existing connections will time out. [onConnectionLost] will NOT be called.
      */
     fun onReset() {
         // no-op
@@ -238,6 +240,7 @@ interface PeripheralSpecEventHandler {
      * Note, that this method does not return the list of services. Instead, it only indicates
      * whether the discovery should succeed or fail. The actual list of services is determined
      * by the [PeripheralSpec] definition.
+     *
      * @param uuids The list of service UUIDs requested by the client.
      * @return The result of the service discovery request, by default [ServiceDiscoveryResult.Success].
      */
@@ -270,6 +273,11 @@ interface PeripheralSpecEventHandler {
      * which is delayed by one connection interval to emulate the time needed to send the error response.
      *
      * Any exception other than [OperationFailedException] will be wrapped into [BluetoothException].
+     *
+     * @param characteristic The characteristic that was read.
+     * @return The response of the read operation. This emulates a response received from the
+     * peripheral, and it will be delayed to the client by one or more connection interval.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
      */
     fun onReadRequest(characteristic: MockRemoteCharacteristic): ReadResponse {
         return ReadResponse.Success(byteArrayOf())
@@ -296,6 +304,10 @@ interface PeripheralSpecEventHandler {
      * emulating a failure on the client side (e.g. [OperationFailedException], or [SecurityException]).
      *
      * Any exception other than [OperationFailedException] will be wrapped into [BluetoothException].
+     *
+     * @param characteristic The characteristic that was written.
+     * @param value The value written to the characteristic.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
      */
     fun onWriteCommand(characteristic: MockRemoteCharacteristic, value: ByteArray) {
         // no-op
@@ -328,7 +340,7 @@ interface PeripheralSpecEventHandler {
      *
      * @param characteristic The characteristic to write to.
      * @param value The value written to the characteristic.
-     * @return The response of the write operation. This emulates a response received from the peripheral
+     * @return The response of the write operation. This emulates a response received from the peripheral,
      * and it will be delayed to the client by one connection interval.
      * @throws OperationFailedException in case of a client error (reported without a delay).
      * @see onPrepareWriteRequest
@@ -382,7 +394,7 @@ interface PeripheralSpecEventHandler {
      * to the peripheral before committing the changes. The client sends multiple Prepare Write requests,
      * each containing a part of the value, and the peripheral responds with the same data to
      * confirm that it was received correctly. If any part of the data is incorrect, the
-     * operation will be cancelled automatically using Execute Write request with `execute` flag
+     * operation will be canceled automatically using Execute Write request with `execute` flag
      * set to `false`.
      *
      * This mock implementation simplifies the procedure by sending all parts in a single
@@ -406,27 +418,146 @@ interface PeripheralSpecEventHandler {
      * @param characteristic The characteristic to write to.
      * @param value The part of the value to be written to the characteristic.
      * @return The response of the prepare write operation. This emulates a response received from
-     * the peripheral and it will be delayed to the client by one or more connection interval.
+     * the peripheral, and it will be delayed to the client by one or more connection interval.
      * @throws OperationFailedException in case of a client error (reported without a delay).
      * @see onExecuteWriteRequest
      */
     fun onPrepareWriteRequest(characteristic: MockRemoteCharacteristic, value: ByteArray): PrepareWriteResponse =
-        // By default call the regular write request handler to simplify implementations.
+        // By default, call the regular write request handler to simplify implementations.
         when (val response = onWriteRequest(characteristic, value)) {
             is WriteResponse.Success -> PrepareWriteResponse.Success(value)
             is WriteResponse.Failure -> PrepareWriteResponse.Failure(response.status)
         }
 
+    /**
+     * A callback called when the client sends Read request to a characteristic descriptor.
+     *
+     * This method should return the value to be sent to the client. The value will be truncated
+     * to **512 bytes**, which is the maximum length of a GATT attribute value.
+     *
+     * The returned response will be delayed by one or more connection interval to emulate the time
+     * needed to send the response back to the client.
+     *
+     * Note, that this callback is invoked for both *Read Characteristic Descriptor* procedure and
+     * *Read Long Characteristic Descriptor* procedure. Instead of returning each blob separately,
+     * the implementation should return the full value.
+     *
+     * See Bluetooth Code Specification 6.2, Vol 3 (Host), Part G (GATT), 4.12.1 Read Characteristic Descriptor:
+     * [link](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/generic-attribute-profile--gatt-.html#UUID-5a1a9293-614a-f4ed-7771-fd8b4143d076).
+     *
+     * ### Exceptions
+     *
+     * Exceptions thrown by this method are rethrown immediately, without the simulated transfer time,
+     * emulating a failure on the client side (e.g. [OperationFailedException], or [SecurityException]).
+     *
+     * Simulated error on the peripheral side should be reported by returning [ReadResponse.Failure],
+     * which is delayed by one connection interval to emulate the time needed to send the error response.
+     *
+     * Any exception other than [OperationFailedException] will be wrapped into [BluetoothException].
+     *
+     * @param descriptor The characteristic descriptor that was read.
+     * @return The response of the read operation. This emulates a response received from the
+     * peripheral, and it will be delayed to the client by one or more connection interval.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
+     */
     fun onReadRequest(descriptor: MockRemoteDescriptor): ReadResponse {
         return ReadResponse.Success(byteArrayOf())
     }
 
+    /**
+     * A callback called when the client sends a Write Request (write with response) to a characteristic
+     * descriptor.
+     *
+     * The maximum length of the [value] is guaranteed to be at most [PeripheralSpec.mtu]` - 3`
+     * byte. 1 byte is consumed by the OpCode and 2 by the handle number.
+     *
+     * For Long Write procedure and Reliable Write procedure, see [onPrepareWriteRequest], which
+     * replies back the written value.
+     *
+     * The response returned by this method will be delayed by one connection interval to emulate
+     * the time needed to send the response back to the client.
+     *
+     * Read more in Bluetooth Code Specification 6.2, Vol 3 (Host), Part G (GATT), 4.9.3 Write Characteristic Value:
+     * [link](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/generic-attribute-profile--gatt-.html#UUID-ba4b856a-6994-01e4-97f6-357f9be40990).
+     *
+     * ### Exceptions
+     *
+     * Exceptions thrown by this method are rethrown immediately, without the simulated transfer time,
+     * emulating a failure on the client side (e.g. [OperationFailedException], or [SecurityException]).
+     *
+     * Simulated error on the peripheral side should be reported by returning [WriteResponse.Failure],
+     * which is delayed by one connection interval to emulate the time needed to send the error response.
+     *
+     * Any exception other than [OperationFailedException] will be wrapped into [BluetoothException].
+     *
+     * @param descriptor The characteristic descriptor to write to.
+     * @param value The value written to the characteristic descriptor.
+     * @return The response of the write operation. This emulates a response received from the peripheral,
+     * and it will be delayed to the client by one connection interval.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
+     */
     fun onWriteRequest(descriptor: MockRemoteDescriptor, value: ByteArray): WriteResponse {
         return WriteResponse.Success
     }
 
+    /**
+     * Emulates a prepared write to a characteristic descriptor.
+     *
+     * The maximum length of the [value] is guaranteed to be at most 512 bytes.
+     *
+     * The response returned by this method will be delayed by one or more connection interval to
+     * emulate the time needed to send the response back to the client.
+     *
+     * If not overridden, this method calls [onWriteRequest] and replies back the same data to
+     * simplify implementations.
+     *
+     * ### Prepare Write
+     *
+     * Prepare Write request is used in *Long Write* procedure and in *Reliable Write* procedure.
+     * On contrary to how Bluetooth LE works, this mock implementation sends all prepared writes
+     * in a single request. This is done to simplify the implementation and avoid the need for
+     * queuing multiple requests.
+     *
+     * The event handler should reply with the same data to confirm that it was received correctly,
+     * or different data to indicate a transmission error, in which case the cancellation will happen
+     * automatically.
+     *
+     * The client confirms or cancels the procedure by sending an Execute Write request.
+     * All prepared writes should be queued until the Execute Write request is received.
+     *
+     * ### Long Write
+     *
+     * Android and iOS automatically use *Long Write* procedure when the value to be written
+     * exceeds the maximum write size (MTU - 3 bytes). In this case, multiple Prepare Write requests
+     * are sent, each containing a part of the value, followed by an Execute Write request to commit
+     * the changes if the data returned in the responses matched the data sent in the requests,
+     * or cancel the operation otherwise.
+     *
+     * This mock implementation simplifies the procedure by sending all parts in a single
+     * Prepare Write request instead of multiple requests.
+     *
+     * Read more in Bluetooth Code Specification 6.2, Vol 3 (Host), Part G (GATT), 4.12.2 Write Long Characteristic Descriptor:
+     * [link](https://www.bluetooth.com/wp-content/uploads/Files/Specification/HTML/Core-62/out/en/host/generic-attribute-profile--gatt-.html#UUID-84794b9f-7220-7665-0f14-b7a462da94b7.
+     *
+     * ### Exceptions
+     *
+     * Exceptions thrown by this method are rethrown immediately, without the simulated transfer time,
+     * emulating a failure on the client side (e.g. [OperationFailedException], or [SecurityException]).
+     *
+     * Simulated error on the peripheral side should be reported by returning [PrepareWriteResponse.Failure],
+     * which is delayed by one connection interval to emulate the time needed to send the error response.
+     *
+     * Any exception other than [OperationFailedException] will be wrapped into [BluetoothException].
+     *
+     * @param descriptor The characteristic descriptor to write to.
+     * @param value The part of the value to be written to the characteristic descriptor.
+     * @return The response of the prepare write operation. This emulates a response received from
+     * the peripheral, and it will be delayed to the client by one or more connection interval.
+     * @throws OperationFailedException in case of a client error (reported without a delay).
+     * @see onExecuteWriteRequest
+     */
     fun onPrepareWriteRequest(descriptor: MockRemoteDescriptor, value: ByteArray): PrepareWriteResponse =
-        // By default call the regular write request handler to simplify implementations.
+        // By default, call the regular write request handler to simplify implementations.
         when (val response = onWriteRequest(descriptor, value)) {
             is WriteResponse.Success -> PrepareWriteResponse.Success(value)
             is WriteResponse.Failure -> PrepareWriteResponse.Failure(response.status)
@@ -441,7 +572,7 @@ interface PeripheralSpecEventHandler {
      *
      * @param execute `true` to commit all previously prepared writes, `false` to discard them.
      * @return The response of the execute write operation. This emulates a response received from
-     * the peripheral and it will be delayed to the client by one connection interval.
+     * the peripheral, and it will be delayed to the client by one connection interval.
      * @throws OperationFailedException in case of a client error (reported without a delay).
      * @see onPrepareWriteRequest
      */

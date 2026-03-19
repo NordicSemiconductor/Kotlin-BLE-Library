@@ -291,7 +291,7 @@ class PeripheralSpec<ID: Any> private constructor(
             false -> {
                 // Max payload of a single L2CAP packet (bytes).
                 val payloadPerL2capPacket = min(mtu - 1, l2capMtu - 4)
-                // Time to send a single L2CAP packet, including a gap afterwards (seconds).
+                // Time to send a single L2CAP packet, including a gap afterward (seconds).
                 val timePerPacket =
                     (payloadPerL2capPacket + 14) * 8 / phy.rate() + 0.00015 // seconds
                 // Approximate time needed to send all L2CAP packets.
@@ -735,7 +735,7 @@ class PeripheralSpec<ID: Any> private constructor(
      */
     inner class Api internal constructor(val environment: MockEnvironment) {
         /**
-         * An job for observing [ServicesChanged] events, that invalidates the service cache.
+         * A job for observing [ServicesChanged] events, that invalidates the service cache.
          *
          * Each connected client may invalidate services, but the change applies to all of them.
          */
@@ -792,7 +792,7 @@ class PeripheralSpec<ID: Any> private constructor(
                 }
 
                 ConnectionResult.Deny -> {
-                    // Do nothing. The connection request should timeout.
+                    // Do nothing. The connection request should time out.
                 }
             }
         }

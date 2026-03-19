@@ -231,7 +231,7 @@ internal class NativeCentralManagerImpl(
         // Set a timeout to stop the scan.
         if (timeout > 0.milliseconds) {
             launch(Dispatchers.IO) {
-                // If the flow is cancelled before the timeout, the delay() method will throw
+                // If the flow is canceled before the timeout, the delay() method will throw
                 // a CancellationException, which will be ignored.
                 delay(timeout)
                 // If we reached the timeout, close the flow manually.
