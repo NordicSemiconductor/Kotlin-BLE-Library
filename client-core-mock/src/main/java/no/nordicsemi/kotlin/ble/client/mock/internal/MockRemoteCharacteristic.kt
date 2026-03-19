@@ -86,7 +86,7 @@ class MockRemoteCharacteristic(
                 characteristic = this@MockRemoteCharacteristic,
                 value = byteArrayOf(),
                 // TODO Verify if this is the correct status to use.
-                status = OperationStatus.INVALID_HANDLE,
+                status = OperationStatus.InvalidHandle,
             ))
             return
         }
@@ -100,8 +100,8 @@ class MockRemoteCharacteristic(
         val status = when {
             insecure ||
             authenticationRequired && peripheralSpec.isBonded -> null
-            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
-            else -> OperationStatus.READ_NOT_PERMITTED
+            authenticationRequired -> OperationStatus.InsufficientAuthentication
+            else -> OperationStatus.ReadNotPermitted
         }
         status?.let { status ->
             // The response is delivered in the next connection interval.
@@ -149,7 +149,7 @@ class MockRemoteCharacteristic(
                 emit(CharacteristicRead(
                     characteristic = this@MockRemoteCharacteristic,
                     value = truncatedData,
-                    status = OperationStatus.SUCCESS,
+                    status = OperationStatus.Success,
                 ))
             }
             is ReadResponse.Failure -> {
@@ -177,7 +177,7 @@ class MockRemoteCharacteristic(
                     emit(CharacteristicWrite(
                         characteristic = this@MockRemoteCharacteristic,
                         // TODO Verify if this is the correct status to use.
-                        status = OperationStatus.INVALID_HANDLE,
+                        status = OperationStatus.InvalidHandle,
                     ))
                     return
                 }
@@ -191,8 +191,8 @@ class MockRemoteCharacteristic(
                 val status = when {
                     insecure ||
                     authenticationRequired && peripheralSpec.isBonded -> null
-                    authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
-                    else -> OperationStatus.WRITE_NOT_PERMITTED
+                    authenticationRequired -> OperationStatus.InsufficientAuthentication
+                    else -> OperationStatus.WriteNotPermitted
                 }
                 status?.let { status ->
                     // The response is delivered in the next connection interval.
@@ -239,7 +239,7 @@ class MockRemoteCharacteristic(
                                 val match = truncatedData.contentEquals(response.value)
                                 // When not in Reliable Write, Long Write automatically executes or
                                 // aborts all prepared writes.
-                                var status = OperationStatus.SUCCESS
+                                var status: OperationStatus = OperationStatus.Success
                                 if (!useReliableWrite) {
                                     when (val response = eventHandler.onExecuteWriteRequest(match)) {
                                         is WriteResponse.Success -> { /* no-op */ }
@@ -281,7 +281,7 @@ class MockRemoteCharacteristic(
                                 delay(duration)
                                 emit(CharacteristicWrite(
                                     characteristic = this@MockRemoteCharacteristic,
-                                    status = OperationStatus.SUCCESS,
+                                    status = OperationStatus.Success,
                                 ))
                             }
 
@@ -324,7 +324,7 @@ class MockRemoteCharacteristic(
                 // release it by emitting the event.
                 emit(CharacteristicWrite(
                     characteristic = this@MockRemoteCharacteristic,
-                    status = OperationStatus.SUCCESS,
+                    status = OperationStatus.Success,
                 ))
             }
         }

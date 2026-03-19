@@ -38,9 +38,7 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
  * Thrown when the GATT operation failed.
  *
  * @property reason The reason of the failure.
- * @property errorCode An optional error code of the failure (if known).
  */
 data class OperationFailedException(
     val reason: OperationStatus,
-    val errorCode: Int? = null,
-): GattException("$reason${if (errorCode != null) " ($errorCode)" else ""}")
+): GattException(reason.toString())

@@ -79,7 +79,7 @@ class MockRemoteDescriptor(
                 descriptor = this@MockRemoteDescriptor,
                 value = byteArrayOf(),
                 // TODO Verify if this is the correct status to use.
-                status = OperationStatus.INVALID_HANDLE,
+                status = OperationStatus.InvalidHandle,
             ))
             return
         }
@@ -93,8 +93,8 @@ class MockRemoteDescriptor(
         val status = when {
             insecure ||
                     authenticationRequired && peripheralSpec.isBonded -> null
-            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
-            else -> OperationStatus.READ_NOT_PERMITTED
+            authenticationRequired -> OperationStatus.InsufficientAuthentication
+            else -> OperationStatus.ReadNotPermitted
         }
         status?.let { status ->
             // The response is delivered in the next connection interval.
@@ -124,7 +124,7 @@ class MockRemoteDescriptor(
                 emit(DescriptorRead(
                         descriptor = this@MockRemoteDescriptor,
                         value = truncatedData,
-                        status = OperationStatus.SUCCESS,
+                        status = OperationStatus.Success,
                     )
                 )
             }
@@ -151,7 +151,7 @@ class MockRemoteDescriptor(
             emit(DescriptorWrite(
                 descriptor = this@MockRemoteDescriptor,
                 // TODO Verify if this is the correct status to use.
-                status = OperationStatus.INVALID_HANDLE,
+                status = OperationStatus.InvalidHandle,
             ))
             return
         }
@@ -165,8 +165,8 @@ class MockRemoteDescriptor(
         val status = when {
             insecure ||
             authenticationRequired && peripheralSpec.isBonded -> null
-            authenticationRequired -> OperationStatus.INSUFFICIENT_AUTHENTICATION
-            else -> OperationStatus.WRITE_NOT_PERMITTED
+            authenticationRequired -> OperationStatus.InsufficientAuthentication
+            else -> OperationStatus.WriteNotPermitted
         }
         status?.let { status ->
             // The response is delivered in the next connection interval.
@@ -222,7 +222,7 @@ class MockRemoteDescriptor(
                             is WriteResponse.Success -> {
                                 emit(CharacteristicWrite(
                                     characteristic = this@MockRemoteDescriptor,
-                                    status = OperationStatus.SUCCESS,
+                                    status = OperationStatus.Success,
                                 ))
                             }
                             is WriteResponse.Failure -> {
@@ -266,12 +266,12 @@ class MockRemoteDescriptor(
                         delay(duration)
                         emit(DescriptorWrite(
                             descriptor = this@MockRemoteDescriptor,
-                            status = OperationStatus.SUCCESS,
+                            status = OperationStatus.Success,
                         ))
                     }
                     is WriteResponse.Failure -> {
                         when (result.status) {
-                            OperationStatus.BUSY -> throw OperationFailedException(OperationStatus.BUSY)
+                            OperationStatus.Busy -> throw OperationFailedException(OperationStatus.Busy)
                             else -> { /* continue */ }
                         }
                         // The read response is delivered in the next connection interval.

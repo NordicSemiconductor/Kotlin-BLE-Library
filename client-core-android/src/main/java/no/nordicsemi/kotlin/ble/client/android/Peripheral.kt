@@ -483,7 +483,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.readPhy()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -526,7 +526,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.requestPhy(txPhy, rxPhy, phyOptions)) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -603,7 +603,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.requestMtu(ATT_MTU_MAX)) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -640,7 +640,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.requestConnectionPriority(priority)) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -705,7 +705,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.executeReliableWrite()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -713,10 +713,10 @@ open class Peripheral(
                 // TODO add .timeout(...)?
                 .firstOrNull()?.let {
                     when (it.status) {
-                        OperationStatus.SUCCESS -> logger.info("Reliable write executed successfully")
+                        OperationStatus.Success -> logger.info("Reliable write executed successfully")
                         else -> {
                             logger.warn("Reliable write failed: {}", it.status)
-                            throw OperationFailedException(it.status, it.errorCode)
+                            throw OperationFailedException(it.status)
                         }
                     }
                 } ?: throw PeripheralNotConnectedException()
@@ -747,7 +747,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.abortReliableWrite()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
@@ -755,10 +755,10 @@ open class Peripheral(
                 // TODO add .timeout(...)?
                 .firstOrNull()?.let {
                     when (it.status) {
-                        OperationStatus.SUCCESS -> logger.info("Reliable write aborted successfully")
+                        OperationStatus.Success -> logger.info("Reliable write aborted successfully")
                         else -> {
                             logger.warn("Aborting reliable write failed: {}", it.status)
-                            throw OperationFailedException(it.status, it.errorCode)
+                            throw OperationFailedException(it.status)
                         }
                     }
                 } ?: throw PeripheralNotConnectedException()
@@ -796,7 +796,7 @@ open class Peripheral(
             impl.events
                 .onSubscription {
                     if (!impl.refreshCache()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 // TODO add .timeout(...)?
@@ -821,7 +821,7 @@ open class Peripheral(
             impl.bondState
                 .onSubscription {
                     if (!impl.createBond()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 // Skip the initial state. It should transition to BONDING quickly.
@@ -861,7 +861,7 @@ open class Peripheral(
             impl.bondState
                 .onSubscription {
                     if (!impl.removeBond()) {
-                        throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                        throw OperationFailedException(OperationStatus.RequestFailed)
                     }
                 }
                 .first { it == BondState.NONE }

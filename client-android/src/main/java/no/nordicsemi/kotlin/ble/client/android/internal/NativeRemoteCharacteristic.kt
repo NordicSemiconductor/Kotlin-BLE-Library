@@ -68,14 +68,14 @@ internal class NativeRemoteCharacteristic(
     override fun setCharacteristicNotification(enabled: Boolean) {
         val success = gatt.setCharacteristicNotification(characteristic, enabled)
         check(success) {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
         val success = gatt.readCharacteristic(characteristic)
         check(success) {
-            throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
@@ -89,24 +89,24 @@ internal class NativeRemoteCharacteristic(
                 BluetoothStatusCodes.SUCCESS -> { /* no-op */ }
 
                 BluetoothStatusCodes.ERROR_GATT_WRITE_NOT_ALLOWED ->
-                    throw OperationFailedException(OperationStatus.WRITE_NOT_PERMITTED)
+                    throw OperationFailedException(OperationStatus.WriteNotPermitted)
 
                 BluetoothStatusCodes.ERROR_GATT_WRITE_REQUEST_BUSY ->
-                    throw OperationFailedException(OperationStatus.BUSY)
+                    throw OperationFailedException(OperationStatus.Busy)
 
                 9, /* BluetoothStatusCodes.ERROR_PROFILE_SERVICE_NOT_BOUND */
                 28 /* BluetoothStatusCodes.ERROR_CALLBACK_NOT_REGISTERED */ ->
                     throw InvalidAttributeException()
 
                 else ->
-                    throw OperationFailedException(OperationStatus.UNKNOWN_ERROR, result)
+                    throw OperationFailedException(OperationStatus.UnknownError(result))
             }
         } else {
             characteristic.value = data
             characteristic.writeType = writeType.toInt()
             val success = gatt.writeCharacteristic(characteristic)
             check(success) {
-                throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
         }
     }
