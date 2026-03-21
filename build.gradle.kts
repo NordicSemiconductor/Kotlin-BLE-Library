@@ -51,6 +51,8 @@ plugins {
     alias(libs.plugins.nordic.feature) apply false
     alias(libs.plugins.nordic.nexus.android) apply false
     alias(libs.plugins.nordic.nexus.jvm) apply false
+    alias(libs.plugins.nordic.kotlin.kmp) apply false
+    alias(libs.plugins.nordic.nexus.kmp) apply false
 
     // This plugin is used to generate Dokka documentation.
     alias(libs.plugins.kotlin.dokka) apply false

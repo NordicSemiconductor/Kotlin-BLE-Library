@@ -68,7 +68,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         // Use Nordic Gradle Version Catalog with common external libraries versions.
         create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:2.11.4")
+            from("no.nordicsemi.android.gradle:version-catalog:2.14.1")
         }
         // Fixed versions for Nordic libraries.
         create("nordic") {
@@ -85,10 +85,14 @@ rootProject.name = "Kotlin BLE Library"
 include(":environment-android")
 include(":environment-android-mock")
 include(":environment-android-compose")
+include(":environment-ios")
 
 include(":core")
+include(":core-logger")
+include(":core-dispatcher")
 include(":core-mock")
 include(":core-android")
+include(":core-ios")
 
 include(":advertiser-core")
 include(":advertiser-core-android")
@@ -98,7 +102,9 @@ include(":advertiser-android-mock")
 include(":client-core")
 include(":client-core-mock")
 include(":client-core-android")
+include(":client-core-ios")
 include(":client-android")
+include(":client-ios")
 include(":client-android-mock")
 
 // These are not implemented yet. Hiding them to make an alpha release of what is currently working.

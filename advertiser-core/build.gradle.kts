@@ -30,11 +30,19 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.kotlin.kmp)
+    alias(libs.plugins.nordic.nexus.kmp)
 }
 
 group = "no.nordicsemi.kotlin.ble"
+
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            api(project(":core"))
+        }
+    }
+}
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "advertiser-core"
@@ -44,10 +52,6 @@ nordicNexusPublishing {
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-}
-
-dependencies {
-    api(project(":core"))
 }
 
 dokka {
