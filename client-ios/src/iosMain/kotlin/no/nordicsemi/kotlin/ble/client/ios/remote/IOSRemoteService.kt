@@ -5,6 +5,7 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
+import no.nordicsemi.kotlin.ble.client.ios.toKotlinUuid
 import platform.CoreBluetooth.CBCharacteristic
 import platform.CoreBluetooth.CBPeripheral
 import platform.CoreBluetooth.CBService
@@ -17,7 +18,7 @@ internal class IOSRemoteService(
     private val cbService: CBService,
     private val events: SharedFlow<GattEvent>,
 ) : RemoteService() {
-    override val uuid: Uuid = Uuid.parse(cbService.UUID.UUIDString)
+    override val uuid: Uuid = cbService.UUID.toKotlinUuid()
     override val instanceId: Int = cbService.hashCode()
 
     override val characteristics: List<RemoteCharacteristic> =

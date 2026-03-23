@@ -4,6 +4,7 @@ import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
+import no.nordicsemi.kotlin.ble.client.ios.toKotlinUuid
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.ios.toNSData
@@ -20,7 +21,7 @@ internal class IOSRemoteDescriptor(
     internal val cbDescriptor: CBDescriptor,
     events: SharedFlow<GattEvent>,
 ) : BaseRemoteDescriptor(parent, events) {
-    override val uuid: Uuid = Uuid.parse(cbDescriptor.UUID.UUIDString)
+    override val uuid: Uuid = cbDescriptor.UUID.toKotlinUuid()
     override val instanceId: Int = cbDescriptor.hashCode()
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {

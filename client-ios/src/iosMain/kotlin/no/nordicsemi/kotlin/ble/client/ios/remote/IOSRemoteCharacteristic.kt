@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.ios.toKotlinUuid
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
@@ -32,7 +33,7 @@ internal class IOSRemoteCharacteristic(
     internal val cbCharacteristic: CBCharacteristic,
     events: SharedFlow<GattEvent>,
 ) : BaseRemoteCharacteristic(parent, events) {
-    override val uuid: Uuid = Uuid.parse(cbCharacteristic.UUID.UUIDString)
+    override val uuid: Uuid = cbCharacteristic.UUID.toKotlinUuid()
     override val instanceId: Int = cbCharacteristic.hashCode()
     override val properties: Set<CharacteristicProperty> = cbCharacteristic.properties.toCharacteristicProperties()
 

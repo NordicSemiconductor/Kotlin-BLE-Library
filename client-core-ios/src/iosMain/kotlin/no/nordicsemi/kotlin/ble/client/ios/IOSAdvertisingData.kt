@@ -28,7 +28,7 @@ class IOSAdvertisingData(
             @Suppress("UNCHECKED_CAST")
             val uuids = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? List<CBUUID>
                 ?: return emptyList()
-            return uuids.map { Uuid.parse(it.UUIDString) }
+            return uuids.map { it.toKotlinUuid() }
         }
 
     override val serviceSolicitationUuids: List<Uuid>
@@ -36,7 +36,7 @@ class IOSAdvertisingData(
             @Suppress("UNCHECKED_CAST")
             val uuids = advertisementData[CBAdvertisementDataSolicitedServiceUUIDsKey] as? List<CBUUID>
                 ?: return emptyList()
-            return uuids.map { Uuid.parse(it.UUIDString) }
+            return uuids.map { it.toKotlinUuid() }
         }
 
     override val serviceData: Map<Uuid, ByteArray>
@@ -45,7 +45,7 @@ class IOSAdvertisingData(
             val data = advertisementData[CBAdvertisementDataServiceDataKey] as? Map<CBUUID, NSData>
                 ?: return emptyMap()
             return data.map { (uuid, nsData) ->
-                Uuid.parse(uuid.UUIDString) to nsData.toByteArray()
+                uuid.toKotlinUuid() to nsData.toByteArray()
             }.toMap()
         }
 
