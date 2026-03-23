@@ -22,6 +22,7 @@ import no.nordicsemi.kotlin.ble.client.ios.cb.CBPeripheralDelegate
 import no.nordicsemi.kotlin.ble.client.ios.cb.CBPeripheralEvent
 import no.nordicsemi.kotlin.ble.client.ios.remote.IOSRemoteService
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.ios.toByteArray
@@ -95,7 +96,7 @@ internal class IOSNativeExecutor(
             is CBPeripheralEvent.DidWriteValueForCharacteristic -> handleWriteValueForCharacteristic(event)
             is CBPeripheralEvent.DidUpdateValueForDescriptor -> handleUpdateValueForDescriptor(event)
             is CBPeripheralEvent.DidWriteValueForDescriptor -> handleWriteValueForDescriptor(event)
-            is CBPeripheralEvent.DidUpdateNotificationState -> { }
+            is CBPeripheralEvent.DidUpdateNotificationState -> handleUpdateNotificationState(event)
         }
     }
 
@@ -182,6 +183,16 @@ internal class IOSNativeExecutor(
     private fun handleWriteValueForDescriptor(event: CBPeripheralEvent.DidWriteValueForDescriptor) {
         val status = if (event.error != null) OperationStatus.UNKNOWN_ERROR else OperationStatus.SUCCESS
         _events.tryEmit(DescriptorWrite(event.descriptor, status, 0))
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    private fun handleUpdateNotificationState(event: CBPeripheralEvent.DidUpdateNotificationState) {
+        val status = if (event.error != null) OperationStatus.UNKNOWN_ERROR else OperationStatus.SUCCESS
+        val cccd = event.characteristic.descriptors
+            ?.filterIsInstance<platform.CoreBluetooth.CBDescriptor>()
+            ?.firstOrNull { it.UUID.toKotlinUuid() == Descriptor.CLIENT_CHAR_CONF_UUID }
+
+        _events.tryEmit(DescriptorWrite(cccd ?: event.characteristic, status, 0))
     }
 
     // Called by CentralManager when connection events arrive via FCentralManagerDelegate

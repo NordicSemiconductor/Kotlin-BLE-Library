@@ -5,8 +5,10 @@ import kotlinx.coroutines.flow.SharedFlow
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.ios.toKotlinUuid
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.ios.toNSData
 import platform.CoreBluetooth.CBDescriptor
 import platform.CoreBluetooth.CBPeripheral
@@ -29,9 +31,31 @@ internal class IOSRemoteDescriptor(
     }
 
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray) {
+        if (isClientCharacteristicConfiguration) {
+            val enabled = when {
+                data.contentEquals(ENABLE_NOTIFICATIONS_VALUE) -> true
+                data.contentEquals(ENABLE_INDICATIONS_VALUE) -> true
+                data.contentEquals(DISABLE_NOTIFICATIONS_VALUE) -> false
+                else -> throw OperationFailedException(OperationStatus.VALUE_NOT_ALLOWED, 0x13)
+            }
+            val characteristic = (characteristic as? IOSRemoteCharacteristic)?.cbCharacteristic
+                ?: throw OperationFailedException(OperationStatus.UNKNOWN_ERROR)
+            cbPeripheral.setNotifyValue(enabled, forCharacteristic = characteristic)
+            return
+        }
+
         val nsData = data.toNSData()
         cbPeripheral.writeValue(nsData, forDescriptor = cbDescriptor)
     }
 
-    override fun OperationEvent.matches(): Boolean = subject == cbDescriptor
+    override fun OperationEvent.matches(): Boolean {
+        if (subject == cbDescriptor) {
+            return true
+        }
+        if (!isClientCharacteristicConfiguration) {
+            return false
+        }
+        val characteristic = (characteristic as? IOSRemoteCharacteristic)?.cbCharacteristic ?: return false
+        return subject == characteristic
+    }
 }

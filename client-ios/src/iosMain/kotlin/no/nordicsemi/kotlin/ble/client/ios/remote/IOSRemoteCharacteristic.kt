@@ -48,7 +48,9 @@ internal class IOSRemoteCharacteristic(
         }
 
     override fun setCharacteristicNotification(enabled: Boolean) {
-        cbPeripheral.setNotifyValue(enabled, forCharacteristic = cbCharacteristic)
+        // On iOS the actual CCCD change must go through setNotifyValue().
+        // BaseRemoteCharacteristic calls this hook before writing the CCCD, so the
+        // real CoreBluetooth toggle is handled by IOSRemoteDescriptor.executeWrite().
     }
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
