@@ -121,7 +121,7 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun setNotifying(enabled: Boolean) {
         // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
@@ -160,7 +160,7 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun read(): ByteArray {
         // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
@@ -205,7 +205,7 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun write(data: ByteArray, writeType: WriteType) {
         // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
@@ -265,7 +265,7 @@ abstract class BaseRemoteCharacteristic(
         onSubscription: suspend RemoteCharacteristic.() -> Unit
     ): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
