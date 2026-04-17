@@ -40,10 +40,10 @@ nordicNexusPublishing {
     POM_ARTIFACT_ID = "client-android-mock"
     POM_NAME = "Mock Bluetooth LE Client Module for Android"
     POM_DESCRIPTION = "A main module of Kotlin BLE Library providing Android-specific functionality for testing scanning, connecting and interacting with using Bluetooth LE peripherals."
-    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
 }
 
 dependencies {

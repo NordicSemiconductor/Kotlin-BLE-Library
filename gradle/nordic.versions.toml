@@ -1,6 +1,6 @@
 # Versions of Nordic libraries used in this project.
 
-# This is a subset of the Version Catalog available at https://github.com/NordicSemiconductor/Android-Version-Catalog
+# This is a subset of the Version Catalog available at https://github.com/nordicsemi/Nordic-Version-Catalog
 # The version catalog can be updated independently of this project after the release of this library.
 
 [versions]
