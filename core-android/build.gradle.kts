@@ -40,10 +40,10 @@ nordicNexusPublishing {
     POM_ARTIFACT_ID = "core-android"
     POM_NAME = "Core Android Module"
     POM_DESCRIPTION = "Set of common Android-related classes and utilities for the Kotlin BLE Library."
-    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
 }
 
 dependencies {

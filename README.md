@@ -55,7 +55,7 @@ Current status:
 
 ## Documentation
 
-Dokka documentation can be found [here](https://nordicsemiconductor.github.io/Kotlin-BLE-Library/html/index.html).
+Dokka documentation can be found [here](https://nordicsemi.github.io/Kotlin-BLE-Library/html/index.html).
 
 ### Environments
 
@@ -157,7 +157,7 @@ private val hrm = PeripheralSpec
 ```
 
 You may define them as connectable, or non-connectable. 
-See the [Sample](https://github.com/NordicSemiconductor/Kotlin-BLE-Library/blob/version/2.0/sample/src/mock/java/no/nordicsemi/kotlin/ble/android/sample/di/ViewModelModule.kt)
+See the [Sample](https://github.com/nordicsemi/Kotlin-BLE-Library/blob/version/2.0/sample/src/mock/java/no/nordicsemi/kotlin/ble/android/sample/di/ViewModelModule.kt)
 for an example how to define the connectivity parameters and define services and device behavior.
 
 With mock peripherals defined, create a mock central manager:
@@ -309,7 +309,7 @@ ledCharacteristic?.write(byteArrayOf(0x01))
 
 Note, that `write(...)` is synchronous and can only send up to the maximum value length for a given
 write type. If you need to send longer data, use `chunked(...)` method 
-([see here](https://github.com/NordicSemiconductor/Kotlin-BLE-Library/blob/891eb663412a87ed6d6e627b180607e544aa55a6/core/src/main/java/no/nordicsemi/kotlin/ble/core/util/Transform.kt#L52))
+([see here](https://github.com/nordicsemi/Kotlin-BLE-Library/blob/891eb663412a87ed6d6e627b180607e544aa55a6/core/src/main/java/no/nordicsemi/kotlin/ble/core/util/Transform.kt#L52))
 to split the `ByteArray` or `Flow<ByteArray>` into chunks and send them in a loop.
 
 ```kotlin
@@ -377,4 +377,4 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
 ```
 
 
-For more, see [_sample_](https://github.com/NordicSemiconductor/Kotlin-BLE-Library/blob/version/2.0/sample/src/main/java/no/nordicsemi/kotlin/ble/android/sample/scanner/ScannerViewModel.kt).
+For more, see [_sample_](https://github.com/nordicsemi/Kotlin-BLE-Library/blob/version/2.0/sample/src/main/java/no/nordicsemi/kotlin/ble/android/sample/scanner/ScannerViewModel.kt).
