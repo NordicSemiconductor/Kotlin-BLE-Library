@@ -113,7 +113,7 @@ abstract class BaseRemoteDescriptor(
 
     final override suspend fun read(): ByteArray {
         // Check whether the descriptor wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
@@ -157,7 +157,7 @@ abstract class BaseRemoteDescriptor(
 
     final override suspend fun write(data: ByteArray) {
         // Check whether the descriptor wasn't invalidated.
-        require(owner != null) {
+        requireNotNull(owner) {
             throw InvalidAttributeException()
         }
 
