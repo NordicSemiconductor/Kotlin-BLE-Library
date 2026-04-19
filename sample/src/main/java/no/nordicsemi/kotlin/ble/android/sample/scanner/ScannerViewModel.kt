@@ -406,7 +406,17 @@ class ScannerViewModel @Inject constructor(
                             // notifications or indications.
                             val expectError = !remoteCharacteristic.isSubscribable()
                             try {
-                                remoteCharacteristic.subscribe()
+                                remoteCharacteristic
+                                    // Note, that subscriber() method is no longer suspending.
+                                    // Notifications are enabled in onSubscription of the StateFlow.
+                                    // To get a callback when they are actually enabled, use the
+                                    // onSubscription parameter in subscribe().
+                                    .subscribe(
+                                        // This is called when the notifications were enabled.
+                                        onSubscription = {
+                                            Timber.i("($ce) Notifications for $uuid are now ${if (isNotifying) "enabled" else "disabled"}")
+                                        }
+                                    )
                                     .onStart {
                                         // This is called before the notifications are enabled.
                                         Timber.w("($ce) Subscribing to ${remoteCharacteristic.uuid}...")
@@ -429,8 +439,6 @@ class ScannerViewModel @Inject constructor(
                                         Timber.d("($ce) Stopped observing updates from ${remoteCharacteristic.uuid}")
                                     }
                                     .launchIn(scope)
-                                // remoteCharacteristic.setNotifying(true)
-                                Timber.i("($ce) Notifications for ${remoteCharacteristic.uuid} are now ${if (remoteCharacteristic.isNotifying) "enabled" else "disabled"}")
                             } catch (e: Exception) {
                                 if (!expectError) {
                                     Timber.e("($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
