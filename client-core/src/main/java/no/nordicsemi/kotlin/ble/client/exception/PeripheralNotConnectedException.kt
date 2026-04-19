@@ -33,9 +33,9 @@
 
 package no.nordicsemi.kotlin.ble.client.exception
 
-import no.nordicsemi.kotlin.ble.core.exception.GattException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
 /**
  * Thrown when the peripheral is not connected, or has disconnected during the operation.
  */
-class PeripheralNotConnectedException: GattException("Peripheral is not connected")
+class PeripheralNotConnectedException: BluetoothException("Peripheral is not connected")
