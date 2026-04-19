@@ -37,7 +37,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -58,6 +57,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
@@ -926,13 +926,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          */
         var userJob: Job? = null
 
-        /**
-         * Profile job collects discovered services and launches the user block when given service
-         * was found.
-         */
-        var profileJob: Job? = null
-
-        profileJob = services(requiredServiceUuids + optionalServiceUuids)
+        services(requiredServiceUuids + optionalServiceUuids)
             // The services flow will initially emit "Unknown" (as the services are not discovered yet).
             // Upon successful connection the flow will emit "Discovering" followed by:
             // 1. Discovered - when service discovery was successful.
@@ -945,8 +939,10 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             .onEach { state ->
                 when (state) {
                     is RemoteServices.Unknown -> {
-                        // When the device gets disconnected, cancel the user job (if running).
-                        userJob?.cancel(CancellationException(PeripheralNotConnectedException()))
+                        // When the services get invalidated, of the device gets disconnected,
+                        // cancel the user job (if running).
+                        val cause = if (isConnected) InvalidAttributeException() else PeripheralNotConnectedException()
+                        userJob?.cancel(CancellationException(cause))
                         // Do not cancel the user scope here. The device may get reconnected.
                         // User scope is continuing observing the services.
                     }
@@ -957,58 +953,37 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         }
                         if (missingServices.isEmpty()) {
                             // If the GATT service was found, start the user block in a new job.
-                            // This job wil be canceled with the outer scope, or when the peripheral
-                            // disconnects (throwing PeripheralNotConnectedException).
+                            // This job will be canceled with the outer scope, or when the peripheral
+                            // disconnects (throwing InvalidAttributeException).
                             userJob = scope.launch {
-                                /**
-                                 * A flag set to `false` when a [IllegalArgumentException] is
-                                 * thrown from the [block].
-                                 *
-                                 * This indicates, that the discovered service does not support the
-                                 * profile, i.e. is missing a characteristic or a property.
-                                 *
-                                 * In that case, if the profile is [required], the device will get
-                                 * disconnected with reason set to
-                                 * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
-                                 */
-                                var isSupported = true
                                 try {
                                     block(state.services)
+                                    disconnect()
                                 } catch (e: Exception) {
-                                    // The implementation may use require(...) methods
-                                    // to verify the service. Catch them and report as if the service
-                                    // was not found.
                                     when (e) {
+                                        // The implementation may use require(...) methods
+                                        // to verify the service.
+                                        // Catch them and report as if the service was not found.
                                         is IllegalArgumentException -> {
-                                            // Log the stack trace, so origin of the exception is known.
-                                            logger.warn("Profile service validation failed", e)
-                                            isSupported = false
+                                            logger.warn("Profile validation failed", e)
+                                            if (required) {
+                                                disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
+                                            }
                                         }
-                                        else -> throw e
+                                        else -> {
+                                            logger.error("Profile block failed", e)
+                                            throw e
+                                        }
                                     }
                                 } finally {
                                     userJob = null
-                                    // Don't disconnect if an optional service failed validation.
-                                    val optionalNotSupported = !isSupported && !required
-                                    if (!optionalNotSupported) {
-                                        // Disconnect when user has finished with the profile.
-                                        // Assume, that any possible auto-connect is not used, as then
-                                        // user would have not finished with the profile.
-                                        val reason = if (isSupported)
-                                            ConnectionState.Disconnected.Reason.Success
-                                        else
-                                            ConnectionState.Disconnected.Reason.RequiredServiceNotFound
-                                        disconnect(reason)
-                                    }
-                                    profileJob?.cancel()
                                 }
                             }
                         } else {
-                            // If the required service was not found disconnect, disconnect.
+                            // If any required service was not found disconnect, disconnect.
                             if (required) {
                                 logger.warn("Required services not supported, missing: $missingServices")
                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
-                                profileJob?.cancel()
                             } else {
                                 logger.warn("Optional services not supported, missing: $missingServices")
                                 // Do not disconnect or cancel the user scope.
@@ -1021,7 +996,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         // In case of a service discovery failure, act as if the service was not found.
                         // TODO Is this expected behavior?
                         disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
-                        profileJob?.cancel()
                     }
                     else -> { /* Ignore */ }
                 }
