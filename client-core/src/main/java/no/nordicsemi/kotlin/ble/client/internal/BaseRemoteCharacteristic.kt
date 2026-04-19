@@ -184,6 +184,12 @@ abstract class BaseRemoteCharacteristic(
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
                         throw e
+                    } catch (e: BluetoothException) {
+                        throw e
+                    } catch (_: IllegalStateException) {
+                        // Thrown when mock implementation checks for connection parameters.
+                        // If that fails, the attribute was invalidated.
+                        throw InvalidAttributeException()
                     } catch (e: Exception) {
                         // This is any other exception, i.e. SecurityException, etc.
                         throw BluetoothException(e)
@@ -232,6 +238,12 @@ abstract class BaseRemoteCharacteristic(
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
                         throw e
+                    } catch (e: BluetoothException) {
+                        throw e
+                    } catch (_: IllegalStateException) {
+                        // Thrown when mock implementation checks for connection parameters.
+                        // If that fails, the attribute was invalidated.
+                        throw InvalidAttributeException()
                     } catch (e: Exception) {
                         // This is any other exception, i.e. SecurityException, etc.
                         throw BluetoothException(e)
