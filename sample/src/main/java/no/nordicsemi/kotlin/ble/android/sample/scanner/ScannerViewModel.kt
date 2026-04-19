@@ -467,7 +467,7 @@ class ScannerViewModel @Inject constructor(
             serviceUuid = LedButtonProfile.SERVICE_UUID,
             required = required,
         ) { lbs ->
-            val state = LedButtonServiceImpl(lbs, scope)
+            val state = LedButtonServiceImpl(lbs, this)
             Timber.i("LBS: LED Button Service found")
             block(state)
         }
