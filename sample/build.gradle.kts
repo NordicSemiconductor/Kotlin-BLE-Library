@@ -39,6 +39,7 @@ android {
     defaultConfig {
         applicationId = "no.nordicsemi.kotlin.ble.android.sample"
     }
+    @Suppress("UnstableApiUsage")
     androidResources {
         localeFilters += listOf("en")
     }
