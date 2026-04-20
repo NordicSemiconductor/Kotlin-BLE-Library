@@ -40,10 +40,10 @@ nordicNexusPublishing {
     POM_ARTIFACT_ID = "server-core"
     POM_NAME = "Nordic Kotlin BLE library"
     POM_DESCRIPTION = "Nordic Kotlin BLE library"
-    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
 }
 
 dependencies {

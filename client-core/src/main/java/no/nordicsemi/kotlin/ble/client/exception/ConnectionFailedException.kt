@@ -34,7 +34,7 @@
 package no.nordicsemi.kotlin.ble.client.exception
 
 import no.nordicsemi.kotlin.ble.core.ConnectionState
-import no.nordicsemi.kotlin.ble.core.exception.GattException
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
 /**
  * Thrown when the connection to the peripheral has failed.
@@ -43,4 +43,4 @@ import no.nordicsemi.kotlin.ble.core.exception.GattException
  */
 class ConnectionFailedException(
     val reason: ConnectionState.Disconnected.Reason
-): GattException("Connection failed, reason: $reason")
+): BluetoothException("Connection failed, reason: $reason")

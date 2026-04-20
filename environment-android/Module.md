@@ -19,7 +19,7 @@ For that, add the following dependency to your *build.gradle.kts* file:
 implementation("no.nordicsemi.kotlin.ble:environment-android:<VERSION>")
 ```
 
-**Note:** The library is also available using the *Nordic BOM* or *Version Catalog* from [Nordic Version Catalog](https://github.com/NordicSemiconductor/Android-Version-Catalog).
+**Note:** The library is also available using the *Nordic BOM* or *Version Catalog* from [Nordic Version Catalog](https://github.com/nordicsemi/Nordic-Version-Catalog).
 
 With that complete, get an instance of the native Environment:
 

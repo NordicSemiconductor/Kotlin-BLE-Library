@@ -18,7 +18,7 @@ Start by adding the dependency to your `build.gradle.kts` file:
 implementation("no.nordicsemi.kotlin.ble:environment-android-mock:<VERSION>")
 ```
 
-**Note:** This library is also available through the [Nordic BOM](https://github.com/NordicSemiconductor/Android-Version-Catalog).
+**Note:** This library is also available through the [Nordic BOM](https://github.com/nordicsemi/Nordic-Version-Catalog).
 
 With the dependency added, you can define a mock environment:
 

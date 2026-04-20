@@ -40,10 +40,10 @@ nordicNexusPublishing {
     POM_ARTIFACT_ID = "core-mock"
     POM_NAME = "Core Mock Module"
     POM_DESCRIPTION = "A part of Kotlin BLE Library providing core mock functionality for Bluetooth LE operations."
-    POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
+    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
 }
 
 dependencies {

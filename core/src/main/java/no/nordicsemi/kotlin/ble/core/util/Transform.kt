@@ -81,7 +81,7 @@ fun ByteArray.chunked(size: Int): List<ByteArray> {
  *    dataWithHeader.chunked(size)
  * }
  * ```
- * See [Kotlin Util Library / data](https://github.com/NordicSemiconductor/Kotlin-Util-Library)
+ * See [Kotlin Util Library / data](https://github.com/nordicsemi/Kotlin-Util-Library)
  * for extension functions to convert numbers to byte arrays.
  *
  * @param size The maximum size of a chunk.
