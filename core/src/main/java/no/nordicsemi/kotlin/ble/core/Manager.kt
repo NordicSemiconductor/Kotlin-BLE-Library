@@ -38,14 +38,14 @@ import kotlinx.coroutines.flow.StateFlow
 /**
  * A base interface for a manager.
  */
-interface Manager {
+interface Manager : Closable {
 
     /**
      * Closes the manager and releases its resources.
      *
      * Calling the method on a closed manager has no effect.
      */
-    fun close()
+    override fun close()
 
     /**
      * A flow with the current state of the manager.

@@ -32,8 +32,6 @@
 @file:Suppress("MemberVisibilityCanBePrivate", "unused")
 
 package no.nordicsemi.kotlin.ble.core.util
-
-import java.util.Locale
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlin.uuid.Uuid.Companion.fromLongs
@@ -143,8 +141,8 @@ fun Uuid.Companion.fromShortUuid(shortUuid: Int): Uuid = baseUuid.toLongs { msb,
 @OptIn(ExperimentalUuidApi::class)
 fun Uuid.toShortString(): String = shortUuid
     ?.toString(16)
-    ?.padStart((if (is16BitUuid) 4 else 8), '0')?.uppercase(Locale.US)
-    ?: toString().uppercase(Locale.US)
+    ?.padStart((if (is16BitUuid) 4 else 8), '0')?.uppercase()
+    ?: toString().uppercase()
 
 /**
  * Returns the UUID as Byte Array, in Little Endian.
