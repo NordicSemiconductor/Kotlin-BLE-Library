@@ -34,12 +34,18 @@
 package no.nordicsemi.kotlin.ble.core
 
 import kotlinx.coroutines.flow.StateFlow
-import java.io.Closeable
 
 /**
  * A base interface for a manager.
  */
-interface Manager: Closeable {
+interface Manager : Closable {
+
+    /**
+     * Closes the manager and releases its resources.
+     *
+     * Calling the method on a closed manager has no effect.
+     */
+    override fun close()
 
     /**
      * A flow with the current state of the manager.
