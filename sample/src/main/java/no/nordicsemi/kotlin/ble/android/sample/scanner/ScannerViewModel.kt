@@ -117,6 +117,7 @@ class ScannerViewModel @Inject constructor(
 //                    ManufacturerData(0x0059)
 //                    ServiceUuid(Uuid.fromShortUuid(0x1809))
 //                }
+//                ServiceUuid(Uuid.parse("00001523-1212-EFDE-1523-785FEABCD123"))
                 Any {
                     Name("Pixel 5")
                     Name("Pixel 7")

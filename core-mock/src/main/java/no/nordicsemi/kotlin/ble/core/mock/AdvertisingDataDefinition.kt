@@ -331,7 +331,7 @@ class AdvertisingDataDefinition(
                 when {
                     uuid.is16BitUuid -> uuids16bit += uuid.toShortByteArray()
                     uuid.is32BitUuid -> uuids32bit += uuid.toShortByteArray()
-                    else -> uuids128bit += uuid.toByteArray()
+                    else -> uuids128bit += uuid.toByteArray().reversedArray()
                 }
             }
             return byteArrayOf(
@@ -350,7 +350,7 @@ class AdvertisingDataDefinition(
                 when {
                     uuid.is16BitUuid -> uuids16bit += uuid.toShortByteArray()
                     uuid.is32BitUuid -> uuids32bit += uuid.toShortByteArray()
-                    else -> uuids128bit += uuid.toByteArray()
+                    else -> uuids128bit += uuid.toByteArray().reversedArray()
                 }
             }
             return byteArrayOf(
