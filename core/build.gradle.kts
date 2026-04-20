@@ -39,10 +39,6 @@ group = "no.nordicsemi.kotlin.ble"
 kotlin {
     jvm()
 
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
-
     sourceSets {
         commonMain {
             kotlin.srcDir("src/main/java")
