@@ -30,34 +30,30 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.nexus.kmp)
 }
 
 group = "no.nordicsemi.kotlin.ble"
 
 nordicNexusPublishing {
-    POM_ARTIFACT_ID = "client-core"
-    POM_NAME = "Core Client Module"
-    POM_DESCRIPTION = "A part of Kotlin BLE Library providing core, platform-independent functionality for Bluetooth LE client operations."
+    POM_ARTIFACT_ID = "core-logger"
+    POM_NAME = "Core Logger Module"
+    POM_DESCRIPTION = "A part of Kotlin BLE Library providing multiplatform logging abstraction."
     POM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
 }
 
-dependencies {
-    api(project(":core"))
-    implementation(project(":core-logger"))
+kotlin {
+    jvm()
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
 
-    api(libs.kotlinx.datetime)
-
-    // Adds @hide annotation to exclude internal classes from the documentation.
-    dokkaPlugin(libs.dokka.android.gradlePlugin)
-}
-
-dokka {
-    dokkaSourceSets.configureEach {
-        includes.from("Module.md")
+    sourceSets {
+        jvmMain.dependencies {
+            implementation(libs.slf4j)
+        }
     }
 }

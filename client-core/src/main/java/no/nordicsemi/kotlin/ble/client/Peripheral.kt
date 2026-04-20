@@ -66,7 +66,7 @@ import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.WriteType
-import org.slf4j.LoggerFactory
+import no.nordicsemi.kotlin.ble.core.logger.Logger
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -88,7 +88,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     protected val scope: CoroutineScope,
     protected val impl: EX,
 ): Peer<ID> {
-    private val logger = LoggerFactory.getLogger(Peripheral::class.java)
+    private val logger = Logger("Peripheral")
 
     val name: String?
         get() = impl.name
@@ -981,7 +981,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                     when (e) {
                                         is IllegalArgumentException -> {
                                             // Log the stack trace, so origin of the exception is known.
-                                            logger.warn("Profile service validation failed", e)
+                                            logger.warn("Profile service validation failed", throwable = e)
                                             isSupported = false
                                         }
                                         else -> throw e

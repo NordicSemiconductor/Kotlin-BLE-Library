@@ -68,7 +68,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         // Use Nordic Gradle Version Catalog with common external libraries versions.
         create("libs") {
-            from("no.nordicsemi.android.gradle:version-catalog:2.11.4")
+            from("no.nordicsemi.android.gradle:version-catalog:2.11.5")
         }
         // Fixed versions for Nordic libraries.
         create("nordic") {
@@ -87,6 +87,7 @@ include(":environment-android-mock")
 include(":environment-android-compose")
 
 include(":core")
+include(":core-logger")
 include(":core-mock")
 include(":core-android")
 
