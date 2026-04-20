@@ -73,7 +73,7 @@ val Uuid.Companion.baseUuid: Uuid
      * What is "-0x7FFFFF7FA064CB05", you ask?
      *
      * Due to the fact, that the least significant part of the Base Bluetooth UUID
-     * (0x800000805f9b34fb) is outside of the range of Long, the value cannot be
+     * (0x800000805f9b34fb) is outside the range of Long, the value cannot be
      * simply written as UUID(0x0000000000001000, 0x800000805f9B34FB).
      * Instead, we take a 2's complement of the least significant part and invert the sign.
      */
@@ -157,7 +157,7 @@ fun Uuid.toShortByteArray(): ByteArray {
     return when {
         is16BitUuid -> bytes.sliceArray(2..3).reversedArray()
         is32BitUuid -> bytes.sliceArray(0..3).reversedArray()
-        else -> bytes
+        else -> bytes.reversedArray()
     }
 }
 
@@ -222,7 +222,10 @@ fun Uuid.Companion.fromBytes(uuidBytes: ByteArray, offset: Int, length: Int): Uu
             (uuidBytes[offset + 3].toInt() and 0xFF shl 24)
         return fromShortUuid(uuidVal)
     }
-    return fromLongs(uuidBytes.toLong(startIndex = offset + 8), uuidBytes.toLong(startIndex = offset))
+    return fromLongs(
+        uuidBytes.toLong(startIndex = offset + 8),
+        uuidBytes.toLong(startIndex = offset)
+    )
 }
 
 private fun ByteArray.toLong(startIndex: Int): Long {
