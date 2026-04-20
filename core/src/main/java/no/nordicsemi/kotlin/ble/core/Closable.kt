@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,58 +29,14 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.core
 
-import kotlinx.coroutines.flow.StateFlow
-
 /**
- * A base interface for a manager.
+ * A platform-neutral close contract for BLE components that own resources.
  */
-interface Manager : Closable {
-
+expect interface Closable {
     /**
-     * Closes the manager and releases its resources.
-     *
-     * Calling the method on a closed manager has no effect.
+     * Closes the receiver and releases its resources.
      */
-    override fun close()
-
-    /**
-     * A flow with the current state of the manager.
-     */
-    val state: StateFlow<State>
-
-    /**
-     * The possible states of a Bluetooth manager.
-     */
-    enum class State {
-        /**
-         * A state that indicates Bluetooth is currently powered off.
-         */
-        POWERED_OFF,
-
-        /**
-         * A state that indicates Bluetooth is currently powered on and available to use.
-         */
-        POWERED_ON,
-
-        /**
-         * A state that indicates the connection with the system service was momentarily lost.
-         *
-         * This state is not used on Android.
-         */
-        RESETTING,
-
-        /**
-         * The manager’s state is unknown.
-         */
-        UNKNOWN,
-
-        /**
-         * A state that indicates this device doesn't support the Bluetooth Low Energy.
-         */
-        UNSUPPORTED,
-    }
+    fun close()
 }

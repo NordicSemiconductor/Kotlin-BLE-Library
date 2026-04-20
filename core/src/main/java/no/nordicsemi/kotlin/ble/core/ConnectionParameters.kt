@@ -32,8 +32,6 @@
 @file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package no.nordicsemi.kotlin.ble.core
-
-import org.jetbrains.annotations.Range
 import kotlin.time.Duration
 
 /**
@@ -134,10 +132,22 @@ sealed class ConnectionParameters {
      *        Valid range is from 10 (0.1s) to 3200 (32s)
      */
     data class Specified(
-        val connectionInterval: @Range(from = 6L, to = 3200L) Int,
-        val latency: @Range(from = 0, to = 499) Int,
-        val supervisionTimeout: @Range(from = 10, to = 3200) Int,
+        val connectionInterval: Int,
+        val latency: Int,
+        val supervisionTimeout: Int,
     ) : ConnectionParameters() {
+        // @Range is JVM-only metadata. Keep the same contract enforced in common code.
+        init {
+            require(connectionInterval in 6..3200) {
+                "Connection interval must be in the range from 6 to 3200 (7.5 ms to 4000 ms)"
+            }
+            require(latency in 0..499) {
+                "Connection latency must be in the range from 0 to 499"
+            }
+            require(supervisionTimeout in 10..3200) {
+                "Supervision timeout must be in the range from 10 to 3200 (0.1 s to 32 s)"
+            }
+        }
 
         /**
          * Creates a connection parameters using [Duration] for interval and timeout.

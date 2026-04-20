@@ -31,10 +31,26 @@
 
 plugins {
     alias(libs.plugins.nordic.kotlin)
-    alias(libs.plugins.nordic.publish.jvm)
+    alias(libs.plugins.nordic.publish.kmp)
 }
 
 group = "no.nordicsemi.kotlin.ble"
+
+kotlin {
+    jvm()
+
+    sourceSets {
+        commonMain {
+            kotlin.srcDir("src/main/java")
+            dependencies {
+                api(libs.kotlinx.coroutines.core)
+            }
+        }
+        jvmMain {
+            kotlin.srcDir("src/jvmMain/kotlin")
+        }
+    }
+}
 
 nordicPublishing {
     POM_ARTIFACT_ID = "core"
@@ -44,10 +60,6 @@ nordicPublishing {
     POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
-}
-
-dependencies {
-    api(libs.kotlinx.coroutines.core)
 }
 
 dokka {

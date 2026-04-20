@@ -41,6 +41,7 @@ plugins {
     alias(libs.plugins.nordic.feature.hilt.compose) apply false
     alias(libs.plugins.nordic.publish.android) apply false
     alias(libs.plugins.nordic.publish.jvm) apply false
+    alias(libs.plugins.nordic.publish.kmp) apply false
 
     // This applies Nordic look & feel to generated Dokka documentation.
     // https://github.com/nordicsemi/Nordic-Gradle-Plugins/blob/main/plugins/src/main/kotlin/NordicDokkaPlugin.kt
