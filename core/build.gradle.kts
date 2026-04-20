@@ -30,11 +30,31 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.kotlin.kmp)
+    alias(libs.plugins.nordic.nexus.kmp)
 }
 
 group = "no.nordicsemi.kotlin.ble"
+
+kotlin {
+    jvm()
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
+    sourceSets {
+        commonMain {
+            kotlin.srcDir("src/main/java")
+            dependencies {
+                api(libs.kotlinx.coroutines.core)
+            }
+        }
+        jvmMain {
+            kotlin.srcDir("src/jvmMain/kotlin")
+        }
+    }
+}
 
 nordicNexusPublishing {
     POM_ARTIFACT_ID = "core"
@@ -44,10 +64,6 @@ nordicNexusPublishing {
     POM_SCM_URL = "https://github.com/NordicSemiconductor/Kotlin-BLE-Library"
     POM_SCM_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:NordicSemiconductor/Kotlin-BLE-Library.git"
-}
-
-dependencies {
-    api(libs.kotlinx.coroutines.core)
 }
 
 dokka {
