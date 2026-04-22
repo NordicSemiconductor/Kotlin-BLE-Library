@@ -492,7 +492,18 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     /**
      * Returns a flow emitting [RemoteServices] events.
      *
-     * ### State machine
+     * ## Overview
+     *
+     * This method is the main entry point to discover GATT services on the peripheral and observe
+     * changes in the services. It returns a flow that emits the current state of service discovery
+     * process, which can be observed to get the list of services when they are discovered, or to
+     * handle errors when service discovery fails.
+     *
+     * Note, that the flow may emit [RemoteServices.Discovered] state multiple times, for example
+     * when the peripheral reconnects or when the services get invalidated and rediscovered.
+     * This is not a one-time operation, but a continuous observation of the services on the peripheral.
+     *
+     * ## State machine
      *
      * Initially, the state is [Unknown][RemoteServices.Unknown]. Shortly after calling [services]
      * the flow will emit [Discovering][RemoteServices.Discovering] state, followed by
