@@ -492,7 +492,18 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     /**
      * Returns a flow emitting [RemoteServices] events.
      *
-     * ### State machine
+     * ## Overview
+     *
+     * This method is the main entry point to discover GATT services on the peripheral and observe
+     * changes in the services. It returns a flow that emits the current state of service discovery
+     * process, which can be observed to get the list of services when they are discovered, or to
+     * handle errors when service discovery fails.
+     *
+     * Note, that the flow may emit [RemoteServices.Discovered] state multiple times, for example
+     * when the peripheral reconnects or when the services get invalidated and rediscovered.
+     * This is not a one-time operation, but a continuous observation of the services on the peripheral.
+     *
+     * ## State machine
      *
      * Initially, the state is [Unknown][RemoteServices.Unknown]. Shortly after calling [services]
      * the flow will emit [Discovering][RemoteServices.Discovering] state, followed by
@@ -564,7 +575,23 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
      * The [block] is called in a child coroutine.
      *
-     * It is safe and recommended to call this method before connecting the peripheral.
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
+     * ## Validation
+     *
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
      *
      * ## Example
      *
@@ -576,6 +603,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *     peripheral.profile(
      *         serviceUuid = HeartRateProfile.heartRateServiceUuid,
      *         required = true,
+     *         name = "Heart Rate Profile",
      *     ) { remoteService ->
      *         val state = HeartRateServiceImpl(remoteService, this)
      *
@@ -596,12 +624,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param required Whether the service is required. In example, a Heart Rate app may require
      * a Heart Rate Service, but also support an optional Battery Service to indicate the battery
      * level.
+     * @param name An optional name of the profile, used only in log messages. This is useful when
+     * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
     @OptIn(ExperimentalUuidApi::class)
     suspend fun profile(
         serviceUuid: Uuid,
         required: Boolean = true,
+        name: String? = null,
         block: suspend CoroutineScope.(RemoteService) -> Unit,
     ) {
         // Get the current context. This will allow creating a scope, that will get closed
@@ -609,7 +640,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         val context = currentCoroutineContext()
         val userScope = CoroutineScope(context)
 
-        profile(serviceUuid, required, userScope, block)
+        profile(userScope, serviceUuid, required, name, block)
     }
 
     /**
@@ -629,10 +660,20 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * or when the job completes. When the `block` finishes (normally or exceptionally) the
      * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
      *
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, the connection will
-     * be terminated with reason
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
@@ -654,9 +695,10 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * // LBS profile implementation.
      * peripheral.profile(
+     *    scope = scope,
      *    serviceUuid = HeartRateProfile.heartRateServiceUuid,
      *    required = true,
-     *    scope = scope,
+     *    name = "Heart Rate Profile",
      * ) { hrmService ->
      *    // 1. Validate the service.
      *
@@ -702,23 +744,27 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * }
      * ```
      *
+     * @param scope The coroutine scope to launch the user block in.
      * @param serviceUuid The UUID of the profile service.
      * @param required Whether the service is required by the app. In example, a Heart Rate app
      * may require a Heart Rate Service, but also support an optional Battery Service to indicate
      * the battery level.
-     * @param scope The coroutine scope to launch the user block in.
+     * @param name An optional name of the profile, used only in log messages. This is useful when
+     * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
     @OptIn(ExperimentalUuidApi::class)
     fun profile(
+        scope: CoroutineScope,
         serviceUuid: Uuid,
         required: Boolean = true,
-        scope: CoroutineScope,
+        name: String? = null,
         block: suspend CoroutineScope.(RemoteService) -> Unit,
     ) = profile(
+        scope = scope,
         requiredServiceUuids = listOf(serviceUuid),
         required = required,
-        scope = scope
+        name = name,
     ) { services ->
         block(services.first())
     }
@@ -741,7 +787,21 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
      * The [block] is called in a child coroutine.
      *
-     * It is safe and recommended to call this method before connecting the peripheral.
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
+     * ## Validation
+     *
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * ## Example
      *
@@ -759,6 +819,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *            ProximityProfile.txPowerServiceUuid,
      *         ),
      *         required = true,
+     *         name = "Proximity",
      *     ) { remoteServices ->
      *         val state = ProximityProfile(remoteServices, this)
      *
@@ -783,6 +844,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * required services is not found on the peripheral, the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      * If `false`, the [block] won't be called, but the connection won't be terminated.
+     * @param name An optional name of the profile, used only in log messages. This is useful when
+     * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
     @OptIn(ExperimentalUuidApi::class)
@@ -790,6 +853,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         requiredServiceUuids: List<Uuid>,
         optionalServiceUuids: List<Uuid> = emptyList(),
         required: Boolean = true,
+        name: String? = null,
         block: suspend CoroutineScope.(List<RemoteService>) -> Unit,
     ) {
         // Get the current context. This will allow creating a scope, that will get closed
@@ -797,7 +861,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         val context = currentCoroutineContext()
         val userScope = CoroutineScope(context)
 
-        profile(requiredServiceUuids, optionalServiceUuids, required, userScope, block)
+        profile(userScope, requiredServiceUuids, optionalServiceUuids, required, name, block)
     }
 
     /**
@@ -821,10 +885,20 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * or when the job completes. When the `block` finishes (normally or exceptionally) the
      * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
      *
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, the connection will
-     * be terminated with reason
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * ## Example
@@ -849,6 +923,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * // Proximity profile implementation.
      * peripheral.profile(
+     *    scope = scope,
      *    requiredServiceUuids = listOf(
      *       ProximityProfile.linkLossServiceUuid
      *    ),
@@ -857,7 +932,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *       ProximityProfile.txPowerServiceUuid,
      *    ),
      *    required = true,
-     *    scope = scope,
+     *    name = "Proximity",
      * ) { services ->
      *    // 1. Validate the services.
      *
@@ -898,6 +973,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * }
      * ```
      *
+     * @param scope The coroutine scope to launch the user block in.
      * @param requiredServiceUuids The list of UUIDs of the GATT services required by the profile.
      * @param optionalServiceUuids The list of UUIDs of the optional GATT services.
      * @param required Whether support for this profile is required by the app. In example,
@@ -906,18 +982,21 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * required services is not found on the peripheral, the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      * If `false`, the [block] won't be called, but the connection won't be terminated.
-     * @param scope The coroutine scope to launch the user block in.
+     * @param name An optional name of the profile, used only in log messages. This is useful when
+     * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
     @OptIn(ExperimentalUuidApi::class)
     fun profile(
+        scope: CoroutineScope,
         requiredServiceUuids: List<Uuid>,
         optionalServiceUuids: List<Uuid> = emptyList(),
         required: Boolean = true,
-        scope: CoroutineScope,
+        name: String? = null,
         block: suspend CoroutineScope.(List<RemoteService>) -> Unit,
     ) {
-        require(requiredServiceUuids.isNotEmpty()) { "Service UUIDs list cannot be empty" }
+        val name = name ?: "Profile"
+        require(requiredServiceUuids.isNotEmpty()) { "$name: Service UUIDs list cannot be empty" }
 
         /**
          * The user job will be started to execute the user block.
@@ -961,17 +1040,19 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                     disconnect()
                                 } catch (e: Exception) {
                                     when (e) {
+                                        // Rethrow cancellation exceptions, without any action.
+                                        is CancellationException -> throw e
                                         // The implementation may use require(...) methods
                                         // to verify the service.
                                         // Catch them and report as if the service was not found.
                                         is IllegalArgumentException -> {
-                                            logger.warn("Profile validation failed", e)
+                                            logger.warn("$name: Validation failed", e)
                                             if (required) {
                                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
                                             }
                                         }
                                         else -> {
-                                            logger.error("Profile block failed", e)
+                                            logger.error("$name: Block failed with exception", e)
                                             throw e
                                         }
                                     }
@@ -982,10 +1063,10 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         } else {
                             // If any required service was not found disconnect, disconnect.
                             if (required) {
-                                logger.warn("Required services not supported, missing: $missingServices")
+                                logger.warn("$name: Required services not supported (missing: $missingServices)")
                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
                             } else {
-                                logger.warn("Optional services not supported, missing: $missingServices")
+                                logger.warn("$name: Optional services not supported (missing: $missingServices)")
                                 // Do not disconnect or cancel the user scope.
                                 // The device may change its services and the Discovered state
                                 // may be emitted again.
@@ -993,6 +1074,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         }
                     }
                     is RemoteServices.Failed -> {
+                        logger.error("$name: Service discovery failed (reason: ${state.reason})")
                         // In case of a service discovery failure, act as if the service was not found.
                         // TODO Is this expected behavior?
                         disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
