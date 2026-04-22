@@ -575,7 +575,23 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
      * The [block] is called in a child coroutine.
      *
-     * It is safe and recommended to call this method before connecting the peripheral.
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
+     * ## Validation
+     *
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
      *
      * ## Example
      *
@@ -640,10 +656,20 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * or when the job completes. When the `block` finishes (normally or exceptionally) the
      * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
      *
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, the connection will
-     * be terminated with reason
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
@@ -752,7 +778,21 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
      * The [block] is called in a child coroutine.
      *
-     * It is safe and recommended to call this method before connecting the peripheral.
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
+     * ## Validation
+     *
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * ## Example
      *
@@ -832,10 +872,20 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * or when the job completes. When the `block` finishes (normally or exceptionally) the
      * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
      *
+     * ## Services
+     *
+     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The [block] will be called every time the service is discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
+     * running, or use [profile] method with a custom scope.
+     *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, the connection will
-     * be terminated with reason
+     * If `block` throws [IllegalArgumentException] during service validation, and the profile
+     * was marked as [required], the connection will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
      * ## Example
