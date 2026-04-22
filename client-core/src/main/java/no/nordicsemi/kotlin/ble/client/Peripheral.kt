@@ -1022,6 +1022,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                     disconnect()
                                 } catch (e: Exception) {
                                     when (e) {
+                                        // Rethrow cancellation exceptions, without any action.
+                                        is CancellationException -> throw e
                                         // The implementation may use require(...) methods
                                         // to verify the service.
                                         // Catch them and report as if the service was not found.
