@@ -577,21 +577,27 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * ## Services
      *
-     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
      * before connecting the peripheral.
      *
-     * The [block] will be called every time the service is discovered,
+     * The [block] will be called every time the services are discovered,
      * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
-     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
-     * running, or use [profile] method with a custom scope.
+     * gets invalidated and rediscovered). To stop observing services cancel the job in which this
+     * method is called, or use the `profile` method with custom scope.
+     *
+     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
      *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, and the profile
-     * was marked as [required], the connection will be terminated with reason
+     * If the profile was marked as [required] and the service is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
-     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
+     * ## Block completion
+     *
+     * The device will NOT be disconnected when the [block] ends, unless the situation described
+     * in the Validation section.
      *
      * ## Example
      *
@@ -662,21 +668,26 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * ## Services
      *
-     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
      * before connecting the peripheral.
      *
-     * The [block] will be called every time the service is discovered,
+     * The [block] will be called every time the services are discovered,
      * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
-     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
-     * running, or use [profile] method with a custom scope.
+     * gets invalidated and rediscovered). To stop observing services cancel the [scope].
+     *
+     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
      *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, and the profile
-     * was marked as [required], the connection will be terminated with reason
+     * If the profile was marked as [required] and the service is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
      *
-     * If multiple services share the same [serviceUuid], only the first one is passed to `block`.
+     * ## Block completion
+     *
+     * The device will NOT be disconnected when the [block] ends, unless the situation described
+     * in the Validation section.
      *
      * ## Example
      *
@@ -789,19 +800,25 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * ## Services
      *
-     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
      * before connecting the peripheral.
      *
-     * The [block] will be called every time the service is discovered,
+     * The [block] will be called every time the services are discovered,
      * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
-     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
-     * running, or use [profile] method with a custom scope.
+     * gets invalidated and rediscovered). To stop observing services cancel the job in this this
+     * method is called, or use `profile` method with custom scope.
      *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, and the profile
-     * was marked as [required], the connection will be terminated with reason
+     * If the profile was marked as [required] and at least one of the required services is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * ## Block completion
+     *
+     * The device will NOT be disconnected when the [block] ends, unless the situation described
+     * in the Validation section.
      *
      * ## Example
      *
@@ -880,26 +897,30 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * of the same service were discovered.
      *
      * The provided [block] is launched on a child coroutine in the given [scope] when all matching
-     * [RemoteService]s are emitted by the [services] flow. The launched job is canceled when
+     * [RemoteService]s are emitted by the [services] flow. The coroutine is canceled when
      * the peripheral disconnects (the cancellation cause is [PeripheralNotConnectedException])
-     * or when the job completes. When the `block` finishes (normally or exceptionally) the
-     * peripheral will be disconnected (with the reason [Success][ConnectionState.Disconnected.Reason.Success]).
+     * or service are invalidated (cause is [InvalidAttributeException]).
      *
      * ## Services
      *
-     * As this is using [services] under the hood, it is safe and recommended to call this method
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
      * before connecting the peripheral.
      *
-     * The [block] will be called every time the service is discovered,
+     * The [block] will be called every time the services are discovered,
      * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
-     * gets invalidated and rediscovered). To stop, cancel the scope in which the [block] is
-     * running, or use [profile] method with a custom scope.
+     * gets invalidated and rediscovered). To stop observing services cancel the [scope].
      *
      * ## Validation
      *
-     * If `block` throws [IllegalArgumentException] during service validation, and the profile
-     * was marked as [required], the connection will be terminated with reason
+     * If the profile was marked as [required] and at least one of the required services is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
      * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * ## Block completion
+     *
+     * The device will NOT be disconnected when the [block] ends, unless the situation described
+     * in the Validation section.
      *
      * ## Example
      *
@@ -1037,7 +1058,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                             userJob = scope.launch {
                                 try {
                                     block(state.services)
-                                    disconnect()
                                 } catch (e: Exception) {
                                     when (e) {
                                         // Rethrow cancellation exceptions, without any action.
