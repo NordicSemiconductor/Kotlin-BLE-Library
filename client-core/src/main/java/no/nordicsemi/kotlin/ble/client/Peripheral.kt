@@ -741,6 +741,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *                  .onEach {
      *                     cp.write(HeartRateControlPoint.RESET)
      *                  }
+     *                  // Note, that the collection is launched in the profile scope,
+     *                  // not the outer scope.
      *                  .launchIn(this)
      *          }
      *       }
@@ -751,7 +753,15 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
      *    //    or the scope in which this method is called is canceled.
-     *    awaitCancellation()
+     *    try {
+     *        block(ledButtonService)
+     *    } catch (e: CancellationException) {
+     *        // Disconnect on scope cancellation, unless it's just service invalidation.
+     *        if (e.cause !is InvalidAttributeException) {
+     *            peripheral.disconnect()
+     *        }
+     *        throw e
+     *    }
      * }
      * ```
      *
@@ -978,6 +988,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *    linkLossAlertLevel?.write(ProximityProfile.ALERT_HIGH)
      *
      *    // Set up immediate alert.
+     *    // Note, that the collection is launched in the profile scope, not the outer scope.
      *    if (optionalServicesSupported) {
      *       buttonState
      *          .onEach {
@@ -990,7 +1001,13 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
      *    //    or the scope in which this method is called is canceled.
-     *    awaitCancellation()
+     *    try {
+     *       awaitCancellation()
+     *    } finally {
+     *       // In this case, we want to disconnect here.
+     *       // It won't disconnect on its own.
+     *       peripheral.disconnect()
+     *    }
      * }
      * ```
      *
