@@ -61,10 +61,12 @@ import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
+import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.cancellation.CancellationException
@@ -407,12 +409,24 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     logger.warn(e.message)
                 }
                 logger.info("Services discovered")
-                _services.update {
-                    // Assign the owner to each service, making them valid.
-                    RemoteServices.Discovered(
-                    event.services.onEach { it.owner = this }
-                    )
+                // Assign the owner to each service, making them valid.
+                val services = event.services.onEach { it.owner = this }
+                // Search for Service Changed characteristic and enable CCCD.
+                // This characteristic notifies about service changes.
+                try {
+                    services
+                        .firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
+                        ?.characteristics
+                        ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
+                        ?.apply {
+                            logger.trace("Enabling Service Changed indications")
+                            setNotifying(true)
+                            logger.info("Service Changed indications enabled")
+                        }
+                } catch (e: Exception) {
+                    logger.warn("Enabling Service Changed indications failed: ${e.message}")
                 }
+                _services.update { RemoteServices.Discovered(services) }
             }
 
             is ServiceDiscoveryFailed -> {
