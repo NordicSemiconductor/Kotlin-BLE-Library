@@ -35,8 +35,8 @@ import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteDescriptor
 import no.nordicsemi.kotlin.ble.core.OperationStatus
-import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
