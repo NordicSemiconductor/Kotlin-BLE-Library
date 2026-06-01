@@ -38,6 +38,7 @@ import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
+import android.os.Build
 import androidx.annotation.Keep
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -79,12 +80,21 @@ internal class NativeGattCallback: BluetoothGattCallback() {
      */
     var disconnectReason: ConnectionState.Disconnected.Reason? = null
 
+    /**
+     * A flag set when the service discovery was complete.
+     *
+     * This is only used on Android 8-11 which do not have `onServiceChanged` callback, but
+     * do report decreased connection interval during re-discovery.
+     */
+    private var isServiceDiscoveryComplete: Boolean = false
+
     // Handling connection state updates
 
     // TODO Remove all debug logs
 
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
         logger.debug("onConnectionStateChange: status=$status, newState=$newState")
+        isServiceDiscoveryComplete = false
         // Pixel 4 with Android 12 does return status 0 when link is lost to a device.
         // Newer versions (Pixel 7 with Android 16) report status 8 (timeout) in the same case.
         val betterStatus = if (
@@ -97,6 +107,7 @@ internal class NativeGattCallback: BluetoothGattCallback() {
 
     override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
         logger.debug("onServicesDiscovered: status=$status")
+        isServiceDiscoveryComplete = true
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("Services discovery failed with status $status")
             _events.tryEmit(ServiceDiscoveryFailed(RemoteServices.Failed.Reason.Unknown(status)))
@@ -222,9 +233,13 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         _events.tryEmit(PhyChanged(phyInUse))
     }
 
+    // Note:
+    // The base method is hidden in BluetoothGattCallback using @hide.
+    // It was added in Android 8 (Oreo) and it is possible to override it, but due to its hidden
+    // nature, it cannot use `override`.
     @Suppress("UNUSED_PARAMETER")
     @Keep
-    fun onConnectionUpdated(gatt: BluetoothGatt, interval: Int, latency: Int, timeout: Int, status: Int) {
+    /* override */ fun onConnectionUpdated(gatt: BluetoothGatt, interval: Int, latency: Int, timeout: Int, status: Int) {
         if (status != BluetoothGatt.GATT_SUCCESS) {
             logger.warn("Connection update failed with status $status")
             // no return, event must be emitted
@@ -232,6 +247,14 @@ internal class NativeGattCallback: BluetoothGattCallback() {
         val newParameters = ConnectionParameters.Specified(interval, latency, timeout)
         logger.debug("onConnectionUpdated: {}", newParameters)
         _events.tryEmit(ConnectionParametersChanged(newParameters))
+
+        // Android starts reporting Service Changed event starting from API 31 (S).
+        // However, since API 26 it was possible to detect it by listening to connection
+        // parameters update, which decreased the interval to 7.5 ms during service discovery.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S &&
+            isServiceDiscoveryComplete && interval == 6 /* 7.5 ms */ ) {
+            onServiceChanged(gatt)
+        }
     }
 
     /**

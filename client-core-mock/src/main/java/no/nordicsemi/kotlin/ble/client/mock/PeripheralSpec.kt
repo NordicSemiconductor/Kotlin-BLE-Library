@@ -573,6 +573,9 @@ class PeripheralSpec<ID: Any> private constructor(
 
                 // If any client is still connected, emit the event.
                 if (isConnected) {
+                    // TODO Pre-Oreo Android versions do not report Service Changed events.
+                    // TODO Android 6+ (until 15?) report 7.5ms interval during service discovery.
+                    // On Android 16 the 7.5 ms interval is not reported? No longer a thing?
                     _events.emit(ServicesChanged)
                 }
             }

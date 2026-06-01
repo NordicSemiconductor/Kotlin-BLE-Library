@@ -418,11 +418,30 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         .firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
                         ?.characteristics
                         ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
-                        ?.apply {
-                            logger.trace("Enabling Service Changed indications")
-                            setNotifying(true)
-                            logger.info("Service Changed indications enabled")
+                        ?.also { logger.trace("Enabling Service Changed indications") }
+                        ?.subscribe { logger.info("Service Changed indications enabled") }
+                        ?.onEach {
+                            // The Service Changed indication is consumed by the system.
+                            //
+                            // * Android versions since Android 12 will notify the app using
+                            //   `onServiceChanged` callback.
+                            // * Android versions 8-11 refresh the cache, but do not notify the app.
+                            //   However, during service discovery they switch to connection
+                            //   interval 7.5 ms (6 units), which only happens during discovery.
+                            //   This library detects it, and reports `ServicesChanged` event
+                            //   (see NativeGattCallback).
+                            // * Android versions prior to 8 also refresh services, but
+                            //   they don't have a hidden `onConnectionUpdated` method, so it is
+                            //   not possible to detect when the services get invalidated.
+                            //
+                            // None of the phones we tested (Android 6 - 16) indicated anything
+                            // on Service Change characteristic.
+                            // However, perhaps older Android versions do not handle SC indication
+                            // internally, and will report it to the app, so let's use it to
+                            // indicate service change.
+                            handle(ServicesChanged)
                         }
+                        ?.launchIn(scope)
                 } catch (e: Exception) {
                     logger.warn("Enabling Service Changed indications failed: ${e.message}")
                 }
