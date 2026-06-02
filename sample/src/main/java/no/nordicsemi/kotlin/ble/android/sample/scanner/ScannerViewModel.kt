@@ -65,7 +65,9 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.ConnectionState
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -376,14 +378,16 @@ class ScannerViewModel @Inject constructor(
                     services.forEach { remoteService ->
                         Timber.i("($ce) Reading characteristics of ${remoteService.uuid}:")
                         remoteService.characteristics.forEach { remoteCharacteristic ->
+                            val expectError = !remoteCharacteristic.isReadable()
                             try {
                                 val value = remoteCharacteristic.read()
                                 Timber.i("- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                             } catch (e: Exception) {
-                                Timber.e(
-                                    e,
-                                    "- Failed to read ${remoteCharacteristic.uuid}: ${e.message}"
-                                )
+                                if (expectError) {
+                                    Timber.w("- Value of ${remoteCharacteristic.uuid}: Read not permitted")
+                                } else {
+                                    Timber.e(e, "- Failed to read ${remoteCharacteristic.uuid}: ${e.message}")
+                                }
                             }
 
                             for (descriptor in remoteCharacteristic.descriptors) {
@@ -391,10 +395,12 @@ class ScannerViewModel @Inject constructor(
                                     val descValue = descriptor.read()
                                     Timber.i("   - Value of descriptor ${descriptor.uuid}: 0x${descValue.toHexString()}")
                                 } catch (e: Exception) {
-                                    Timber.e(
-                                        e,
-                                        "   - Failed to read descriptor ${descriptor.uuid}: ${e.message}"
-                                    )
+                                    if (e is OperationFailedException && e.reason == OperationStatus.ReadNotPermitted) {
+                                        // This is expected for Client Characteristic Configuration Descriptor of non-notifiable characteristics.
+                                        Timber.w("   - Value of descriptor ${descriptor.uuid}: Read not permitted")
+                                    } else {
+                                        Timber.e(e, "   - Failed to read descriptor ${descriptor.uuid}: ${e.message}")
+                                    }
                                 }
                             }
                         }
