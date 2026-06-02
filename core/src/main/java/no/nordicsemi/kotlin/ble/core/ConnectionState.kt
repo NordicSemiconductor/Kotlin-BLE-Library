@@ -150,9 +150,12 @@ sealed class ConnectionState {
          * A quick check whether the disconnection was initiated by the user.
          *
          * This returns `false` in the initial state, that is before the connection attempt was started.
+         *
+         * `True` is returned if `disconnect()` method was called, which happens
+         * with the `reason` is `Success`, `Cancelled` or `RequiredServiceNotFound`.
          */
         val isUserInitiated: Boolean
-            get() = reason is Success || reason is Cancelled
+            get() = reason is Success || reason is Cancelled || reason is Reason.RequiredServiceNotFound
     }
 
     /** Whether the connection is open. */
