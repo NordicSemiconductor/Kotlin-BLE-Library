@@ -116,7 +116,7 @@ object LocalEnvironmentOwner {
         val isMock = try { environment is MockAndroidEnvironment }
         catch (e: NoClassDefFoundError) { false }
 
-        if (isMock && environment is MockAndroidEnvironment) {
+        if (isMock && (environment is MockAndroidEnvironment)) {
             // Modify the LocalActivityResultRegistryOwner only in the mock environment.
             val realOwner = LocalActivityResultRegistryOwner.current
             val registry: ActivityResultRegistry = remember {
@@ -126,7 +126,7 @@ object LocalEnvironmentOwner {
                         BLUETOOTH_CONNECT,
                         BLUETOOTH_SCAN,
                         BLUETOOTH_ADVERTISE,
-                        ACCESS_FINE_LOCATION
+                        ACCESS_FINE_LOCATION,
                     )
 
                     override fun <I, O> onLaunch(
@@ -195,7 +195,8 @@ object LocalEnvironmentOwner {
                                     is ActivityResultContracts.RequestMultiplePermissions ->
                                         dispatchResult(
                                             requestCode,
-                                            permissions.associateWith { it.isGranted() })
+                                            permissions.associateWith { it.isGranted() },
+                                        )
                                 }
                                 return
                             }

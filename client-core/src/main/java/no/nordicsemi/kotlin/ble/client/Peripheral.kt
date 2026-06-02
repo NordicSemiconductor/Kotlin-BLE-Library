@@ -61,10 +61,12 @@ import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.PeripheralNotConnectedException
 import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
+import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import org.slf4j.LoggerFactory
 import kotlin.coroutines.cancellation.CancellationException
@@ -407,12 +409,43 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                     logger.warn(e.message)
                 }
                 logger.info("Services discovered")
-                _services.update {
-                    // Assign the owner to each service, making them valid.
-                    RemoteServices.Discovered(
-                    event.services.onEach { it.owner = this }
-                    )
+                // Assign the owner to each service, making them valid.
+                val services = event.services.onEach { it.owner = this }
+                // Search for Service Changed characteristic and enable CCCD.
+                // This characteristic notifies about service changes.
+                try {
+                    services
+                        .firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
+                        ?.characteristics
+                        ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
+                        ?.also { logger.trace("Enabling Service Changed indications") }
+                        ?.subscribe { logger.info("Service Changed indications enabled") }
+                        ?.onEach {
+                            // The Service Changed indication is consumed by the system.
+                            //
+                            // * Android versions since Android 12 will notify the app using
+                            //   `onServiceChanged` callback.
+                            // * Android versions 8-11 refresh the cache, but do not notify the app.
+                            //   However, during service discovery they switch to connection
+                            //   interval 7.5 ms (6 units), which only happens during discovery.
+                            //   This library detects it, and reports `ServicesChanged` event
+                            //   (see NativeGattCallback).
+                            // * Android versions prior to 8 also refresh services, but
+                            //   they don't have a hidden `onConnectionUpdated` method, so it is
+                            //   not possible to detect when the services get invalidated.
+                            //
+                            // None of the phones we tested (Android 6 - 16) indicated anything
+                            // on Service Change characteristic.
+                            // However, perhaps older Android versions do not handle SC indication
+                            // internally, and will report it to the app, so let's use it to
+                            // indicate service change.
+                            handle(ServicesChanged)
+                        }
+                        ?.launchIn(scope)
+                } catch (e: Exception) {
+                    logger.warn("Enabling Service Changed indications failed: ${e.message}")
                 }
+                _services.update { RemoteServices.Discovered(services) }
             }
 
             is ServiceDiscoveryFailed -> {
