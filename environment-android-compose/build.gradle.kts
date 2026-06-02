@@ -30,13 +30,14 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.library.compose)
-    alias(libs.plugins.nordic.nexus.android)
+    alias(libs.plugins.nordic.android.library)
+    alias(libs.plugins.nordic.feature.compose)
+    alias(libs.plugins.nordic.publish.android)
 }
 
 group = "no.nordicsemi.kotlin.ble"
 
-nordicNexusPublishing {
+nordicPublishing {
     POM_ARTIFACT_ID = "environment-android-compose"
     POM_NAME = "Utils for Compose"
     POM_DESCRIPTION = "Set of utilities for Jetpack Compose integration on Android."
