@@ -31,6 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.scanner
 
+import android.Manifest.permission.ACCESS_FINE_LOCATION
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -69,14 +70,26 @@ fun ScannerScreen() {
     ) {
         Text(text = "Bluetooth state: $state")
 
-        // Scanning requires BLUETOOTH_SCAN permission, but
-        // reading device name or bond state requires BLUETOOTH_CONNECT permission.
-        val permissions = arrayOf(
-            AndroidEnvironment.Permission.BLUETOOTH_SCAN,
-            AndroidEnvironment.Permission.BLUETOOTH_CONNECT,
-        )
+        var permissions = arrayOf<String>()
+        if (environment.isLocationRequiredForScanning) {
+            // Location permission is required to scan for Bluetooth LE devices on Android 12 and below,
+            // or when 'neverForLocation' is set to 'false' in the manifest.
+            permissions += ACCESS_FINE_LOCATION
+        }
+        if (environment.requiresBluetoothRuntimePermissions) {
+             // Bluetooth permissions are required to scan for Bluetooth LE devices on Android 12 and above.
+             permissions += AndroidEnvironment.Permission.BLUETOOTH_SCAN
+             permissions += AndroidEnvironment.Permission.BLUETOOTH_CONNECT
+        }
         var permissionGranted by remember {
-            mutableStateOf(environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted)
+            val bluetoothPermissions =
+                environment.requiresBluetoothRuntimePermissions &&
+                environment.isBluetoothScanPermissionGranted &&
+                environment.isBluetoothConnectPermissionGranted
+            val locationPermission =
+                environment.isLocationRequiredForScanning &&
+                environment.isLocationPermissionGranted
+            mutableStateOf(bluetoothPermissions || locationPermission)
         }
         val launcher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions(),
@@ -84,7 +97,14 @@ fun ScannerScreen() {
                 // This may not work.
                 // permissionGranted = it.values.all { true }
                 // Use this instead:
-                permissionGranted = environment.isBluetoothScanPermissionGranted && environment.isBluetoothConnectPermissionGranted
+                val bluetoothPermissions =
+                    environment.requiresBluetoothRuntimePermissions &&
+                            environment.isBluetoothScanPermissionGranted &&
+                            environment.isBluetoothConnectPermissionGranted
+                val locationPermission =
+                    environment.isLocationRequiredForScanning &&
+                            environment.isLocationPermissionGranted
+                permissionGranted = bluetoothPermissions || locationPermission
             }
         )
 
