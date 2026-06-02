@@ -30,13 +30,13 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.publish.jvm)
 }
 
 group = "no.nordicsemi.android.kotlin.ble"
 
-nordicNexusPublishing {
+nordicPublishing {
     POM_ARTIFACT_ID = "profile"
     POM_NAME = "Nordic Kotlin library for BLE profiles"
 

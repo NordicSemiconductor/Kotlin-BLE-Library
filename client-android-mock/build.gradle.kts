@@ -30,13 +30,13 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.publish.jvm)
 }
 
 group = "no.nordicsemi.kotlin.ble"
 
-nordicNexusPublishing {
+nordicPublishing {
     POM_ARTIFACT_ID = "client-android-mock"
     POM_NAME = "Mock Bluetooth LE Client Module for Android"
     POM_DESCRIPTION = "A main module of Kotlin BLE Library providing Android-specific functionality for testing scanning, connecting and interacting with using Bluetooth LE peripherals."

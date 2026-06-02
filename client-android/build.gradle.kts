@@ -30,14 +30,14 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.library)
-    alias(libs.plugins.nordic.kotlin.android)
-    alias(libs.plugins.nordic.nexus.android)
+    alias(libs.plugins.nordic.android.library)
+    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.publish.android)
 }
 
 group = "no.nordicsemi.kotlin.ble"
 
-nordicNexusPublishing {
+nordicPublishing {
     POM_ARTIFACT_ID = "client-android"
     POM_NAME = "Bluetooth LE Client Module for Android"
     POM_DESCRIPTION = "A main module of Kotlin BLE Library providing Android-specific functionality for scanning, connecting and interacting with Bluetooth LE peripherals."

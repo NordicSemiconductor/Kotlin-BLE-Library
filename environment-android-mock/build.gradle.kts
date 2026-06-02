@@ -30,13 +30,13 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.kotlin.jvm)
-    alias(libs.plugins.nordic.nexus.jvm)
+    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.publish.jvm)
 }
 
 group = "no.nordicsemi.kotlin.ble"
 
-nordicNexusPublishing {
+nordicPublishing {
     POM_ARTIFACT_ID = "environment-android-mock"
     POM_NAME = "Mock Android Environment Module"
     POM_DESCRIPTION = "A part of Kotlin BLE Library providing a mock Android-specific environment implementation."

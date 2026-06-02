@@ -30,8 +30,9 @@
  */
 
 plugins {
-    alias(libs.plugins.nordic.application.compose)
-    alias(libs.plugins.nordic.hilt)
+    alias(libs.plugins.nordic.android.application)
+    alias(libs.plugins.nordic.kotlin)
+    alias(libs.plugins.nordic.feature.hilt.compose)
 }
 
 android {
@@ -69,7 +70,6 @@ dependencies {
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.compose.material.icons.core)
 
