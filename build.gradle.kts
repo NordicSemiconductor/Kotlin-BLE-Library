@@ -30,17 +30,22 @@
  */
 
 plugins {
+    // This plugin is added here only for readability.
+    // It is automatically applied by the `libs.plugins.nordic.publish.kmp` plugin below.
+    alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.kotlin.parcelize) apply false
 
     // Nordic plugins are defined in https://github.com/nordicsemi/Nordic-Gradle-Plugins
     alias(libs.plugins.nordic.android.application) apply false
     alias(libs.plugins.nordic.android.library) apply false
+    alias(libs.plugins.nordic.android.kmp.library) apply false
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.nordic.feature.compose) apply false
     alias(libs.plugins.nordic.feature.hilt.compose) apply false
     alias(libs.plugins.nordic.publish.android) apply false
     alias(libs.plugins.nordic.publish.jvm) apply false
+    alias(libs.plugins.nordic.publish.kmp) apply false
 
     // This applies Nordic look & feel to generated Dokka documentation.
     // https://github.com/nordicsemi/Nordic-Gradle-Plugins/blob/main/plugins/src/main/kotlin/NordicDokkaPlugin.kt

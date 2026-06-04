@@ -29,46 +29,9 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-plugins {
-    alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.nordic.kotlin)
-    alias(libs.plugins.nordic.publish.kmp)
-}
+package no.nordicsemi.kotlin.ble.core
 
-group = "no.nordicsemi.kotlin.ble"
-
-kotlin {
-    jvm()
-
-    sourceSets {
-        commonMain {
-            kotlin.srcDir("src/main/java")
-            dependencies {
-                api(libs.kotlinx.coroutines.core)
-            }
-        }
-        jvmMain {
-            kotlin.srcDir("src/jvmMain/kotlin")
-        }
-    }
-
-    compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
-    }
-}
-
-nordicPublishing {
-    POM_ARTIFACT_ID = "core"
-    POM_NAME = "Kotlin BLE Library Core Module"
-    POM_DESCRIPTION = "Set of common classes and utilities for the Kotlin BLE Library."
-    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
-    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
-    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
-}
-
-dokka {
-    dokkaSourceSets.configureEach {
-        includes.from("Module.md")
-    }
-}
+/**
+ * JVM actual that keeps BLE closables compatible with Java closeable APIs.
+ */
+actual interface Closable : java.io.Closeable
