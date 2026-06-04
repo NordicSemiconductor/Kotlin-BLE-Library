@@ -51,6 +51,10 @@ kotlin {
             kotlin.srcDir("src/jvmMain/kotlin")
         }
     }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
 }
 
 nordicPublishing {
