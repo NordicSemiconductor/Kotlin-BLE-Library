@@ -30,6 +30,7 @@
  */
 
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.nordic.publish.kmp)
 }
