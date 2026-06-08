@@ -77,8 +77,8 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import org.jetbrains.annotations.Range
-import org.slf4j.LoggerFactory
 import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
@@ -95,7 +95,6 @@ open class Peripheral(
     scope: CoroutineScope,
     impl: Executor,
 ): Peripheral<String, Executor>(scope, impl) {
-    private val logger = LoggerFactory.getLogger(Peripheral::class.java)
 
     /**
      * An interface that provides methods to interact with the peripheral.
@@ -286,7 +285,7 @@ open class Peripheral(
         }
 
         // Start connection attempt, based on the connection options.
-        logger.trace("Connecting to {} using {}", this, options)
+        logger?.trace(Layer.GAP) { "Connecting to $this using $options" }
         _state.update { ConnectionState.Connecting }
         when (options) {
             // In case of auto connect, the connection attempt does not time out.
@@ -299,7 +298,7 @@ open class Peripheral(
                     )
                     when (state) {
                         is ConnectionState.Connected -> {
-                            logger.info("Connected to {}", this)
+                            logger?.info(Layer.GAP) { "Connected to $this" }
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
                             _phy.update { PhyInUse.PHY_LE_1M }
@@ -324,11 +323,11 @@ open class Peripheral(
                             // See: https://cs.android.com/android/platform/superproject/main/+/main:packages/modules/Bluetooth/system/stack/gatt/gatt_api.cc;l=1450
                             val reason = state.reason!!
                             if (reason is Reason.Unknown && (reason.status == 133 || reason.status == 135)) {
-                                logger.warn("Connection attempt failed (reason: {})", Reason.UnsupportedAddress)
+                                logger?.warn(Layer.GAP) { "Connection attempt failed (reason: ${Reason.UnsupportedAddress})" }
                                 _state.update { ConnectionState.Disconnected(Reason.UnsupportedAddress) }
                                 throw ConnectionFailedException(Reason.UnsupportedAddress)
                             }
-                            logger.warn("Connection attempt failed (reason: {})", reason)
+                            logger?.warn(Layer.GAP) { "Connection attempt failed (reason: $reason)" }
                             _state.update { state }
                             throw ConnectionFailedException(reason)
                         }
@@ -337,12 +336,12 @@ open class Peripheral(
                 } catch (e: TimeoutCancellationException) {
                     // Although the connection using AutoConnect does not time out on its own,
                     // it's still possible to wrap it in withTimeout. Report this as a timeout, not cancellation.
-                    logger.warn(e.message)
+                    logger?.warn(Layer.GAP, e)
                     _state.update { ConnectionState.Disconnected(Reason.Timeout(e.timeout ?: Duration.ZERO)) }
                     close()
                     throw e
                 } catch (e: CancellationException) {
-                    logger.warn("Connection attempt cancelled")
+                    logger?.warn(Layer.GAP) { "Connection attempt cancelled" }
                     _state.update { ConnectionState.Disconnected(Reason.Cancelled) }
                     close()
                     throw e
@@ -360,7 +359,7 @@ open class Peripheral(
                     )
                     when (state) {
                         is ConnectionState.Connected -> {
-                            logger.info("Connected to {}", this)
+                            logger?.info(Layer.GAP) { "Connected to $this" }
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
                             // TODO should preferred PHY be used from options?
@@ -387,17 +386,16 @@ open class Peripheral(
                                 if (elapsed >= 25000) {
                                     // The connection timeout should behave just as a timeout defined
                                     // by the user with withTimeout or Direct(timeout=...).
-                                    withTimeout(0) {}
+                                    withTimeout(Duration.ZERO) {}
                                     // ^ throws TimeoutCancellationException("Timed out immediately")!!!
                                 }
                             }
                             check(options.retry > 0) {
-                                logger.warn("Connection attempt failed (reason: {})", reason)
+                                logger?.warn(Layer.GAP) { "Connection attempt failed (reason: $reason)" }
                                 _state.update { state }
                                 throw ConnectionFailedException(reason)
                             }
-                            logger.warn("Connection attempt failed (reason: {}), retrying in {}...",
-                                state.reason, options.retryDelay)
+                            logger?.warn(Layer.GAP) { "Connection attempt failed (reason: ${state.reason}), retrying in ${options.retryDelay}..." }
                             delay(options.retryDelay)
                             connect(options.copy(retry = options.retry - 1))
                         }
@@ -405,12 +403,12 @@ open class Peripheral(
                     }
                 } catch (e: TimeoutCancellationException) {
                     val elapsed = System.currentTimeMillis() - now
-                    logger.warn("Connection attempt timed out after {}", e.timeout ?: elapsed.milliseconds)
+                    logger?.warn(Layer.GAP) { "Connection attempt timed out after ${e.timeout ?: elapsed.milliseconds}" }
                     _state.update { ConnectionState.Disconnected(Reason.Timeout(e.timeout ?: elapsed.milliseconds)) }
                     close()
                     throw e
                 } catch (e: CancellationException) {
-                    logger.warn("Connection attempt cancelled")
+                    logger?.warn(Layer.GAP) { "Connection attempt cancelled" }
                     _state.update { ConnectionState.Disconnected(Reason.Cancelled) }
                     close()
                     throw e
@@ -443,7 +441,7 @@ open class Peripheral(
                 // Skip service discovery if the peripheral got disconnected.
                 return
             } catch (e: OperationFailedException) {
-                logger.warn("Failed to request MTU: {}", e.message)
+                logger?.warn(Layer.GATT, e) { "Requesting MTU failed" }
             }
         }
         // Super implementation will start service discovery it the services are observed.
@@ -479,7 +477,7 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         return OperationMutex.withLock {
-            logger.trace("Reading PHY")
+            logger?.trace(Layer.PHY) { "Reading PHY" }
             impl.events
                 .onSubscription {
                     if (!impl.readPhy()) {
@@ -490,7 +488,7 @@ open class Peripheral(
                 .filterIsInstance(PhyChanged::class)
                 // TODO add .timeout(...)?
                 .firstOrNull()?.phy
-                ?.also { logger.info("PHY read: {}", it) }
+                ?.also { logger?.info(Layer.PHY) { "PHY read: $it" } }
                 ?: throw PeripheralNotConnectedException()
         }
     }
@@ -522,7 +520,7 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         return OperationMutex.withLock {
-            logger.trace("Setting preferred PHY: tx={}, rx={}, options={}", txPhy, rxPhy, phyOptions)
+            logger?.trace(Layer.PHY) { "Setting preferred PHY: tx=$txPhy, rx=$rxPhy, options=$phyOptions" }
             impl.events
                 .onSubscription {
                     if (!impl.requestPhy(txPhy, rxPhy, phyOptions)) {
@@ -533,13 +531,13 @@ open class Peripheral(
                 .filterIsInstance(PhyChanged::class)
                 // TODO add .timeout(...)?
                 .firstOrNull()?.phy
-                ?.also { logger.info("PHY changed to: {}", it) }
+                ?.also { logger?.info(Layer.PHY) { "PHY changed to: $it" } }
                 ?: throw PeripheralNotConnectedException()
         }
     }
 
     /**
-     * The maximum amount of data, in bytes, that can be send to a characteristic in a single write
+     * The maximum amount of data, in bytes, that can be sent to a characteristic in a single write
      * operation.
      *
      * Maximum value length depends on [WriteType] and is calculated as:
@@ -594,12 +592,12 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         check(mtu == ATT_MTU_DEFAULT) {
-            logger.warn("MTU has been already requested")
+            logger?.warn(Layer.GATT) { "MTU has been already requested" }
             return
         }
         mtuRequested = true
         val _ = OperationMutex.withLock {
-            logger.trace("Requesting MTU: {}", ATT_MTU_MAX)
+            logger?.trace(Layer.GATT) { "Requesting MTU: $ATT_MTU_MAX" }
             impl.events
                 .onSubscription {
                     if (!impl.requestMtu(ATT_MTU_MAX)) {
@@ -610,7 +608,7 @@ open class Peripheral(
                 .filterIsInstance(MtuChanged::class)
                 // TODO add .timeout(...)?
                 .firstOrNull()?.mtu
-                ?.also { logger.info("MTU set to {}", it) }
+                ?.also { logger?.info(Layer.GATT) { "MTU set to $it" } }
                 ?: throw PeripheralNotConnectedException()
         }
     }
@@ -636,7 +634,7 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         return OperationMutex.withLock {
-            logger.trace("Requesting connection priority: {}", priority)
+            logger?.trace(Layer.LINK) { "Requesting connection priority: $priority" }
             impl.events
                 .onSubscription {
                     if (!impl.requestConnectionPriority(priority)) {
@@ -647,7 +645,7 @@ open class Peripheral(
                 .filterIsInstance(ConnectionParametersChanged::class)
                 // TODO add .timeout(...)?
                 .firstOrNull()?.newParameters
-                ?.also { logger.info("Connection parameters updated: {}", it) }
+                ?.also { logger?.info(Layer.LINK) { "Connection parameters updated: $it" } }
                 ?: throw PeripheralNotConnectedException()
         }
     }
@@ -677,7 +675,7 @@ open class Peripheral(
         check(isConnected) {
             throw PeripheralNotConnectedException()
         }
-        logger.trace("Beginning reliable write")
+        logger?.trace(Layer.GATT) { "Beginning reliable write" }
         impl.beginReliableWrite()
     }
 
@@ -697,11 +695,11 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         check(impl.isReliableWriteEnabled) {
-            logger.warn("Reliable write not in progress, nothing to execute")
+            logger?.warn(Layer.GATT) { "Reliable write not in progress, nothing to execute" }
             return
         }
         OperationMutex.withLock {
-            logger.trace("Executing reliable write")
+            logger?.trace(Layer.GATT) { "Executing reliable write" }
             impl.events
                 .onSubscription {
                     if (!impl.executeReliableWrite()) {
@@ -713,9 +711,9 @@ open class Peripheral(
                 // TODO add .timeout(...)?
                 .firstOrNull()?.let {
                     when (it.status) {
-                        OperationStatus.Success -> logger.info("Reliable write executed successfully")
+                        OperationStatus.Success -> logger?.info(Layer.GATT) { "Reliable write executed successfully" }
                         else -> {
-                            logger.warn("Reliable write failed: {}", it.status)
+                            logger?.warn(Layer.GATT) { "Reliable write failed: ${it.status}" }
                             throw OperationFailedException(it.status)
                         }
                     }
@@ -739,11 +737,11 @@ open class Peripheral(
             throw PeripheralNotConnectedException()
         }
         check(impl.isReliableWriteEnabled) {
-            logger.warn("Reliable write not in progress, nothing to abort")
+            logger?.warn(Layer.GATT) { "Reliable write not in progress, nothing to abort" }
             return
         }
         OperationMutex.withLock {
-            logger.trace("Aborting reliable write")
+            logger?.trace(Layer.GATT) { "Aborting reliable write" }
             impl.events
                 .onSubscription {
                     if (!impl.abortReliableWrite()) {
@@ -755,10 +753,10 @@ open class Peripheral(
                 // TODO add .timeout(...)?
                 .firstOrNull()?.let {
                     when (it.status) {
-                        OperationStatus.Success -> logger.info("Reliable write aborted successfully")
+                        OperationStatus.Success -> logger?.info(Layer.GATT) { "Reliable write aborted successfully" }
                         else -> {
-                            logger.warn("Aborting reliable write failed: {}", it.status)
-                            throw OperationFailedException(it.status)
+                            logger?.warn(Layer.GATT) { "Aborting reliable write failed: ${it.status}" }
+                                throw OperationFailedException(it.status)
                         }
                     }
                 } ?: throw PeripheralNotConnectedException()
@@ -792,7 +790,7 @@ open class Peripheral(
             throw PeripheralClosedException()
         }
         val _ = OperationMutex.withLock {
-            logger.trace("Refreshing cache")
+            logger?.trace(Layer.GATT) { "Refreshing cache" }
             impl.events
                 .onSubscription {
                     if (!impl.refreshCache()) {
@@ -801,7 +799,7 @@ open class Peripheral(
                 }
                 // TODO add .timeout(...)?
                 .first { it == ServicesChanged }
-                .also { logger.info("Cache refreshed") }
+                .also { logger?.info(Layer.GATT) { "Cache refreshed" } }
         }
     }
 
@@ -817,7 +815,7 @@ open class Peripheral(
             return
         }
         val _ = OperationMutex.withLock {
-            logger.trace("Creating bond")
+            logger?.trace(Layer.SMP) { "Creating bond" }
             impl.bondState
                 .onSubscription {
                     if (!impl.createBond()) {
@@ -831,14 +829,12 @@ open class Peripheral(
                 // And process it.
                 .also {
                     when (it) {
-                        BondState.BONDED -> logger.info("Bond created")
+                        BondState.BONDED -> logger?.info(Layer.SMP) { "Bond created" }
                         BondState.NONE -> {
-                            logger.warn("Bonding failed")
+                            logger?.warn(Layer.SMP) { "Bonding failed" }
                             throw BondingFailedException()
                         }
-
-                        else -> { /* Not possible */
-                        }
+                        else -> { /* Not possible */ }
                     }
                 }
         }
@@ -847,7 +843,7 @@ open class Peripheral(
     /**
      * Removes the bond information associated with the peripheral.
      *
-     * This method will disconnect the peripheral it it was connected.
+     * This method will disconnect the peripheral if it was connected.
      *
      * @throws OperationFailedException If bond information could not be removed.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
@@ -857,7 +853,7 @@ open class Peripheral(
             return
         }
         val _ = OperationMutex.withLock {
-            logger.trace("Removing bond information")
+            logger?.trace(Layer.SMP) { "Removing bond information" }
             impl.bondState
                 .onSubscription {
                     if (!impl.removeBond()) {
@@ -865,7 +861,7 @@ open class Peripheral(
                     }
                 }
                 .first { it == BondState.NONE }
-                .also { logger.info("Bond information removed") }
+                .also { logger?.info(Layer.SMP) { "Bond information removed" } }
         }
     }
 

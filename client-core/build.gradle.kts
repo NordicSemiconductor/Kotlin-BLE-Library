@@ -51,8 +51,6 @@ dependencies {
 
     api(libs.kotlinx.datetime)
 
-    implementation(libs.slf4j)
-
     // Adds @hide annotation to exclude internal classes from the documentation.
     dokkaPlugin(libs.dokka.android.gradlePlugin)
 }

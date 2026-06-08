@@ -55,7 +55,6 @@ dependencies {
     api(project(":core-android"))
 
     implementation(libs.androidx.core)
-    implementation(libs.slf4j)
 }
 
 dokka {

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,49 +29,74 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.core.log
 
-package no.nordicsemi.kotlin.ble.advertiser
-
-import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
-import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.log.Log
-import kotlin.time.Duration
 
 /**
- * Base advertiser interface.
+ * A Bluetooth LE protocol layer.
  *
- * @param D The type of the advertising data.
+ * Each layer logs using a separate category, allowing log output to be filtered
+ * by the area of the Bluetooth LE stack involved.
  */
-interface BluetoothLeAdvertiser<
-        D: BluetoothLeAdvertiser.Payload
->: Log.Emitter {
-    /** A sink for log events created by the advertiser. */
-    var logger: Log.Sink?
+enum class Layer : Log.Category {
 
     /**
-     * Starts Bluetooth LE advertising.
+     * Physical layer.
      *
-     * @param connectable Whether the advertising should be connectable.
-     * @param payload Advertising data to be broadcast.
-     * @param timeout The advertising time limit. By default, there is no timeout set.
-     * @param block A block that will be called when the advertising is started. The block will
-     * receive the actual TX power (in dBm) used for advertising.
-     * @throws SecurityException If the required permission is denied.
-     * @throws AdvertisingNotStartedException If the advertising could not be started.
-     * @throws ValidationException If the advertising data is invalid.
+     * This layer contains events related to physical communication, including:
+     * - PHY updates
      */
-    suspend fun advertise(
-        connectable: Boolean,
-        payload: D,
-        timeout: Duration = Duration.INFINITE,
-        block: ((txPower: Int) -> Unit)? = null,
-    )
+    PHY,
 
     /**
-     * Base class for the advertising data.
+     * Link layer.
      *
-     * Different OS-es may allow different types of data to be advertised.
+     * This layer contains events related to link management, including:
+     * - Connection parameter updates
+     * - RSSI updates
      */
-    interface Payload
+    LINK,
+
+    /**
+     * Generic Access Profile (GAP).
+     *
+     * This layer contains events related to device discovery and connection
+     * management, including:
+     * - Advertising
+     * - Scanning
+     * - Scan results
+     * - Establishing connections
+     * - Disconnections
+     */
+    GAP,
+
+    /**
+     * Generic Attribute Profile (GATT).
+     *
+     * This layer contains events related to service discovery and data exchange,
+     * including:
+     * - Service discovery
+     * - Characteristic discovery
+     * - Descriptor discovery
+     * - Reading attributes
+     * - Writing attributes
+     * - Notifications
+     * - Indications
+     * - ATT MTU negotiation
+     */
+    GATT,
+
+    /**
+     * Security Manager Protocol (SMP).
+     *
+     * This layer contains events related to Bluetooth LE security, including:
+     * - Pairing
+     * - Bonding
+     * - Authentication
+     * - Encryption
+     * - Key exchange
+     * - Security level changes
+     */
+    SMP,
 }

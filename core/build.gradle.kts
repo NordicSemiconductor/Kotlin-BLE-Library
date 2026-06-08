@@ -45,6 +45,8 @@ kotlin {
             kotlin.srcDir("src/main/java")
             dependencies {
                 api(libs.kotlinx.coroutines.core)
+                api(nordic.id)
+                api(nordic.log)
             }
         }
         jvmMain {

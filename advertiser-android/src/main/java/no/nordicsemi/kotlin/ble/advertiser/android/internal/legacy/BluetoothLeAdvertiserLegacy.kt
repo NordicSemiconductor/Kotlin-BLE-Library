@@ -46,12 +46,12 @@ import no.nordicsemi.kotlin.ble.advertiser.android.internal.mapper.toReason
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Class responsible for starting advertisements on Android API level < 26.
@@ -62,7 +62,6 @@ import kotlin.time.Duration
 internal class BluetoothLeAdvertiserLegacy(
     environment: NativeAndroidEnvironment,
 ) : NativeBluetoothLeAdvertiser(environment) {
-    private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserLegacy::class.java)
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
@@ -86,7 +85,7 @@ internal class BluetoothLeAdvertiserLegacy(
 
                 val callback = object : AdvertiseCallback() {
                     override fun onStartSuccess(settingsInEffect: AdvertiseSettings) {
-                        logger.info("Advertising started")
+                        logger?.info(Layer.GAP) { "Advertising started" }
 
                         // Legacy advertising doesn't have any callback for the timeout, so we need to
                         // start a coroutine that will resume the method. Advertising should stop on
@@ -98,8 +97,8 @@ internal class BluetoothLeAdvertiserLegacy(
 
                             @OptIn(DelicateCoroutinesApi::class)
                             timeoutJob = GlobalScope.launch {
-                                delay(settingsInEffect.timeout.toLong())
-                                logger.info("Advertising timed out: stopping advertising")
+                                delay(settingsInEffect.timeout.milliseconds)
+                                logger?.info(Layer.GAP) { "Advertising timed out: stopping advertising" }
                                 bluetoothLeAdvertiser?.stopAdvertising(callback)
                                 continuation.resume(Unit)
                             }
@@ -110,7 +109,7 @@ internal class BluetoothLeAdvertiserLegacy(
                     }
 
                     override fun onStartFailure(errorCode: Int) {
-                        logger.error("Advertising failed to start: error $errorCode")
+                        logger?.error(Layer.GAP) { "Advertising failed to start (error: $errorCode)" }
                         continuation.resumeWithReason(errorCode.toReason())
                     }
                 }
@@ -123,34 +122,34 @@ internal class BluetoothLeAdvertiserLegacy(
                         scanResponse?.toNative(),
                         callback,
                     )
-                    logger.info("Advertising initiated")
+                    logger?.info(Layer.GAP) { "Advertising initiated" }
                 } catch (e: IllegalArgumentException) {
-                    logger.error("Illegal advertising set parameters", e)
+                    logger?.error(Layer.GAP, e) { "Illegal advertising set parameters" }
                     continuation.resumeWithReason(
                         reason = AdvertisingNotStartedException.Reason.UNKNOWN
                     )
                     return@suspendCancellableCoroutine
                 } catch (e: IllegalStateException) {
-                    logger.error("Failed to start advertising", e)
+                    logger?.error(Layer.GAP, e) { "Advertising failed to start" }
                     continuation.resumeWithReason(
                         reason = AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE
                     )
                     return@suspendCancellableCoroutine
                 } catch (e: Exception) {
-                    logger.error("Failed to build advertising data", e)
+                    logger?.error(Layer.GAP, e) { "Failed to build advertising data" }
                     continuation.resumeWithException(e)
                     return@suspendCancellableCoroutine
                 }
 
                 // Cancel the advertising when the coroutine is canceled.
                 continuation.invokeOnCancellation {
-                    logger.info("Advertising cancelled: stopping advertising")
+                    logger?.info(Layer.GAP) { "Advertising cancelled: stopping advertising" }
                     timeoutJob?.cancel()
                     bluetoothLeAdvertiser?.stopAdvertising(callback)
                 }
             }
         } finally {
-            logger.info("Advertising stopped")
+            logger?.info(Layer.GAP) { "Advertising stopped" }
         }
     }
 }

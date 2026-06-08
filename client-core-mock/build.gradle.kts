@@ -50,7 +50,7 @@ dependencies {
     api(project(":core-mock"))
     api(project(":client-core"))
 
-    implementation(libs.slf4j)
+    // Adds @hide annotation to exclude internal classes from the documentation.
     dokkaPlugin(libs.dokka.android.gradlePlugin)
 }
 

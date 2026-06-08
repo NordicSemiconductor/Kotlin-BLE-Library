@@ -50,8 +50,6 @@ dependencies {
     api(project(":client-core"))
     api(project(":core-android"))
 
-    implementation(libs.slf4j)
-
     testImplementation(libs.kotlin.test)
     testImplementation(libs.truth)
 }

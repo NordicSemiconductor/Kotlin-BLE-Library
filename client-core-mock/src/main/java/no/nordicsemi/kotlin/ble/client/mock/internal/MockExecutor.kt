@@ -43,6 +43,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
+import no.nordicsemi.kotlin.log.Log
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -62,6 +63,7 @@ open class MockExecutor(
     private val environment: MockEnvironment,
     private val advertisements: Flow<MockScanResult<String>>,
 ): Peripheral.Executor<String> {
+    override var logger: Log.Sink? = null
     override val initialState: ConnectionState = ConnectionState.Disconnected()
     override val initialServices: List<RemoteService> = emptyList()
 

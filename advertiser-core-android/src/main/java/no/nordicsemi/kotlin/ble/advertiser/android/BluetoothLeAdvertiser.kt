@@ -43,6 +43,7 @@ import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.android.internal.AdvertisingDataScopeImpl
+import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
@@ -62,6 +63,7 @@ import kotlin.time.Duration
 abstract class BluetoothLeAdvertiser(
     private val environment: AndroidEnvironment,
 ): BluetoothLeAdvertiser<AdvertisingPayload> {
+    override var logger: Log.Sink? = null
 
     companion object Factory
 

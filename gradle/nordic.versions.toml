@@ -4,10 +4,9 @@
 # The version catalog can be updated independently of this project after the release of this library.
 
 [versions]
-nordic-log = "2.5.0"
-nordic-data = "1.0.0"
+util = "1.1.0" # https://github.com/nordicsemi/Kotlin-Util-Library
 
 [libraries]
-nordic-log = { group = "no.nordicsemi.android", name = "log", version.ref = "nordic-log" }
-nordic-log-timber = { group = "no.nordicsemi.android", name = "log-timber", version.ref = "nordic-log" }
-nordic-data = { group = "no.nordicsemi.kotlin", name = "data", version.ref = "nordic-data" }
+id   = { group = "no.nordicsemi.kotlin", name = "id",   version.ref = "util" }
+log  = { group = "no.nordicsemi.kotlin", name = "log",  version.ref = "util" }
+data = { group = "no.nordicsemi.kotlin", name = "data", version.ref = "util" }

@@ -49,8 +49,6 @@ nordicPublishing {
 dependencies {
     api(project(":core-mock"))
     api(project(":core-android"))
-
-    implementation(libs.slf4j)
 }
 
 dokka {

@@ -53,7 +53,6 @@ import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.environment.android.internal.toState
 import org.jetbrains.annotations.Range
-import org.slf4j.LoggerFactory
 
 /**
  * This is the environment of a native Android device.
@@ -69,7 +68,6 @@ class NativeAndroidEnvironment private constructor(
     context: Context,
     isNeverForLocationFlagSet: Boolean,
 ): AndroidEnvironment {
-    private val logger = LoggerFactory.getLogger(NativeAndroidEnvironment::class.java)
 
     companion object {
         /** Singleton instance of the environment. */
@@ -145,7 +143,6 @@ class NativeAndroidEnvironment private constructor(
 
             // Ignore if the state has not changed.
             if (oldState != newState) {
-                logger.info("Bluetooth state changed: $oldState -> $newState")
                 _bluetoothState.update { newState }
             }
         }
@@ -166,7 +163,6 @@ class NativeAndroidEnvironment private constructor(
 
             // Ignore if the state has not changed.
             if (oldState != newState) {
-                logger.info("Location state changed: $oldState -> $newState")
                 _locationState.update { newState }
             }
         }

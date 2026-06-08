@@ -42,6 +42,7 @@ import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
+import no.nordicsemi.kotlin.log.Log
 import kotlin.time.Duration
 
 /**
@@ -58,7 +59,10 @@ interface CentralManager<
     EX: Peripheral.Executor<ID>,
     F: CentralManager.ScanFilterScope,
     SR: ScanResult<*, *>,
->: Manager {
+>: Manager, Log.Emitter {
+
+    /** A sink for log events created by the central manager. */
+    var logger: Log.Sink?
 
     /**
      * A list of peripherals that the central manager is able to match to the provided identifiers.

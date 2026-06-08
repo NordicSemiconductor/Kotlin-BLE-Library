@@ -43,9 +43,8 @@ import no.nordicsemi.kotlin.ble.advertiser.android.internal.AdvertisingParameter
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.time.Duration
 
@@ -61,7 +60,6 @@ import kotlin.time.Duration
 internal class MockBluetoothLeAdvertiser(
     private val environment: MockAndroidEnvironment,
 ): BluetoothLeAdvertiser(environment) {
-    private val logger: Logger = LoggerFactory.getLogger(MockBluetoothLeAdvertiser::class.java)
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
@@ -73,14 +71,14 @@ internal class MockBluetoothLeAdvertiser(
     ) {
         val result = environment.advertiser(parameters.txPowerLevel, advertisingData, scanResponse)
         val mockedTxPower = result.getOrThrow()
-        logger.info("Advertising initiated")
+        logger?.info(Layer.GAP) { "Advertising initiated" }
 
         try {
             suspendCancellableCoroutine { continuation ->
                 // Mocking advertising has no impact on other features.
                 // Local advertising is not visible on scanner nor can be used to connect.
                 // Let's just pretend advertising has started.
-                logger.info("Advertising started")
+                logger?.info(Layer.GAP) { "Advertising started" }
 
                 val duration = when {
                     timeout > Duration.ZERO && timeout != Duration.INFINITE -> timeout
@@ -93,7 +91,7 @@ internal class MockBluetoothLeAdvertiser(
                     @OptIn(DelicateCoroutinesApi::class)
                     job = GlobalScope.launch {
                         delay(duration)
-                        logger.info("Advertising timed out: stopping advertising")
+                        logger?.info(Layer.GAP) { "Advertising timed out: stopping advertising" }
                         continuation.resume(Unit)
                     }
                 }
@@ -102,12 +100,12 @@ internal class MockBluetoothLeAdvertiser(
                 block?.invoke(mockedTxPower)
 
                 continuation.invokeOnCancellation {
-                    logger.info("Advertising cancelled: stopping advertising")
+                    logger?.info(Layer.GAP) { "Advertising cancelled: stopping advertising" }
                     job?.cancel()
                 }
             }
         } finally {
-            logger.info("Advertising stopped")
+            logger?.info(Layer.GAP) { "Advertising stopped" }
         }
     }
 

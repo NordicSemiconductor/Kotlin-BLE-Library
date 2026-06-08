@@ -49,8 +49,6 @@ nordicPublishing {
 dependencies {
     api(project(":advertiser-core-android"))
     api(project(":environment-android-mock"))
-
-    implementation(libs.slf4j)
 }
 
 dokka {
