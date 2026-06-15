@@ -34,11 +34,18 @@
 package no.nordicsemi.kotlin.ble.core
 
 import kotlinx.coroutines.flow.StateFlow
+import no.nordicsemi.kotlin.ble.core.log.Layer
+import no.nordicsemi.kotlin.log.Log
 
 /**
  * A base interface for a manager.
  */
-interface Manager : Closable {
+interface Manager : Closable, Log.Emitter {
+
+    /**
+     * A sink for log events created by the manager.
+     */
+    var logger: Log.Sink<Layer>?
 
     /**
      * Closes the manager and releases its resources.

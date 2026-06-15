@@ -69,7 +69,11 @@ internal class NativeExecutor(
     private val bluetoothDevice: BluetoothDevice,
     name: String?
 ): Peripheral.Executor {
-    override var logger: Log.Sink? = null
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
+        set(value) {
+            field = value
+            gattCallback.logger = value
+        }
     override val identifier: String = bluetoothDevice.address
     override val type: PeripheralType = try {
         // This may throw Security Exception if Bluetooth Connect permission isn't granted.
@@ -99,11 +103,8 @@ internal class NativeExecutor(
      * The [NativeGattCallback] receives callbacks from the [BluetoothGatt] and emits them
      * as [GattEvent] to [events].
      */
-    private val gattCallback: NativeGattCallback = NativeGattCallback(
-        logger = { category, level, _, throwable, message ->
-            logger?.log(category, level, identifier, throwable, message)
-        }
-    )
+    private val gattCallback: NativeGattCallback = NativeGattCallback(identifier)
+        .also { it.logger = logger }
 
     /** The current bond state. */
     private var _bondState = MutableStateFlow(bluetoothDevice.bondState.toBondState())

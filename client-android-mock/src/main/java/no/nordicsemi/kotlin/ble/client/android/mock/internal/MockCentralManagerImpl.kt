@@ -75,7 +75,7 @@ open class MockCentralManagerImpl(
     scope: CoroutineScope,
     private val environment: MockAndroidEnvironment = LatestApi(),
 ): MockCentralManager, CentralManagerImpl(scope, environment) {
-    override var logger: Log.Sink? = null
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
 
     // Simulation methods
     private var peripheralSpecs = mutableListOf<PeripheralSpec<String>>()

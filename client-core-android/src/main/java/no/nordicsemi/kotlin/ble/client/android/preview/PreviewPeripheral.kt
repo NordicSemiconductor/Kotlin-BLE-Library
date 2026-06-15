@@ -80,6 +80,7 @@ import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 import no.nordicsemi.kotlin.log.Log
@@ -114,7 +115,7 @@ private class StubExecutor(
     private val phy: PhyInUse,
     hasBondInformation: Boolean,
 ): Peripheral.Executor {
-    override var logger: Log.Sink? = null
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
     private val _events = MutableSharedFlow<GattEvent>(replay = 1)
     override val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 

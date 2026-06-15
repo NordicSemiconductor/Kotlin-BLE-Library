@@ -35,6 +35,7 @@ package no.nordicsemi.kotlin.ble.advertiser
 
 import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.log.Log
 import kotlin.time.Duration
 
@@ -46,8 +47,12 @@ import kotlin.time.Duration
 interface BluetoothLeAdvertiser<
         D: BluetoothLeAdvertiser.Payload
 >: Log.Emitter {
-    /** A sink for log events created by the advertiser. */
-    var logger: Log.Sink?
+    /**
+     * A sink for log events created by the advertiser.
+     *
+     * The logger emits logs with category [Layer.GAP].
+     */
+    var logger: Log.Sink<Layer>?
 
     /**
      * Starts Bluetooth LE advertising.

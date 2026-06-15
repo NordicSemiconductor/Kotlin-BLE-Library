@@ -79,7 +79,7 @@ internal class NativeCentralManagerImpl(
     scope: CoroutineScope,
     private val environment: NativeAndroidEnvironment,
 ): CentralManagerImpl(scope, environment) {
-    override var logger: Log.Sink? = null
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
     override val state = environment.bluetoothState
 
     private val _bondState =
