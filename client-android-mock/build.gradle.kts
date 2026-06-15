@@ -50,8 +50,6 @@ dependencies {
     api(project(":client-core-mock"))
     api(project(":client-core-android"))
     api(project(":environment-android-mock"))
-
-    implementation(libs.slf4j)
 }
 
 dokka {

@@ -45,6 +45,7 @@ import no.nordicsemi.kotlin.ble.advertiser.android.native
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.native
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
+import no.nordicsemi.kotlin.log.Log
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -72,5 +73,8 @@ object ViewModelModule {
     @Provides
     fun provideCentralManager(environment: NativeAndroidEnvironment, scope: CoroutineScope): CentralManager {
         return CentralManager.native(environment, scope)
+            .apply {
+                logger = Log.Sink.Default { _, _ -> true }
+            }
     }
 }

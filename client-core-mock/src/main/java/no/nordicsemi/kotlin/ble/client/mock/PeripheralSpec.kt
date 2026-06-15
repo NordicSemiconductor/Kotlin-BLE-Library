@@ -163,7 +163,7 @@ class PeripheralSpec<ID: Any> private constructor(
             field = value
 
             if (field == Proximity.OUT_OF_RANGE && isConnected) {
-                val supervisionTimeout = connectionParameters!!.supervisionTimeoutMillis
+                val supervisionTimeout = connectionParameters!!.supervisionTimeoutMillis.milliseconds
 
                 scope.launch {
                     // Simulate supervision timeout delay before notifying disconnection.
@@ -483,7 +483,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * [ConnectionState.Disconnected.Reason.TerminatePeerUser].
      *
      */
-    // TODO Add Error to be returned to the clients?0
+    // TODO Add Error to be returned to the clients?
     fun simulateDisconnection() {
         if (isConnected) {
             // TODO Should we delay this to simulate connection interval?
@@ -502,7 +502,7 @@ class PeripheralSpec<ID: Any> private constructor(
      * @see ConnectionParameters.Specified.supervisionTimeout
      */
     fun simulateReset() {
-        val supervisionTimeout = connectionParameters?.supervisionTimeoutMillis
+        val supervisionTimeout = connectionParameters?.supervisionTimeoutMillis?.milliseconds
         connectionsCount = 0
         eventHandler?.onReset()
 
@@ -557,7 +557,7 @@ class PeripheralSpec<ID: Any> private constructor(
         services = MockServerScopeImpl().apply(newServices).build()
         isServiceCacheValid = false
 
-        val connectionInterval = connectionParameters?.connectionIntervalMillis ?: return
+        val connectionInterval = connectionParameters?.connectionIntervalMillis?.milliseconds ?: return
 
         // If the indications on Service Changed characteristic are enabled, notify clients about the change.
         val serviceChangedCharacteristicCccd = oldServices
@@ -606,6 +606,7 @@ class PeripheralSpec<ID: Any> private constructor(
             this.identifier = newIdentifier
             this.addressType = addressType
             this.isKnown = false
+            this.isBonded = false
         }
         // TODO what with cached connections in central managers? PeripheralSpec instance is the same.
     }
@@ -624,7 +625,7 @@ class PeripheralSpec<ID: Any> private constructor(
         connectionParameters?.connectionIntervalMillis?.let { connectionInterval ->
             scope.launch {
                 // Wait for few (old) connection intervals before applying new parameters.
-                delay(delay * connectionInterval)
+                delay(connectionInterval.milliseconds * delay)
 
                 connectionParameters = parameters
                 _events.emit(ConnectionParametersChanged(parameters))
@@ -658,9 +659,9 @@ class PeripheralSpec<ID: Any> private constructor(
         }
 
         // Wait for few connection intervals before applying new parameters.
-        val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis
+        val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis.milliseconds
         scope.launch {
-            delay(2 * connectionInterval)
+            delay(connectionInterval * 2)
 
             this@PeripheralSpec.mtu = newMtu
             _events.emit(MtuChanged(newMtu))
@@ -810,9 +811,10 @@ class PeripheralSpec<ID: Any> private constructor(
         internal suspend fun disconnect(reason: Reason) {
             val connectionParameters =
                 checkNotNull(connectionParameters) { "Peripheral not connected." }
+            val connectionInterval = connectionParameters.connectionIntervalMillis.milliseconds
             val eventHandler = checkNotNull(eventHandler)
 
-            delay(connectionParameters.connectionIntervalMillis)
+            delay(connectionInterval)
             _events.emit(ConnectionStateChanged(ConnectionState.Disconnected(reason)))
 
             // One virtual client disconnected.
@@ -834,6 +836,7 @@ class PeripheralSpec<ID: Any> private constructor(
         @OptIn(ExperimentalUuidApi::class)
         suspend fun discoverServices(uuids: List<Uuid>): Boolean {
             val connectionParameters = connectionParameters ?: return false
+            val connectionInterval = connectionParameters.connectionIntervalMillis.milliseconds
             val eventHandler = eventHandler ?: return false
 
             // Return cached services if available. Note, that the cache may be invalid.
@@ -846,7 +849,7 @@ class PeripheralSpec<ID: Any> private constructor(
             when (eventHandler.onServiceDiscoveryRequest(uuids)) {
                 is ServiceDiscoveryResult.Success -> {
                     // Simulate changing connection interval.
-                    delay(connectionParameters.connectionIntervalMillis)
+                    delay(connectionInterval)
 
                     // Android changes connection parameters during service discovery.
                     if (environment.reportsConnectionParameters) {
@@ -863,11 +866,11 @@ class PeripheralSpec<ID: Any> private constructor(
                     // The duration is arbitrary, but depends on the number of services.
                     // Android switches to 7.5 ms connection interval during the service discovery.
                     // TODO iOS doesn't change interval, but only discovers requested services.
-                    val serviceDiscoveryMillis = services!!
-                        .fold(2 * connectionParameters.connectionIntervalMillis) { acc, service ->
-                            acc + 10 * (service.characteristics.size + service.includedServices.size)
+                    val serviceDiscoveryDuration = services!!
+                        .fold(connectionInterval * 2) { acc, service ->
+                            acc + 10.milliseconds * (service.characteristics.size + service.includedServices.size)
                         }
-                    delay(serviceDiscoveryMillis)
+                    delay(serviceDiscoveryDuration)
                     // TODO iOS returns only requested services. Filtering is also done later, but should be here?
                     // TODO iOS does not return Generic Access and Generic Attribute services. Filter out, or leave for the PeripheralSpec?
                     isServiceCacheValid = true
@@ -877,7 +880,7 @@ class PeripheralSpec<ID: Any> private constructor(
                     // Restore connection parameters.
                     if (environment.reportsConnectionParameters) {
                         scope.launch {
-                            delay(2 * connectionParameters.connectionIntervalMillis)
+                            delay(connectionInterval * 2)
                             _events.emit(ConnectionParametersChanged(connectionParameters))
                         }
                     }
@@ -885,7 +888,7 @@ class PeripheralSpec<ID: Any> private constructor(
 
                 is ServiceDiscoveryResult.Failure -> {
                     // Let's say the failure happens after some delay.
-                    delay(2 * connectionParameters.connectionIntervalMillis)
+                    delay(connectionInterval * 2)
                     _events.emit(ServicesDiscovered(emptyList()))
                 }
             }
@@ -919,7 +922,7 @@ class PeripheralSpec<ID: Any> private constructor(
         suspend fun readRssi(): Boolean {
             // Simulate a short delay for reading RSSI.
             val connectionParameters = connectionParameters ?: return false
-            delay(connectionParameters.connectionIntervalMillis)
+            delay(connectionParameters.connectionIntervalMillis.milliseconds)
 
             _events.emit(RssiRead(proximity.randomRssi()))
             return true
@@ -941,7 +944,7 @@ class PeripheralSpec<ID: Any> private constructor(
 
             // Simulate a delay for requesting MTU.
             val connectionParameters = checkNotNull(connectionParameters)
-            delay(connectionParameters.connectionIntervalMillis)
+            delay(connectionParameters.connectionIntervalMillis.milliseconds)
 
             // Check if the peripheral is still connected.
             val maxAttMtu = maxAttMtu ?: return false
@@ -965,7 +968,7 @@ class PeripheralSpec<ID: Any> private constructor(
             // and then emit the event with new parameters.
             if (environment.reportsConnectionParameters) {
                 // Simulate a delay for requesting connection parameters update.
-                delay(5 * connectionParameters.connectionIntervalMillis)
+                delay(connectionParameters.connectionIntervalMillis.milliseconds * 5)
 
                 // Check if the peripheral is still connected and emit the event.
                 if (isConnected) {
@@ -1014,7 +1017,7 @@ class PeripheralSpec<ID: Any> private constructor(
             val connectionParameters = connectionParameters ?: return
 
             // Simulate a delay for requesting PHY update.
-            delay(2 * connectionParameters.connectionIntervalMillis)
+            delay(connectionParameters.connectionIntervalMillis.milliseconds * 2)
 
             // Check if the peripheral is still connected.
             if (isConnected) {
@@ -1039,7 +1042,7 @@ class PeripheralSpec<ID: Any> private constructor(
         suspend fun endReliableWrites(execute: Boolean): Boolean {
             val connectionParameters = connectionParameters ?: return false
             // Simulate a delay for ending reliable writes.
-            delay(connectionParameters.connectionIntervalMillis)
+            delay(connectionParameters.connectionIntervalMillis.milliseconds)
 
             val eventHandler = checkNotNull(eventHandler)
             when (val response = eventHandler.onExecuteWriteRequest(execute)) {

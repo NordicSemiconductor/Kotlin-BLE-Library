@@ -197,8 +197,7 @@ abstract class BaseRemoteCharacteristic(
                 }
                 .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicRead::class)
-                .filter { it.matches() }
-                .firstOrNull()
+                .firstOrNull { it.matches() }
                 ?.let {
                     when (it.status) {
                         OperationStatus.Success -> it.value
@@ -251,8 +250,7 @@ abstract class BaseRemoteCharacteristic(
                 }
                 .takeWhile { !it.isServiceInvalidatedEvent }
                 .filterIsInstance(CharacteristicWrite::class)
-                .filter { it.matches() }
-                .firstOrNull()
+                .firstOrNull { it.matches() }
                 ?.let {
                     check(it.status == OperationStatus.Success) {
                         throw OperationFailedException(it.status)

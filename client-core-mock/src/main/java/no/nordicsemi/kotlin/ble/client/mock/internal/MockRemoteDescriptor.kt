@@ -54,6 +54,7 @@ import no.nordicsemi.kotlin.ble.core.internal.CCCD
 import no.nordicsemi.kotlin.ble.core.internal.CEPD
 import no.nordicsemi.kotlin.ble.core.internal.CUD
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -69,7 +70,8 @@ class MockRemoteDescriptor(
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
         val eventHandler = checkNotNull(peripheralSpec.eventHandler)
-        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters).connectionIntervalMillis
+        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters)
+            .connectionIntervalMillis.milliseconds
 
         // Ensure that the services are valid.
         check(peripheralSpec.isServiceCacheValid) {
@@ -142,7 +144,8 @@ class MockRemoteDescriptor(
 
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray) {
         val eventHandler = checkNotNull(peripheralSpec.eventHandler)
-        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters).connectionIntervalMillis
+        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters)
+            .connectionIntervalMillis.milliseconds
 
         // Ensure that the services are valid.
         check(peripheralSpec.isServiceCacheValid) {

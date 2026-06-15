@@ -58,8 +58,6 @@ dependencies {
     api(libs.androidx.annotation)
     api(libs.androidx.core.ktx)
     api(libs.kotlinx.coroutines.android)
-
-    implementation(libs.slf4j)
 }
 
 dokka {

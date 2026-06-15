@@ -59,9 +59,10 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
-import org.slf4j.LoggerFactory
+import no.nordicsemi.kotlin.log.Log
 import kotlin.time.Duration
 
 /**
@@ -74,7 +75,7 @@ open class MockCentralManagerImpl(
     scope: CoroutineScope,
     private val environment: MockAndroidEnvironment = LatestApi(),
 ): MockCentralManager, CentralManagerImpl(scope, environment) {
-    private val logger = LoggerFactory.getLogger(MockCentralManagerImpl::class.java)
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
 
     // Simulation methods
     private var peripheralSpecs = mutableListOf<PeripheralSpec<String>>()
@@ -140,7 +141,7 @@ open class MockCentralManagerImpl(
                         name = null,
                         environment = environment,
                         advertisements = mockAdvertiser.events,
-                    )
+                    ).also { p -> p.logger = logger }
                 )
             }
         }
@@ -200,9 +201,9 @@ open class MockCentralManagerImpl(
 
         // Build the filter based on the provided builder
         val filters = ConjunctionFilter().apply(filter).filters
-        filters?.let {
-            logger.trace("Starting scanning with filters: {}", it)
-        } ?: logger.trace("Starting scanning with no filters")
+        logger?.trace(Layer.GAP) {
+            "Starting scanning with ${filters?.let { "filters: $it" } ?: "no filters"}"
+        }
 
         return flow {
             val reportResult = environment.scanner().getOrThrow()
@@ -280,7 +281,7 @@ open class MockCentralManagerImpl(
                                     environment = environment,
                                     advertisements = mockAdvertiser.events,
                                 )
-                            )
+                            ).also { p -> p.logger = logger }
                         }
                     }
 
@@ -290,13 +291,13 @@ open class MockCentralManagerImpl(
                     emit(scanResult)
                 }
             }
-            logger.trace("Scanning timed out after {}", timeout)
+            logger?.trace(Layer.GAP) { "Scanning timed out after $timeout" }
         }.catch { throwable ->
             (throwable as? ScanningFailedToStartException)?.let {
-                logger.error(it.message)
+                logger?.error(Layer.GAP, it)
             }
         }.onCompletion {
-            logger.trace("Scanning stopped")
+            logger?.trace(Layer.GAP) { "Scanning stopped" }
         }
     }
 

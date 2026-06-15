@@ -60,8 +60,9 @@ import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
-import org.slf4j.LoggerFactory
+import no.nordicsemi.kotlin.log.Log
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import android.bluetooth.le.ScanCallback as NativeScanCallback
@@ -71,7 +72,6 @@ import android.bluetooth.le.ScanSettings as NativeScanSettings
 /**
  * A native implementation of [CentralManager] for Android.
  *
- * @param context Android context, needed to connect to peripherals and listen to system events.
  * @param scope The coroutine scope.
  * @param environment Native Android environment object.
  */
@@ -79,8 +79,7 @@ internal class NativeCentralManagerImpl(
     scope: CoroutineScope,
     private val environment: NativeAndroidEnvironment,
 ): CentralManagerImpl(scope, environment) {
-    private val logger = LoggerFactory.getLogger(NativeCentralManagerImpl::class.java)
-
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
     override val state = environment.bluetoothState
 
     private val _bondState =
@@ -96,7 +95,7 @@ internal class NativeCentralManagerImpl(
             } ?: return
             val previousBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.BOND_NONE).toBondState()
             val bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.BOND_NONE).toBondState()
-            logger.info("Bond state of $device changed: $previousBondState -> $bondState")
+            logger?.info(Layer.SMP) { "Bond state of $device changed: $previousBondState -> $bondState" }
             _bondState.tryEmit(device.address to bondState)
         }
     }
@@ -122,7 +121,7 @@ internal class NativeCentralManagerImpl(
                                 .onEach { (_, state) -> onBondStateChanged(state) }
                                 .launchIn(scope)
                         }
-                )
+                ).also { p -> p.logger = logger }
             }
         }
     }
@@ -199,7 +198,7 @@ internal class NativeCentralManagerImpl(
                                             .onEach { (_, state) -> onBondStateChanged(state) }
                                             .launchIn(scope)
                                     }
-                            )
+                            ).also { p -> p.logger = logger }
                         }
                     }
                 ) ?: return
@@ -216,16 +215,16 @@ internal class NativeCentralManagerImpl(
 
             override fun onScanFailed(errorCode: Int) {
                 with (ScanningFailedToStartException(errorCode.errorCodeToReason())) {
-                    logger.error(message)
+                    logger?.error(Layer.GAP, this)
                     close(this)
                 }
             }
         }
 
         // Finally, start the scan.
-        filters?.let {
-            logger.trace("Starting scanning with filters: {}", it)
-        } ?: logger.trace("Starting scanning with no filters")
+        logger?.trace(Layer.GAP) {
+            "Starting scanning with ${filters?.let { "filters: $it" } ?: "no filters"}"
+        }
         scanner.startScan(filters?.toNative(), settings, callback)
 
         // Set a timeout to stop the scan.
@@ -235,13 +234,13 @@ internal class NativeCentralManagerImpl(
                 // a CancellationException, which will be ignored.
                 delay(timeout)
                 // If we reached the timeout, close the flow manually.
-                logger.trace("Scanning timed out after {}", timeout)
+                logger?.trace(Layer.GAP) { "Scanning timed out after $timeout" }
                 close()
             }
         }
         awaitClose {
             scanner.stopScan(callback)
-            logger.trace("Scanning stopped")
+            logger?.trace(Layer.GAP) { "Scanning stopped" }
         }
     }
 
@@ -268,5 +267,4 @@ internal class NativeCentralManagerImpl(
             // Ignore
         }
     }
-
 }

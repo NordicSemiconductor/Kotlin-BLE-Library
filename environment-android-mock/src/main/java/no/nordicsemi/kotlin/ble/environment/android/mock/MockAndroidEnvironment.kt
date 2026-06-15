@@ -43,7 +43,6 @@ import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import org.jetbrains.annotations.Range
-import org.slf4j.LoggerFactory
 
 /**
  * A type alias for the lastest Android API.
@@ -142,7 +141,6 @@ sealed class MockAndroidEnvironment(
     val advertiser: MockAdvertiser,
     val scanner: MockScanner,
 ): AndroidEnvironment, MockEnvironment {
-    private val logger = LoggerFactory.getLogger(MockAndroidEnvironment::class.java)
 
     // Allow granting permissions in runtime.
     override var isLocationPermissionGranted: Boolean = isLocationPermissionGranted
@@ -184,7 +182,6 @@ sealed class MockAndroidEnvironment(
 
         // Ignore if the state has not changed.
         if (newState != bluetoothState.value) {
-            logger.info("Bluetooth state changed: ${bluetoothState.value} -> $newState")
             _bluetoothState.update { newState }
         }
     }

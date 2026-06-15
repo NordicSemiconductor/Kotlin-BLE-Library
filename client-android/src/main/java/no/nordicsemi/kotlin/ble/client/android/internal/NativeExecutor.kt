@@ -49,6 +49,8 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.log.Layer
+import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
@@ -67,6 +69,11 @@ internal class NativeExecutor(
     private val bluetoothDevice: BluetoothDevice,
     name: String?
 ): Peripheral.Executor {
+    override var logger: Log.Sink<Layer>? = Log.Sink.Null
+        set(value) {
+            field = value
+            gattCallback.logger = value
+        }
     override val identifier: String = bluetoothDevice.address
     override val type: PeripheralType = try {
         // This may throw Security Exception if Bluetooth Connect permission isn't granted.
@@ -96,7 +103,8 @@ internal class NativeExecutor(
      * The [NativeGattCallback] receives callbacks from the [BluetoothGatt] and emits them
      * as [GattEvent] to [events].
      */
-    private val gattCallback: NativeGattCallback = NativeGattCallback()
+    private val gattCallback: NativeGattCallback = NativeGattCallback(identifier)
+        .also { it.logger = logger }
 
     /** The current bond state. */
     private var _bondState = MutableStateFlow(bluetoothDevice.bondState.toBondState())
@@ -135,12 +143,18 @@ internal class NativeExecutor(
     }
 
     override suspend fun removeBond(): Boolean {
-        try {
+        val result = try {
             val method = BluetoothDevice::class.java.getMethod("removeBond")
-            return method.invoke(bluetoothDevice) as Boolean
-        } catch (_: ReflectiveOperationException) {
+            method.invoke(bluetoothDevice) as Boolean
+        } catch (e: ReflectiveOperationException) {
+            logger?.warn(Layer.SMP, e) { "Failed to remove bond information" }
+            false
+        }
+        if (!result) {
+            logger?.warn(Layer.GATT) { "Failed to remove bond information" }
             return false
         }
+        return true
     }
 
     override suspend fun refreshCache(): Boolean {
@@ -148,10 +162,12 @@ internal class NativeExecutor(
             val result = try {
                 val method = BluetoothGatt::class.java.getMethod("refresh")
                 method.invoke(gatt) as Boolean
-            } catch (_: ReflectiveOperationException) {
+            } catch (e: ReflectiveOperationException) {
+                logger?.warn(Layer.GATT, e) { "Refreshing GATT cache failed" }
                 false
             }
             if (!result) {
+                logger?.warn(Layer.GATT) { "Refreshing GATT cache failed" }
                 return false
             }
 

@@ -43,9 +43,8 @@ import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedExcept
 import no.nordicsemi.kotlin.ble.advertiser.exception.ValidationException
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
+import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.time.Duration
@@ -62,7 +61,6 @@ import kotlin.time.Duration.Companion.milliseconds
 internal class BluetoothLeAdvertiserOreo(
     environment: NativeAndroidEnvironment,
 ) : NativeBluetoothLeAdvertiser(environment) {
-    private val logger: Logger = LoggerFactory.getLogger(BluetoothLeAdvertiserOreo::class.java)
 
     override suspend fun startAdvertising(
         parameters: AdvertisingSetParameters,
@@ -92,16 +90,16 @@ internal class BluetoothLeAdvertiserOreo(
                         status: Int
                     ) {
                         check(status == ADVERTISE_SUCCESS) {
-                            logger.error("Advertising failed to start: $status")
+                            logger?.error(Layer.GAP) { "Advertising failed to start: $status" }
                             continuation.resumeWithReason(status.toReason())
                             return
                         }
                         // Advertising started.
                         //
-                        // Note: Method `onAdvertisingEnabled(_, true, SUCCESS)` will NOT be called afterwards.
+                        // Note: Method `onAdvertisingEnabled(_, true, SUCCESS)` will NOT be called afterward.
                         //       It is only called when the advertising stops due to a timeout (with enable = false),
                         //       or when it is restarted using `advertisingSet.enableAdvertising(true, 0, 0)`.
-                        logger.info("Advertising started")
+                        logger?.info(Layer.GAP) { "Advertising started" }
                         block?.invoke(txPower)
                     }
 
@@ -118,7 +116,7 @@ internal class BluetoothLeAdvertiserOreo(
                         status: Int
                     ) {
                         if (!enable) {
-                            logger.info("Advertising timed out: stopping advertising")
+                            logger?.info(Layer.GAP) { "Advertising timed out: stopping advertising" }
                             // Advertising set is disabled, it also needs to be stopped.
                             bluetoothLeAdvertiser?.stopAdvertisingSet(this)
                         }
@@ -150,10 +148,10 @@ internal class BluetoothLeAdvertiserOreo(
                         maxAdvertisingEvents,
                         callback,
                     )
-                    logger.info("Advertising initiated")
+                    logger?.info(Layer.GAP) { "Advertising initiated" }
                 } catch (e: IllegalArgumentException) {
-                    logger.error("Illegal advertising set parameters", e)
-                    // For some reason, the new advertiser throws bunch of IllegalArgumentExceptions
+                    logger?.error(Layer.GAP, e) { "Illegal advertising set parameters" }
+                    // For some reason, the new advertiser throws a bunch of IllegalArgumentExceptions
                     // instead of returning the status code in a callback.
                     // To get the actual reason, we need to check the messages. Seriously...
                     // (that's why we do initial validation above)
@@ -172,23 +170,23 @@ internal class BluetoothLeAdvertiserOreo(
                     }
                     return@suspendCancellableCoroutine
                 } catch (e: IllegalStateException) {
-                    logger.error("Advertising failed to start", e)
+                    logger?.error(Layer.GAP, e) { "Advertising failed to start" }
                     continuation.resumeWithReason(AdvertisingNotStartedException.Reason.BLUETOOTH_NOT_AVAILABLE)
                     return@suspendCancellableCoroutine
                 } catch (e: Exception) {
-                    logger.error("Failed to build advertising data", e)
+                    logger?.error(Layer.GAP, e) { "Failed to build advertising data" }
                     continuation.resumeWithException(e)
                     return@suspendCancellableCoroutine
                 }
 
                 // Cancel the advertising when the coroutine is canceled.
                 continuation.invokeOnCancellation {
-                    logger.info("Advertising cancelled: stopping advertising")
+                    logger?.info(Layer.GAP) { "Advertising cancelled: stopping advertising" }
                     bluetoothLeAdvertiser?.stopAdvertisingSet(callback)
                 }
             }
         } finally {
-            logger.info("Advertising stopped")
+            logger?.info(Layer.GAP) { "Advertising stopped" }
         }
     }
 }

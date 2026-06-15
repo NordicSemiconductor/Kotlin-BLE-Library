@@ -53,6 +53,7 @@ import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -76,7 +77,8 @@ class MockRemoteCharacteristic(
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
         val eventHandler = checkNotNull(peripheralSpec.eventHandler)
-        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters).connectionIntervalMillis
+        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters)
+            .connectionIntervalMillis.milliseconds
 
         // Ensure that the services are valid.
         check(peripheralSpec.isServiceCacheValid) {
@@ -166,7 +168,8 @@ class MockRemoteCharacteristic(
 
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType) {
         val eventHandler = checkNotNull(peripheralSpec.eventHandler)
-        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters).connectionIntervalMillis
+        val connectionInterval = checkNotNull(peripheralSpec.connectionParameters)
+            .connectionIntervalMillis.milliseconds
 
         when (writeType == WriteType.WITH_RESPONSE) {
             true -> {

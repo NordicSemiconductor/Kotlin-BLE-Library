@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024, Nordic Semiconductor
+ * Copyright (c) 2026, Nordic Semiconductor
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification, are
@@ -29,65 +29,74 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
+package no.nordicsemi.kotlin.ble.core.log
 
-package no.nordicsemi.kotlin.ble.core
-
-import kotlinx.coroutines.flow.StateFlow
-import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.log.Log
 
 /**
- * A base interface for a manager.
+ * A Bluetooth LE protocol layer.
+ *
+ * Each layer logs using a separate category, allowing log output to be filtered
+ * by the area of the Bluetooth LE stack involved.
  */
-interface Manager : Closable, Log.Emitter {
+enum class Layer : Log.Category {
 
     /**
-     * A sink for log events created by the manager.
-     */
-    var logger: Log.Sink<Layer>?
-
-    /**
-     * Closes the manager and releases its resources.
+     * Physical layer.
      *
-     * Calling the method on a closed manager has no effect.
+     * This layer contains events related to physical communication, including:
+     * - PHY updates
      */
-    override fun close()
+    PHY,
 
     /**
-     * A flow with the current state of the manager.
+     * Link layer.
+     *
+     * This layer contains events related to link management, including:
+     * - Connection parameter updates
+     * - RSSI updates
      */
-    val state: StateFlow<State>
+    LINK,
 
     /**
-     * The possible states of a Bluetooth manager.
+     * Generic Access Profile (GAP).
+     *
+     * This layer contains events related to device discovery and connection
+     * management, including:
+     * - Advertising
+     * - Scanning
+     * - Scan results
+     * - Establishing connections
+     * - Disconnections
      */
-    enum class State {
-        /**
-         * A state that indicates Bluetooth is currently powered off.
-         */
-        POWERED_OFF,
+    GAP,
 
-        /**
-         * A state that indicates Bluetooth is currently powered on and available to use.
-         */
-        POWERED_ON,
+    /**
+     * Generic Attribute Profile (GATT).
+     *
+     * This layer contains events related to service discovery and data exchange,
+     * including:
+     * - Service discovery
+     * - Characteristic discovery
+     * - Descriptor discovery
+     * - Reading attributes
+     * - Writing attributes
+     * - Notifications
+     * - Indications
+     * - ATT MTU negotiation
+     */
+    GATT,
 
-        /**
-         * A state that indicates the connection with the system service was momentarily lost.
-         *
-         * This state is not used on Android.
-         */
-        RESETTING,
-
-        /**
-         * The manager’s state is unknown.
-         */
-        UNKNOWN,
-
-        /**
-         * A state that indicates this device doesn't support the Bluetooth Low Energy.
-         */
-        UNSUPPORTED,
-    }
+    /**
+     * Security Manager Protocol (SMP).
+     *
+     * This layer contains events related to Bluetooth LE security, including:
+     * - Pairing
+     * - Bonding
+     * - Authentication
+     * - Encryption
+     * - Key exchange
+     * - Security level changes
+     */
+    SMP,
 }
