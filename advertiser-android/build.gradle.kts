@@ -41,8 +41,8 @@ nordicPublishing {
     POM_ARTIFACT_ID = "advertiser-android"
     POM_NAME = "Android Advertiser Module"
     POM_DESCRIPTION = "A part of Kotlin BLE Library providing Android-specific functionality for Bluetooth LE advertising."
-    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
-    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library"
+    POM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library/"
+    POM_SCM_URL = "https://github.com/nordicsemi/Kotlin-BLE-Library/"
     POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
     POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/Kotlin-BLE-Library.git"
 }
