@@ -73,6 +73,8 @@ object ViewModelModule {
     @Provides
     fun provideCentralManager(environment: NativeAndroidEnvironment, scope: CoroutineScope): CentralManager {
         return CentralManager.native(environment, scope)
-            .apply { logger = Log.Sink.Default() }
+            .apply {
+                logger = Log.Sink.Default { _, _ -> true }
+            }
     }
 }
