@@ -1412,7 +1412,7 @@ class PeripheralSpec<ID: Any> private constructor(
             appearance = appearance,
             preferredConnectionInterval = preferredConnectionInterval,
             preferredSlaveLatency = preferredSlaveLatency,
-            preferredSupervisionTimeout = preferredSlaveLatency,
+            preferredSupervisionTimeout = preferredSupervisionTimeout,
             maxAttMtu = maxAttMtu,
             maxL2capMtu = maxL2capMtu,
             supportedPhy = supportedPhy,
