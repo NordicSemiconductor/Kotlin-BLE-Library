@@ -139,13 +139,13 @@ sealed class ConnectionParameters {
         // @Range is JVM-only metadata. Keep the same contract enforced in common code.
         init {
             require(connectionInterval in 6..3200) {
-                "Connection interval must be in the range from 6 to 3200 (7.5 ms to 4000 ms)"
+                "Connection interval ($connectionInterval) must be in the range from 6 to 3200 (7.5 ms to 4000 ms)"
             }
             require(latency in 0..499) {
-                "Connection latency must be in the range from 0 to 499"
+                "Connection latency ($latency) must be in the range from 0 to 499"
             }
             require(supervisionTimeout in 10..3200) {
-                "Supervision timeout must be in the range from 10 to 3200 (0.1 s to 32 s)"
+                "Supervision timeout ($supervisionTimeout) must be in the range from 10 to 3200 (0.1 s to 32 s)"
             }
         }
 
