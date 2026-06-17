@@ -180,7 +180,7 @@ object ViewModelModule {
                 }
                 CoroutineScope(Dispatchers.IO).launch {
                     // Request shorter supervision timeout.
-                    delay(5000)
+                    delay(5.seconds)
                     blinky.simulateConnectionParametersRequest(
                         ConnectionParameters(
                             connectionInterval = 30.milliseconds,
@@ -190,7 +190,7 @@ object ViewModelModule {
                     )
                     // Simulate a reset after a while. The Peripheral should get disconnection
                     // event after 1 second (supervision timeout).
-                    delay(2000)
+                    delay(2.seconds)
                     blinky.simulateReset()
                 }
             }
