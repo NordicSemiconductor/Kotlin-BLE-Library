@@ -46,6 +46,8 @@ import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.internal.BaseRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.OperationStatus
+import no.nordicsemi.kotlin.ble.core.log.Layer
+import no.nordicsemi.kotlin.log.Log
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -60,16 +62,31 @@ internal class NativeRemoteDescriptor(
     override val instanceId: Int = descriptor.instanceId
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
+       owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+            "gatt.readDescriptor(${descriptor.uuid})"
+        }
         val success = gatt.readDescriptor(descriptor)
         check(success) {
+            owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                "Reading descriptor failed"
+            }
             throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
     @Suppress("DEPRECATION")
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray) {
+        owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+            "gatt.writeDescriptor(${descriptor.uuid}, value=0x${data.toHexString()})"
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val result = gatt.writeDescriptor(descriptor, data)
+
+            if (result != BluetoothStatusCodes.SUCCESS) {
+                owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                    "Writing descriptor failed with status $result"
+                }
+            }
 
             @SuppressLint("SwitchIntDef")
             when (result) {
@@ -94,6 +111,9 @@ internal class NativeRemoteDescriptor(
                 BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             val success = gatt.writeDescriptor(descriptor)
             check(success) {
+                owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                    "Writing descriptor failed"
+                }
                 throw OperationFailedException(OperationStatus.RequestFailed)
             }
         }

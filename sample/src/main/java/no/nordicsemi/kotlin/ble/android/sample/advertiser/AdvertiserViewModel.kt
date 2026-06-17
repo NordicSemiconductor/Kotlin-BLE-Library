@@ -44,7 +44,6 @@ import no.nordicsemi.kotlin.ble.advertiser.android.AdvertisingPayload
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.core.AdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.Bluetooth5AdvertisingSetParameters
-import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds

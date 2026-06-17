@@ -68,6 +68,8 @@ import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.and
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
+import no.nordicsemi.kotlin.log.Log
+import no.nordicsemi.kotlin.log.timber.Timber
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
@@ -178,7 +180,7 @@ object ViewModelModule {
                 }
                 CoroutineScope(Dispatchers.IO).launch {
                     // Request shorter supervision timeout.
-                    delay(5000)
+                    delay(5.seconds)
                     blinky.simulateConnectionParametersRequest(
                         ConnectionParameters(
                             connectionInterval = 30.milliseconds,
@@ -188,7 +190,7 @@ object ViewModelModule {
                     )
                     // Simulate a reset after a while. The Peripheral should get disconnection
                     // event after 1 second (supervision timeout).
-                    delay(2000)
+                    delay(2.seconds)
                     blinky.simulateReset()
                 }
             }
@@ -342,6 +344,7 @@ object ViewModelModule {
         scope: CoroutineScope,
     ): CentralManager = CentralManager.mock(environment, scope)
         .apply {
+            logger = Log.Sink.Timber { _, _ -> true }
             simulatePeripherals(listOf(blinky, beacon))
         }
 
