@@ -48,6 +48,8 @@ import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.log.Layer
+import no.nordicsemi.kotlin.log.Log
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -66,23 +68,44 @@ internal class NativeRemoteCharacteristic(
     }
 
     override fun setCharacteristicNotification(enabled: Boolean) {
+        owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+            "gatt.setCharacteristicNotification(${characteristic.uuid}, $enabled)"
+        }
         val success = gatt.setCharacteristicNotification(characteristic, enabled)
         check(success) {
+            owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                "Setting characteristic notification failed"
+            }
             throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
+        owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+            "gatt.readCharacteristic(${characteristic.uuid})"
+        }
         val success = gatt.readCharacteristic(characteristic)
         check(success) {
+            owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                "Reading characteristic failed"
+            }
             throw OperationFailedException(OperationStatus.RequestFailed)
         }
     }
 
     @Suppress("DEPRECATION")
     override suspend fun FlowCollector<GattEvent>.executeWrite(data: ByteArray, writeType: WriteType) {
+        owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+            "gatt.writeCharacteristic(${characteristic.uuid}, value=0x${data.toHexString()}, writeType=${writeType.toInt()})"
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val result = gatt.writeCharacteristic(characteristic, data, writeType.toInt())
+
+            if (result != BluetoothStatusCodes.SUCCESS) {
+                owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                    "Writing characteristic failed with status $result"
+                }
+            }
 
             @SuppressLint("SwitchIntDef")
             when (result) {
@@ -106,6 +129,9 @@ internal class NativeRemoteCharacteristic(
             characteristic.writeType = writeType.toInt()
             val success = gatt.writeCharacteristic(characteristic)
             check(success) {
+                owner?.logger?.log(Layer.GATT, Log.Level.DEBUG, owner?.identifier.toString(), null) {
+                    "Writing characteristic failed"
+                }
                 throw OperationFailedException(OperationStatus.RequestFailed)
             }
         }

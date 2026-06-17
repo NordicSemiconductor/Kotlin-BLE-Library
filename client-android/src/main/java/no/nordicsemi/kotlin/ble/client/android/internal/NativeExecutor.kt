@@ -129,21 +129,28 @@ internal class NativeExecutor(
 
     override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         // On retry the previous GATT object may not be null and must be closed.
-        gatt?.close()
+        gatt?.let {
+            logger?.d(Layer.GATT) { "gatt.close()" }
+            it.close()
+        }
+        logger?.d(Layer.GATT) { "device.connectGatt(autoConnect=$autoConnect)" }
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+        logger?.d(Layer.GATT) { "gatt.discoverServices()" }
         return gatt?.discoverServices() ?: false
     }
 
     override suspend fun createBond(): Boolean {
+        logger?.d(Layer.SMP) { "device.createBond()" }
         return bluetoothDevice.createBond()
     }
 
     override suspend fun removeBond(): Boolean {
         val result = try {
+            logger?.d(Layer.SMP) { "gatt.removeBond() (hidden)"}
             val method = BluetoothDevice::class.java.getMethod("removeBond")
             method.invoke(bluetoothDevice) as Boolean
         } catch (e: ReflectiveOperationException) {
@@ -151,7 +158,7 @@ internal class NativeExecutor(
             false
         }
         if (!result) {
-            logger?.warn(Layer.GATT) { "Failed to remove bond information" }
+            logger?.warn(Layer.SMP) { "Failed to remove bond information" }
             return false
         }
         return true
@@ -160,6 +167,7 @@ internal class NativeExecutor(
     override suspend fun refreshCache(): Boolean {
         gatt?.let { gatt ->
             val result = try {
+                logger?.d(Layer.GATT) { "gatt.refresh() (hidden)"}
                 val method = BluetoothGatt::class.java.getMethod("refresh")
                 method.invoke(gatt) as Boolean
             } catch (e: ReflectiveOperationException) {
@@ -180,8 +188,10 @@ internal class NativeExecutor(
 
     override suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean {
         gatt?.let { gatt ->
+            logger?.d(Layer.LINK) { "gatt.requestConnectionPriority(${priority.toPriority()})" }
             val result = gatt.requestConnectionPriority(priority.toPriority())
             if (!result) {
+                logger?.w(Layer.LINK) { "Requesting connection priority failed" }
                 return false
             }
 
@@ -195,12 +205,14 @@ internal class NativeExecutor(
     }
 
     override suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
+        logger?.d(Layer.LINK) { "gatt.requestMtu($mtu)" }
         return gatt?.requestMtu(mtu) ?: false
     }
 
     override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                logger?.d(Layer.LINK) { "gatt.setPreferredPhy(tx=${txPhy.toPhy()}, rx=${rxPhy.toPhy()}, options=${phyOptions.toOption()})" }
                 gatt.setPreferredPhy(txPhy.toPhy(), rxPhy.toPhy(), phyOptions.toOption())
             } else {
                 gattCallback.onPhyUpdate(gatt,
@@ -216,6 +228,7 @@ internal class NativeExecutor(
     override suspend fun readPhy(): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                logger?.d(Layer.LINK) { "gatt.readPhy()" }
                 gatt.readPhy()
             } else {
                 gattCallback.onPhyRead(gatt,
@@ -230,6 +243,7 @@ internal class NativeExecutor(
 
     override fun beginReliableWrite(): Boolean {
         gatt?.let { gatt ->
+            logger?.d(Layer.GATT) { "gatt.beginReliableWrite()" }
             return gatt.beginReliableWrite()
                 .also { isReliableWriteEnabled = it }
         }
@@ -237,20 +251,24 @@ internal class NativeExecutor(
     }
 
     override suspend fun executeReliableWrite(): Boolean {
+        logger?.d(Layer.GATT) { "gatt.executeReliableWrite()" }
         return gatt?.executeReliableWrite() ?: false
     }
 
     override suspend fun abortReliableWrite(): Boolean {
+        logger?.d(Layer.GATT) { "gatt.abortReliableWrite()" }
         return gatt?.abortReliableWrite()?.let { true } ?: false
     }
 
     override suspend fun readRssi(): Boolean {
+        logger?.d(Layer.LINK) { "gatt.readRemoteRssi()" }
         return gatt?.readRemoteRssi() ?: false
     }
 
     override suspend fun disconnect(reason: Reason): Boolean {
         gatt?.let { gatt ->
             gattCallback.disconnectReason = reason
+            logger?.d(Layer.GATT) { "gatt.disconnect()" }
             gatt.disconnect()
             return true
         }
@@ -262,11 +280,13 @@ internal class NativeExecutor(
             this.gatt = null
             gattCallback.disconnectReason = null
             try {
+                logger?.d(Layer.GATT) { "gatt.disconnect()" }
                 gatt.disconnect()
             } catch (_: Exception) {
                 // Ignore
             }
             try {
+                logger?.d(Layer.GATT) { "gatt.close()" }
                 gatt.close()
             } catch (_: Exception) {
                 // Ignore
