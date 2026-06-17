@@ -76,4 +76,11 @@ dependencies {
     // Binder SLF4J -> Timber
     implementation(libs.timber)
     debugImplementation(libs.leakcanary)
+
+    // Temporary fix:
+    // After updating Kotlin to 2.4.0 there's no Hilt (Dagger) version yet updated.
+    // Build fails with error:
+    // [Hilt] Provided Metadata instance has version 2.4.0, while maximum supported version is 2.3.0.
+    //        To support newer versions, update the kotlin-metadata-jvm library.
+    ksp(libs.kotlin.metadata.jvm)
 }
