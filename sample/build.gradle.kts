@@ -73,8 +73,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.compose.material.icons.core)
 
-    // Binder SLF4J -> Timber
-    implementation(libs.timber)
+    implementation(nordic.log.timber)
+
     debugImplementation(libs.leakcanary)
 
     // Temporary fix:
