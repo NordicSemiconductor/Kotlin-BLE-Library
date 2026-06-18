@@ -190,10 +190,14 @@ class AdvertisingData(
                     }
                 }
                 AdvertisingDataType.MANUFACTURER_SPECIFIC_DATA -> {
-                    val companyId = (raw[i].toInt() and 0xFF) or (raw[i + 1].toInt() and 0xFF shl 8)
-                    val data = raw.copyOfRange(i + 2, i + length)
-                    manufacturerData = (manufacturerData ?: mutableMapOf()).apply {
-                        put(companyId, data)
+                    // The structure must contain at least the 2-byte Company ID.
+                    // Shorter structures are malformed and are skipped.
+                    if (length >= 2) {
+                        val companyId = (raw[i].toInt() and 0xFF) or (raw[i + 1].toInt() and 0xFF shl 8)
+                        val data = raw.copyOfRange(i + 2, i + length)
+                        manufacturerData = (manufacturerData ?: mutableMapOf()).apply {
+                            put(companyId, data)
+                        }
                     }
                 }
                 AdvertisingDataType.PB_ADV -> {
