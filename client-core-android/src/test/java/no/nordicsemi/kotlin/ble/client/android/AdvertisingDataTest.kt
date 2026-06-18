@@ -246,7 +246,8 @@ class AdvertisingDataTest {
         val parsedData = ad.manufacturerData
 
         Truth.assertThat(parsedData).isNotNull()
-        Truth.assertThat(parsedData).containsEntry(manufacturerData, manufacturerId)
+        Truth.assertThat(parsedData).containsKey(manufacturerId)
+        Truth.assertThat(parsedData[manufacturerId]).isEqualTo(manufacturerData)
     }
 
     @Test
