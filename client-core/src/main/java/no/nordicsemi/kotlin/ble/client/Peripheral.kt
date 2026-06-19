@@ -1156,6 +1156,260 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     }
 
     /**
+     * Registers a profile implementation that runs when the specified GATT services are discovered.
+     *
+     * ## Overview
+     *
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
+     *
+     * Multiple profiles can be added by calling this method once for each service,
+     * i.e. Battery Profile and Heart Rate Profile.
+     *
+     * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
+     * The profile is executed in a child coroutine.
+     *
+     * ## Services
+     *
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The profile will be executed every time the services are discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop observing services cancel the [scope].
+     *
+     * ## Validation
+     *
+     * If the profile was marked as [required] and at least one of the required services is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * #### Example
+     *
+     * ##### Profile definition
+     * ```kotlin
+     * /**
+     *  * API of the profile.
+     *  */
+     * interface LedButton {
+     *     /** The current button state on the DK. */
+     *     val buttonState: StateFlow<Boolean>
+     *     /** The LED state. */
+     *     val ledState: MutableStateFlow<Boolean>
+     * }
+     *
+     * class LedButtonProfile: Profile.Simple(
+     *     serviceUuid = SERVICE_UUID,
+     *     name = "LBS",
+     * ), LedButton {
+     *     companion object {
+     *         val SERVICE_UUID = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+     *         val BUTTON_CHARACTERISTIC_UUID = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
+     *         val LED_CHARACTERISTIC_UUID = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
+     *     }
+     *
+     *     // GATT characteristics.
+     *     private lateinit var buttonCharacteristic: RemoteCharacteristic
+     *     private lateinit var ledCharacteristic: RemoteCharacteristic
+     *
+     *     // Public API.
+     *     private val _buttonState = MutableStateFlow(false)
+     *     override val buttonState: StateFlow<Boolean> = _buttonState.asStateFlow()
+     *     override val ledState: MutableStateFlow<Boolean> = MutableStateFlow(false)
+     *
+     *     // Implementation.
+     *     override fun prepare(service: RemoteService) {
+     *         // This should always pass.
+     *         require(service.uuid == SERVICE_UUID)
+     *
+     *         // Obtain characteristics from the service.
+     *         buttonCharacteristic = service.characteristics.first { it.uuid == BUTTON_CHARACTERISTIC_UUID }
+     *         ledCharacteristic = service.characteristics.first { it.uuid == LED_CHARACTERISTIC_UUID }
+     *
+     *         // Validate properties.
+     *         require(buttonCharacteristic.isSubscribable()) { "Button characteristic must be subscribable." }
+     *         require(ledCharacteristic.isWritable()) { "LED characteristic must be writable." }
+     *     }
+     *
+     *     override suspend fun CoroutineScope.initialize() {
+     *         // Subscribe to button characteristic.
+     *         buttonCharacteristic
+     *             .subscribe()
+     *             .map { value -> value.singleOrNull() == 1.toByte() }
+     *             .onEach { isPressed -> _buttonState.update { isPressed } }
+     *             .launchIn(this)
+     *
+     *         // Read current Button state.
+     *         try {
+     *             val currentState = buttonCharacteristic.read()
+     *             _buttonState.update { currentState.singleOrNull() == 1.toByte() }
+     *         } catch (e: OperationFailedException) {
+     *             println("Reading button characteristic failed: ${e.message}")
+     *         }
+     *
+     *         // Handle LED state updates.
+     *         ledState
+     *             .map { isOn -> byteArrayOf(if (isOn) 1 else 0) }
+     *             .onEach { value ->
+     *                 try {
+     *                     ledCharacteristic.write(value)
+     *                 } catch (e: OperationFailedException) {
+     *                     println("Writing LED characteristic failed: ${e.message}")
+     *                 }
+     *             }
+     *             .launchIn(this)
+     *     }
+     * }
+     * ```
+     * ##### Usage
+     * ```kotlin
+     * val api: LedButton = LedButtonProfile()
+     *    .also { peripheral.profile(it) }
+     * ```
+     *
+     * @param profile The profile implementation.
+     * @param required Whether support for this profile is required by the app.
+     */
+    suspend fun profile(profile: Profile, required: Boolean = true) = profile(
+        requiredServiceUuids = profile.requiredServiceUuids,
+        optionalServiceUuids = profile.optionalServiceUuids,
+        required = required,
+        name = profile.name,
+        block = {services ->
+            profile.execute(services, this)
+        }
+    )
+
+    /**
+     * Registers a profile implementation that runs when the specified GATT services are discovered.
+     *
+     * ## Overview
+     *
+     * Decouples the Bluetooth LE profile interface from application logic, allowing each
+     * device feature (profile) to run in its own coroutine.
+     *
+     * Multiple profiles can be added by calling this method once for each service,
+     * i.e. Battery Profile and Heart Rate Profile.
+     *
+     * This method suspends only to get the current coroutine scope using [currentCoroutineContext].
+     * The profile is executed in a child coroutine.
+     *
+     * ## Services
+     *
+     * As `profile` is using [services] under the hood, it is safe and recommended to call this method
+     * before connecting the peripheral.
+     *
+     * The profile will be executed every time the services are discovered,
+     * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
+     * gets invalidated and rediscovered). To stop observing services cancel the [scope].
+     *
+     * ## Validation
+     *
+     * If the profile was marked as [required] and at least one of the required services is not found,
+     * or the `block` throws [IllegalArgumentException] during service validation, the connection
+     * will be terminated with reason
+     * [RequiredServiceNotFound][ConnectionState.Disconnected.Reason.RequiredServiceNotFound].
+     *
+     * #### Example
+     *
+     * ##### Profile definition
+     * ```kotlin
+     * /**
+     *  * API of the profile.
+     *  */
+     * interface LedButton {
+     *     /** The current button state on the DK. */
+     *     val buttonState: StateFlow<Boolean>
+     *     /** The LED state. */
+     *     val ledState: MutableStateFlow<Boolean>
+     * }
+     *
+     * class LedButtonProfile: Profile.Simple(
+     *     serviceUuid = SERVICE_UUID,
+     *     name = "LBS",
+     * ), LedButton {
+     *     companion object {
+     *         val SERVICE_UUID = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+     *         val BUTTON_CHARACTERISTIC_UUID = Uuid.parse("00001524-1212-efde-1523-785feabcd123")
+     *         val LED_CHARACTERISTIC_UUID = Uuid.parse("00001525-1212-efde-1523-785feabcd123")
+     *     }
+     *
+     *     // GATT characteristics.
+     *     private lateinit var buttonCharacteristic: RemoteCharacteristic
+     *     private lateinit var ledCharacteristic: RemoteCharacteristic
+     *
+     *     // Public API.
+     *     private val _buttonState = MutableStateFlow(false)
+     *     override val buttonState: StateFlow<Boolean> = _buttonState.asStateFlow()
+     *     override val ledState: MutableStateFlow<Boolean> = MutableStateFlow(false)
+     *
+     *     // Implementation.
+     *     override fun prepare(service: RemoteService) {
+     *         // This should always pass.
+     *         require(service.uuid == SERVICE_UUID)
+     *
+     *         // Obtain characteristics from the service.
+     *         buttonCharacteristic = service.characteristics.first { it.uuid == BUTTON_CHARACTERISTIC_UUID }
+     *         ledCharacteristic = service.characteristics.first { it.uuid == LED_CHARACTERISTIC_UUID }
+     *
+     *         // Validate properties.
+     *         require(buttonCharacteristic.isSubscribable()) { "Button characteristic must be subscribable." }
+     *         require(ledCharacteristic.isWritable()) { "LED characteristic must be writable." }
+     *     }
+     *
+     *     override suspend fun CoroutineScope.initialize() {
+     *         // Subscribe to button characteristic.
+     *         buttonCharacteristic
+     *             .subscribe()
+     *             .map { value -> value.singleOrNull() == 1.toByte() }
+     *             .onEach { isPressed -> _buttonState.update { isPressed } }
+     *             .launchIn(this)
+     *
+     *         // Read current Button state.
+     *         try {
+     *             val currentState = buttonCharacteristic.read()
+     *             _buttonState.update { currentState.singleOrNull() == 1.toByte() }
+     *         } catch (e: OperationFailedException) {
+     *             println("Reading button characteristic failed: ${e.message}")
+     *         }
+     *
+     *         // Handle LED state updates.
+     *         ledState
+     *             .map { isOn -> byteArrayOf(if (isOn) 1 else 0) }
+     *             .onEach { value ->
+     *                 try {
+     *                     ledCharacteristic.write(value)
+     *                 } catch (e: OperationFailedException) {
+     *                     println("Writing LED characteristic failed: ${e.message}")
+     *                 }
+     *             }
+     *             .launchIn(this)
+     *     }
+     * }
+     * ```
+     * ##### Usage
+     * ```kotlin
+     * val api: LedButton = LedButtonProfile()
+     *    .also { peripheral.profile(it) }
+     * ```
+     *
+     * @param scope The coroutine scope to launch the user block in.
+     * @param profile The profile implementation.
+     * @param required Whether support for this profile is required by the app.
+     */
+    fun profile(scope: CoroutineScope, profile: Profile, required: Boolean = true) = profile(
+        scope = scope,
+        requiredServiceUuids = profile.requiredServiceUuids,
+        optionalServiceUuids = profile.optionalServiceUuids,
+        required = required,
+        name = profile.name,
+        block = {services ->
+            profile.execute(services, this)
+        }
+    )
+
+    /**
      * Suspends until the peripheral is disconnected.
      *
      * @throws CancellationException if the current coroutine is canceled.
@@ -1194,7 +1448,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         check (isConnected) {
             throw PeripheralNotConnectedException()
         }
-        return OperationMutex.withLock {
+        return OperationMutex.withLock(logger, "Read RSSI") {
             logger?.trace(Layer.LINK) { "Reading RSSI" }
             impl.events
                 .onSubscription {
@@ -1239,7 +1493,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * when disconnection was initiated by the user.
      */
     internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withContext(NonCancellable) {
-        OperationMutex.withLock {
+        OperationMutex.withLock(logger, "Disconnect") {
             // Depending on the state...
             when (state.value) {
                 is ConnectionState.Disconnected -> {
