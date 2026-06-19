@@ -5,16 +5,8 @@ native API and uses Kotlin Coroutines for asynchronous operations. The usage is 
 natural according to the BLE specification.
 
 > [!Important]
-> This library is in still under construction. Scanning and client should work, but the API may still change.
-> Any feedback is welcome.
->
-> Expected changes:
-> * Logging
->    * Migrating from SLF4J to log delegates to allow logging for different devices separately.
->    * Improving logged events
-> * Higher level API
->    * We found the library to be difficult to use with multiple independent services. We are trying to
->      come up with a solution that would allow use single `Peripheral` with different service implementations.
+> This library is now in Beta. Unless some serious issue is found, API should not change and should 
+> be backwards compatible.
 
 ## Version 2
 
@@ -364,6 +356,10 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
             .onEmpty {
                 Timber.w("No updates from ${remoteCharacteristic.uuid}")
             }
+            .catch { e ->
+                // This is called when subscription fails.
+                Timber.e(e, "Subscription to ${remoteCharacteristic.uuid} failed")
+            }
             .onCompletion {
                 Timber.d("Stopped observing updates from ${remoteCharacteristic.uuid}")
             }
@@ -376,5 +372,23 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
 }
 ```
 
+### Logging
+
+Starting from version *2.0.0-beta01* the `CentralManager` and `Peripheral`s have a `logger` property.
+Assign a custom Log Sink to get categorized logs.
+
+Read more in [Kotlin Util Library / Log](https://github.com/nordicsemi/Kotlin-Util-Library#log).
+
+#### Logcat / Console
+```kotlin
+val centralManager = CentralManager.native(environment, scope)
+    .also { it.logger = Log.Sink.Default(/* filter = */) }
+```
+
+#### Timber (Android only)
+```kotlin
+val centralManager = CentralManager.native(environment, scope)
+    .also { it.logger = Log.Sink.Timber() }
+```
 
 For more, see [_sample_](https://github.com/nordicsemi/Kotlin-BLE-Library/blob/version/2.0/sample/src/main/java/no/nordicsemi/kotlin/ble/android/sample/scanner/ScannerViewModel.kt).
