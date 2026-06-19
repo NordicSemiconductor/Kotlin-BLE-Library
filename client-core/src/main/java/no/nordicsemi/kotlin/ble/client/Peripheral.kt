@@ -1448,7 +1448,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         check (isConnected) {
             throw PeripheralNotConnectedException()
         }
-        return OperationMutex.withLock(logger, "Read RSSI") {
+        return OperationMutex.withLock {
             logger?.trace(Layer.LINK) { "Reading RSSI" }
             impl.events
                 .onSubscription {
@@ -1493,7 +1493,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * when disconnection was initiated by the user.
      */
     internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withContext(NonCancellable) {
-        OperationMutex.withLock(logger, "Disconnect") {
+        OperationMutex.withLock {
             // Depending on the state...
             when (state.value) {
                 is ConnectionState.Disconnected -> {
