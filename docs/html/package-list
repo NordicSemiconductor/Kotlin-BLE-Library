@@ -26,6 +26,7 @@ no.nordicsemi.kotlin.ble.client.mock
 module:core
 no.nordicsemi.kotlin.ble.core
 no.nordicsemi.kotlin.ble.core.exception
+no.nordicsemi.kotlin.ble.core.log
 no.nordicsemi.kotlin.ble.core.util
 module:core-android
 no.nordicsemi.kotlin.ble.core.android

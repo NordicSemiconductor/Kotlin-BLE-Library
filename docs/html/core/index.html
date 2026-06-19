@@ -38,11 +38,12 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha17
+        <div class="library-version" id="library-version">2.0.0-beta01
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
-                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core/main">jvm</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core/commonMain">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core/jvmMain">jvm</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
                 <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
@@ -53,7 +54,14 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":core/main" data-filter=":core/main">
+                                <input type="checkbox" class="checkbox--input" id=":core/commonMain" data-filter=":core/commonMain">
+                                <span class="checkbox--icon"></span>
+                                common
+                            </label>
+                        </li>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":core/jvmMain" data-filter=":core/jvmMain">
                                 <span class="checkbox--icon"></span>
                                 jvm
                             </label>
@@ -89,69 +97,90 @@
         </nav>
         <div id="resizer" class="resizer" data-item-type="BAR"></div>
         <div id="main" data-item-type="SECTION" role="main">
-<div class="main-content" id="content" pageids="core::////PointingToDeclaration//-431355489">
+<div class="main-content" id="content" pageids="core::////PointingToDeclaration//175255676">
   <div class="breadcrumbs"></div>
   <div class="cover ">
     <h1 class="cover"><span><span>core</span></span></h1>
-    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><p class="paragraph">Core types and interfaces for Bluetooth Low Energy clients and server implementations.</p></div></div>
+    <div class="platform-hinted UnderCoverText with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":core/jvmMain" data-filterable-set=":core/jvmMain" data-toggle=":core/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><p class="paragraph">Core types and interfaces for Bluetooth Low Energy clients and server implementations.</p></div><div class="content sourceset-dependent-content" data-togglable=":core/jvmMain"><p class="paragraph">Core types and interfaces for Bluetooth Low Energy clients and server implementations.</p></div>    </div>
   </div>
   <h2 class="">Packages</h2>
-  <div class="table"><a data-name="1728947099%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core" id="1728947099%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
-    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/main" data-filterable-set=":core/main">
+  <div class="table"><a data-name="1728947099%2FPackages%2F175255676" anchor-label="no.nordicsemi.kotlin.ble.core" id="1728947099%2FPackages%2F175255676" data-filterable-set=":core/commonMain,:core/jvmMain"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/commonMain,:core/jvmMain" data-filterable-set=":core/commonMain,:core/jvmMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="no.nordicsemi.kotlin.ble.core/index.html">no.nordicsemi.kotlin.ble.core</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1728947099%2FPackages%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1728947099%2FPackages%2F175255676"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">common</div>
               <div class="platform-tag jvm-like">jvm</div>
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="1728947099%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core" id="1728947099%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
+        <div><span class="brief-comment"><a data-name="1728947099%2FPackages%2F175255676" anchor-label="no.nordicsemi.kotlin.ble.core" id="1728947099%2FPackages%2F175255676" data-filterable-set=":core/commonMain,:core/jvmMain"></a>
             <p class="paragraph">Core types and interfaces for Bluetooth Low Energy clients and server implementations.</p>
           </span></div>
       </div>
     </div>
-<a data-name="-73765636%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core.exception" id="-73765636%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
-    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-73765636%2FPackages%2F25486556" anchor-label="no.nordicsemi.kotlin.ble.core.exception" id="-73765636%2FPackages%2F25486556" data-filterable-set=":core/commonMain"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
               <div><a href="no.nordicsemi.kotlin.ble.core.exception/index.html">no.nordicsemi.kotlin.ble.core.exception</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-73765636%2FPackages%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-73765636%2FPackages%2F25486556"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="-73765636%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core.exception" id="-73765636%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
+        <div><span class="brief-comment"><a data-name="-73765636%2FPackages%2F25486556" anchor-label="no.nordicsemi.kotlin.ble.core.exception" id="-73765636%2FPackages%2F25486556" data-filterable-set=":core/commonMain"></a>
             <p class="paragraph">Generic Bluetooth Low Energy exceptions.</p>
           </span></div>
       </div>
     </div>
-<a data-name="297494265%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core.util" id="297494265%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
-    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1633498127%2FPackages%2F25486556" anchor-label="no.nordicsemi.kotlin.ble.core.log" id="-1633498127%2FPackages%2F25486556" data-filterable-set=":core/commonMain"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="no.nordicsemi.kotlin.ble.core.util/index.html">no.nordicsemi.kotlin.ble.core.util</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="297494265%2FPackages%2F-431355489"></span>
+              <div><a href="no.nordicsemi.kotlin.ble.core.log/index.html">no.nordicsemi.kotlin.ble.core.log</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1633498127%2FPackages%2F25486556"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right platform-tags--wrapper">
             <div class="platform-tags no-gutters">
-              <div class="platform-tag jvm-like">jvm</div>
+              <div class="platform-tag jvm-like">common</div>
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="297494265%2FPackages%2F-431355489" anchor-label="no.nordicsemi.kotlin.ble.core.util" id="297494265%2FPackages%2F-431355489" data-filterable-set=":core/main"></a>
+        <div></div>
+      </div>
+    </div>
+<a data-name="297494265%2FPackages%2F25486556" anchor-label="no.nordicsemi.kotlin.ble.core.util" id="297494265%2FPackages%2F25486556" data-filterable-set=":core/commonMain"></a>
+    <div class="table-row table-row_platform-tagged" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="no.nordicsemi.kotlin.ble.core.util/index.html">no.nordicsemi.kotlin.ble.core.util</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="297494265%2FPackages%2F25486556"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right platform-tags--wrapper">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div><span class="brief-comment"><a data-name="297494265%2FPackages%2F25486556" anchor-label="no.nordicsemi.kotlin.ble.core.util" id="297494265%2FPackages%2F25486556" data-filterable-set=":core/commonMain"></a>
             <p class="paragraph">Utilities.</p>
           </span></div>
       </div>

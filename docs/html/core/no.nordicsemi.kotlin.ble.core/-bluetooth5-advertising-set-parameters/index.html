@@ -38,11 +38,11 @@
             </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
         </button>
         <div class="navigation-controls--break ui-kit_mobile-only"></div>
-        <div class="library-version" id="library-version">2.0.0-alpha17
+        <div class="library-version" id="library-version">2.0.0-beta01
         </div>
         <div class="navigation-controls">
         <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
-                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core/main">jvm</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":core/commonMain">common</button>
             <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
                 <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
                 <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
@@ -53,9 +53,9 @@
                     </div>
                         <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
                             <label class="checkbox">
-                                <input type="checkbox" class="checkbox--input" id=":core/main" data-filter=":core/main">
+                                <input type="checkbox" class="checkbox--input" id=":core/commonMain" data-filter=":core/commonMain">
                                 <span class="checkbox--icon"></span>
-                                jvm
+                                common
                             </label>
                         </li>
                 </ul>
@@ -89,28 +89,32 @@
         </nav>
         <div id="resizer" class="resizer" data-item-type="BAR"></div>
         <div id="main" data-item-type="SECTION" role="main">
-<div class="main-content" data-page-type="classlike" id="content" pageids="core::no.nordicsemi.kotlin.ble.core/Bluetooth5AdvertisingSetParameters///PointingToDeclaration//-431355489">
+<div class="main-content" data-page-type="classlike" id="content" pageids="core::no.nordicsemi.kotlin.ble.core/Bluetooth5AdvertisingSetParameters///PointingToDeclaration//25486556">
   <div class="breadcrumbs"><a href="../../index.html">core</a><span class="delimiter">/</span><a href="../index.html">no.nordicsemi.kotlin.ble.core</a><span class="delimiter">/</span><span class="current">Bluetooth5AdvertisingSetParameters</span></div>
   <div class="cover ">
     <h1 class="cover"><span>Bluetooth5Advertising</span><wbr><span>Set</span><wbr><span><span>Parameters</span></span></h1>
-    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Bluetooth5AdvertisingSetParameters</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">connectable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">discoverable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>connectable<span class="token punctuation">, </span></span><span class="parameter ">interval<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>AdvertisingInterval.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">txPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>TxPowerLevel.MEDIUM<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>includeTxPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>primaryPhy<span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a><span class="token operator"> = </span>PrimaryPhy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>secondaryPhy<span class="token operator">: </span><a href="../-phy/index.html">Phy</a><span class="token operator"> = </span>Phy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>anonymous<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scannable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="../-advertising-set-parameters/index.html">AdvertisingSetParameters</a></div><p class="paragraph">The advertising parameters for advertising using Advertising Extension from Bluetooth 5.</p><p class="paragraph">Advertising Extension allows to advertise with longer packets, up to 1650 bytes. The exact number depends on the hardware. It also allows to use PHY LE 2M and PHY Coded for high throughput and long range, respectively.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>connectable</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether the advertisement will be connectable.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>discoverable</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether the <i>General Discoverable</i> flag (in case advertising is started without a timeout) or <i>Limited Discoverable</i> flag (if a timeout is specified) should be added to the scannable or connectable advertisement.</p><p class="paragraph">By default, a connectable advertisements will be discoverable.</p><p class="paragraph">Devices connecting to non-discoverable advertisements cannot initiate bonding.</p><p class="paragraph">This flag is ignored for non-scannable and non-connectable advertisements.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>interval</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The advertising interval, in range 20 ms - 10.24 sec. Use <a href="../-advertising-interval/index.html">AdvertisingInterval</a> for recommended values.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>tx</span><wbr><span>Power</span><wbr><span><span>Level</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The requested TX power level for advertising. The actual TX power level may be different, depending on the hardware and implementation. Use <a href="../-tx-power-level/index.html">TxPowerLevel</a> for recommended values.</p></div></div></div></div></div></div></div>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Bluetooth5AdvertisingSetParameters</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">connectable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">discoverable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>connectable<span class="token punctuation">, </span></span><span class="parameter ">interval<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>AdvertisingInterval.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">txPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>TxPowerLevel.MEDIUM<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>includeTxPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>primaryPhy<span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a><span class="token operator"> = </span>PrimaryPhy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>secondaryPhy<span class="token operator">: </span><a href="../-phy/index.html">Phy</a><span class="token operator"> = </span>Phy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>anonymous<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>scannable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span> : <a href="../-advertising-set-parameters/index.html">AdvertisingSetParameters</a></div><p class="paragraph">The advertising parameters for advertising using Advertising Extension from Bluetooth 5.</p><p class="paragraph">Advertising Extension allows to advertise with longer packets, up to 1650 bytes. The exact number depends on the hardware. It also allows to use PHY LE 2M and PHY Coded for high throughput and long range, respectively.</p><h4 class="tableheader">Parameters</h4><div class="table"><div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>connectable</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether the advertisement will be connectable.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>discoverable</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Whether the <i>General Discoverable</i> flag (in case advertising is started without a timeout) or <i>Limited Discoverable</i> flag (if a timeout is specified) should be added to the scannable or connectable advertisement.</p><p class="paragraph">By default, a connectable advertisements will be discoverable.</p><p class="paragraph">Devices connecting to non-discoverable advertisements cannot initiate bonding.</p><p class="paragraph">This flag is ignored for non-scannable and non-connectable advertisements.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>interval</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The advertising interval, in range 20 ms - 10.24 sec. Use <a href="../-advertising-interval/index.html">AdvertisingInterval</a> for recommended values.</p></div></div></div></div><div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>tx</span><wbr><span>Power</span><wbr><span><span>Level</span></span></u></div></span></div><div><div class="title"><p class="paragraph">The requested TX power level for advertising. The actual TX power level may be different, depending on the hardware and implementation. Use <a href="../-tx-power-level/index.html">TxPowerLevel</a> for recommended values.</p></div></div></div></div></div></div>    </div>
   </div>
   <div class="tabbedcontent">
     <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="tableheader">Constructors</h2>
-        <div class="table"><a data-name="1182068383%2FConstructors%2F-431355489" anchor-label="Bluetooth5AdvertisingSetParameters" id="1182068383%2FConstructors%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":core/main" data-filterable-set=":core/main">
+        <div class="table"><a data-name="1182068383%2FConstructors%2F25486556" anchor-label="Bluetooth5AdvertisingSetParameters" id="1182068383%2FConstructors%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-togglable="CONSTRUCTOR" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="-bluetooth5-advertising-set-parameters.html"><span>Bluetooth5Advertising</span><wbr><span>Set</span><wbr><span><span>Parameters</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1182068383%2FConstructors%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1182068383%2FConstructors%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">connectable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">discoverable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>connectable<span class="token punctuation">, </span></span><span class="parameter ">interval<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>AdvertisingInterval.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">txPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>TxPowerLevel.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">includeTxPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">primaryPhy<span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a><span class="token operator"> = </span>PrimaryPhy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter ">secondaryPhy<span class="token operator">: </span><a href="../-phy/index.html">Phy</a><span class="token operator"> = </span>Phy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter ">anonymous<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">scannable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">connectable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token punctuation">, </span></span><span class="parameter ">discoverable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span>connectable<span class="token punctuation">, </span></span><span class="parameter ">interval<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token operator"> = </span>AdvertisingInterval.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">txPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>TxPowerLevel.MEDIUM<span class="token punctuation">, </span></span><span class="parameter ">includeTxPowerLevel<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">primaryPhy<span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a><span class="token operator"> = </span>PrimaryPhy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter ">secondaryPhy<span class="token operator">: </span><a href="../-phy/index.html">Phy</a><span class="token operator"> = </span>Phy.PHY_LE_1M<span class="token punctuation">, </span></span><span class="parameter ">anonymous<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span><span class="token punctuation">, </span></span><span class="parameter ">scannable<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -119,137 +123,155 @@
       </div>
       <div data-togglable="PROPERTY">
         <h2 class="tableheader">Properties</h2>
-        <div class="table"><a data-name="-13951302%2FProperties%2F-431355489" anchor-label="anonymous" id="-13951302%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+        <div class="table"><a data-name="-13951302%2FProperties%2F25486556" anchor-label="anonymous" id="-13951302%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="anonymous.html"><span><span>anonymous</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-13951302%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-13951302%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="anonymous.html">anonymous</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement will be anonymous.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="anonymous.html">anonymous</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement will be anonymous.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1468796470%2FProperties%2F-431355489" anchor-label="connectable" id="-1468796470%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1468796470%2FProperties%2F25486556" anchor-label="connectable" id="-1468796470%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-advertising-set-parameters/connectable.html"><span><span>connectable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1468796470%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1468796470%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/connectable.html">connectable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement will be connectable.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/connectable.html">connectable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement will be connectable.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1025555369%2FProperties%2F-431355489" anchor-label="discoverable" id="1025555369%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="1025555369%2FProperties%2F25486556" anchor-label="discoverable" id="1025555369%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-advertising-set-parameters/discoverable.html"><span><span>discoverable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1025555369%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1025555369%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/discoverable.html">discoverable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the General Discoverable flag should be added to the scannable or connectable advertisement. By default, a connectable advertisements will be discoverable. Devices connecting to non-discoverable advertisements cannot initiate bonding. This flag is ignored for non-scannable and non-connectable advertisements.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/discoverable.html">discoverable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the General Discoverable flag should be added to the scannable or connectable advertisement. By default, a connectable advertisements will be discoverable. Devices connecting to non-discoverable advertisements cannot initiate bonding. This flag is ignored for non-scannable and non-connectable advertisements.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="288090236%2FProperties%2F-431355489" anchor-label="includeTxPowerLevel" id="288090236%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="288090236%2FProperties%2F25486556" anchor-label="includeTxPowerLevel" id="288090236%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="include-tx-power-level.html"><span>include</span><wbr><span>Tx</span><wbr><span>Power</span><wbr><span><span>Level</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="288090236%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="288090236%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="include-tx-power-level.html">includeTxPowerLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Should the TX power level be included in the advertisement in the header, outside the AD structure.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="include-tx-power-level.html">includeTxPowerLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Should the TX power level be included in the advertisement in the header, outside the AD structure.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-1572213401%2FProperties%2F-431355489" anchor-label="interval" id="-1572213401%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-1572213401%2FProperties%2F25486556" anchor-label="interval" id="-1572213401%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-advertising-set-parameters/interval.html"><span><span>interval</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1572213401%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1572213401%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/interval.html">interval</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/interval.html">interval</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="882454260%2FProperties%2F-431355489" anchor-label="primaryPhy" id="882454260%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="882454260%2FProperties%2F25486556" anchor-label="primaryPhy" id="882454260%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="primary-phy.html"><span>primary</span><wbr><span><span>Phy</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="882454260%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="882454260%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="primary-phy.html">primaryPhy</a><span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a></div><div class="brief "><p class="paragraph">The primary advertising PHY.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="primary-phy.html">primaryPhy</a><span class="token operator">: </span><a href="../-primary-phy/index.html">PrimaryPhy</a></div><div class="brief "><p class="paragraph">The primary advertising PHY.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="553303676%2FProperties%2F-431355489" anchor-label="scannable" id="553303676%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="553303676%2FProperties%2F25486556" anchor-label="scannable" id="553303676%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="scannable.html"><span><span>scannable</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553303676%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="553303676%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="scannable.html">scannable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement type should be scannable. Bluetooth 5 advertisements can only be either scannable or only connectable.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="scannable.html">scannable</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether the advertisement type should be scannable. Bluetooth 5 advertisements can only be either scannable or only connectable.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="1463291366%2FProperties%2F-431355489" anchor-label="secondaryPhy" id="1463291366%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="1463291366%2FProperties%2F25486556" anchor-label="secondaryPhy" id="1463291366%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="secondary-phy.html"><span>secondary</span><wbr><span><span>Phy</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1463291366%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1463291366%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="secondary-phy.html">secondaryPhy</a><span class="token operator">: </span><a href="../-phy/index.html">Phy</a></div><div class="brief "><p class="paragraph">The secondary advertising PHY.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="secondary-phy.html">secondaryPhy</a><span class="token operator">: </span><a href="../-phy/index.html">Phy</a></div><div class="brief "><p class="paragraph">The secondary advertising PHY.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
           </div>
-<a data-name="-533363383%2FProperties%2F-431355489" anchor-label="txPowerLevel" id="-533363383%2FProperties%2F-431355489" data-filterable-set=":core/main"></a>
-          <div class="table-row table-row_content" data-filterable-current=":core/main" data-filterable-set=":core/main">
+<a data-name="-533363383%2FProperties%2F25486556" anchor-label="txPowerLevel" id="-533363383%2FProperties%2F25486556" data-filterable-set=":core/commonMain"></a>
+          <div class="table-row table-row_content" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain">
             <div class="main-subrow keyValue ">
               <div class=""><span class="inline-flex">
                   <div><a href="../-advertising-set-parameters/tx-power-level.html"><span>tx</span><wbr><span>Power</span><wbr><span><span>Level</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-533363383%2FProperties%2F-431355489"></span>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-533363383%2FProperties%2F25486556"></span>
                     <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
                   </span></span></div>
               <div>
                 <div class="title">
-                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":core/main"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/tx-power-level.html">txPowerLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The requested TX power level for advertising. The actual TX power level may be different, depending on the hardware and implementation.</p></div></div></div>
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":core/commonMain" data-filterable-set=":core/commonMain" data-active="" data-toggle=":core/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":core/commonMain"><div class="symbol monospace"><span class="token keyword">val </span><a href="../-advertising-set-parameters/tx-power-level.html">txPowerLevel</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The requested TX power level for advertising. The actual TX power level may be different, depending on the hardware and implementation.</p></div></div>                  </div>
                 </div>
               </div>
             </div>
