@@ -37,6 +37,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -1106,6 +1107,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                             userJob = scope.launch {
                                 try {
                                     block(state.services)
+                                    awaitCancellation()
                                 } catch (e: Exception) {
                                     when (e) {
                                         // Rethrow cancellation exceptions, without any action.
