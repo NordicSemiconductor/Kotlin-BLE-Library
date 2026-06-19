@@ -790,18 +790,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *          // Update UI or something.
      *       }
      *       .launchIn(this)
-     *
-     *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
-     *    //    or the scope in which this method is called is canceled.
-     *    try {
-     *        block(ledButtonService)
-     *    } catch (e: CancellationException) {
-     *        // Disconnect on scope cancellation, unless it's just service invalidation.
-     *        if (e.cause !is InvalidAttributeException) {
-     *            peripheral.disconnect()
-     *        }
-     *        throw e
-     *    }
      * }
      * ```
      *
@@ -855,7 +843,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * The [block] will be called every time the services are discovered,
      * which may happen multiple times (e.g. when the peripheral reconnects, or when the service
-     * gets invalidated and rediscovered). To stop observing services cancel the job in this this
+     * gets invalidated and rediscovered). To stop observing services cancel the job in this
      * method is called, or use `profile` method with custom scope.
      *
      * ## Validation
@@ -874,21 +862,22 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * ```kotlin
      * override suspend fun connect(
-     *     block: suspend CoroutineScope.(HeartRateProfile.State) -> Unit,
+     *     block: suspend CoroutineScope.(Proximity.State) -> Unit,
      * ): Unit = withContext(Dispatchers.IO) {
-     *     // First, register profile.
+     *     // First, register profile. Do this only once for a peripheral.
+     *     // The profile block will get called each time the peripheral is connected.
      *     peripheral.profile(
      *         requiredServiceUuids = listOf(
-     *            ProximityProfile.linkLossServiceUuid
+     *            Proximity.linkLossServiceUuid
      *         ),
      *         optionalServiceUuids = listOf(
-     *            ProximityProfile.immediateAlertServiceUuid,
-     *            ProximityProfile.txPowerServiceUuid,
+     *            Proximity.immediateAlertServiceUuid,
+     *            Proximity.txPowerServiceUuid,
      *         ),
      *         required = true,
      *         name = "Proximity",
      *     ) { remoteServices ->
-     *         val state = ProximityProfile(remoteServices, this)
+     *         val state = ProximityImpl(remoteServices, this)
      *
      *         // Call the block with the Proximity profile state, separating Bluetooth LE from the logic.
      *         block(state)
@@ -897,7 +886,18 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *     centralManager.connect(peripheral)
      *
      *     // Await disconnection.
-     *     peripheral.awaitDisconnection()
+     *     try {
+     *        peripheral.awaitDisconnection()
+     *     } catch (e: CancellationException) {
+     *        // The scope may get canceled when user leaves the screen.
+     *        // In that case, make sure to disconnect.
+     *        // Don't disconnect when services were invalidated, as the profile will be re-launched.
+     *        if (e.cause !is InvalidAttributeException) {
+     *            peripheral.disconnect()
+     *        }
+     *        // Rethrow.
+     *        throw e
+     *     }
      * }
      * ```
      *
@@ -1037,16 +1037,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *             }
      *          }
      *          .launchIn(this)
-     *    }
-     *
-     *    // 3. Await the scope cancellation. The scope will be canceled when the device disconnects,
-     *    //    or the scope in which this method is called is canceled.
-     *    try {
-     *       awaitCancellation()
-     *    } finally {
-     *       // In this case, we want to disconnect here.
-     *       // It won't disconnect on its own.
-     *       peripheral.disconnect()
      *    }
      * }
      * ```
