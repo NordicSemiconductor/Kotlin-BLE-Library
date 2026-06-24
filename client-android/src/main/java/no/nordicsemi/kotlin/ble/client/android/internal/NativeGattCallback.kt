@@ -33,6 +33,7 @@
 
 package no.nordicsemi.kotlin.ble.client.android.internal
 
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothGattCharacteristic
@@ -250,7 +251,11 @@ internal class NativeGattCallback(
         // However, since API 26 it was possible to detect it by listening to connection
         // parameters update, which decreased the interval to 7.5 ms during service discovery.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S &&
-            isServiceDiscoveryComplete && interval == 6 /* 7.5 ms */ ) {
+            isServiceDiscoveryComplete && interval == 6 /* 7.5 ms */  &&
+            // Don't invalidate services while bonding.
+            // There may be an ongoing request that triggered bonding.
+            gatt.device.bondState != BluetoothDevice.BOND_BONDING) {
+            logger?.warn(Layer.SMP) { "Inferred ongoing Service Changed procedure" }
             onServiceChanged(gatt)
         }
     }
