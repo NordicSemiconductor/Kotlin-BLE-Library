@@ -34,7 +34,6 @@ package no.nordicsemi.kotlin.ble.client.internal
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.onSubscription
