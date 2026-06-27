@@ -34,13 +34,11 @@
 package no.nordicsemi.kotlin.ble.core
 
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Interface representing a Bluetooth GATT characteristic.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface Characteristic<D: Descriptor> {
 
     companion object {

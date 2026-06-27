@@ -35,13 +35,11 @@ package no.nordicsemi.kotlin.ble.core.mock
 
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataScope
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Scope for building mock advertising data.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface AdvertisingDataScope: AdvertisingDataScope {
 
     /**

@@ -31,7 +31,6 @@
 
 package no.nordicsemi.kotlin.ble.client
 
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -46,7 +45,6 @@ import kotlin.uuid.Uuid
  * @property manufacturerData The manufacturer specific data advertised, where keys are the
  * Company IDs, as registered in Adopted Numbers by Bluetooth SIG.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface AdvertisingData {
     val name: String?
     val serviceUuids: List<Uuid>

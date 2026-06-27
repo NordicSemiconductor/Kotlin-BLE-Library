@@ -37,7 +37,6 @@ import no.nordicsemi.kotlin.ble.client.AdvertisingData
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataFlag
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
 import no.nordicsemi.kotlin.ble.core.util.fromBytes
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -54,7 +53,6 @@ import kotlin.uuid.Uuid
  * all AD structures found in the raw data that have a matching [AdvertisingDataType],
  * including those that are available with dedicated properties.
  */
-@OptIn(ExperimentalUuidApi::class)
 class AdvertisingData(
     val raw: ByteArray
 ) : AdvertisingData {

@@ -39,10 +39,8 @@ import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteIncludedService
 import no.nordicsemi.kotlin.ble.client.RemoteService
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteService(
     gatt: BluetoothGatt,
     service: BluetoothGattService,
@@ -60,7 +58,6 @@ internal class NativeRemoteService(
     override fun toString(): String = uuid.toString()
 }
 
-@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteIncludedService(
     parent: AnyRemoteService,
     gatt: BluetoothGatt,

@@ -41,7 +41,6 @@ import no.nordicsemi.kotlin.ble.core.ServiceScope
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -49,7 +48,6 @@ import kotlin.uuid.Uuid
  *
  * It has no-op implementation.
  */
-@OptIn(ExperimentalUuidApi::class)
 class PreviewRemoteService: RemoteService {
     override val uuid: Uuid
     override val instanceId: Int
@@ -145,7 +143,6 @@ class PreviewRemoteService: RemoteService {
     }
 }
 
-@ExperimentalUuidApi
 class PreviewIncludedRemoteService internal constructor(
     override val service: AnyRemoteService,
     override val uuid: Uuid,

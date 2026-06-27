@@ -55,10 +55,8 @@ import no.nordicsemi.kotlin.ble.core.internal.CEPD
 import no.nordicsemi.kotlin.ble.core.internal.CUD
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 class MockRemoteDescriptor(
     parent: RemoteCharacteristic,
     private val peripheralSpec: PeripheralSpec<*>,

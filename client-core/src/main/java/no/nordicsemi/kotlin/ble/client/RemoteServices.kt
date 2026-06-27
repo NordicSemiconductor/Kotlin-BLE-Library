@@ -1,6 +1,5 @@
 package no.nordicsemi.kotlin.ble.client
 
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -65,8 +64,7 @@ sealed class RemoteServices {
     /**
      * Returns filtered service discovery state.
      */
-    @OptIn(ExperimentalUuidApi::class)
-    internal fun filteredBy(uuids: List<Uuid>): RemoteServices = when (this) {
+        internal fun filteredBy(uuids: List<Uuid>): RemoteServices = when (this) {
         is Discovered -> Discovered(
             services = services.filter { service ->
                 uuids.any { it == service.uuid }

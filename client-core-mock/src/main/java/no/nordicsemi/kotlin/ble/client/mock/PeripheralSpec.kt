@@ -87,7 +87,6 @@ import kotlin.math.min
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -549,8 +548,7 @@ class PeripheralSpec<ID: Any> private constructor(
      *
      * @param newServices A builder for the set of services.
      */
-    @OptIn(ExperimentalUuidApi::class)
-    fun simulateServiceChange(newServices: MockServerScope.() -> Unit) {
+        fun simulateServiceChange(newServices: MockServerScope.() -> Unit) {
         val oldServices = services
 
         // Replace the services with new ones.
@@ -833,8 +831,7 @@ class PeripheralSpec<ID: Any> private constructor(
          * @param uuids The list of service UUIDs to discover.
          * @return `true` if the service discovery was started, `false` otherwise.
          */
-        @OptIn(ExperimentalUuidApi::class)
-        suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+                suspend fun discoverServices(uuids: List<Uuid>): Boolean {
             val connectionParameters = connectionParameters ?: return false
             val connectionInterval = connectionParameters.connectionIntervalMillis.milliseconds
             val eventHandler = eventHandler ?: return false

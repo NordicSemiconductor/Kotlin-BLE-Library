@@ -39,7 +39,6 @@ import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.ServiceScope
 import no.nordicsemi.kotlin.ble.core.and
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
-import kotlin.uuid.ExperimentalUuidApi
 
 /**
  * Scope for building a mock GATT server.
@@ -51,7 +50,6 @@ import kotlin.uuid.ExperimentalUuidApi
  * Note: The attributes added by these services will be handled automatically, that is no call to
  * [PeripheralSpecEventHandler] will be made for them.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface MockServerScope: ServerScope {
 
     /**

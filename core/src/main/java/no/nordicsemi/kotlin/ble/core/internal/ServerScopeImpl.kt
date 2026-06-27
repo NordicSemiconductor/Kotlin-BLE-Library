@@ -37,7 +37,6 @@ import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.ServiceScope
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -60,7 +59,6 @@ private class Handle {
 /**
  * Internal server scope implementation.
  */
-@OptIn(ExperimentalUuidApi::class)
 open class ServerScopeImpl: ServerScope {
     private val services = mutableListOf<ServiceDefinition>()
     private var handle = Handle()
@@ -87,7 +85,6 @@ open class ServerScopeImpl: ServerScope {
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private open class ServiceScopeImpl(
     private val handle: Handle,
 ): ServiceScope {
@@ -166,7 +163,6 @@ private open class ServiceScopeImpl(
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private class CharacteristicScopeImpl(
     private val handle: Handle,
 ): CharacteristicScope {

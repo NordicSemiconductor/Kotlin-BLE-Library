@@ -45,7 +45,6 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import no.nordicsemi.kotlin.log.Log
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -95,8 +94,7 @@ open class MockExecutor(
         gatt = peripheralSpec.connectGatt(environment, autoConnect, preferredPhy, advertisements)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+        override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         return gatt?.discoverServices(uuids) ?: false
     }
 

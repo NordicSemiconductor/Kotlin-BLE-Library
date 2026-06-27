@@ -52,7 +52,6 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -137,8 +136,7 @@ internal class NativeExecutor(
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+        override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         logger?.d(Layer.GATT) { "gatt.discoverServices()" }
         return gatt?.discoverServices() ?: false
     }

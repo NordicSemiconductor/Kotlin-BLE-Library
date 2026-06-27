@@ -34,7 +34,6 @@
 package no.nordicsemi.kotlin.ble.core.android
 
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataDefinition
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -53,7 +52,6 @@ import kotlin.uuid.Uuid
  * @param manufacturerData Manufacturer specific data. The keys should be the Company ID as
  * defined in Assigned Numbers.
  */
-@OptIn(ExperimentalUuidApi::class)
 class AdvertisingDataDefinition(
     val includeDeviceName: Boolean = false,
     val includeTxPowerLevel: Boolean = false,

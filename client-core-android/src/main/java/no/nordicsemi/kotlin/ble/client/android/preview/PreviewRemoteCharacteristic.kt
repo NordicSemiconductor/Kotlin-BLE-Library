@@ -45,7 +45,6 @@ import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
 import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -53,7 +52,6 @@ import kotlin.uuid.Uuid
  *
  * If has no-op implementation.
  */
-@OptIn(ExperimentalUuidApi::class)
 class PreviewRemoteCharacteristic : RemoteCharacteristic {
     override val service: AnyRemoteService
     override val uuid: Uuid

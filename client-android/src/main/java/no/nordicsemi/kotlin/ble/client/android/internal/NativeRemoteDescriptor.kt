@@ -48,10 +48,8 @@ import no.nordicsemi.kotlin.ble.client.internal.OperationEvent
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.log.Log
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 internal class NativeRemoteDescriptor(
     parent: RemoteCharacteristic,
     private val gatt: BluetoothGatt,

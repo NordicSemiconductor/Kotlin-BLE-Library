@@ -54,7 +54,6 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.WriteType
 import java.util.UUID
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import android.bluetooth.le.ScanResult as NativeScanResult
 
@@ -231,6 +230,5 @@ internal fun WriteType.toInt() = when (this) {
     WriteType.SIGNED -> BluetoothGattCharacteristic.WRITE_TYPE_SIGNED
 }
 
-@OptIn(ExperimentalUuidApi::class)
 internal val UUID.toKotlinUuid: Uuid
     get() = Uuid.fromLongs(mostSignificantBits, leastSignificantBits)

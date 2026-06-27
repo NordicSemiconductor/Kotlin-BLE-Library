@@ -38,13 +38,11 @@ import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
 import no.nordicsemi.kotlin.ble.core.util.and
 import no.nordicsemi.kotlin.ble.core.util.toShortString
 import kotlin.experimental.and
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * A filter that requires all the criteria to be satisfied.
  */
-@OptIn(ExperimentalUuidApi::class)
 class ConjunctionFilter: ConjunctionFilterScope {
 
     /**
@@ -165,7 +163,6 @@ class ConjunctionFilter: ConjunctionFilterScope {
 /**
  * A filter that requires at least one of the criteria to be satisfied.
  */
-@OptIn(ExperimentalUuidApi::class)
 class DisjunctionFilter: DisjunctionFilterScope {
     /**
      * A list of [ConjunctionFilter]s. Each filter will be applied separately.
@@ -252,7 +249,6 @@ class DisjunctionFilter: DisjunctionFilterScope {
  *
  * They are either not supported by the Android API, or are not supported on some Android versions.
  */
-@OptIn(ExperimentalUuidApi::class)
 class ScanFilter {
     class ServiceUuid(val uuid: Uuid, val mask: Uuid?) {
         operator fun component1(): Uuid = uuid
@@ -367,7 +363,6 @@ class ScanFilter {
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private fun Uuid.matches(uuid: Uuid, mask: Uuid?): Boolean {
     if (mask == null) {
         return this == uuid

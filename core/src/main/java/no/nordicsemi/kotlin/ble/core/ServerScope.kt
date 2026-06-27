@@ -34,13 +34,11 @@
 package no.nordicsemi.kotlin.ble.core
 
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Scope for building a GATT server.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface ServerScope {
 
     /**
@@ -110,7 +108,6 @@ interface ServerScope {
 /**
  * Scope of a GATT service.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface ServiceScope {
 
     /**
@@ -385,7 +382,6 @@ interface ServiceScope {
 /**
  * Scope of a characteristic.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface CharacteristicScope {
 
     /**

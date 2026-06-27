@@ -54,10 +54,8 @@ import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import kotlin.time.Duration.Companion.milliseconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 class MockRemoteCharacteristic(
     parent: AnyRemoteService,
     private val peripheralSpec: PeripheralSpec<*>,

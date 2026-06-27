@@ -34,13 +34,11 @@
 package no.nordicsemi.kotlin.ble.core.android
 
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataScope
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Scope for building advertising data supported on Android.
  */
-@OptIn(ExperimentalUuidApi::class)
 interface AdvertisingDataScope: AdvertisingDataScope {
 
     /**

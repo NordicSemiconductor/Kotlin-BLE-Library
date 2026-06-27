@@ -62,7 +62,6 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
-import kotlin.uuid.ExperimentalUuidApi
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -93,7 +92,6 @@ fun DeviceList(
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Composable
 fun DeviceItem(
     device: Peripheral,

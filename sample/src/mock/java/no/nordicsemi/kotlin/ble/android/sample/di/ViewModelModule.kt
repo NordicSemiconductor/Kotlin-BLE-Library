@@ -73,10 +73,8 @@ import no.nordicsemi.kotlin.log.timber.Timber
 import timber.log.Timber
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 @Module
 @InstallIn(ViewModelComponent::class)
 object ViewModelModule {
