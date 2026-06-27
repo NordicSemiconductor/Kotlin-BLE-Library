@@ -35,13 +35,11 @@ package no.nordicsemi.kotlin.ble.client.android
 
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataType
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Android-specific scanning filters scope.
  */
-@OptIn(ExperimentalUuidApi::class)
 sealed interface ScanFilterScope: CentralManager.ScanFilterScope {
 
     /**

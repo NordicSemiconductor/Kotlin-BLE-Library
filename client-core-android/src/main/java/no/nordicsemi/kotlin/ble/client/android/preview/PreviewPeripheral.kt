@@ -85,7 +85,6 @@ import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -131,7 +130,7 @@ private class StubExecutor(
         _events.emit(ConnectionStateChanged(ConnectionState.Connected))
     }
 
-    @OptIn(ExperimentalUuidApi::class)
+    
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         _events.emit(ServicesDiscovered(initialServices))
         return true
@@ -210,7 +209,6 @@ private class StubExecutor(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-@OptIn(ExperimentalUuidApi::class)
 private class StubRemoteService(
     override val uuid: Uuid,
     override val instanceId: Int = 0,
@@ -249,7 +247,6 @@ private class StubRemoteService(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-@OptIn(ExperimentalUuidApi::class)
 private class StubRemoteIncludedService(
     override val service: AnyRemoteService,
     override val uuid: Uuid,
@@ -289,7 +286,6 @@ private class StubRemoteIncludedService(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-@OptIn(ExperimentalUuidApi::class)
 private class StubRemoteCharacteristic(
     override val service: AnyRemoteService,
     override val uuid: Uuid,
@@ -358,7 +354,6 @@ private class StubRemoteCharacteristic(
  *
  * This class is used to preview the UI in the Compose Preview.
  */
-@OptIn(ExperimentalUuidApi::class)
 private class StubRemoteDescriptor(
     override val characteristic: RemoteCharacteristic,
     override val uuid: Uuid,
@@ -397,7 +392,6 @@ private class StubRemoteDescriptor(
  * @param hasBondInformation `true` if the Android device has the bond information for the peripheral,
  * that is, if the peripheral is bonded to the device. Defaults to `false`.
  */
-@OptIn(ExperimentalUuidApi::class)
 open class PreviewPeripheral(
     scope: CoroutineScope,
     address: String = "00:11:22:33:44:55",

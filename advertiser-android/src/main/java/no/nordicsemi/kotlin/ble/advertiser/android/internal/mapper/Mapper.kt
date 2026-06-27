@@ -48,7 +48,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.INFINITE
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import android.bluetooth.le.AdvertiseData as NativeAdvertiseData
 import android.bluetooth.le.AdvertiseSettings as NativeAdvertiseSettings
@@ -116,7 +115,6 @@ internal fun AdvertisingSetParameters.toLegacy(timeout: Duration): NativeAdverti
         }
         .build()
 
-@OptIn(ExperimentalUuidApi::class)
 internal fun AdvertisingDataDefinition.toNative(): NativeAdvertiseData =
     NativeAdvertiseData.Builder()
         .setIncludeDeviceName(includeDeviceName)
@@ -162,6 +160,5 @@ private fun Int.toLegacyTxPowerLevel(): Int = when (this) {
     else -> NativeAdvertiseSettings.ADVERTISE_TX_POWER_HIGH
 }
 
-@OptIn(ExperimentalUuidApi::class)
 private val Uuid.toJavaUUID: UUID
     get() = toLongs { msb, lsb ->  UUID(msb, lsb) }

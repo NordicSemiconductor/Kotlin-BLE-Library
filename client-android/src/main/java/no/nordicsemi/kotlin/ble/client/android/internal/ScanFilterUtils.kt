@@ -34,7 +34,6 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 import android.bluetooth.le.ScanFilter as NativeScanFilter
 import android.os.Build
 import android.os.ParcelUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.toJavaUuid
 
 /**
@@ -53,7 +52,6 @@ internal fun List<ScanFilter>.toNative(): List<NativeScanFilter> = mapNotNull { 
  *
  * See also [link](https://developer.android.com/reference/android/bluetooth/le/ScanFilter.Builder)
  */
-@OptIn(ExperimentalUuidApi::class)
 internal fun ScanFilter.toNative(): NativeScanFilter? {
     if (name == null &&
         nameRegex == null &&

@@ -36,13 +36,11 @@ package no.nordicsemi.kotlin.ble.core.internal
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
  * Implementation of the advertising data scope used to build the [AdvertisingDataDefinition].
  */
-@OptIn(ExperimentalUuidApi::class)
 open class AdvertisingDataScopeImpl: AdvertisingDataScope {
 
     /**

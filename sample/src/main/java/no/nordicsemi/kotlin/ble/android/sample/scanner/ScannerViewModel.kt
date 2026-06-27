@@ -75,7 +75,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 
 @HiltViewModel
 class ScannerViewModel @Inject constructor(
@@ -111,8 +110,7 @@ class ScannerViewModel @Inject constructor(
 
     private var scanningJob: Job? = null
 
-    @OptIn(ExperimentalUuidApi::class)
-    fun onScanRequested() {
+        fun onScanRequested() {
         scanningJob = centralManager
             .scan(5000.milliseconds) {
 //                Any {
@@ -354,8 +352,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
+        private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
         // Services will change multiple times. Initially, the services() will emit null (event 1).
         // When services are discovered, it will emit the list of services (event 2).
         // If the services change later, it will emit null again (event 3) and the new list (event 4).
@@ -472,8 +469,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    private suspend fun installLbsProfile(
+        private suspend fun installLbsProfile(
         peripheral: Peripheral,
         required: Boolean,
         block: suspend CoroutineScope.(LedButtonProfile.State) -> Unit,

@@ -41,7 +41,6 @@ import no.nordicsemi.kotlin.ble.core.util.is16BitUuid
 import no.nordicsemi.kotlin.ble.core.util.is32BitUuid
 import no.nordicsemi.kotlin.ble.core.util.toShortByteArray
 import no.nordicsemi.kotlin.ble.core.value
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -65,7 +64,6 @@ import kotlin.uuid.Uuid
  * @property meshMessage The Bluetooth Mesh Message field.
  * @property meshBeacon The Bluetooth Mesh Beacon field.
  */
-@OptIn(ExperimentalUuidApi::class)
 class AdvertisingDataDefinition(
     val raw: ByteArray
 ): AdvertisingDataDefinition(

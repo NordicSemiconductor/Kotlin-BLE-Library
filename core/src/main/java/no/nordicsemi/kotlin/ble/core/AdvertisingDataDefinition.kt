@@ -33,7 +33,6 @@
 
 package no.nordicsemi.kotlin.ble.core
 
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -44,7 +43,6 @@ import kotlin.uuid.Uuid
  *
  * @param serviceUuids A list of service UUID to advertise.
  */
-@OptIn(ExperimentalUuidApi::class)
 open class AdvertisingDataDefinition(
     val serviceUuids: List<Uuid>? = null,
 )

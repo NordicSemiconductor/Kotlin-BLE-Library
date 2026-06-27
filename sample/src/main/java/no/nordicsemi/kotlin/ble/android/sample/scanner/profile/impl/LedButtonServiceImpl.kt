@@ -54,7 +54,6 @@ import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import timber.log.Timber
-import kotlin.uuid.ExperimentalUuidApi
 
 /**
  * This class implements the [LedButtonProfile.State] interface.
@@ -67,7 +66,6 @@ import kotlin.uuid.ExperimentalUuidApi
  * to control the device using [led] and [button]. Additional [buttonPressed] and
  * [buttonLongPressed] events emit when the button is pressed.
  */
-@OptIn(ExperimentalUuidApi::class)
 class LedButtonServiceImpl(
     private val ledButtonService: RemoteService,
     private val scope: CoroutineScope,

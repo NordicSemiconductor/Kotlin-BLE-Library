@@ -40,10 +40,8 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpecEventHandler
 import no.nordicsemi.kotlin.ble.core.internal.ServiceDefinition
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 class MockRemoteService(
     peripheralSpec: PeripheralSpec<*>,
     service: ServiceDefinition,
@@ -60,7 +58,6 @@ class MockRemoteService(
     override fun toString(): String = uuid.toString()
 }
 
-@OptIn(ExperimentalUuidApi::class)
 class MockRemoteIncludedService(
     parent: AnyRemoteService,
     peripheralSpec: PeripheralSpec<*>,

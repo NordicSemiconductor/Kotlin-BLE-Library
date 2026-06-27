@@ -35,7 +35,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.time.Duration.Companion.seconds
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -43,7 +42,6 @@ import kotlin.uuid.Uuid
  *
  * Read more: [Documentation / Peripheral LBS](https://docs.nordicsemi.com/bundle/ncs-latest/page/nrf/samples/bluetooth/peripheral_lbs/README.html)
  */
-@OptIn(ExperimentalUuidApi::class)
 interface LedButtonProfile {
     companion object {
         /** If a button is pressed for more than this value it is reported as long press. */

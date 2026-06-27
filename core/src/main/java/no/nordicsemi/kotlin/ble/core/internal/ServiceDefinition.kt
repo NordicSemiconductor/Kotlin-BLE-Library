@@ -37,10 +37,8 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.Descriptor
 import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.and
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-@OptIn(ExperimentalUuidApi::class)
 class ServiceDefinition(
     val uuid: Uuid,
     val instanceId: Int,
@@ -48,7 +46,6 @@ class ServiceDefinition(
     val includedServices: List<ServiceDefinition>,
 )
 
-@OptIn(ExperimentalUuidApi::class)
 class CharacteristicDefinition(
     val uuid: Uuid,
     val instanceId: Int,
@@ -57,7 +54,6 @@ class CharacteristicDefinition(
     val descriptors: List<DescriptorDefinition>,
 )
 
-@OptIn(ExperimentalUuidApi::class)
 open class DescriptorDefinition(
     val uuid: Uuid,
     val instanceId: Int,
@@ -71,7 +67,6 @@ open class DescriptorDefinition(
  * store this information and restore it when reconnecting.
  * @param instanceId The instance ID of the descriptor.
  */
-@OptIn(ExperimentalUuidApi::class)
 class CCCD(
     var enabled: Boolean = false,
     instanceId: Int,
@@ -88,7 +83,6 @@ class CCCD(
  * @param writable True if the description is writable.
  * @param instanceId The instance ID of the descriptor.
  */
-@OptIn(ExperimentalUuidApi::class)
 class CUD(
     val description: String,
     writable: Boolean,
@@ -111,7 +105,6 @@ class CUD(
  * @param writableAuxiliaries True if the Characteristic User Description descriptor is writable.
  * @param instanceId The instance ID of the descriptor.
  */
-@OptIn(ExperimentalUuidApi::class)
 class CEPD(
     val reliableWrite: Boolean,
     val writableAuxiliaries: Boolean,

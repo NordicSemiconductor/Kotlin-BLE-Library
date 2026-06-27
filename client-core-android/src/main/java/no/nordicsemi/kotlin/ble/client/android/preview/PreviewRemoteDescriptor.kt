@@ -36,7 +36,6 @@ package no.nordicsemi.kotlin.ble.client.android.preview
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -44,7 +43,6 @@ import kotlin.uuid.Uuid
  *
  * If has no-op implementation.
  */
-@OptIn(ExperimentalUuidApi::class)
 class PreviewRemoteDescriptor: RemoteDescriptor {
     override val characteristic: RemoteCharacteristic
     override val uuid: Uuid

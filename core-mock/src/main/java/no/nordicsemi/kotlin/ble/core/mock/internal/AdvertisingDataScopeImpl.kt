@@ -39,7 +39,6 @@ import no.nordicsemi.kotlin.ble.core.internal.AdvertisingDataScopeImpl
 import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.mock.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -50,7 +49,6 @@ import kotlin.uuid.Uuid
  *
  * @param txPowerLevel The simulated TX power level of the mock advertiser.
  */
-@OptIn(ExperimentalUuidApi::class)
 class AdvertisingDataScopeImpl(
     private val txPowerLevel: Int,
 ): AdvertisingDataScopeImpl(), AdvertisingDataScope {

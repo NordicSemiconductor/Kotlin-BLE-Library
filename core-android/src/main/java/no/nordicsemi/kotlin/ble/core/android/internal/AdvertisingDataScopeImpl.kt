@@ -37,7 +37,6 @@ import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.internal.AdvertisingDataScopeImpl
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataScope
 import no.nordicsemi.kotlin.ble.core.util.fromShortUuid
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 /**
@@ -46,7 +45,6 @@ import kotlin.uuid.Uuid
  * This implementation extends the core implementation by adding fields that can be advertised
  * on Android.
  */
-@OptIn(ExperimentalUuidApi::class)
 class AdvertisingDataScopeImpl: AdvertisingDataScopeImpl(), AdvertisingDataScope {
 
     override fun build(): AdvertisingDataDefinition =

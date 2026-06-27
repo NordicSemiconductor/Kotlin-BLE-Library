@@ -56,7 +56,6 @@ import no.nordicsemi.kotlin.ble.client.android.preview.PreviewRemoteDescriptor
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewRemoteService
 import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.util.toShortString
-import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 @Composable
@@ -81,7 +80,6 @@ fun DeviceServices(services: RemoteServices) {
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Composable
 private fun Service(service: AnyRemoteService) {
     Column(
@@ -109,7 +107,6 @@ private fun Service(service: AnyRemoteService) {
     Spacer(modifier = Modifier.height(4.dp))
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Composable
 private fun Characteristic(characteristic: RemoteCharacteristic) {
     Column(
@@ -130,7 +127,6 @@ private fun Characteristic(characteristic: RemoteCharacteristic) {
     }
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Composable
 private fun Descriptor(descriptor: RemoteDescriptor) {
     Text(
@@ -164,14 +160,12 @@ private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color): Modifier {
         .padding(start = strokeWidth * 1.25f)
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDeviceServices_discovery() {
     DeviceServices(RemoteServices.Discovering)
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDeviceServices() {
@@ -206,7 +200,6 @@ private fun PreviewDeviceServices() {
     )
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewCharacteristics() {
@@ -219,7 +212,6 @@ private fun PreviewCharacteristics() {
     )
 }
 
-@OptIn(ExperimentalUuidApi::class)
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDescriptor() {

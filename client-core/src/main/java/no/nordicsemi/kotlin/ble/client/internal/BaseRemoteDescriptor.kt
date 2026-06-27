@@ -46,9 +46,7 @@ import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
-import kotlin.uuid.ExperimentalUuidApi
 
-@OptIn(ExperimentalUuidApi::class)
 abstract class BaseRemoteDescriptor(
     parent: RemoteCharacteristic,
     private val events: SharedFlow<GattEvent>,

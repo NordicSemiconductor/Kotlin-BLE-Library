@@ -42,7 +42,6 @@ import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
 import no.nordicsemi.kotlin.ble.core.util.is16BitUuid
 import no.nordicsemi.kotlin.ble.core.util.is32BitUuid
 import org.jetbrains.annotations.Range
-import kotlin.uuid.ExperimentalUuidApi
 
 
 /** The maximum number of bytes in the advertising data or scan response. */
@@ -136,8 +135,7 @@ class AdvertisingDataValidator(
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
-    private fun totalBytes(data: AdvertisingDataDefinition?, isFlagsIncluded: Boolean): Int {
+        private fun totalBytes(data: AdvertisingDataDefinition?, isFlagsIncluded: Boolean): Int {
         if (data == null) {
             return 0
         }
