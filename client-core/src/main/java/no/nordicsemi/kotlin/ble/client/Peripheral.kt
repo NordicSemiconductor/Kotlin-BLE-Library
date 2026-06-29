@@ -416,39 +416,46 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 val services = event.services.onEach { it.owner = this }
                 // Search for Service Changed characteristic and enable CCCD.
                 // This characteristic notifies about service changes.
-                services
-                    .firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
-                    ?.characteristics
-                    ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
-                    ?.also { logger?.trace(Layer.GATT) { "Enabling Service Changed indications" } }
-                    ?.subscribe { logger?.info(Layer.GATT) { "Service Changed indications enabled" } }
-                    ?.onEach {
-                        // The Service Changed indication is consumed by the system.
-                        //
-                        // * Android versions since Android 12 will notify the app using
-                        //   `onServiceChanged` callback.
-                        // * Android versions 8-11 refresh the cache, but do not notify the app.
-                        //   However, during service discovery they switch to connection
-                        //   interval 7.5 ms (6 units), which only happens during discovery.
-                        //   This library detects it, and reports `ServicesChanged` event
-                        //   (see NativeGattCallback).
-                        // * Android versions prior to 8 also refresh services, but
-                        //   they don't have a hidden `onConnectionUpdated` method, so it is
-                        //   not possible to detect when the services get invalidated.
-                        //
-                        // None of the phones we tested (Android 6 - 16) indicated anything
-                        // on Service Change characteristic.
-                        // However, perhaps older Android versions do not handle SC indication
-                        // internally, and will report it to the app, so let's use it to
-                        // indicate service change.
-                        handle(ServicesChanged)
-                    }
-                    ?.catch {
-                        // This catches an error if isNotifying(true) inside subscribe() fails.
-                        // For example, if a peripheral tries to bond, but PIN is incorrect.
-                        logger?.warn(Layer.GATT) { "Enabling Service Changed indications failed" }
-                    }
-                    ?.launchIn(scope)
+                try {
+                    services
+                        .firstOrNull { it.uuid == Service.GENERIC_ATTRIBUTE_UUID }
+                        ?.characteristics
+                        ?.firstOrNull { it.uuid == Characteristic.SERVICE_CHANGED }
+                        ?.takeIf { it.isSubscribable() }
+                        ?.also { logger?.trace(Layer.GATT) { "Enabling Service Changed indications" } }
+                        ?.subscribe { logger?.info(Layer.GATT) { "Service Changed indications enabled" } }
+                        ?.onEach {
+                            // The Service Changed indication is consumed by the system.
+                            //
+                            // * Android versions since Android 12 will notify the app using
+                            //   `onServiceChanged` callback.
+                            // * Android versions 8-11 refresh the cache, but do not notify the app.
+                            //   However, during service discovery they switch to connection
+                            //   interval 7.5 ms (6 units), which only happens during discovery.
+                            //   This library detects it, and reports `ServicesChanged` event
+                            //   (see NativeGattCallback).
+                            // * Android versions prior to 8 also refresh services, but
+                            //   they don't have a hidden `onConnectionUpdated` method, so it is
+                            //   not possible to detect when the services get invalidated.
+                            //
+                            // None of the phones we tested (Android 6 - 16) indicated anything
+                            // on Service Change characteristic.
+                            // However, perhaps older Android versions do not handle SC indication
+                            // internally, and will report it to the app, so let's use it to
+                            // indicate service change.
+                            handle(ServicesChanged)
+                        }
+                        ?.catch {
+                            // This catches an error if isNotifying(true) inside subscribe() fails.
+                            // For example, if a peripheral tries to bond, but PIN is incorrect.
+                            logger?.warn(Layer.GATT) { "Enabling Service Changed indications failed" }
+                        }
+                        ?.launchIn(scope)
+                } catch (t: Throwable) {
+                    // This catches an error if SD is not subscribable or invalidated.
+                    // These are thrown before the Flow is created.
+                    logger?.warn(Layer.GATT) { "Enabling Service Changed indications failed" }
+                }
                 _services.update { RemoteServices.Discovered(services) }
             }
 
