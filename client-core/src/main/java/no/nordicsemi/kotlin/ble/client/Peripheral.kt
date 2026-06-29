@@ -1132,7 +1132,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                                 logger?.warn(Layer.GATT) { "$name: Required services not supported (missing: $missingServices)" }
                                 disconnect(ConnectionState.Disconnected.Reason.RequiredServiceNotFound)
                             } else {
-                                logger?.warn(Layer.GATT) { "$name: Optional services not supported (missing: $missingServices)" }
                                 // Do not disconnect or cancel the user scope.
                                 // The device may change its services and the Discovered state
                                 // may be emitted again.
