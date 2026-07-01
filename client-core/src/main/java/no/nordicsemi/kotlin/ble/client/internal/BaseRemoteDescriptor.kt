@@ -46,6 +46,7 @@ import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+import no.nordicsemi.kotlin.ble.core.internal.withCallSite
 
 abstract class BaseRemoteDescriptor(
     parent: RemoteCharacteristic,
@@ -108,7 +109,7 @@ abstract class BaseRemoteDescriptor(
      */
     abstract fun OperationEvent.matches(): Boolean
 
-    final override suspend fun read(): ByteArray {
+    final override suspend fun read(): ByteArray = withCallSite("read") {
         // Check whether the descriptor wasn't invalidated.
         requireNotNull(owner) {
             throw InvalidAttributeException()
@@ -119,7 +120,7 @@ abstract class BaseRemoteDescriptor(
             throw OperationFailedException(OperationStatus.ReadNotPermitted)
         }
 
-        return OperationMutex.withLock {
+        OperationMutex.withLock {
             events
                 .onSubscription {
                     try {
@@ -157,7 +158,7 @@ abstract class BaseRemoteDescriptor(
         }
     }
 
-    final override suspend fun write(data: ByteArray) {
+    final override suspend fun write(data: ByteArray) = withCallSite("write") {
         // Check whether the descriptor wasn't invalidated.
         requireNotNull(owner) {
             throw InvalidAttributeException()
