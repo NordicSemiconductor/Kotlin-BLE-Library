@@ -188,9 +188,9 @@ class ScannerViewModel @Inject constructor(
                             // The observers will get canceled when the connection scope gets canceled,
                             // that is when the device is manually disconnected in case of auto connect,
                             // or disconnects for any reason when auto connect was false.
-                            observerPhy(peripheral, this)
+                            observePhy(peripheral, this)
                             observeConnectionParameters(peripheral, this)
-                            observerServices(peripheral, this)
+                            observeServices(peripheral, this)
 
                             installLbsProfile(peripheral, required = false) { state ->
                                 // When the Button is long-clicked, cancel the profile scope.
@@ -320,11 +320,11 @@ class ScannerViewModel @Inject constructor(
             Timber.i("Connection priority changed to HIGH")
             Timber.i("New connection parameters: $newConnectionParameters")
         } catch (e: Exception) {
-            Timber.e(e, "OMG!")
+            Timber.e("Peripheral disconnected before initialization completed: ${e.message}")
         }
     }
 
-    private fun observerPhy(peripheral: Peripheral, scope: CoroutineScope) {
+    private fun observePhy(peripheral: Peripheral, scope: CoroutineScope) {
         peripheral.phy
             .onEach {
                 Timber.i("PHY changed to: $it")
@@ -352,7 +352,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-        private fun observerServices(peripheral: Peripheral, scope: CoroutineScope) {
+    private fun observeServices(peripheral: Peripheral, scope: CoroutineScope) {
         // Services will change multiple times. Initially, the services() will emit null (event 1).
         // When services are discovered, it will emit the list of services (event 2).
         // If the services change later, it will emit null again (event 3) and the new list (event 4).
@@ -380,6 +380,7 @@ class ScannerViewModel @Inject constructor(
                                 val value = remoteCharacteristic.read()
                                 Timber.i("- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                             } catch (e: Exception) {
+                                if (e is InvalidAttributeException) throw e
                                 if (expectError) {
                                     Timber.w("- Value of ${remoteCharacteristic.uuid}: Read not permitted")
                                 } else {
@@ -392,6 +393,7 @@ class ScannerViewModel @Inject constructor(
                                     val descValue = descriptor.read()
                                     Timber.i("   - Value of descriptor ${descriptor.uuid}: 0x${descValue.toHexString()}")
                                 } catch (e: Exception) {
+                                    if (e is InvalidAttributeException) throw e
                                     if (e is OperationFailedException && e.reason == OperationStatus.ReadNotPermitted) {
                                         // This is expected for Client Characteristic Configuration Descriptor of non-notifiable characteristics.
                                         Timber.w("   - Value of descriptor ${descriptor.uuid}: Read not permitted")
@@ -444,6 +446,7 @@ class ScannerViewModel @Inject constructor(
                                     }
                                     .launchIn(scope)
                             } catch (e: Exception) {
+                                if (e is InvalidAttributeException) throw e
                                 if (!expectError) {
                                     Timber.e("($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
                                 }
@@ -469,7 +472,7 @@ class ScannerViewModel @Inject constructor(
             .launchIn(scope)
     }
 
-        private suspend fun installLbsProfile(
+    private suspend fun installLbsProfile(
         peripheral: Peripheral,
         required: Boolean,
         block: suspend CoroutineScope.(LedButtonProfile.State) -> Unit,
@@ -477,6 +480,7 @@ class ScannerViewModel @Inject constructor(
         peripheral.profile(
             serviceUuid = LedButtonProfile.SERVICE_UUID,
             required = required,
+            name = "LBS",
         ) { lbs ->
             val state = LedButtonServiceImpl(lbs, this)
             Timber.i("LBS: LED Button Service found")

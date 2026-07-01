@@ -31,6 +31,7 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.scanner.profile.impl
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
@@ -38,6 +39,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
@@ -180,10 +182,15 @@ class LedButtonServiceImpl(
                 // By having a local mutable flow we call subscribe() only once.
                 try {
                     buttonCharacteristic.subscribe()
+                        .catch { t ->
+                            Timber.w("Button characteristic subscription failed: ${t.message}")
+                        }
                         .collect { flow.emit(it.state) }
-                } catch (e: Exception) {
-                    Timber.d("Stopped observing button events")
+                } catch (e: CancellationException) {
+                    // Rethrow the cancellation exception.
                     throw e
+                } catch (e: Exception) {
+                    Timber.w("Button characteristic subscription failed: ${e.message}")
                 }
             }
         }
