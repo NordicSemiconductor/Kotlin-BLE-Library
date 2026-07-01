@@ -52,6 +52,8 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
+import no.nordicsemi.kotlin.ble.core.internal.CallSiteException
+import no.nordicsemi.kotlin.ble.core.internal.withCallSite
 import no.nordicsemi.kotlin.ble.core.util.MergeResult
 import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 
@@ -117,7 +119,7 @@ abstract class BaseRemoteCharacteristic(
     final override val isNotifying: Boolean
         get() = owner != null && _isNotifying
 
-    final override suspend fun setNotifying(enabled: Boolean) {
+    final override suspend fun setNotifying(enabled: Boolean) = withCallSite("setNotifying") {
         // Check whether the characteristic wasn't invalidated.
         requireNotNull(owner) {
             throw InvalidAttributeException()
@@ -125,7 +127,7 @@ abstract class BaseRemoteCharacteristic(
 
         // If the current state of notifications is the same as the requested state, return.
         if (enabled == isNotifying)
-            return
+            return@withCallSite
 
         // Verify that the characteristic can be subscribed to.
         require(isSubscribable()) {
@@ -156,7 +158,7 @@ abstract class BaseRemoteCharacteristic(
         _isNotifying = enabled
     }
 
-    final override suspend fun read(): ByteArray {
+    final override suspend fun read(): ByteArray = withCallSite("read") {
         // Check whether the characteristic wasn't invalidated.
         requireNotNull(owner) {
             throw InvalidAttributeException()
@@ -168,7 +170,7 @@ abstract class BaseRemoteCharacteristic(
         }
 
         // Read the characteristic value and await the result.
-        return OperationMutex.withLock {
+        OperationMutex.withLock {
             events
                 .onSubscription {
                     try {
@@ -206,7 +208,7 @@ abstract class BaseRemoteCharacteristic(
         }
     }
 
-    final override suspend fun write(data: ByteArray, writeType: WriteType) {
+    final override suspend fun write(data: ByteArray, writeType: WriteType) = withCallSite("write") {
         // Check whether the characteristic wasn't invalidated.
         requireNotNull(owner) {
             throw InvalidAttributeException()
@@ -263,11 +265,13 @@ abstract class BaseRemoteCharacteristic(
         merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
         filter: (ByteArray) -> Boolean,
         trigger: suspend RemoteCharacteristic.() -> Unit,
-    ): ByteArray = subscribe(trigger)
-        .filter(rawDataFilter)
-        .mergeIndexed(merge)
-        .firstOrNull(filter)
-        ?: throw InvalidAttributeException()
+    ): ByteArray = withCallSite("waitForValueChange") {
+        subscribe(trigger)
+            .filter(rawDataFilter)
+            .mergeIndexed(merge)
+            .firstOrNull(filter)
+            ?: throw InvalidAttributeException()
+    }
 
     override fun subscribe(
         onSubscription: suspend RemoteCharacteristic.() -> Unit
@@ -282,12 +286,26 @@ abstract class BaseRemoteCharacteristic(
             throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
         }
 
+        // Captured immediately, on the caller's thread, before the flow below is even built.
+        val calledHere = CallSiteException("subscribe() was called here")
+
         return events
             .onSubscription {
-                // First, make sure the notifications or indications are enabled.
-                setNotifying(true)
-                // Then, invoke the user callback.
-                onSubscription()
+                // Captured when collection of the flow actually starts, which may happen later
+                // and on a different coroutine than the one that called subscribe().
+                val collectedHere = CallSiteException("subscribe() Flow started being collected here")
+                try {
+                    // First, make sure the notifications or indications are enabled.
+                    setNotifying(true)
+                    // Then, invoke the user callback.
+                    onSubscription()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Throwable) {
+                    e.addSuppressed(calledHere)
+                    e.addSuppressed(collectedHere)
+                    throw e
+                }
             }
             .takeWhile { !it.isServiceInvalidatedEvent }
             .filterIsInstance(CharacteristicChanged::class)

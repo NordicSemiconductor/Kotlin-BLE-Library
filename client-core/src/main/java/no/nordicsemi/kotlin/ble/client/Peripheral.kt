@@ -70,6 +70,7 @@ import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.internal.withCallSite
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.log.Log
 import kotlin.coroutines.cancellation.CancellationException
@@ -1439,11 +1440,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @throws OperationFailedException If reading RSSI could not be initiated.
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
-    suspend fun readRssi(): Int {
+    suspend fun readRssi(): Int = withCallSite("readRssi") {
         check (isConnected) {
             throw PeripheralNotConnectedException()
         }
-        return OperationMutex.withLock {
+        OperationMutex.withLock {
             logger?.trace(Layer.LINK) { "Reading RSSI" }
             impl.events
                 .onSubscription {
@@ -1487,54 +1488,56 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @param reason The reason for disconnection. Use [Success][ConnectionState.Disconnected.Reason.Success]
      * when disconnection was initiated by the user.
      */
-    internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withContext(NonCancellable) {
-        OperationMutex.withLock {
-            // Depending on the state...
-            when (state.value) {
-                is ConnectionState.Disconnected -> {
-                    // Make sure auto-connection is closed.
+    internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withCallSite("disconnect") {
+        withContext(NonCancellable) {
+            OperationMutex.withLock {
+                // Depending on the state...
+                when (state.value) {
+                    is ConnectionState.Disconnected -> {
+                        // Make sure auto-connection is closed.
+                        close()
+                        return@withLock
+                    }
+
+                    is ConnectionState.Disconnecting -> {
+                        // Skip..
+                    }
+
+                    is ConnectionState.Connecting -> {
+                        // Cancel the connection attempt.
+                        logger?.trace(Layer.GAP) { "Cancelling connection to ${this@Peripheral}" }
+                        _state.update { ConnectionState.Disconnecting }
+                    }
+
+                    is ConnectionState.Connected -> {
+                        // Disconnect from the peripheral.
+                        logger?.trace(Layer.GAP) { "Disconnecting from ${this@Peripheral}" }
+                        _state.update { ConnectionState.Disconnecting }
+                    }
+                }
+
+                // Disconnect and wait until it is disconnected, then close.
+                try {
+                    if (!impl.isClosed) {
+                        await(
+                            action = { impl.disconnect(reason) },
+                            condition = { it.isDisconnected },
+                            timeout = 500.milliseconds
+                        )
+                    }
+                } catch (e: TimeoutCancellationException) {
+                    if (!isDisconnected) {
+                        logger?.warn(Layer.GAP) { "Disconnection takes longer than expected, closing" }
+                    }
+                } finally {
                     close()
-                    return@withLock
-                }
-
-                is ConnectionState.Disconnecting -> {
-                    // Skip..
-                }
-
-                is ConnectionState.Connecting -> {
-                    // Cancel the connection attempt.
-                    logger?.trace(Layer.GAP) { "Cancelling connection to ${this@Peripheral}" }
-                    _state.update { ConnectionState.Disconnecting }
-                }
-
-                is ConnectionState.Connected -> {
-                    // Disconnect from the peripheral.
-                    logger?.trace(Layer.GAP) { "Disconnecting from ${this@Peripheral}" }
-                    _state.update { ConnectionState.Disconnecting }
-                }
-            }
-
-            // Disconnect and wait until it is disconnected, then close.
-            try {
-                if (!impl.isClosed) {
-                    await(
-                        action = { impl.disconnect(reason) },
-                        condition = { it.isDisconnected },
-                        timeout = 500.milliseconds
+                    // If before calling disconnect() the state was not Connected (i.e. Connecting),
+                    // the state at this point will be Disconnecting. Change it to Disconnected manually.
+                    _state.compareAndSet(
+                        expect = ConnectionState.Disconnecting,
+                        update = ConnectionState.Disconnected(reason)
                     )
                 }
-            } catch (e: TimeoutCancellationException) {
-                if (!isDisconnected) {
-                    logger?.warn(Layer.GAP) { "Disconnection takes longer than expected, closing" }
-                }
-            } finally {
-                close()
-                // If before calling disconnect() the state was not Connected (i.e. Connecting),
-                // the state at this point will be Disconnecting. Change it to Disconnected manually.
-                _state.compareAndSet(
-                    expect = ConnectionState.Disconnecting,
-                    update = ConnectionState.Disconnected(reason)
-                )
             }
         }
     }
