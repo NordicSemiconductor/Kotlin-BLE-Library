@@ -373,7 +373,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * @param event The GATT event to process.
      */
-        protected open suspend fun handle(event: GattEvent) {
+    protected open suspend fun handle(event: GattEvent) {
         when (event) {
             is ConnectionStateChanged -> {
                 // If the state didn't change, ignore the event.
@@ -478,7 +478,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
     /**
      * This method is called when the peripheral is connected.
      */
-        protected open suspend fun initiateConnection() {
+    protected open suspend fun initiateConnection() {
         // If services are observed, start service discovery.
         // This may happen when services() was called before the peripheral connected.
         if (serviceDiscoveryRequested) {
@@ -491,7 +491,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      *
      * This method does nothing if [servicesDiscovered] is `true`.
      */
-        private fun discoverServices(uuids: List<Uuid>) {
+    private fun discoverServices(uuids: List<Uuid>) {
         if (!servicesDiscovered) {
             servicesDiscovered = true
             scope.launch {
@@ -579,7 +579,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * services with given UUIDs, otherwise it will contain all services returned by the
      * system. If the returned list is empty, the service was not found on the peripheral.
      */
-        fun services(uuids: List<Uuid> = emptyList()): StateFlow<RemoteServices> {
+    fun services(uuids: List<Uuid> = emptyList()): StateFlow<RemoteServices> {
         // Mark that service discovery was requested. This is useful when the peripheral
         // reconnects but the services observer was already set.
         serviceDiscoveryRequested = true
@@ -675,7 +675,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
-        suspend fun profile(
+    suspend fun profile(
         serviceUuid: Uuid,
         required: Boolean = true,
         name: String? = null,
@@ -802,7 +802,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
-        fun profile(
+    fun profile(
         scope: CoroutineScope,
         serviceUuid: Uuid,
         required: Boolean = true,
@@ -914,7 +914,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
-        suspend fun profile(
+    suspend fun profile(
         requiredServiceUuids: List<Uuid>,
         optionalServiceUuids: List<Uuid> = emptyList(),
         required: Boolean = true,
@@ -1052,7 +1052,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * an app registers multiple profiles, to easily distinguish them in logs.
      * @param block The profile implementation.
      */
-        fun profile(
+    fun profile(
         scope: CoroutineScope,
         requiredServiceUuids: List<Uuid>,
         optionalServiceUuids: List<Uuid> = emptyList(),
