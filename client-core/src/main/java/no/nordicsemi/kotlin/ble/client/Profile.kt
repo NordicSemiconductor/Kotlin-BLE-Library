@@ -140,6 +140,10 @@ sealed class Profile(
      *
      * This is intended for profiles that have multiple GATT services, i.e. Proximity Profile.
      *
+     * Note, the [prepare] method may be called with a list of services containing multiple
+     * instances of the same service if returned by the service discovery. For example, if a device
+     * has multiple batteries, it may expose their level with a *Battery Service* for each of them.
+     *
      * @param requiredServiceUuids A list of UUIDs of required profile GATT services.
      * @param optionalServiceUuids A list of UUIDs of optional profile GATT services.
      * @param name The name of the profile. This is for convenience, used only in logging.
@@ -157,6 +161,17 @@ sealed class Profile(
     /**
      * A class representing a simple GATT profile, based on a single GATT service.
      *
+     * This is intended for profiles that have a single GATT service, i.e. Battery Profile.
+     *
+     * ## Multiple instances of the same service
+     *
+     * In rare cases, a peripheral may have multiple instances of the same service, e.g. multiple
+     * batteries reporting their level, each with a different instance of a *Battery Service*.
+     *
+     * Override [instance] method to pick a desired instance of a remote service.
+     *
+     * Note, that the list of services contains only GATT services with specified service UUID.
+     *
      * @param serviceUuid The UUID of the GATT service.
      * @param name The name of the profile. This is for convenience, used only in logging.
      */
@@ -167,7 +182,22 @@ sealed class Profile(
         requiredServiceUuids = listOf(serviceUuid),
         name = name,
     ) {
-        final override fun prepare(services: List<RemoteService>) = prepare(services.first())
+        final override fun prepare(services: List<RemoteService>) = prepare(instance(services))
+
+        /**
+         * This method should select a single service instance from the list of identical services
+         * returned by the service discovery.
+         *
+         * The [services] will contain only instances of GATT services with the given UUID.
+         * Use [RemoteService.instanceId] to distinguish between instances.
+         *
+         * ## Multiple instances of the same service
+         *
+         * By default, this method should return the first service instance. However, in some cases,
+         * a peripheral may have multiple instances of the same service, e.g. multiple batteries
+         * reporting their level, each with a different instance of a *Battery Service*.
+         */
+        protected open fun instance(services: List<RemoteService>): RemoteService = services.first()
 
         /**
          * This method should validate if the services contain the required characteristics,
