@@ -136,7 +136,7 @@ internal class NativeExecutor(
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
-        override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+    override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         logger?.d(Layer.GATT) { "gatt.discoverServices()" }
         return gatt?.discoverServices() ?: false
     }

@@ -38,7 +38,7 @@ import kotlin.uuid.Uuid
 
 class AdvertisingDataTest {
 
-        @Test
+    @Test
     fun `test incorrect AD`() {
         // This data contains an extra byte in the 32-bit UUID AD structure.
         // There are various method how such case should be handled.
@@ -73,7 +73,7 @@ class AdvertisingDataTest {
         )
     }
 
-        @Test
+    @Test
     fun `test 16-bit Service UUIDs`() {
         val crashRaw = byteArrayOf(
             // AD header: length = 9, type = 0x03 (16-bit UUID list)
@@ -92,7 +92,7 @@ class AdvertisingDataTest {
         Truth.assertThat(ad.name).isEqualTo("☺")
     }
 
-        @Test
+    @Test
     fun `test 32-bit Service UUIDs`() {
         val crashRaw = byteArrayOf(
             // AD header: length = 9, type = 0x05 (32-bit UUID list)
@@ -108,7 +108,7 @@ class AdvertisingDataTest {
         Truth.assertThat(ad.name).isEqualTo("AB")
     }
 
-        @Test
+    @Test
     fun `test 128-bit Service UUIDs`() {
         val crashRaw = byteArrayOf(
             // AD header: length = 17, type = 0x07 (128-bit UUID list)
@@ -124,7 +124,7 @@ class AdvertisingDataTest {
         Truth.assertThat(ad.name).isNull()
     }
 
-        @Test
+    @Test
     fun `test 16-bit Service Data`() {
         val serviceDataUuid = Uuid.parse("0000180d-0000-1000-8000-00805f9b34fb") // Heart Rate
         val serviceDataBytes = byteArrayOf(0x01, 0x02, 0x03)
@@ -172,7 +172,7 @@ class AdvertisingDataTest {
         Truth.assertThat(entry.value).isEqualTo(serviceDataBytes)
     }
 
-        @Test
+    @Test
     fun `test 128-bit Service Data`() {
         val serviceDataUuid = Uuid.parse("0000180a-0000-1000-8000-00805f9b34fb") // Device Information
         val serviceDataBytes = byteArrayOf(0x4E, 0x4F, 0x52, 0x44, 0x49, 0x43) // "NORDIC"
@@ -198,7 +198,7 @@ class AdvertisingDataTest {
         Truth.assertThat(entry.value).isEqualTo(serviceDataBytes)
     }
 
-        @Test
+    @Test
     fun `test empty Service Data`() {
         val serviceDataUuid = Uuid.parse("0000180d-0000-1000-8000-00805f9b34fb") // Heart Rate
         val rawData = byteArrayOf(

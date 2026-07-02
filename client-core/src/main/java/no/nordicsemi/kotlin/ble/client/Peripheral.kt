@@ -146,7 +146,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @see discoverServices
      * TODO Should and when this list be cleared?
      */
-        private var requestedServiceUuids: List<Uuid> = emptyList()
+    private var requestedServiceUuids: List<Uuid> = emptyList()
 
     /**
      * An interface that provides methods to interact with the peripheral.
@@ -197,7 +197,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @param uuids An optional list of service UUIDs to filter the results.
          * @return True if service discovery was requested successfully; false otherwise.
          */
-                @IgnorableReturnValue
+        @IgnorableReturnValue
         suspend fun discoverServices(uuids: List<Uuid>): Boolean
 
         /**

@@ -135,7 +135,7 @@ class AdvertisingDataValidator(
         }
     }
 
-        private fun totalBytes(data: AdvertisingDataDefinition?, isFlagsIncluded: Boolean): Int {
+    private fun totalBytes(data: AdvertisingDataDefinition?, isFlagsIncluded: Boolean): Int {
         if (data == null) {
             return 0
         }

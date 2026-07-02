@@ -64,7 +64,7 @@ sealed class RemoteServices {
     /**
      * Returns filtered service discovery state.
      */
-        internal fun filteredBy(uuids: List<Uuid>): RemoteServices = when (this) {
+    internal fun filteredBy(uuids: List<Uuid>): RemoteServices = when (this) {
         is Discovered -> Discovered(
             services = services.filter { service ->
                 uuids.any { it == service.uuid }

@@ -548,7 +548,7 @@ class PeripheralSpec<ID: Any> private constructor(
      *
      * @param newServices A builder for the set of services.
      */
-        fun simulateServiceChange(newServices: MockServerScope.() -> Unit) {
+    fun simulateServiceChange(newServices: MockServerScope.() -> Unit) {
         val oldServices = services
 
         // Replace the services with new ones.
@@ -831,7 +831,7 @@ class PeripheralSpec<ID: Any> private constructor(
          * @param uuids The list of service UUIDs to discover.
          * @return `true` if the service discovery was started, `false` otherwise.
          */
-                suspend fun discoverServices(uuids: List<Uuid>): Boolean {
+        suspend fun discoverServices(uuids: List<Uuid>): Boolean {
             val connectionParameters = connectionParameters ?: return false
             val connectionInterval = connectionParameters.connectionIntervalMillis.milliseconds
             val eventHandler = eventHandler ?: return false

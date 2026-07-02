@@ -110,7 +110,7 @@ class ScannerViewModel @Inject constructor(
 
     private var scanningJob: Job? = null
 
-        fun onScanRequested() {
+    fun onScanRequested() {
         scanningJob = centralManager
             .scan(5000.milliseconds) {
 //                Any {
