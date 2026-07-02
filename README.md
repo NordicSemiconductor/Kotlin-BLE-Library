@@ -1,3 +1,6 @@
+![Maven Central Version](https://img.shields.io/maven-central/v/no.nordicsemi.kotlin.ble/client-android?link=https%3A%2F%2Fcentral.sonatype.com%2Fsearch%3Fq%3Dno.nordicsemi.kotlin.ble)
+<img referrerpolicy="no-referrer-when-downgrade" src="https://static.scarf.sh/a.png?x-pxid=5422a99b-277e-4da2-8fed-8bf35105488b" />
+
 # Kotlin BLE Library for Android
 
 The library simplifies usage of Android Bluetooth Low Energy on Android. It is a wrapper around
@@ -16,6 +19,7 @@ Current status:
 - [ ] Central role
     - [ ] Scanning
        - [x] Scanning for nearby Bluetooth LE devices
+       - [ ] Scan settings / background scan
        - [ ] Ranging and monitoring device
        - [ ] Obtaining list of connected devices
     - [x] Establishing connection
