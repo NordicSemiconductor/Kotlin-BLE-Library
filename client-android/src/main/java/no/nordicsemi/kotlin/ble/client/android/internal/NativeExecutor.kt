@@ -129,10 +129,10 @@ internal class NativeExecutor(
     override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         // On retry the previous GATT object may not be null and must be closed.
         gatt?.let {
-            logger?.d(Layer.GATT) { "gatt.close()" }
+            logger?.d(Layer.GAP) { "gatt.close()" }
             it.close()
         }
-        logger?.d(Layer.GATT) { "device.connectGatt(autoConnect=$autoConnect)" }
+        logger?.d(Layer.GAP) { "device.connectGatt(autoConnect=$autoConnect)" }
         gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
     }
 
@@ -210,7 +210,7 @@ internal class NativeExecutor(
     override suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                logger?.d(Layer.LINK) { "gatt.setPreferredPhy(tx=${txPhy.toPhy()}, rx=${rxPhy.toPhy()}, options=${phyOptions.toOption()})" }
+                logger?.d(Layer.PHY) { "gatt.setPreferredPhy(tx=${txPhy.toPhy()}, rx=${rxPhy.toPhy()}, options=${phyOptions.toOption()})" }
                 gatt.setPreferredPhy(txPhy.toPhy(), rxPhy.toPhy(), phyOptions.toOption())
             } else {
                 gattCallback.onPhyUpdate(gatt,
@@ -226,7 +226,7 @@ internal class NativeExecutor(
     override suspend fun readPhy(): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                logger?.d(Layer.LINK) { "gatt.readPhy()" }
+                logger?.d(Layer.PHY) { "gatt.readPhy()" }
                 gatt.readPhy()
             } else {
                 gattCallback.onPhyRead(gatt,
@@ -266,7 +266,7 @@ internal class NativeExecutor(
     override suspend fun disconnect(reason: Reason): Boolean {
         gatt?.let { gatt ->
             gattCallback.disconnectReason = reason
-            logger?.d(Layer.GATT) { "gatt.disconnect()" }
+            logger?.d(Layer.GAP) { "gatt.disconnect()" }
             gatt.disconnect()
             return true
         }
@@ -278,13 +278,13 @@ internal class NativeExecutor(
             this.gatt = null
             gattCallback.disconnectReason = null
             try {
-                logger?.d(Layer.GATT) { "gatt.disconnect()" }
+                logger?.d(Layer.GAP) { "gatt.disconnect()" }
                 gatt.disconnect()
             } catch (_: Exception) {
                 // Ignore
             }
             try {
-                logger?.d(Layer.GATT) { "gatt.close()" }
+                logger?.d(Layer.GAP) { "gatt.close()" }
                 gatt.close()
             } catch (_: Exception) {
                 // Ignore

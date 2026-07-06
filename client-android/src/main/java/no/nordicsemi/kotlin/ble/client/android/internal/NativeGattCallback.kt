@@ -93,7 +93,7 @@ internal class NativeGattCallback(
     // Handling connection state updates
 
     override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-        logger?.debug(Layer.GATT) { "onConnectionStateChange(newState=$newState, status=$status)" }
+        logger?.debug(Layer.GAP) { "onConnectionStateChange(newState=$newState, status=$status)" }
         isServiceDiscoveryComplete = false
         // Pixel 4 with Android 12 does return status 0 when link is lost to a device.
         // Newer versions (Pixel 7 with Android 16) report status 8 (timeout) in the same case.
