@@ -152,6 +152,8 @@ interface CentralManager:
          * @property preferredPhy Preferred PHY for connections to remote LE device. Note that this is
          * just a recommendation, whether the PHY change will happen depends on other applications
          * preferences, local and remote controller capabilities. Controller can override these settings.
+         * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
+         * the highest MTU supported by the remote device immediately after establishing the connection.
          */
         data class Direct(
             val timeout: Duration = 10.seconds,
@@ -172,7 +174,7 @@ interface CentralManager:
              * @param retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
              * @param retryDelay The delay between connection retries, defaults to 300 ms.
              * @param preferredPhy The preferred PHY for connections to remote LE device.
-             * @param automaticallyRequestHighestMtu If true, the manager will automatically request
+             * @param automaticallyRequestHighestValueLength If true, the manager will automatically request
              * the highest MTU supported by the remote device immediately after establishing the connection.
              */
             constructor(
@@ -180,8 +182,8 @@ interface CentralManager:
                 retry: Int = 3,
                 retryDelay: Duration = 300.milliseconds,
                 vararg preferredPhy: Phy,
-                automaticallyRequestHighestMtu: Boolean = false
-            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestMtu)
+                automaticallyRequestHighestValueLength: Boolean = false
+            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestValueLength)
         }
     }
 }
