@@ -103,12 +103,14 @@ interface Characteristic<D: Descriptor> {
     }
 
     /**
-     * Checks whether the characteristic has
-     * [CharacteristicProperty.NOTIFY] or
-     * [CharacteristicProperty.INDICATE] property.
+     * Checks whether the characteristic can be subscribed to.
+     *
+     * This method checks if the characteristic has
+     * [CharacteristicProperty.NOTIFY] or [CharacteristicProperty.INDICATE] property,
+     * and the Client Characteristic Configuration descriptor.
      */
     fun isSubscribable() = properties.any {
         it == CharacteristicProperty.NOTIFY ||
         it == CharacteristicProperty.INDICATE
-    }
+    } && descriptors.any { it.isClientCharacteristicConfiguration }
 }

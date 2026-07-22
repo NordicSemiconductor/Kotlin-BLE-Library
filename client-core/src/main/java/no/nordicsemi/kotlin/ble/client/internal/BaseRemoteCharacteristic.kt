@@ -282,7 +282,7 @@ abstract class BaseRemoteCharacteristic(
         }
 
         // Verify that the characteristic can be subscribed to.
-        require(isSubscribable() && descriptors.cccd() != null) {
+        require(isSubscribable()) {
             throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
         }
 
