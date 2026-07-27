@@ -71,12 +71,18 @@ internal fun Int.toConnectionState(status: Int, reason: ConnectionState.Disconne
     else -> ConnectionState.Disconnected(ConnectionState.Disconnected.Reason.Unknown(this))
 }
 
+// Source: https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/system/stack/include/gatt_api.h
+// Source: https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/system/stack/include/hci_error_code.h
 private fun Int.toDisconnectionReason(): ConnectionState.Disconnected.Reason = when (this) {
     BluetoothGatt.GATT_SUCCESS -> ConnectionState.Disconnected.Reason.Success
-    0x08 /* GATT_CONN_TIMEOUT */ -> ConnectionState.Disconnected.Reason.LinkLoss
-    0x05 /* GATT_INSUFFICIENT_AUTHENTICATION */ -> ConnectionState.Disconnected.Reason.InsufficientAuthentication
-    0x13 /* GATT_CONN_TERMINATE_PEER_USER */ -> ConnectionState.Disconnected.Reason.TerminatePeerUser
-    0x16 /* GATT_CONN_TERMINATE_LOCAL_HOST */ -> ConnectionState.Disconnected.Reason.TerminateLocalHost
+    0x05 /* = 5, HCI_ERR_AUTH_FAILURE (GATT_INSUFFICIENT_AUTHENTICATION) */ -> ConnectionState.Disconnected.Reason.InsufficientAuthentication
+    0x08 /* = 8, HCI_ERR_CONNECTION_TOUT (GATT_CONN_TIMEOUT) */,
+    0x22 /* = 34, HCI_ERR_LMP_RESPONSE_TIMEOUT (GATT_CONN_LMP_TIMEOUT) */,
+    0x93 /* = 147, GATT_CONNECTION_TIMEOUT, BluetoothGatt.GATT_CONNECTION_TIMEOUT, API 35+ */ -> ConnectionState.Disconnected.Reason.LinkLoss
+    0x13 /* = 19, HCI_ERR_PEER_USER (GATT_CONN_TERMINATE_PEER_USER) */,
+    0x15 /* = 21, HCI_ERR_REMOTE_POWER_OFF */ -> ConnectionState.Disconnected.Reason.TerminatePeerUser
+    0x16 /* = 22, HCI_ERR_CONN_CAUSE_LOCAL_HOST (GATT_CONN_TERMINATE_LOCAL_HOST) */ -> ConnectionState.Disconnected.Reason.TerminateLocalHost
+ /* 0x101 = 257, BTA_GATT_CONN_NONE, BluetoothGatt.GATT_FAILURE -> Unknown */
     else -> ConnectionState.Disconnected.Reason.Unknown(this)
 }
 
@@ -193,34 +199,60 @@ internal fun ConnectionPriority.toPriority() = when (this) {
             BluetoothGatt.CONNECTION_PRIORITY_BALANCED
 }
 
+// Source: https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/system/stack/include/gatt_api.h
 internal fun Int.toOperationStatus(): OperationStatus = when (this) {
-    BluetoothGatt.GATT_SUCCESS -> OperationStatus.Success
-    BluetoothGatt.GATT_CONNECTION_CONGESTED -> OperationStatus.ConnectionCongested
-    BluetoothGatt.GATT_READ_NOT_PERMITTED -> OperationStatus.ReadNotPermitted
-    BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> OperationStatus.WriteNotPermitted
-    BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION -> OperationStatus.InsufficientAuthentication
-    BluetoothGatt.GATT_INSUFFICIENT_AUTHORIZATION -> OperationStatus.InsufficientAuthorization
-    BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> OperationStatus.InsufficientEncryption
-    BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED -> OperationStatus.RequestNotSupported
-    BluetoothGatt.GATT_INVALID_OFFSET -> OperationStatus.InvalidOffset
-    BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH -> OperationStatus.InvalidAttributeLength
-    0x93 /* BluetoothGatt.GATT_CONNECTION_TIMEOUT, API 35+ */ -> OperationStatus.ConnectionTimeout
-    0x01 -> OperationStatus.InvalidHandle
-    0x04 -> OperationStatus.InvalidPdu
-    0x09 -> OperationStatus.PrepareQueueFull
-    0x0A -> OperationStatus.AttributeNotFound
-    0x0B -> OperationStatus.AttributeNotLong
-    0x0C -> OperationStatus.EncryptionKeyTooShort
-    0x0E -> OperationStatus.UnlikelyError
-    0x11 -> OperationStatus.InsufficientResources
-    0x13 -> OperationStatus.ValueNotAllowed
-    0x85 -> OperationStatus.GattError
+ /* 0x00 = 0 */ BluetoothGatt.GATT_SUCCESS -> OperationStatus.Success
+    0x01 /* = 1, GATT_INVALID_HANDLE */ -> OperationStatus.InvalidHandle
+ /* 0x02 = 2, GATT_READ_NOT_PERMIT */ BluetoothGatt.GATT_READ_NOT_PERMITTED -> OperationStatus.ReadNotPermitted
+ /* 0x03 = 3, GATT_WRITE_NOT_PERMIT */ BluetoothGatt.GATT_WRITE_NOT_PERMITTED -> OperationStatus.WriteNotPermitted
+    0x04 /* = 4, GATT_INVALID_PDU */ -> OperationStatus.InvalidPdu
+ /* 0x05 = 5, GATT_INSUF_AUTHENTICATION */ BluetoothGatt.GATT_INSUFFICIENT_AUTHENTICATION -> OperationStatus.InsufficientAuthentication
+ /* 0x06 = 6, GATT_REQ_NOT_SUPPORTED */ BluetoothGatt.GATT_REQUEST_NOT_SUPPORTED -> OperationStatus.RequestNotSupported
+ /* 0x07 = 7, GATT_INVALID_OFFSET */ BluetoothGatt.GATT_INVALID_OFFSET -> OperationStatus.InvalidOffset
+ /* 0x08 = 8, GATT_INSUF_AUTHORIZATION */ BluetoothGatt.GATT_INSUFFICIENT_AUTHORIZATION -> OperationStatus.InsufficientAuthorization
+    0x09 /* = 9,  GATT_PREPARE_Q_FULL */ -> OperationStatus.PrepareQueueFull
+    0x0A /* = 10, GATT_NOT_FOUND */ -> OperationStatus.AttributeNotFound
+    0x0B /* = 11, GATT_NOT_LONG */ -> OperationStatus.AttributeNotLong
+    0x0C /* = 12, GATT_INSUF_KEY_SIZE */ -> OperationStatus.EncryptionKeyTooShort
+ /* 0x0D = 13, GATT_INVALID_ATTR_LEN */ BluetoothGatt.GATT_INVALID_ATTRIBUTE_LENGTH -> OperationStatus.InvalidAttributeLength
+    0x0E /* = 14, GATT_ERR_UNLIKELY */ -> OperationStatus.UnlikelyError
+ /* 0x0F = 15, GATT_INSUF_ENCRYPTION */ BluetoothGatt.GATT_INSUFFICIENT_ENCRYPTION -> OperationStatus.InsufficientEncryption
+ /* 0x10 = 16, GATT_UNSUPPORT_GRP_TYPE -> UnknownError */
+    0x11 /* = 17, GATT_INSUF_RESOURCE */ -> OperationStatus.InsufficientResources
+ /* 0x12 = 18, GATT_DATABASE_OUT_OF_SYNC -> UnknownError */
+    0x13 /* = 19, GATT_VALUE_NOT_ALLOWED */ -> OperationStatus.ValueNotAllowed
+
+    // Codes 0x80-0x9F are Application Errors, some of which are actually used:
+ /* 0x80 = 128, GATT_NO_RESOURCES
+    0x81 = 129, GATT_INTERNAL_ERROR
+    0x82 = 130, GATT_WRONG_STATE
+    0x83 = 131, GATT_DB_FULL
+    0x84 = 132, GATT_BUSY */
+    0x85 /* = 133, GATT_ERROR */ -> OperationStatus.GattError
+ /* 0x86 = 134, GATT_CMD_STARTED
+    0x87 = 135, GATT_ILLEGAL_PARAMETER
+    0x88 = 136, GATT_PENDING
+    0x89 = 137, GATT_AUTH_FAIL
+    0x8A = 138, ????????????,
+    0x8B = 139, GATT_INVALID_CFG
+    0x8C = 140, GATT_SERVICE_STARTED
+    0x8D = 141, GATT_ENCRYPED_NO_MITM
+    0x8E = 142, GATT_NOT_ENCRYPTED
+    0x8F = 143, GATT_CONGESTED */ BluetoothGatt.GATT_CONNECTION_CONGESTED -> OperationStatus.ConnectionCongested
+ /* 0x90 = 144, GATT_DUP_REG
+    0x91 = 145, GATT_ALREADY_OPEN
+    0x92 = 146, GATT_CANCEL */
+    0x93 /* = 147, GATT_CONNECTION_TIMEOUT (BluetoothGatt.GATT_CONNECTION_TIMEOUT, API 35+) */ -> OperationStatus.ConnectionTimeout
     in 0x80..0x9F -> OperationStatus.ApplicationError(this)
+
+    // Codes 0xE0-0xFF are Profile Errors:
     0xFC -> OperationStatus.WriteRequestRejected
     0xFD -> OperationStatus.ClientCharacteristicConfigurationDescriptorImproperlyConfigured
     0xFE -> OperationStatus.ProcedureAlreadyInProgress
     0xFF -> OperationStatus.OutOfRange
     in 0xE0..0xFF -> OperationStatus.ProfileError(this)
+
+    // Report other codes as UnknownError:
     else -> OperationStatus.UnknownError(this)
 }
 

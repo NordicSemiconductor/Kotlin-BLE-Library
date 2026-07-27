@@ -89,6 +89,12 @@ sealed class ConnectionState {
             /**
              * Unknown error.
              *
+             * Errors that may be reported as Unknown:
+             * * 0x101 (257) = GATT Failure (`BluetoothGatt.GATT_FAILURE`)
+             *
+             * See [gatt_api.h](https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/system/stack/include/gatt_api.h),
+             * [hci_error_code.h](https://android.googlesource.com/platform/system/bt/+/refs/heads/main%5E/stack/include/hci_error_code.h).
+             *
              * @property status The status code returned by the Bluetooth stack.
              */
             data class Unknown(val status: Int): Reason()
