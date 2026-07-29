@@ -49,6 +49,11 @@ nordicPublishing {
 
 android {
     namespace = "no.nordicsemi.kotlin.ble.advertiser.android"
+
+    defaultConfig {
+        // Bluetooth LE advertising support requires Android 5.0 (Lollipop) or higher.
+        minSdk = 21
+    }
 }
 
 dependencies {
