@@ -33,6 +33,7 @@ package no.nordicsemi.kotlin.ble.advertiser.android.mock
 
 import no.nordicsemi.kotlin.ble.advertiser.android.BluetoothLeAdvertiser
 import no.nordicsemi.kotlin.ble.advertiser.android.mock.internal.MockBluetoothLeAdvertiser
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 
 /**
@@ -46,4 +47,9 @@ import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 @Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.mock(
     environment: MockAndroidEnvironment = MockAndroidEnvironment.Api31(),
-): BluetoothLeAdvertiser = MockBluetoothLeAdvertiser(environment)
+): BluetoothLeAdvertiser {
+    require(environment.androidSdkVersion >= AndroidEnvironment.SdkVersion.LOLLIPOP) {
+        "Bluetooth LE advertising is supported only from API 21 and higher."
+    }
+    return MockBluetoothLeAdvertiser(environment)
+}
