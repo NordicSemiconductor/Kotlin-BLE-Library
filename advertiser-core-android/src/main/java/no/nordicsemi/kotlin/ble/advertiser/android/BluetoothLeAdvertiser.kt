@@ -59,6 +59,8 @@ import kotlin.time.Duration
  * Use [AndroidEnvironment.deviceName] property to get or set the device name
  * (it will affect all applications).
  *
+ * Requires Android 5 Lollipop or newer.
+ *
  * @param environment The Android-specific environment to use for the advertiser.
  */
 abstract class BluetoothLeAdvertiser(
