@@ -32,6 +32,7 @@
 package no.nordicsemi.kotlin.ble.android.sample.common
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +41,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
+import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 
 @Composable
 fun DeviceActions(
@@ -48,33 +51,44 @@ fun DeviceActions(
     onRemoveBondRequested: () -> Unit,
     onClearCacheRequested: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Button(
-            onClick = onBondRequested,
-            enabled = !isBonded,
+    val environment = LocalEnvironmentOwner.current
+
+    Column {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Bind", maxLines = 1)
+            Button(
+                onClick = onBondRequested,
+                enabled = !isBonded,
+            ) {
+                Text("Pair", maxLines = 1)
+            }
+            Button(
+                onClick = onRemoveBondRequested,
+                enabled = isBonded && environment.allowsBondRemoval,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+            ) {
+                Text("Forget", maxLines = 1)
+            }
+            Button(
+                onClick = onClearCacheRequested,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError
+                ),
+            ) {
+                Text("Refresh", maxLines = 1)
+            }
         }
-        Button(
-            onClick = onRemoveBondRequested,
-            enabled = isBonded,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            ),
-        ) {
-            Text("Unbind", maxLines = 1)
-        }
-        Button(
-            onClick = onClearCacheRequested,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            ),
-        ) {
-            Text("Refresh", maxLines = 1)
+        if (isBonded && !environment.allowsBondRemoval) {
+            Text(
+                text = "Note: On this platform forgetting bond information is only possible from system settings.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
