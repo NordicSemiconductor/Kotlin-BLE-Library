@@ -147,19 +147,21 @@ internal class NativeExecutor(
     }
 
     override suspend fun removeBond(): Boolean {
+        // Note: Since Android 17 bond removal requires BLUETOOTH_PRIVILEGED permission.
+        //       This API will try to do this anyway, as the library may be used in apps with this
+        //       permission.
+        // Change:
+        // https://cs.android.com/android/_/android/platform/packages/modules/Bluetooth/+/f4c525723297ede881a618bb325f4b78a9babb1c
         val result = try {
-            logger?.d(Layer.SMP) { "gatt.removeBond() (hidden)"}
+            logger?.d(Layer.SMP) { "gatt.removeBond() (hidden)" }
             val method = BluetoothDevice::class.java.getMethod("removeBond")
             method.invoke(bluetoothDevice) as Boolean
         } catch (e: ReflectiveOperationException) {
-            logger?.warn(Layer.SMP, e) { "Failed to remove bond information" }
+            val reason = e.cause?.message ?: e.message
+            logger?.warn(Layer.SMP, e) { "Failed to remove bond information${reason?.let { ": $it" } ?: ""}" }
             false
         }
-        if (!result) {
-            logger?.warn(Layer.SMP) { "Failed to remove bond information" }
-            return false
-        }
-        return true
+        return result
     }
 
     override suspend fun refreshCache(): Boolean {
@@ -169,17 +171,15 @@ internal class NativeExecutor(
                 val method = BluetoothGatt::class.java.getMethod("refresh")
                 method.invoke(gatt) as Boolean
             } catch (e: ReflectiveOperationException) {
-                logger?.warn(Layer.GATT, e) { "Refreshing GATT cache failed" }
+                val reason = e.cause?.message ?: e.message
+                logger?.warn(Layer.GATT, e) { "Refreshing GATT cache failed${reason?.let { ": $it" } ?: ""}" }
                 false
             }
-            if (!result) {
-                logger?.warn(Layer.GATT) { "Refreshing GATT cache failed" }
-                return false
+            if (result) {
+                // There is no callback for services invalidated.
+                gattCallback.onServiceChanged(gatt)
+                return true
             }
-
-            // There is no callback for services invalidated.
-            gattCallback.onServiceChanged(gatt)
-            return true
         }
         return false
     }
