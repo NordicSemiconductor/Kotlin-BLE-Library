@@ -115,7 +115,7 @@ internal class NativeCentralManagerImpl(
             peripheral(id) {
                 Peripheral(
                     scope = scope,
-                    impl = NativeExecutor(environment.applicationContext, adapter.getRemoteDevice(it), null)
+                    impl = NativeExecutor(environment, adapter.getRemoteDevice(it), null)
                         .apply {
                             _bondState
                                 .filter { (address, _) -> address == id }
@@ -206,7 +206,7 @@ internal class NativeCentralManagerImpl(
                             peripheral(device.address) {
                                 Peripheral(
                                     scope = scope,
-                                    impl = NativeExecutor(environment.applicationContext, device, name)
+                                    impl = NativeExecutor(environment, device, name)
                                         .apply {
                                             _bondState
                                                 .filter { (address, _) -> address == device.address }

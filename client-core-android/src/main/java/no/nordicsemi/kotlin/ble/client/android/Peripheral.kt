@@ -77,6 +77,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import org.jetbrains.annotations.Range
 import kotlin.math.min
@@ -102,6 +103,8 @@ open class Peripheral(
      * The implementation should initiate requests and report events using [events] flow.
      */
     interface Executor: Peripheral.Executor<String> {
+        override val environment: AndroidEnvironment
+
         /** MAC address of the device. */
         val address: String
             get() = identifier

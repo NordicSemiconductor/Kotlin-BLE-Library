@@ -64,7 +64,7 @@ import kotlin.time.Duration.Companion.seconds
 open class MockExecutor(
     peripheralSpec: PeripheralSpec<String>,
     name: String?,
-    private val environment: MockAndroidEnvironment,
+    override val environment: MockAndroidEnvironment,
     advertisements: Flow<MockScanResult<String>>,
 ): MockExecutor(peripheralSpec, name, environment, advertisements), Peripheral.Executor {
     override val type: PeripheralType = peripheralSpec.type

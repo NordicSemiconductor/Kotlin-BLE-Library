@@ -33,7 +33,6 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
-import android.content.Context
 import android.os.Build
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -50,6 +49,7 @@ import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.log.Layer
+import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
 import kotlin.uuid.Uuid
@@ -59,14 +59,14 @@ import kotlin.uuid.Uuid
  *
  * This class uses the Android Bluetooth API to connect to the device.
  *
- * @param context The application context.
+ * @param environment The native Android environment.
  * @param bluetoothDevice The Bluetooth device to connect to.
  * @param name The name of the device from the advertisement data.
  */
 internal class NativeExecutor(
-    private val context: Context,
+    override val environment: NativeAndroidEnvironment,
     private val bluetoothDevice: BluetoothDevice,
-    name: String?
+    name: String?,
 ): Peripheral.Executor {
     override var logger: Log.Sink<Layer>? = Log.Sink.Null
         set(value) {
@@ -133,7 +133,7 @@ internal class NativeExecutor(
             it.close()
         }
         logger?.d(Layer.GAP) { "device.connectGatt(autoConnect=$autoConnect)" }
-        gatt = bluetoothDevice.connect(context, autoConnect, gattCallback, preferredPhy)
+        gatt = bluetoothDevice.connect(environment.applicationContext, autoConnect, gattCallback, preferredPhy)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {

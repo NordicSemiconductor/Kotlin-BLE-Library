@@ -60,7 +60,7 @@ import kotlin.uuid.Uuid
 open class MockExecutor(
     val peripheralSpec: PeripheralSpec<String>,
     name: String?,
-    private val environment: MockEnvironment,
+    override val environment: MockEnvironment,
     private val advertisements: Flow<MockScanResult<String>>,
 ): Peripheral.Executor<String> {
     override var logger: Log.Sink<Layer>? = Log.Sink.Null

@@ -67,6 +67,7 @@ import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
+import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Permission
@@ -76,6 +77,7 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
@@ -86,6 +88,31 @@ import no.nordicsemi.kotlin.ble.core.util.mergeIndexed
 import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
 import kotlin.uuid.Uuid
+
+private object StubEnvironment: AndroidEnvironment {
+    override val androidSdkVersion: Int = AndroidEnvironment.SdkVersion.LATEST
+    override val deviceName: String = "Stub"
+
+    override val bluetoothState: StateFlow<Manager.State> = MutableStateFlow(Manager.State.POWERED_ON)
+    override val locationState: StateFlow<Boolean> = MutableStateFlow(true)
+
+    override val isBluetoothSupported: Boolean = true
+    override val isLocationRequiredForScanning: Boolean = false
+    override val isLocationPermissionGranted: Boolean = false
+    override val isLe2MPhySupported: Boolean = true
+    override val isLeCodedPhySupported: Boolean = true
+    override val isBluetoothScanPermissionGranted: Boolean = true
+    override val isBluetoothConnectPermissionGranted: Boolean = true
+    override val isBluetoothAdvertisePermissionGranted: Boolean = true
+    override val isBluetoothPrivilegedPermissionGranted: Boolean = false
+    override val isMultipleAdvertisementSupported: Boolean = true
+    override val isLeExtendedAdvertisingSupported: Boolean = true
+    override val isLePeriodicAdvertisingSupported: Boolean = true
+    override val leMaximumAdvertisingDataLength: Int = 1650
+
+    override fun enableBluetooth() = error("Stub implementation")
+    override fun close() {}
+}
 
 /**
  * A stub implementation of [Peripheral.Executor] for Android.
@@ -126,10 +153,11 @@ private class StubExecutor(
 
     override var isReliableWriteEnabled: Boolean = false
 
+    override val environment: AndroidEnvironment = StubEnvironment
+
     override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
         _events.emit(ConnectionStateChanged(ConnectionState.Connected))
     }
-
     
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         _events.emit(ServicesDiscovered(initialServices))
