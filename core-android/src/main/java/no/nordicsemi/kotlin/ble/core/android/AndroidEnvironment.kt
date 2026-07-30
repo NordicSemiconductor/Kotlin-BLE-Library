@@ -54,6 +54,8 @@ import org.jetbrains.annotations.Range
  * Reading and setting the name requires `BLUETOOTH_CONNECT` permission.
  * @property isLe2MPhySupported Whether LE 2M PHY is supported on the device.
  * @property isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
+ * @property isBluetoothPrivilegedPermissionGranted Whether `BLUETOOTH_PRIVILEGED` permission is granted.
+ * This permission cannot be granted to 3-rd party apps.
  * @property isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is granted.
  * @property isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is granted.
  * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
@@ -191,6 +193,7 @@ interface AndroidEnvironment : Environment {
     val isBluetoothScanPermissionGranted: Boolean
     val isBluetoothConnectPermissionGranted: Boolean
     val isBluetoothAdvertisePermissionGranted: Boolean
+    val isBluetoothPrivilegedPermissionGranted: Boolean
     val isMultipleAdvertisementSupported: Boolean
     val isLeExtendedAdvertisingSupported: Boolean
     val isLePeriodicAdvertisingSupported: Boolean

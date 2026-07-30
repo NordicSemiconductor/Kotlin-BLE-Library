@@ -224,6 +224,9 @@ class NativeAndroidEnvironment private constructor(
     override val isBluetoothAdvertisePermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
                 applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED
+    override val isBluetoothPrivilegedPermissionGranted: Boolean
+        get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT &&
+                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_PRIVILEGED) == PackageManager.PERMISSION_GRANTED
     override val isLePeriodicAdvertisingSupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 bluetoothManager?.adapter?.isLePeriodicAdvertisingSupported ?: false
