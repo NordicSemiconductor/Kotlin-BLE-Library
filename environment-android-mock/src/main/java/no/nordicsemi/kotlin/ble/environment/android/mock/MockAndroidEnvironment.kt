@@ -47,13 +47,13 @@ import org.jetbrains.annotations.Range
 /**
  * A type alias for the lastest Android API.
  *
- * Currently, this is set to [MockAndroidEnvironment.Api31] and will change in the future to match
+ * Currently, this is set to [MockAndroidEnvironment.Api36] and will change in the future to match
  * the latest Android API, when available.
  *
  * Note, that ApiXX is also valid for APIs greater than XX. A new type is only added when there's
  * a significant change in the Bluetooth-related API.
  */
-typealias LatestApi = MockAndroidEnvironment.Api31
+typealias LatestApi = MockAndroidEnvironment.Api36
 
 /**
  * A callback used for a mock advertiser.
@@ -129,7 +129,7 @@ sealed class MockAndroidEnvironment(
     override val isBluetoothPrivilegedPermissionGranted: Boolean = false,
     override val isLe2MPhySupported: Boolean = false,
     override val isLeCodedPhySupported: Boolean = false,
-    override val isMultipleAdvertisementSupported: Boolean, // TODO this is not used
+    override val isMultipleAdvertisementSupported: Boolean = false, // TODO this is not used
     override val isLeExtendedAdvertisingSupported: Boolean = false,
     override val isLePeriodicAdvertisingSupported: Boolean = false,
     override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
@@ -139,7 +139,7 @@ sealed class MockAndroidEnvironment(
     // TODO add the issue when Samsung S8 fails PHY update, tested with Memfault.
     // This issue can be workaround by delaying service discovery (?) and waiting
     // until the PHY request completes. It works in nRF Connect when SD is triggered manually.
-    val advertiser: MockAdvertiser,
+    val advertiser: MockAdvertiser = error("Not supported"),
     val scanner: MockScanner,
 ): AndroidEnvironment, MockEnvironment {
 
@@ -244,6 +244,62 @@ sealed class MockAndroidEnvironment(
     override fun close() {
         // Empty
     }
+
+    /**
+     * A mock environment for Android 4.3 (Jelly Bean MR2).
+     *
+     * This is the first Android version with Bluetooth LE support.
+     *
+     * @param deviceName The device name, by default set to "Mock".
+     * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     */
+    class Api18(
+        deviceName: String = DEFAULT_NAME,
+        isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
+        issueOnlyOneActiveScan: Boolean = false,
+    ): MockAndroidEnvironment(
+        androidSdkVersion = AndroidEnvironment.SdkVersion.JELLY_BEAN_MR2,
+        deviceName = deviceName,
+        isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
+        scanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+    )
+
+    /**
+     * A mock environment for Android 4.4 (KitKat).
+     *
+     * @param deviceName The device name, by default set to "Mock".
+     * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
+     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     */
+    class Api19(
+        deviceName: String = DEFAULT_NAME,
+        isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
+        isBluetoothPrivilegedPermissionGranted: Boolean = false,
+        issueOnlyOneActiveScan: Boolean = false,
+    ): MockAndroidEnvironment(
+        androidSdkVersion = AndroidEnvironment.SdkVersion.KITKAT,
+        deviceName = deviceName,
+        isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
+        isBluetoothPrivilegedPermissionGranted = isBluetoothPrivilegedPermissionGranted,
+        scanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+    )
 
     /**
      * A mock environment for Android 5.0 (Lollipop).
@@ -503,6 +559,99 @@ sealed class MockAndroidEnvironment(
         isLe2MPhySupported = isLe2MPhySupported,
         isLeCodedPhySupported = isLeCodedPhySupported,
         isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
+        isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
+        isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
+        isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
+        advertiser = advertiser,
+        scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+    )
+
+    /**
+     * A mock environment for Android 16 (Baklava).
+     *
+     * Android 16 added improved bond removal API. Apps will now receive broadcast events
+     * when bond information was removed or bonding process failed.
+     *
+     * See ([Behavior Changes Android 16](https://developer.android.com/about/versions/16/behavior-changes-16#connectivity)).
+     *
+     * @param deviceName The device name, by default set to "Mock".
+     * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
+     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+     * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
+     * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
+     * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
+     * if LE Extended Advertising feature is supported.
+     * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
+     * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
+     * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
+     * advertising on LE Coded PHY as Primary PHY.
+     * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is
+     * initially granted.
+     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is
+     * initially granted.
+     * @param isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is
+     * initially granted.
+     * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+     * to estimate device location. By default, `neverForLocation` flag is assumed.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
+     * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
+     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * This causes the peripheral to terminate the connection. This flag simulates this issue.
+     * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
+     */
+    class Api36(
+        deviceName: String = DEFAULT_NAME,
+        isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
+        isBluetoothPrivilegedPermissionGranted: Boolean = false,
+        isMultipleAdvertisementSupported: Boolean = true,
+        isLeExtendedAdvertisingSupported: Boolean = true,
+        isLePeriodicAdvertisingSupported: Boolean = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
+            if (isLeExtendedAdvertisingSupported) 1650 else 31,
+        isLe2MPhySupported: Boolean = true,
+        isLeCodedPhySupported: Boolean = true,
+        isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
+        isBluetoothScanPermissionGranted: Boolean = true,
+        isBluetoothConnectPermissionGranted: Boolean = true,
+        isBluetoothAdvertisePermissionGranted: Boolean = true,
+        isNeverForLocationFlagSet: Boolean = true,
+        isLocationPermissionGranted: Boolean = true,
+        isLocationEnabled: Boolean = true,
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
+        issueIncorrectL2capTxMtu: Boolean = false,
+    ): MockAndroidEnvironment(
+        androidSdkVersion = AndroidEnvironment.SdkVersion.BAKLAVA,
+        deviceName = deviceName,
+        isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
+        isLePeriodicAdvertisingSupported = isLePeriodicAdvertisingSupported,
+        isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
+        isLocationRequiredForScanning = !isNeverForLocationFlagSet,
+        isLocationPermissionGranted = isLocationPermissionGranted,
+        isLocationEnabled = isLocationEnabled,
+        isLe2MPhySupported = isLe2MPhySupported,
+        isLeCodedPhySupported = isLeCodedPhySupported,
+        isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
+        isBluetoothPrivilegedPermissionGranted = isBluetoothPrivilegedPermissionGranted,
         isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
         isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
         isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
