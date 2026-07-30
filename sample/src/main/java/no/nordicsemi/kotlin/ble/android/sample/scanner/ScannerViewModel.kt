@@ -70,6 +70,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.WriteType
 import timber.log.Timber
 import javax.inject.Inject
@@ -290,7 +291,7 @@ class ScannerViewModel @Inject constructor(
                     timeout = 3.seconds,
                     retry = 2,
                     retryDelay = 1.seconds,
-                    Phy.PHY_LE_2M,
+                    PrimaryPhy.PHY_LE_1M,
                 )
             },
         )

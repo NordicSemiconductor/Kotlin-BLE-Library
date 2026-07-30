@@ -453,18 +453,18 @@ class PeripheralSpec<ID: Any> private constructor(
      * A manager registered for connection event will be notified.
      *
      * // TODO The preferred PHYs are ignored for now. It is not set as active PHY upon connection.
-     * @param preferredPhy List of preferred PHYs for the connection.
+     * @param phy The PHY used to connect to the peripheral.
      * @throws IllegalStateException if the peripheral is not connectable.
      */
-    fun simulateConnection(preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M)) {
+    fun simulateConnection(phy: PrimaryPhy = PrimaryPhy.PHY_LE_1M) {
         // If another client is already connected, just increase the connections count.
         if (isConnected) {
             connectionsCount += 1
             return
         }
         // Otherwise, notify the event handler about the connection request.
-        val eventHandler = checkNotNull(eventHandler) { "Cannot connect to not connectable device." }
-        when (eventHandler.onConnectionRequest(preferredPhy)) {
+        val eventHandler = checkNotNull(eventHandler) { "Cannot connect to not connectable device" }
+        when (eventHandler.onConnectionRequest(phy)) {
             is ConnectionResult.Accept -> connectionsCount += 1
             else -> {
                 // Do nothing. Assume that the connection request times out.
@@ -687,7 +687,9 @@ class PeripheralSpec<ID: Any> private constructor(
     internal suspend fun connectGatt(
         environment: MockEnvironment,
         autoConnect: Boolean,
-        preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+        preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
         advertisements: Flow<MockScanResult<*>>,
     ): Api {
         return Api(environment).also { gatt ->
@@ -776,13 +778,14 @@ class PeripheralSpec<ID: Any> private constructor(
          * @param preferredPhy List of preferred PHYs for the connection.
          * @throws IllegalStateException when the device is not connectable.
          */
-        suspend fun connect(preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M)) {
+        suspend fun connect(preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M)) {
             // Event handler will only be null if a device is non-connectable.
             val eventHandler =
                 checkNotNull(eventHandler) { "Cannot connect to not connectable device." }
 
             // Notify the event handler about the connection request.
-            when (eventHandler.onConnectionRequest(preferredPhy)) {
+            // TODO LE Coded PHY seems to be ignored, devices connect only with LE 1M. To be investigated.
+            when (eventHandler.onConnectionRequest(preferredPhy.firstOrNull() ?: PrimaryPhy.PHY_LE_1M)) {
                 // TODO add option to fail connection with 133-ish error
 
                 ConnectionResult.Accept -> {

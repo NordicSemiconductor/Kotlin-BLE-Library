@@ -34,17 +34,33 @@ package no.nordicsemi.kotlin.ble.client.android.internal
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.BluetoothGattConnectionSettings
 import android.content.Context
 import android.os.Build
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
+import java.util.concurrent.Executor
 
+@Suppress("DEPRECATION")
 internal fun BluetoothDevice.connect(
     context: Context,
     autoConnect: Boolean,
+    autoMtu: Boolean,
+    opportunistic: Boolean = false,
     callback: BluetoothGattCallback,
-    preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
+    preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
 ): BluetoothGatt =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+        val settings = BluetoothGattConnectionSettings.Builder()
+            .setAutoConnectEnabled(autoConnect)
+            .setAutomaticMtuEnabled(autoMtu)
+            .setOpportunisticEnabled(opportunistic)
+            .setTransport(BluetoothDevice.TRANSPORT_LE)
+            .build()
+        // Note: PHY is again ignored from this version.
+        //       The deprecated methods from below use the API above, and ignore it as well.
+        val executor = Executor(Runnable::run)
+        connectGatt(settings, executor, callback)!!
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         connectGatt(context, autoConnect, callback, BluetoothDevice.TRANSPORT_LE, preferredPhy.toMask())
     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         connectGatt(context, autoConnect, callback, BluetoothDevice.TRANSPORT_LE)

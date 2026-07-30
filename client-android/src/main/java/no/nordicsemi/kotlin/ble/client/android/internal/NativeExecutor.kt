@@ -48,6 +48,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import no.nordicsemi.kotlin.log.Log
@@ -126,14 +127,19 @@ internal class NativeExecutor(
 
     override var isReliableWriteEnabled: Boolean = false
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+        preferredPhy: List<PrimaryPhy>
+    ) {
         // On retry the previous GATT object may not be null and must be closed.
         gatt?.let {
             logger?.d(Layer.GAP) { "gatt.close()" }
             it.close()
         }
-        logger?.d(Layer.GAP) { "device.connectGatt(autoConnect=$autoConnect)" }
-        gatt = bluetoothDevice.connect(environment.applicationContext, autoConnect, gattCallback, preferredPhy)
+        logger?.d(Layer.GAP) { "device.connectGatt(autoConnect=$autoConnect, autoMtu=$autoMtu)" }
+        gatt = bluetoothDevice.connect(environment.applicationContext, autoConnect, autoMtu, opportunistic, gattCallback, preferredPhy)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {

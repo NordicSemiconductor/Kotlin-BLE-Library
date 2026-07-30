@@ -68,7 +68,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Environment
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.internal.withCallSite
@@ -190,10 +190,17 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * This method may be called multiple times in case of a retry (when [autoConnect] is `false`).
          *
          * @param autoConnect True to use auto connect feature, false to use direct connection.
+         * @param autoMtu True to enable automatic MTU negotiation.
+         * @param opportunistic True to enable opportunistic connection.
          * @param preferredPhy The preferred PHYs for connection.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M))
+        suspend fun connect(
+            autoConnect: Boolean,
+            autoMtu: Boolean,
+            opportunistic: Boolean = false,
+            preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
+        )
 
         /**
          * Initiates GATT services discovery.

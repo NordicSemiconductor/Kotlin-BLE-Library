@@ -37,7 +37,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
@@ -113,9 +113,13 @@ interface CentralManager:
      *
      * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
      * the highest MTU supported by the remote device immediately after establishing the connection.
+     * @property opportunistic Opportunistic connection is available from Android 17 onwards.
+     * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+     * when no other GATT connections are active for the remote device.
      */
     sealed class ConnectionOptions(
-        open val automaticallyRequestHighestValueLength: Boolean
+        open val automaticallyRequestHighestValueLength: Boolean,
+        open val opportunistic: Boolean,
     ) {
         companion object {
             /**
@@ -134,10 +138,17 @@ interface CentralManager:
          *
          * In general, the first ever connection to a device should be direct and subsequent
          * connections to known devices should be invoked with this option.
+         *
+         * @param automaticallyRequestHighestValueLength If true, the manager will automatically request
+         * the highest MTU supported by the remote device immediately after establishing the connection.
+         * @param opportunistic Opportunistic connection is available from Android 17 onwards.
+         * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+         * when no other GATT connections are active for the remote device.
          */
         data class AutoConnect(
-            override val automaticallyRequestHighestValueLength: Boolean = false
-        ): ConnectionOptions(automaticallyRequestHighestValueLength)
+            override val automaticallyRequestHighestValueLength: Boolean = false,
+            override val opportunistic: Boolean = false,
+        ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic)
 
         /**
          * Connection options for direct connection.
@@ -154,14 +165,18 @@ interface CentralManager:
          * preferences, local and remote controller capabilities. Controller can override these settings.
          * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
          * the highest MTU supported by the remote device immediately after establishing the connection.
+         * @property opportunistic Opportunistic connection is available from Android 17 onwards.
+         * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+         * when no other GATT connections are active for the remote device.
          */
         data class Direct(
             val timeout: Duration = 10.seconds,
             val retry: Int = 2,
             val retryDelay: Duration = 300.milliseconds,
-            val preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
-            override val automaticallyRequestHighestValueLength: Boolean = false
-        ): ConnectionOptions(automaticallyRequestHighestValueLength) {
+            val preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
+            override val automaticallyRequestHighestValueLength: Boolean = false,
+            override val opportunistic: Boolean = false
+        ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic) {
 
             /**
              * Connection options for direct connection.
@@ -176,14 +191,18 @@ interface CentralManager:
              * @param preferredPhy The preferred PHY for connections to remote LE device.
              * @param automaticallyRequestHighestValueLength If true, the manager will automatically request
              * the highest MTU supported by the remote device immediately after establishing the connection.
+             * @param opportunistic Opportunistic connection is available from Android 17 onwards.
+             * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+             * when no other GATT connections are active for the remote device.
              */
             constructor(
                 timeout: Duration = 10.seconds,
                 retry: Int = 3,
                 retryDelay: Duration = 300.milliseconds,
-                vararg preferredPhy: Phy,
-                automaticallyRequestHighestValueLength: Boolean = false
-            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestValueLength)
+                vararg preferredPhy: PrimaryPhy,
+                automaticallyRequestHighestValueLength: Boolean = false,
+                opportunistic: Boolean = false
+            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestValueLength, opportunistic)
         }
     }
 }

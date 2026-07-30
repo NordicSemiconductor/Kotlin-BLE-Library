@@ -296,7 +296,7 @@ open class Peripheral(
             is CentralManager.ConnectionOptions.AutoConnect -> {
                 try {
                     val state = await(
-                        action = { impl.connect(true, emptyList()) },
+                        action = { impl.connect(true, options.automaticallyRequestHighestValueLength, options.opportunistic,emptyList()) },
                         condition = { it.isConnected || it.isDisconnected },
                     )
                     when (state) {
@@ -309,7 +309,7 @@ open class Peripheral(
                             // connection state changes. The device may disconnect and reconnect at
                             // any time. To stop collecting the events one needs to call disconnect().
                             startCollectingGattEvents(closeWhenDisconnected = false)
-                            if (options.automaticallyRequestHighestValueLength) {
+                            if (options.automaticallyRequestHighestValueLength && !impl.environment.automaticallyRequestsMtu) {
                                 mtuRequested = true
                             }
                             initiateConnection()
@@ -356,7 +356,7 @@ open class Peripheral(
                 val now = System.currentTimeMillis()
                 try {
                     val state = await(
-                        action = { impl.connect(false, options.preferredPhy) },
+                        action = { impl.connect(false, options.automaticallyRequestHighestValueLength, options.opportunistic, options.preferredPhy) },
                         condition = { it.isConnected || it.isDisconnected },
                         timeout = options.timeout,
                     )

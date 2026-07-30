@@ -47,6 +47,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import org.jetbrains.annotations.Range
@@ -77,15 +78,22 @@ open class MockExecutor(
 
     // Implementation
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+        preferredPhy: List<PrimaryPhy>,
+    ) {
+        val phy = if (environment.supportsConnectingWithLeCodedPhy) preferredPhy
+            else listOf(PrimaryPhy.PHY_LE_1M)
         if (autoConnect) {
             // There is no timeout for auto connect attempts.
-            super.connect(true, preferredPhy)
+            super.connect(true, autoMtu, opportunistic, phy)
         } else {
             // Android has a timeout of 30 seconds for connection attempts.
             // User may set a shorter timeout in ConnectionOptions.Direct.
             withTimeout(30.seconds) {
-                super.connect(false, preferredPhy)
+                super.connect(false, autoMtu, opportunistic, phy)
             }
         }
     }

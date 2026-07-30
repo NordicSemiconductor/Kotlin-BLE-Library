@@ -172,13 +172,12 @@ internal fun PhyOption.toOption(): Int = when (this) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-internal fun List<Phy>.toMask(): Int {
+internal fun List<PrimaryPhy>.toMask(): Int {
     var mask = 0
     forEach {
         mask = mask or when (it) {
-            Phy.PHY_LE_1M -> 1 /* BluetoothDevice.PHY_LE_1M_MASK */
-            Phy.PHY_LE_2M -> 2 /* BluetoothDevice.PHY_LE_2M_MASK */
-            Phy.PHY_LE_CODED -> 4 /* BluetoothDevice.PHY_LE_CODED_MASK */
+            PrimaryPhy.PHY_LE_1M -> 1 /* BluetoothDevice.PHY_LE_1M_MASK */
+            PrimaryPhy.PHY_LE_CODED -> 4 /* BluetoothDevice.PHY_LE_CODED_MASK */
         }
     }
     return mask

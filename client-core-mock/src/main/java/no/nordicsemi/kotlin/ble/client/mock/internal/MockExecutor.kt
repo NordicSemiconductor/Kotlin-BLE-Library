@@ -41,7 +41,7 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import no.nordicsemi.kotlin.log.Log
@@ -90,8 +90,13 @@ open class MockExecutor(
     override val isClosed: Boolean
         get() = gatt == null
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
-        gatt = peripheralSpec.connectGatt(environment, autoConnect, preferredPhy, advertisements)
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+        preferredPhy: List<PrimaryPhy>,
+    ) {
+        gatt = peripheralSpec.connectGatt(environment, autoConnect, autoMtu, opportunistic, preferredPhy, advertisements)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
