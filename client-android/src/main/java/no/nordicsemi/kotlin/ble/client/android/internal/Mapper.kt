@@ -146,12 +146,6 @@ private fun ScanRecord.toAdvertisementData(): AdvertisingData {
     return AdvertisingData(raw = bytes)
 }
 
-private fun SparseArray<ByteArray>.toMap(): Map<Int, ByteArray> {
-    val map = mutableMapOf<Int, ByteArray>()
-    forEach { key, value -> map[key] = value }
-    return map
-}
-
 private fun Int.toPrimaryPhy(): PrimaryPhy = when (this) {
     3 /* BluetoothDevice.PHY_LE_CODED */ -> PrimaryPhy.PHY_LE_CODED
     else -> PrimaryPhy.PHY_LE_1M
