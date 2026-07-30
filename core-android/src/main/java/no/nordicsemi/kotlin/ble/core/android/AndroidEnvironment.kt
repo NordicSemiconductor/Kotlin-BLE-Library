@@ -81,18 +81,93 @@ interface AndroidEnvironment : Environment {
 
     /**
      * Android SDK versions.
+     *
+     * This object contains the Android SDK version constants, in which significant changes
+     * to Bluetooth functionality have been made.
      */
     object SdkVersion {
-        /** Android 5.0 */
+        /**
+         * Android 4.3.
+         *
+         * First version with Bluetooth LE.
+         */
+        const val JELLY_BEAN_MR2 = 18
+        /**
+         * Android 4.4.
+         *
+         * New features:
+         * * Added support for HID (Human Interface Device, aka Keyboard, Mouse, etc.) service.
+         *
+         * Note: An attempt to read or write an attribute belonging to the HID service will result
+         *       in an exception.
+         */
+        const val KITKAT = 19
+        /**
+         * Android 5.0.
+         *
+         * New features:
+         * * Advertising with Bluetooth LE.
+         * * Scan filters and parameters.
+         */
         const val LOLLIPOP = 21
-        /** Android 6.0 */
+        /**
+         * Android 6.0.
+         *
+         * New features:
+         * * More Bluetooth LE scanning options.
+         * * Data Length Extension (DLE) support.
+         * * Runtime permissions.
+         * * Location permission required for Bluetooth LE scanning.
+         */
         const val MARSHMALLOW = 23
-        /** Android 8.0 */
+        /**
+         * Android 8.0.
+         *
+         * New features:
+         * * PHY LE2M and Coded support.
+         * * Periodic advertisement support.
+         * * Scanning with PendingIntents.
+         */
         const val OREO = 26
-        /** Android 12 */
+        /**
+         * Android 12.
+         *
+         * New features:
+         * * New Bluetooth runtime permissions: `BLUETOOTH_CONNECT`, `BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`.
+         */
         const val S = 31
-        /** Android 15 */
+        /**
+         * Android 15.
+         *
+         * New features:
+         * * [API](https://developer.android.com/reference/android/bluetooth/BluetoothDevice#getAddressType()) to get the Address Type.
+         */
         const val VANILLA_ICE_CREAM = 35
+        /**
+         * Android 16.
+         *
+         * New features:
+         * * Channel Sounding (ranging) support.
+         * * Improved API for handling bond removal
+         *   ([Behavior Changes Android 16](https://developer.android.com/about/versions/16/behavior-changes-16#connectivity)).
+         *
+         * New features in API 36.1:
+         * * [API](https://developer.android.com/reference/android/bluetooth/le/ScanSettings.Builder#setScanType(int)) for passive scanning.
+         */
+        const val BAKLAVA = 36
+        /**
+         * Android 17.
+         *
+         * New features:
+         * * PHY HDT (High Data Throughput) support.
+         */
+        const val CINNAMON_BUN = 37
+        /**
+         * Latest Android version.
+         *
+         * Use this value to test using all available features.
+         */
+        const val LATEST = CINNAMON_BUN
     }
 
     val bluetoothState: StateFlow<Manager.State>
