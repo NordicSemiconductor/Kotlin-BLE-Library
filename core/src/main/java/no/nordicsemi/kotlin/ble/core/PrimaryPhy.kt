@@ -34,10 +34,10 @@
 package no.nordicsemi.kotlin.ble.core
 
 /**
- * Primary PHY for an advertisement.
+ * Primary PHY for an advertisement and establishing connection.
  *
  * The primary PHY of an advertisement can only be LE 1M, for regular advertisement,
- * or LE Coded for long range applications.
+ * or LE Coded for long range applications. Devices can switch to other PHY during connection.
  * @see [Phy]
  */
 enum class PrimaryPhy {
@@ -45,14 +45,15 @@ enum class PrimaryPhy {
     /**
      * Bluetooth LE 1M PHY.
      *
-     * Used to refer to LE 1M Physical Channel for advertising, scanning or connection.
+     * Default Physical Channel for advertising, scanning or connection.
      */
     PHY_LE_1M,
 
     /**
      * Bluetooth LE Coded PHY.
      *
-     * Used to refer to LE Coded Physical Channel for advertising, scanning or connection.
+     * Coded PHY is used for long range applications, where each bit is encoded as 2 or 8 symbols,
+     * sacrificing speed over error correction.
      */
     PHY_LE_CODED;
 
@@ -61,3 +62,11 @@ enum class PrimaryPhy {
         PHY_LE_CODED -> "LE Coded"
     }
 }
+
+infix fun PrimaryPhy.and(phy: PrimaryPhy): List<PrimaryPhy> = listOf(this, phy)
+
+infix fun List<PrimaryPhy>.and(phy: PrimaryPhy): List<PrimaryPhy> = this + phy
+
+@Suppress("UnusedReceiverParameter")
+val PrimaryPhy.ANY: List<PrimaryPhy>
+    get() = PrimaryPhy.entries

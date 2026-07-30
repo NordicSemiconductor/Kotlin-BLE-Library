@@ -119,7 +119,7 @@ class LegacyAdvertisingSetParameters(
  * in the header, outside the AD structure.
  * @property anonymous Whether the advertisement will be anonymous.
  * @property primaryPhy The primary advertising PHY.
- * @property secondaryPhy The secondary advertising PHY.
+ * @property secondaryPhy The secondary advertising PHY. This cannot be [Phy.PHY_LE_HDT].
  * @property scannable Whether the advertisement type should be scannable.
  * Bluetooth 5 advertisements can only be either scannable or only connectable.
  */
@@ -142,6 +142,9 @@ class Bluetooth5AdvertisingSetParameters(
     init {
         require(!(anonymous && (connectable || scannable))) {
             "Anonymous advertising cannot be connectable or scannable"
+        }
+        require(secondaryPhy != Phy.PHY_LE_HDT) {
+            "Only PHY LE 1M, LE 2M and LE Coded can be used as secondary PHY"
         }
     }
 }

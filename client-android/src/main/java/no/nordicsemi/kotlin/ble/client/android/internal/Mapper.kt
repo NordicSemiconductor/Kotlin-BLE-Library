@@ -160,12 +160,14 @@ private fun Int.toPrimaryPhy(): PrimaryPhy = when (this) {
 internal fun Int.toPhy(): Phy = when (this) {
     2 /* BluetoothDevice.PHY_LE_2M */ -> Phy.PHY_LE_2M
     3 /* BluetoothDevice.PHY_LE_CODED */ -> Phy.PHY_LE_CODED
+    5 /* BluetoothDevice.PHY_LE_HDT */ -> Phy.PHY_LE_HDT
     else -> Phy.PHY_LE_1M
 }
 
 internal fun Phy.toPhy(): Int = when (this) {
     Phy.PHY_LE_2M -> 2 /* BluetoothDevice.PHY_LE_2M */
     Phy.PHY_LE_CODED -> 3 /* BluetoothDevice.PHY_LE_CODED */
+    Phy.PHY_LE_HDT -> 5 /* BluetoothDevice.PHY_LE_HDT */
     else -> 1 /* BluetoothDevice.PHY_LE_1M */
 }
 

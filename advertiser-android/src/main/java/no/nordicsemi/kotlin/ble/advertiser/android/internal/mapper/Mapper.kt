@@ -92,6 +92,7 @@ internal fun AdvertisingSetParameters.toNative(): NativeAdvertisingSetParameters
                 Phy.PHY_LE_1M -> BluetoothDevice.PHY_LE_1M
                 Phy.PHY_LE_2M -> BluetoothDevice.PHY_LE_2M
                 Phy.PHY_LE_CODED -> BluetoothDevice.PHY_LE_CODED
+                Phy.PHY_LE_HDT -> throw IllegalArgumentException("HDT PHY is not supported for secondary PHY")
             })
             .build()
     }
