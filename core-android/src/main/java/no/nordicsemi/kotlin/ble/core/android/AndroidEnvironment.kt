@@ -199,6 +199,21 @@ interface AndroidEnvironment : Environment {
     val isLePeriodicAdvertisingSupported: Boolean
     val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int
 
+    override val reportsConnectionParameters: Boolean
+        // onConnectionUpdated callback was added in Android 8 Oreo.
+        get() = androidSdkVersion >= SdkVersion.OREO
+
+    override val automaticallyRequestsMtu: Boolean
+        // New connectGatt API from Android 17 Cinnamon Bun allows to request MTU automatically.
+        get() = androidSdkVersion >= SdkVersion.CINNAMON_BUN
+
+    override val allowsBondRemoval: Boolean
+        // From Android 17 Cinnamon Bun bond information can only be removed with BLUETOOTH_PRIVILEGED
+        // permission, or using CompanionDeviceManager (not supported in this library).
+        // Change:
+        // https://cs.android.com/android/_/android/platform/packages/modules/Bluetooth/+/f4c525723297ede881a618bb325f4b78a9babb1c
+        get() = androidSdkVersion < SdkVersion.CINNAMON_BUN || isBluetoothPrivilegedPermissionGranted
+
     /**
      * The local Bluetooth adapter name, or *null* if the required permission is not granted.
      */
@@ -220,6 +235,16 @@ interface AndroidEnvironment : Environment {
      */
     val supportsRuntimePermissions: Boolean
         get() = androidSdkVersion >= SdkVersion.MARSHMALLOW
+
+    /**
+     * Whether the connection can be established with PHY LE Coded.
+     *
+     * See: [BluetoothDevice.connectGatt](https://developer.android.com/reference/android/bluetooth/BluetoothDevice#connectGatt(android.bluetooth.BluetoothGattConnectionSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothGattCallback))
+     */
+    val supportsConnectingWithLeCodedPhy: Boolean
+        // Before Oreo, PHY LE Coded was not supported.
+        // New connectGatt API from Android 17 Cinnamon Bun does not allow to set PHY.
+        get() = androidSdkVersion < SdkVersion.OREO || androidSdkVersion >= SdkVersion.CINNAMON_BUN
 
     /**
      * Unregisters the broadcast receiver that listens for Bluetooth state changes.

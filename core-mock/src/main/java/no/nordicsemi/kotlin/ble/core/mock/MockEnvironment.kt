@@ -35,9 +35,5 @@ import no.nordicsemi.kotlin.ble.core.Environment
 
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
- *
- * @property reportsConnectionParameters Whether the device reports connection parameters.
  */
-interface MockEnvironment : Environment {
-    val reportsConnectionParameters: Boolean
-}
+interface MockEnvironment : Environment

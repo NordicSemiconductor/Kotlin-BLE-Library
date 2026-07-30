@@ -240,6 +240,7 @@ sealed class MockAndroidEnvironment(
         }
 
     override var reportsConnectionParameters = androidSdkVersion >= AndroidEnvironment.SdkVersion.OREO
+    override val automaticallyRequestsMtu = androidSdkVersion >= AndroidEnvironment.SdkVersion.CINNAMON_BUN
 
     override fun close() {
         // Empty
