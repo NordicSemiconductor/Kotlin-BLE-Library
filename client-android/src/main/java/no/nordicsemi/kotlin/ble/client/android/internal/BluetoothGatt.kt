@@ -49,7 +49,7 @@ internal fun BluetoothDevice.connect(
     callback: BluetoothGattCallback,
     preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
 ): BluetoothGatt =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
         val settings = BluetoothGattConnectionSettings.Builder()
             .setAutoConnectEnabled(autoConnect)
             .setAutomaticMtuEnabled(autoMtu)
