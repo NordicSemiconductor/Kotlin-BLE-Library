@@ -271,7 +271,7 @@ open class MockCentralManagerImpl(
                     // The mock scanner found the device and cached its MAC address.
                     result.peripheralSpec.simulateCaching()
 
-                    val scanResult = result.toScanResult { peripheralSpec, name ->
+                    val scanResult = result.toScanResult(environment) { peripheralSpec, name ->
                         peripheral(peripheralSpec.identifier) {
                             Peripheral(
                                 scope = scope,

@@ -42,6 +42,8 @@ package no.nordicsemi.kotlin.ble.core
  * @property reportsConnectionParameters Whether the device reports connection parameters.
  * @property automaticallyRequestsMtu Whether the device automatically requests MTU upon connection.
  * @property allowsBondRemoval Whether the device provides API to remove bond information from local host.
+ * @property reportsConnectableFlag Whether the device provides information whether a scanned
+ * Bluetooth LE advertising packet is connectable.
  */
 interface Environment {
     val deviceName: String
@@ -50,4 +52,5 @@ interface Environment {
     val reportsConnectionParameters: Boolean
     val automaticallyRequestsMtu: Boolean
     val allowsBondRemoval: Boolean
+    val reportsConnectableFlag: Boolean
 }

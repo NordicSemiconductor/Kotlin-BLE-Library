@@ -109,8 +109,8 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
         val deviceName = try { device.name } catch (_: SecurityException) { null }
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: deviceName),
-            isConnectable =  isConnectable,
             advertisingData = scanRecord.toAdvertisementData(),
+            isConnectable = isConnectable,
             rssi = rssi,
             txPowerLevel =
                 if (txPower != NativeScanResult.TX_POWER_NOT_PRESENT)
@@ -127,8 +127,8 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
     } else {
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
-            isConnectable =  true,
             advertisingData = scanRecord.toAdvertisementData(),
+            isConnectable = null, // Unknown
             rssi = rssi,
             txPowerLevel =
                 if (scanRecord.txPowerLevel != Int.MIN_VALUE)

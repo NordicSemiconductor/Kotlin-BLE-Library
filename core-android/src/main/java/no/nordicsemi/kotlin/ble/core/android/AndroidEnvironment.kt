@@ -203,6 +203,10 @@ interface AndroidEnvironment : Environment {
         // onConnectionUpdated callback was added in Android 8 Oreo.
         get() = androidSdkVersion >= SdkVersion.OREO
 
+    override val reportsConnectableFlag: Boolean
+        // isConnectable flag was added to ScanResult in Android 8 Oreo.
+        get() = androidSdkVersion >= SdkVersion.OREO
+
     override val automaticallyRequestsMtu: Boolean
         // New connectGatt API from Android 17 Cinnamon Bun allows to request MTU automatically.
         get() = androidSdkVersion >= SdkVersion.CINNAMON_BUN

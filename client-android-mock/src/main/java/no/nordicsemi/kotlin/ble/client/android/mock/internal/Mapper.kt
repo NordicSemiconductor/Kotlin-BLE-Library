@@ -36,14 +36,16 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockScanResult
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 
 internal fun MockScanResult<String>.toScanResult(
+    environment: AndroidEnvironment,
     peripheral: (peripheralSpec: PeripheralSpec<String>, name: String?) -> Peripheral,
 ): ScanResult {
     val advertisingData = AdvertisingData(advertisingData)
     return ScanResult(
         peripheral = peripheral(peripheralSpec, advertisingData.name),
-        isConnectable = isConnectable,
+        isConnectable = if (environment.reportsConnectableFlag) isConnectable else null,
         advertisingData = advertisingData,
         rssi = rssi,
         txPowerLevel = txPowerLevel,
