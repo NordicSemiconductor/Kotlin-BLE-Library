@@ -173,8 +173,10 @@ class NativeAndroidEnvironment private constructor(
         val monitorBluetoothState = IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED)
         ContextCompat.registerReceiver(applicationContext, bluetoothStateBroadcastReceiver, monitorBluetoothState, ContextCompat.RECEIVER_EXPORTED)
 
-        val monitorLocationState = IntentFilter(LocationManager.MODE_CHANGED_ACTION)
-        ContextCompat.registerReceiver(applicationContext, locationStateBroadcastReceiver, monitorLocationState, ContextCompat.RECEIVER_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            val monitorLocationState = IntentFilter(LocationManager.MODE_CHANGED_ACTION)
+            ContextCompat.registerReceiver(applicationContext, locationStateBroadcastReceiver, monitorLocationState, ContextCompat.RECEIVER_EXPORTED)
+        }
     }
 
     override fun close() {
@@ -182,9 +184,12 @@ class NativeAndroidEnvironment private constructor(
         try {
             applicationContext.unregisterReceiver(bluetoothStateBroadcastReceiver)
         } catch (_: IllegalArgumentException) { /* Ignore */ }
-        try {
-            applicationContext.unregisterReceiver(locationStateBroadcastReceiver)
-        } catch (_: IllegalArgumentException) { /* Ignore */ }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                applicationContext.unregisterReceiver(locationStateBroadcastReceiver)
+            } catch (_: IllegalArgumentException) { /* Ignore */ }
+        }
     }
 
     override val androidSdkVersion = Build.VERSION.SDK_INT
@@ -208,7 +213,7 @@ class NativeAndroidEnvironment private constructor(
        (Build.VERSION.SDK_INT <  Build.VERSION_CODES.S || !isNeverForLocationFlagSet)
     override val isLocationPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                applicationContext.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     override val isLe2MPhySupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 bluetoothManager?.adapter?.isLe2MPhySupported ?: false
@@ -217,16 +222,16 @@ class NativeAndroidEnvironment private constructor(
                 bluetoothManager?.adapter?.isLeCodedPhySupported ?: false
     override val isBluetoothScanPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED
     override val isBluetoothConnectPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
     override val isBluetoothAdvertisePermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADVERTISE) == PackageManager.PERMISSION_GRANTED
     override val isBluetoothPrivilegedPermissionGranted: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT &&
-                applicationContext.checkSelfPermission(Manifest.permission.BLUETOOTH_PRIVILEGED) == PackageManager.PERMISSION_GRANTED
+                ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_PRIVILEGED) == PackageManager.PERMISSION_GRANTED
     override val isLePeriodicAdvertisingSupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 bluetoothManager?.adapter?.isLePeriodicAdvertisingSupported ?: false

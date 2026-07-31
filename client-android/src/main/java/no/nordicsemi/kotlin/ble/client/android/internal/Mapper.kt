@@ -192,6 +192,7 @@ internal fun List<PrimaryPhy>.toMask(): Int {
     return mask
 }
 
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal fun ConnectionPriority.toPriority() = when (this) {
     ConnectionPriority.BALANCED -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
     ConnectionPriority.HIGH -> BluetoothGatt.CONNECTION_PRIORITY_HIGH
