@@ -371,7 +371,7 @@ open class Peripheral(
                             // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.
                             startCollectingGattEvents()
-                            if (options.automaticallyRequestHighestValueLength) {
+                            if (options.automaticallyRequestHighestValueLength && !impl.environment.automaticallyRequestsMtu) {
                                 mtuRequested = true
                             }
                             initiateConnection()
