@@ -104,6 +104,8 @@ open class MockExecutor(
 
     override suspend fun removeBond(): Boolean {
         TODO("Not yet implemented")
+        // Check isBluetoothPrivilegedPermissionGranted() for Android 17+
+        // Android 4.3 was failing to remove bond information. After a reboot it was restored.
     }
 
     override suspend fun refreshCache(): Boolean {
