@@ -35,11 +35,9 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanRecord
 import android.os.Build
-import android.util.SparseArray
+import android.os.SystemClock
 import androidx.annotation.RequiresApi
-import androidx.core.util.forEach
 import no.nordicsemi.kotlin.ble.client.android.AdvertisingData
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -103,13 +101,14 @@ internal fun Int.errorCodeToReason(): ScanningFailedToStartException.Reason = wh
     else -> ScanningFailedToStartException.Reason.Unknown(this)
 }
 
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice, name: String?) -> Peripheral): ScanResult? {
     val scanRecord = scanRecord ?: return null
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val deviceName = try { device.name } catch (_: SecurityException) { null }
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: deviceName),
-            advertisingData = scanRecord.toAdvertisementData(),
+            advertisingData = AdvertisingData(raw = scanRecord.bytes),
             isConnectable = isConnectable,
             rssi = rssi,
             txPowerLevel =
@@ -127,7 +126,7 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
     } else {
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
-            advertisingData = scanRecord.toAdvertisementData(),
+            advertisingData = AdvertisingData(raw = scanRecord.bytes),
             isConnectable = null, // Unknown
             rssi = rssi,
             txPowerLevel =
@@ -136,14 +135,24 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
                 else
                     null,
             primaryPhy = PrimaryPhy.PHY_LE_1M,
-            secondaryPhy = null,
+            secondaryPhy = null, // Not used
             timestamp = timestampNanos / 1_000_000
         )
     }
 }
 
-private fun ScanRecord.toAdvertisementData(): AdvertisingData {
-    return AdvertisingData(raw = bytes)
+internal fun ByteArray.toScanResult(rssi: Int, peripheral: (name: String?) -> Peripheral): ScanResult {
+    val data = AdvertisingData(raw = this)
+    return ScanResult(
+        peripheral = peripheral(data.name),
+        isConnectable = null, // Unknown
+        advertisingData = data,
+        rssi = rssi,
+        txPowerLevel = null, // Unknown
+        primaryPhy = PrimaryPhy.PHY_LE_1M,
+        secondaryPhy = null, // Not used
+        timestamp = SystemClock.elapsedRealtime()
+    )
 }
 
 private fun Int.toPrimaryPhy(): PrimaryPhy = when (this) {
