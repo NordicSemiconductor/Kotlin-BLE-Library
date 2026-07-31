@@ -849,11 +849,15 @@ open class Peripheral(
      * This method will disconnect the peripheral if it was connected.
      *
      * @throws OperationFailedException If bond information could not be removed.
-     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+     * @throws SecurityException If BLUETOOTH_CONNECT permission is denied, or if
+     * BLUETOOTH_PRIVILEGED permission is denied on Android 17+.
      */
     suspend fun removeBond() {
         if (!hasBondInformation) {
             return
+        }
+        check(impl.environment.allowsBondRemoval) {
+            throw SecurityException("BLUETOOTH_PRIVILEGED permission is required to remove bond information on Android 17+")
         }
         val _ = OperationMutex.withLock {
             logger?.trace(Layer.SMP) { "Removing bond information" }
