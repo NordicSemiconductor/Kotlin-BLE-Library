@@ -45,7 +45,7 @@ internal fun BluetoothDevice.connect(
     context: Context,
     autoConnect: Boolean,
     autoMtu: Boolean,
-    opportunistic: Boolean = false,
+    opportunistic: Boolean,
     callback: BluetoothGattCallback,
     preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
 ): BluetoothGatt =
