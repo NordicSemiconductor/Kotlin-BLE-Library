@@ -102,6 +102,7 @@ private object StubEnvironment: AndroidEnvironment {
     override val isLocationPermissionGranted: Boolean = false
     override val isLe2MPhySupported: Boolean = true
     override val isLeCodedPhySupported: Boolean = true
+    override val isScanningOnLeCodedPhySupported: Boolean = true
     override val isBluetoothScanPermissionGranted: Boolean = true
     override val isBluetoothConnectPermissionGranted: Boolean = true
     override val isBluetoothAdvertisePermissionGranted: Boolean = true
