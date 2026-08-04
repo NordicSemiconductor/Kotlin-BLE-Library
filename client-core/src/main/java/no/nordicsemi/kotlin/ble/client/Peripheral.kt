@@ -192,14 +192,12 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @param autoConnect True to use auto connect feature, false to use direct connection.
          * @param autoMtu True to enable automatic MTU negotiation.
          * @param opportunistic True to enable opportunistic connection.
-         * @param preferredPhy The preferred PHYs for connection.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
         suspend fun connect(
             autoConnect: Boolean,
             autoMtu: Boolean,
             opportunistic: Boolean = false,
-            preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
         )
 
         /**

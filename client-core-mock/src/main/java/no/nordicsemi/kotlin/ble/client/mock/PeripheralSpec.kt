@@ -722,7 +722,6 @@ class PeripheralSpec<ID: Any> private constructor(
      *
      * @param environment The mock environment.
      * @param autoConnect Whether to use auto-connect mode.
-     * @param preferredPhy List of preferred PHYs for the connection.
      * @param advertisements A flow of advertisements emitted by the mock advertiser.
      * @return The mock GATT object.
      */
@@ -731,7 +730,6 @@ class PeripheralSpec<ID: Any> private constructor(
         autoConnect: Boolean,
         autoMtu: Boolean,
         opportunistic: Boolean,
-        preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M),
         advertisements: Flow<MockScanResult<*>>,
     ): Api {
         return Api(environment).also { gatt ->
@@ -768,11 +766,13 @@ class PeripheralSpec<ID: Any> private constructor(
             }
 
             // Connection Request is sent as a response to a connectable advertisement.
-            advertisements.first { scanResult ->
+            // Note: The advertisements flow already has results filtered by supported PHY.
+            val advertisement = advertisements.first { scanResult ->
                 scanResult.peripheralSpec.identifier == identifier && scanResult.isConnectable
             }
 
-            gatt.connect(preferredPhy)
+            // Note: Ignoring "preferred PHY" set by user. Choosing the primary PHY of scanned packet.
+            gatt.connect(advertisement.primaryPhy, autoMtu)
         }
     }
 
@@ -817,10 +817,12 @@ class PeripheralSpec<ID: Any> private constructor(
         /**
          * Simulates connecting to the peripheral.
          *
-         * @param preferredPhy List of preferred PHYs for the connection.
+         * @param phy The PHY used for the connection. This is the primary PHY of the connectable
+         * advertisement, which triggered the connection request.
+         * @param autoMtu Whether the MTU should be automatically negotiated upon connection.
          * @throws IllegalStateException when the device is not connectable.
          */
-        suspend fun connect(preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M)) {
+        suspend fun connect(phy: PrimaryPhy, autoMtu: Boolean) {
             val maxAttMtu = maxAttMtu ?: return
             val maxLlMtu = this@PeripheralSpec.maxLlMtu ?: return
             val maxSupportedAttMtu = maxAttMtu.coerceAtMost(environment.maxAttMtu)
@@ -832,7 +834,7 @@ class PeripheralSpec<ID: Any> private constructor(
 
             // Notify the event handler about the connection request.
             // TODO LE Coded PHY seems to be ignored, devices connect only with LE 1M. To be investigated.
-            when (eventHandler.onConnectionRequest(preferredPhy.firstOrNull() ?: PrimaryPhy.PHY_LE_1M)) {
+            when (eventHandler.onConnectionRequest(phy)) {
                 // TODO add option to fail connection with 133-ish error
 
                 ConnectionResult.Accept -> {
@@ -844,6 +846,10 @@ class PeripheralSpec<ID: Any> private constructor(
                     // TODO Make sure these requests are handled after state is reported
                     // TODO This will re-connect all disconnected Peripheral instances.
                     _events.emit(ConnectionStateChanged(ConnectionState.Connected))
+
+                    if (autoMtu) {
+                        simulateMtuRequest(maxSupportedAttMtu)
+                    }
                 }
 
                 ConnectionResult.Deny -> {

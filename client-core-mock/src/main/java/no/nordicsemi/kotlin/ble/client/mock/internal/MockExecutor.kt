@@ -94,9 +94,8 @@ open class MockExecutor(
         autoConnect: Boolean,
         autoMtu: Boolean,
         opportunistic: Boolean,
-        preferredPhy: List<PrimaryPhy>,
     ) {
-        gatt = peripheralSpec.connectGatt(environment, autoConnect, autoMtu, opportunistic, preferredPhy, advertisements)
+        gatt = peripheralSpec.connectGatt(environment, autoConnect, autoMtu, opportunistic, advertisements)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {

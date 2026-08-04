@@ -74,7 +74,6 @@ import no.nordicsemi.kotlin.ble.core.Permission
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyInUse
 import no.nordicsemi.kotlin.ble.core.PhyOption
-import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -161,7 +160,6 @@ private class StubExecutor(
         autoConnect: Boolean,
         autoMtu: Boolean,
         opportunistic: Boolean,
-        preferredPhy: List<PrimaryPhy>
     ) {
         _events.emit(ConnectionStateChanged(ConnectionState.Connected))
     }

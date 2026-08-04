@@ -304,7 +304,6 @@ open class Peripheral(
                             logger?.info(Layer.GAP) { "Connected to $this" }
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
-                            _phy.update { PhyInUse.PHY_LE_1M }
                             // Since we're connected, let's start collecting GATT events, including
                             // connection state changes. The device may disconnect and reconnect at
                             // any time. To stop collecting the events one needs to call disconnect().
@@ -365,8 +364,6 @@ open class Peripheral(
                             logger?.info(Layer.GAP) { "Connected to $this" }
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
-                            // TODO should preferred PHY be used from options?
-                            _phy.update { PhyInUse.PHY_LE_1M }
                             // Since we're connected, let's start collecting GATT events.
                             // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.

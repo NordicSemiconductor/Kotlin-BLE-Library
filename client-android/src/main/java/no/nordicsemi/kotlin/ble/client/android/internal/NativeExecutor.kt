@@ -133,7 +133,6 @@ internal class NativeExecutor(
         autoConnect: Boolean,
         autoMtu: Boolean,
         opportunistic: Boolean,
-        preferredPhy: List<PrimaryPhy>
     ) {
         // On retry the previous GATT object may not be null and must be closed.
         gatt?.let {
@@ -141,7 +140,7 @@ internal class NativeExecutor(
             it.close()
         }
         logger?.d(Layer.GAP) { "device.connectGatt(autoConnect=$autoConnect, autoMtu=$autoMtu)" }
-        gatt = bluetoothDevice.connect(environment.applicationContext, autoConnect, autoMtu, opportunistic, gattCallback, preferredPhy)
+        gatt = bluetoothDevice.connect(environment.applicationContext, autoConnect, autoMtu, opportunistic, gattCallback)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {

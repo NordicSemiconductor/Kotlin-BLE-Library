@@ -82,18 +82,18 @@ open class MockExecutor(
         autoConnect: Boolean,
         autoMtu: Boolean,
         opportunistic: Boolean,
-        preferredPhy: List<PrimaryPhy>,
     ) {
-        val phy = if (environment.supportsConnectingWithLeCodedPhy) preferredPhy
-            else listOf(PrimaryPhy.PHY_LE_1M)
+        // Android 17 Cinnamon Bun added a new `connectGatt` API with an option to set automatic
+        // MTU request upon connection. For older versions the MTU request is done in `Peripheral`.
+        val supportsAutoMtu = environment.automaticallyRequestsMtu
         if (autoConnect) {
             // There is no timeout for auto connect attempts.
-            super.connect(true, autoMtu, opportunistic, phy)
+            super.connect(true, supportsAutoMtu && autoMtu, opportunistic)
         } else {
             // Android has a timeout of 30 seconds for connection attempts.
             // User may set a shorter timeout in ConnectionOptions.Direct.
             withTimeout(30.seconds) {
-                super.connect(false, autoMtu, opportunistic, phy)
+                super.connect(false, supportsAutoMtu && autoMtu, opportunistic)
             }
         }
     }

@@ -180,18 +180,6 @@ internal fun PhyOption.toOption(): Int = when (this) {
     PhyOption.S8 -> 2 /* BluetoothDevice.PHY_OPTION_S8 */
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-internal fun List<PrimaryPhy>.toMask(): Int {
-    var mask = 0
-    forEach {
-        mask = mask or when (it) {
-            PrimaryPhy.PHY_LE_1M -> 1 /* BluetoothDevice.PHY_LE_1M_MASK */
-            PrimaryPhy.PHY_LE_CODED -> 4 /* BluetoothDevice.PHY_LE_CODED_MASK */
-        }
-    }
-    return mask
-}
-
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal fun ConnectionPriority.toPriority() = when (this) {
     ConnectionPriority.BALANCED -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
