@@ -36,6 +36,10 @@ package no.nordicsemi.kotlin.ble.environment.android.mock
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
+import no.nordicsemi.kotlin.ble.core.ATT_MTU_MAX
+import no.nordicsemi.kotlin.ble.core.LL_MTU_DEFAULT
+import no.nordicsemi.kotlin.ble.core.LL_MTU_MAX
 import no.nordicsemi.kotlin.ble.core.Manager
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.android.AdvertisingDataDefinition
@@ -104,8 +108,8 @@ private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
  * message for a single device per scan. Non-connectable devices were reported continuously, but
  * connectable devices were reported only once. The client had to stop and start scanning again
  * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
- * @property issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
- * packets on *L2CAP* in the *LLCP Data Length Update* procedure, while later trying to send 251 bytes.
+ * @property issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+ * PDUs on Link Layer in the *LLCP Data Length Update* procedure, while later trying to send 251 bytes.
  * This causes the peripheral to terminate the connection. This flag simulates this issue.
  * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
  * @property advertiser A callback that will be called when the app requests to advertise.
@@ -131,9 +135,10 @@ sealed class MockAndroidEnvironment(
     override val isLeExtendedAdvertisingSupported: Boolean = false,
     override val isLePeriodicAdvertisingSupported: Boolean = false,
     override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
+    override val maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_DEFAULT,
     isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val issueOnlyOneActiveScan: Boolean = false, // Nexus 4 issue
-    val issueIncorrectL2capTxMtu: Boolean = false, // Samsung A8 Tab issue
+    val issueIncorrectLlTxMtu: Boolean = false, // Samsung A8 Tab issue
     // TODO add the issue when Samsung S8 fails PHY update, tested with Memfault.
     // This issue can be workaround by delaying service discovery (?) and waiting
     // until the PHY request completes. It works in nRF Connect when SD is triggered manually.
@@ -155,6 +160,11 @@ sealed class MockAndroidEnvironment(
         set(value) { field = field || value && requiresBluetoothRuntimePermissions }
 
     override val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported && isScanningOnLeCodedPhySupported
+
+    override val maxAttMtu: @Range(from = 23, to = 517) Int = when (androidSdkVersion) {
+        in AndroidEnvironment.SdkVersion.JELLY_BEAN_MR2..AndroidEnvironment.SdkVersion.KITKAT -> ATT_MTU_DEFAULT
+        else -> ATT_MTU_MAX
+    }
 
     /**
      * Simulates turning on Bluetooth adapter on the mock device.
@@ -348,6 +358,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
      * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
      * @param isLocationEnabled Whether location service is enabled on the device.
@@ -359,8 +370,8 @@ sealed class MockAndroidEnvironment(
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
      * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
-     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
-     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * @param issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+     * PDUss on Link Layer in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
      * This causes the peripheral to terminate the connection. This flag simulates this issue.
      * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
@@ -372,10 +383,11 @@ sealed class MockAndroidEnvironment(
         isMultipleAdvertisementSupported: Boolean = true,
         isLocationPermissionGranted: Boolean = true,
         isLocationEnabled: Boolean = true,
+        maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_MAX,
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
-        issueIncorrectL2capTxMtu: Boolean = false,
+        issueIncorrectLlTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.MARSHMALLOW,
         deviceName = deviceName,
@@ -386,10 +398,11 @@ sealed class MockAndroidEnvironment(
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
+        maxLlMtu = maxLlMtu,
         advertiser = advertiser,
         scanner = scanner,
         issueOnlyOneActiveScan = issueOnlyOneActiveScan,
-        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+        issueIncorrectLlTxMtu = issueIncorrectLlTxMtu,
     )
 
     /**
@@ -409,6 +422,7 @@ sealed class MockAndroidEnvironment(
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
      * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
      * if LE Extended Advertising feature is supported.
+     * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
      * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
@@ -423,8 +437,8 @@ sealed class MockAndroidEnvironment(
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
      * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
-     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
-     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * @param issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+     * PDUs on Link Layer in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
      * This causes the peripheral to terminate the connection. This flag simulates this issue.
      * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
@@ -438,6 +452,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported: Boolean = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
             if (isLeExtendedAdvertisingSupported) 1650 else 31,
+        maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_MAX,
         isLe2MPhySupported: Boolean = true,
         isLeCodedPhySupported: Boolean = true,
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
@@ -446,7 +461,7 @@ sealed class MockAndroidEnvironment(
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
-        issueIncorrectL2capTxMtu: Boolean = false,
+        issueIncorrectLlTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.OREO,
         deviceName = deviceName,
@@ -457,6 +472,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported = isLePeriodicAdvertisingSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
+        maxLlMtu = maxLlMtu,
         isLocationRequiredForScanning = true,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -466,7 +482,7 @@ sealed class MockAndroidEnvironment(
         advertiser = advertiser,
         scanner = scanner,
         issueOnlyOneActiveScan = issueOnlyOneActiveScan,
-        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+        issueIncorrectLlTxMtu = issueIncorrectLlTxMtu,
     )
 
     /**
@@ -491,6 +507,7 @@ sealed class MockAndroidEnvironment(
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
      * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
      * if LE Extended Advertising feature is supported.
+     * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
      * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
@@ -513,8 +530,8 @@ sealed class MockAndroidEnvironment(
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
      * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
-     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
-     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * @param issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+     * PDUs on Link Layer in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
      * This causes the peripheral to terminate the connection. This flag simulates this issue.
      * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
@@ -528,6 +545,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported: Boolean = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
             if (isLeExtendedAdvertisingSupported) 1650 else 31,
+        maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_MAX,
         isLe2MPhySupported: Boolean = true,
         isLeCodedPhySupported: Boolean = true,
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
@@ -540,7 +558,7 @@ sealed class MockAndroidEnvironment(
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
-        issueIncorrectL2capTxMtu: Boolean = false,
+        issueIncorrectLlTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.S,
         deviceName = deviceName,
@@ -551,6 +569,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported = isLePeriodicAdvertisingSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
+        maxLlMtu = maxLlMtu,
         isLocationRequiredForScanning = !isNeverForLocationFlagSet,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -563,7 +582,7 @@ sealed class MockAndroidEnvironment(
         advertiser = advertiser,
         scanner = scanner,
         issueOnlyOneActiveScan = issueOnlyOneActiveScan,
-        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+        issueIncorrectLlTxMtu = issueIncorrectLlTxMtu,
     )
 
     /**
@@ -584,6 +603,7 @@ sealed class MockAndroidEnvironment(
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
      * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
      * if LE Extended Advertising feature is supported.
+     * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
      * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
      * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
      * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
@@ -606,8 +626,8 @@ sealed class MockAndroidEnvironment(
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
      * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
-     * @param issueIncorrectL2capTxMtu Some Android devices claim they can only transmit 27-byte long
-     * packets on L2CAP in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * @param issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+     * PDUs on Link Layer in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
      * This causes the peripheral to terminate the connection. This flag simulates this issue.
      * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
      */
@@ -621,6 +641,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported: Boolean = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
             if (isLeExtendedAdvertisingSupported) 1650 else 31,
+        maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_MAX,
         isLe2MPhySupported: Boolean = true,
         isLeCodedPhySupported: Boolean = true,
         isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
@@ -633,7 +654,7 @@ sealed class MockAndroidEnvironment(
         advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
         scanner: MockScanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan: Boolean = false,
-        issueIncorrectL2capTxMtu: Boolean = false,
+        issueIncorrectLlTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.BAKLAVA,
         deviceName = deviceName,
@@ -643,6 +664,7 @@ sealed class MockAndroidEnvironment(
         isLePeriodicAdvertisingSupported = isLePeriodicAdvertisingSupported,
         isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
         leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
+        maxLlMtu = maxLlMtu,
         isLocationRequiredForScanning = !isNeverForLocationFlagSet,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -656,7 +678,7 @@ sealed class MockAndroidEnvironment(
         advertiser = advertiser,
         scanner = scanner,
         issueOnlyOneActiveScan = issueOnlyOneActiveScan,
-        issueIncorrectL2capTxMtu = issueIncorrectL2capTxMtu,
+        issueIncorrectLlTxMtu = issueIncorrectLlTxMtu,
     )
 
     /**
@@ -732,6 +754,7 @@ sealed class MockAndroidEnvironment(
         isMultipleAdvertisementSupported = true,
         isLeExtendedAdvertisingSupported = true,
         leMaximumAdvertisingDataLength = 1650,
+        maxLlMtu = 100, // TODO to be verified
         isLocationRequiredForScanning = !isNeverForLocationFlagSet,
         isLocationPermissionGranted = isLocationPermissionGranted,
         isLocationEnabled = isLocationEnabled,
@@ -743,6 +766,6 @@ sealed class MockAndroidEnvironment(
         isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
         advertiser = advertiser,
         scanner = scanner,
-        issueIncorrectL2capTxMtu = true,
+        issueIncorrectLlTxMtu = true,
     )
 }

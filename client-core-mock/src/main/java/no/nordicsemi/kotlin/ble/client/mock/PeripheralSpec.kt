@@ -67,6 +67,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
 import no.nordicsemi.kotlin.ble.core.Descriptor
+import no.nordicsemi.kotlin.ble.core.LL_MTU_DEFAULT
 import no.nordicsemi.kotlin.ble.core.LegacyAdvertisingSetParameters
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
@@ -106,7 +107,7 @@ import kotlin.uuid.Uuid
  * @property preferredSlaveLatency The preferred slave latency.
  * @property preferredSupervisionTimeout The preferred supervision timeout.
  * @property maxAttMtu The maximum supported ATT MTU (ATT layer Maximum Transfer Unit).
- * @property maxL2capMtu The maximum L2CAP MTU (Maximum Transfer Unit used on L2CAP Layer using
+ * @property maxLlMtu The maximum Link Layer MTU (Maximum Transfer Unit used on Link Layer using
  * Data Length Extension (DLE)).
  * @property supportedPhy The set of supported PHYs.
  * @param isInitiallyConnected Whether the peripheral is initially connected.
@@ -131,7 +132,7 @@ class PeripheralSpec<ID: Any> private constructor(
     val preferredSlaveLatency: Int?,
     val preferredSupervisionTimeout: Int?,
     val maxAttMtu: Int?,
-    val maxL2capMtu: Int?,
+    val maxLlMtu: Int?,
     val supportedPhy: Set<Phy>,
     isInitiallyConnected: Boolean,
     isKnown: Boolean,
@@ -215,13 +216,13 @@ class PeripheralSpec<ID: Any> private constructor(
             if (field == 0) {
                 phy = null
                 mtu = null
-                l2capMtu = null
+                llMtu = null
                 connectionParameters = null
             } else if (mtu == null) {
                 // If first connection, set default parameters.
                 phy = Phy.PHY_LE_1M
-                mtu = 23
-                l2capMtu = 27
+                mtu = ATT_MTU_DEFAULT
+                llMtu = LL_MTU_DEFAULT
                 connectionParameters = ConnectionParameters.Specified(
                     connectionInterval = preferredConnectionInterval!!.first,
                     latency = preferredSlaveLatency!!,
@@ -238,8 +239,8 @@ class PeripheralSpec<ID: Any> private constructor(
     var mtu: Int? = null
         private set
 
-    /** Current L2CAP MTU. */
-    var l2capMtu: Int? = null
+    /** Current Link Layer MTU. */
+    var llMtu: Int? = null
         private set
 
     /** The currently used PHY. */
@@ -277,7 +278,7 @@ class PeripheralSpec<ID: Any> private constructor(
         withResponse: Boolean = true,
     ): Duration {
         val mtu = checkNotNull(mtu) { "Peripheral not connected" }
-        val l2capMtu = checkNotNull(l2capMtu)
+        val llMtu = checkNotNull(this@PeripheralSpec.llMtu)
         val phy = checkNotNull(phy)
         val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis
 
@@ -288,21 +289,21 @@ class PeripheralSpec<ID: Any> private constructor(
                 // Since the caller already knows value.size, no extra "confirmation" read is
                 // needed once all bytes have been retrieved.
                 false -> {
-                    val payloadPerPdu = min(mtu - 1, l2capMtu - 4)
+                    val payloadPerPdu = min(mtu - 1, llMtu - 4)
                     val pdusNeeded = ceil(value.size.toDouble() / payloadPerPdu)
                     connectionInterval.milliseconds * pdusNeeded
                 }
                 // Write Request, Indications or Prepare Write + Execute Write (Long Write).
                 true -> {
                     // Write Request overhead: opcode (1) + handle (2) = 3 bytes.
-                    val singlePduCap = min(mtu - 3, l2capMtu - 4)
+                    val singlePduCap = min(mtu - 3, llMtu - 4)
                     if (value.size <= singlePduCap) {
                         // Fits into a single Write Request / Write Response.
                         connectionInterval.milliseconds
                     } else {
                         // Long Write: Prepare Write overhead is opcode (1) + handle (2) + offset (2)
                         // = 5 bytes per chunk, followed by one mandatory Execute Write Request/Response.
-                        val chunkCap = min(mtu - 5, l2capMtu - 4)
+                        val chunkCap = min(mtu - 5, llMtu - 4)
                         val chunksNeeded = ceil(value.size.toDouble() / chunkCap)
                         connectionInterval.milliseconds * (chunksNeeded + 1) // +1 for Execute Write
                     }
@@ -312,7 +313,7 @@ class PeripheralSpec<ID: Any> private constructor(
             // (opcode + handle = 3 bytes overhead), but may be split into several link-layer PDUs.
             false -> {
                 // Max payload of a single link-layer PDU (bytes).
-                val payloadPerPdu = min(mtu - 3, l2capMtu - 4)
+                val payloadPerPdu = min(mtu - 3, llMtu - 4)
                 // Time to send a single PDU, including a gap afterward (seconds).
                 // +14 = preamble(1) + access address(4) + LL header(2) + CRC(3) + MIC(4), assuming
                 // an encrypted 1M/2M PHY link; use +10 instead if the link is not encrypted.
@@ -387,7 +388,7 @@ class PeripheralSpec<ID: Any> private constructor(
          *     connectable(
          *         name = "Nordic_Blinky",
          *         maxAttMtu = 247,
-         *         maxL2capMtu = 251,
+         *         maxLlMtu = 251,
          *         // Uncommenting this line switches to a different "connectable" method, which
          *         // makes the peripheral "cached" (there's additional param "cachedServices" to provide).
          *         // In that case, the mock impl assumes, that the peripheral was connected before
@@ -467,7 +468,7 @@ class PeripheralSpec<ID: Any> private constructor(
     }
 
     /**
-     * Simulates the situation when another application on the device tries to connects to the device.
+     * Simulates the situation when another application on the device tries to connect to the device.
      *
      * If the device is already connected, the connections count will be increased. Otherwise,
      * the [PeripheralSpecEventHandler.onConnectionRequest] will be called, and if the connection
@@ -478,11 +479,19 @@ class PeripheralSpec<ID: Any> private constructor(
      *
      * A manager registered for connection event will be notified.
      *
-     * // TODO The preferred PHYs are ignored for now. It is not set as active PHY upon connection.
      * @param phy The PHY used to connect to the peripheral.
+     * @param mtu The ATT MTU negotiated for the connection, defaults to the max ATT MTU
+     * supported by the [PeripheralSpec].
      * @throws IllegalStateException if the peripheral is not connectable.
      */
-    fun simulateConnection(phy: PrimaryPhy = PrimaryPhy.PHY_LE_1M) {
+    fun simulateConnection(
+        phy: PrimaryPhy = PrimaryPhy.PHY_LE_1M,
+        mtu: Int = maxAttMtu ?: ATT_MTU_DEFAULT,
+    ) {
+        // Make sure the device is connectable.
+        val maxAttMtu = this.maxAttMtu ?: return
+        val maxLlMtu = this.maxLlMtu ?: return
+
         // If another client is already connected, just increase the connections count.
         if (isConnected) {
             connectionsCount += 1
@@ -491,7 +500,14 @@ class PeripheralSpec<ID: Any> private constructor(
         // Otherwise, notify the event handler about the connection request.
         val eventHandler = checkNotNull(eventHandler) { "Cannot connect to not connectable device" }
         when (eventHandler.onConnectionRequest(phy)) {
-            is ConnectionResult.Accept -> connectionsCount += 1
+            is ConnectionResult.Accept -> {
+                connectionsCount += 1
+                this.mtu = mtu.coerceIn(23, maxAttMtu)
+                this.llMtu = maxLlMtu
+                if (supportedPhy.contains(phy.toPhy())) {
+                    this.phy = phy.toPhy()
+                } // else defaults to PHY LE 1M
+            }
             else -> {
                 // Do nothing. Assume that the connection request times out.
             }
@@ -805,6 +821,11 @@ class PeripheralSpec<ID: Any> private constructor(
          * @throws IllegalStateException when the device is not connectable.
          */
         suspend fun connect(preferredPhy: List<PrimaryPhy> = listOf(PrimaryPhy.PHY_LE_1M)) {
+            val maxAttMtu = maxAttMtu ?: return
+            val maxLlMtu = this@PeripheralSpec.maxLlMtu ?: return
+            val maxSupportedAttMtu = maxAttMtu.coerceAtMost(environment.maxAttMtu)
+            val maxSupportedLlMtu = maxLlMtu.coerceAtMost(environment.maxLlMtu)
+
             // Event handler will only be null if a device is non-connectable.
             val eventHandler =
                 checkNotNull(eventHandler) { "Cannot connect to not connectable device." }
@@ -816,6 +837,9 @@ class PeripheralSpec<ID: Any> private constructor(
 
                 ConnectionResult.Accept -> {
                     connectionsCount += 1
+                    this@PeripheralSpec.phy = phy.toPhy()
+                    this@PeripheralSpec.llMtu = maxSupportedLlMtu
+                    // TODO set L2CAP MTU to max supported value
                     // Note: onConnectionRequest callback can request MTU, bonding or PHY update.
                     // TODO Make sure these requests are handled after state is reported
                     // TODO This will re-connect all disconnected Peripheral instances.
@@ -1440,7 +1464,7 @@ class PeripheralSpec<ID: Any> private constructor(
             preferredSlaveLatency = preferredSlaveLatency,
             preferredSupervisionTimeout = preferredSupervisionTimeout,
             maxAttMtu = maxAttMtu,
-            maxL2capMtu = maxL2capMtu,
+            maxLlMtu = maxL2capMtu,
             supportedPhy = supportedPhy,
             isInitiallyConnected = isInitiallyConnected,
             isKnown = isKnown,
