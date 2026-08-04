@@ -61,6 +61,14 @@ enum class PrimaryPhy {
         PHY_LE_1M -> "LE 1M"
         PHY_LE_CODED -> "LE Coded"
     }
+
+    /**
+     * Converts the [PrimaryPhy] to [Phy].
+     */
+    fun toPhy(): Phy = when (this) {
+        PHY_LE_1M -> Phy.PHY_LE_1M
+        PHY_LE_CODED -> Phy.PHY_LE_CODED
+    }
 }
 
 infix fun PrimaryPhy.and(phy: PrimaryPhy): List<PrimaryPhy> = listOf(this, phy)
