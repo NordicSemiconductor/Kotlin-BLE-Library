@@ -259,14 +259,6 @@ open class Peripheral(
     /** Current MTU (Maximum Transmission Unit) value. */
     private var mtu: Int = ATT_MTU_DEFAULT
 
-    /**
-     * MTU can be requested only once.
-     *
-     * Since Android 14 the system will always request value 517 ignoring the requested value.
-     * @see requestHighestValueLength
-     */
-    private var mtuRequested: Boolean = false
-
     // Common implementation
 
     /**
@@ -296,21 +288,27 @@ open class Peripheral(
             is CentralManager.ConnectionOptions.AutoConnect -> {
                 try {
                     val state = await(
-                        action = { impl.connect(true, options.automaticallyRequestHighestValueLength, options.opportunistic,emptyList()) },
+                        action = {
+                            impl.connect(
+                                autoConnect = true,
+                                autoMtu = options.automaticallyRequestHighestValueLength,
+                                opportunistic = options.opportunistic
+                            )
+                        },
                         condition = { it.isConnected || it.isDisconnected },
                     )
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger?.info(Layer.GAP) { "Connected to $this" }
+                            if (options.automaticallyRequestHighestValueLength) {
+                                requestHighestValueLength()
+                            }
                             _state.update { ConnectionState.Connected }
                             _connectionParameters.update { ConnectionParameters.Unknown }
                             // Since we're connected, let's start collecting GATT events, including
                             // connection state changes. The device may disconnect and reconnect at
                             // any time. To stop collecting the events one needs to call disconnect().
                             startCollectingGattEvents(closeWhenDisconnected = false)
-                            if (options.automaticallyRequestHighestValueLength && !impl.environment.automaticallyRequestsMtu) {
-                                mtuRequested = true
-                            }
                             initiateConnection()
                         }
                         is ConnectionState.Disconnected -> {
@@ -355,22 +353,28 @@ open class Peripheral(
                 val now = System.currentTimeMillis()
                 try {
                     val state = await(
-                        action = { impl.connect(false, options.automaticallyRequestHighestValueLength, options.opportunistic, options.preferredPhy) },
+                        action = {
+                            impl.connect(
+                                autoConnect = false,
+                                autoMtu = options.automaticallyRequestHighestValueLength,
+                                opportunistic = options.opportunistic,
+                            )
+                        },
                         condition = { it.isConnected || it.isDisconnected },
                         timeout = options.timeout,
                     )
                     when (state) {
                         is ConnectionState.Connected -> {
                             logger?.info(Layer.GAP) { "Connected to $this" }
-                            _state.update { ConnectionState.Connected }
+                            if (options.automaticallyRequestHighestValueLength) {
+                                requestHighestValueLength()
+                            }
+                            _state.update { state }
                             _connectionParameters.update { ConnectionParameters.Unknown }
                             // Since we're connected, let's start collecting GATT events.
                             // In case of a direct connection, a disconnection will cancel
                             // event collection and close the peripheral.
                             startCollectingGattEvents()
-                            if (options.automaticallyRequestHighestValueLength && !impl.environment.automaticallyRequestsMtu) {
-                                mtuRequested = true
-                            }
                             initiateConnection()
                         }
                         is ConnectionState.Disconnected -> {
@@ -432,34 +436,11 @@ open class Peripheral(
         else -> super.handle(event)
     }
 
-    override suspend fun initiateConnection() {
-        // Request high MTU before service discovery.
-        if (mtuRequested) {
-            try {
-                requestHighestValueLength()
-            } catch (_: PeripheralNotConnectedException) {
-                // Skip service discovery if the peripheral got disconnected.
-                return
-            } catch (e: OperationFailedException) {
-                logger?.warn(Layer.GATT, e) { "Requesting MTU failed" }
-            }
-        }
-        // Super implementation will start service discovery it the services are observed.
-        super.initiateConnection()
-    }
-
     override fun handleDisconnection() {
         super.handleDisconnection()
         mtu = ATT_MTU_DEFAULT
         _phy.update { null }
         _connectionParameters.update { null }
-        // Note!
-        // Do not reset the mtuRequested flag here. MTU will be requested again once
-        // the device gets connected, or will be cleared when the peripheral is closed, below.
-    }
-
-    override fun handleClose() {
-        mtuRequested = false
     }
 
     /**
@@ -545,8 +526,9 @@ open class Peripheral(
      * * *ATT MTU - 3 bytes* for [WriteType.WITHOUT_RESPONSE],
      * * *ATT MTU - 15 bytes* for [WriteType.SIGNED] (additional 12 bytes for the signature).
      *
-     * Higher value of ATT MTU for [WriteType.WITHOUT_RESPONSE] can be requested
-     * using [requestHighestValueLength].
+     * Connect with [CentralManager.ConnectionOptions.automaticallyRequestHighestValueLength] to
+     * request maximum supported value length on connection, or use [requestHighestValueLength] to
+     * request it during connection.
      *
      * @throws PeripheralNotConnectedException If the device is not connected.
      */
@@ -588,15 +570,14 @@ open class Peripheral(
      * @see maximumWriteValueLength
      */
     suspend fun requestHighestValueLength() {
-        check(isConnected) {
-            throw PeripheralNotConnectedException()
-        }
+        // If automatic higher value length is requested, this method is called before
+        // the state changes to Connected. This is to make the MTU ready when user gets receives
+        // Connected state. Don't check for isConnected here.
         check(mtu == ATT_MTU_DEFAULT) {
             logger?.warn(Layer.GATT) { "MTU has been already requested" }
             return
         }
-        mtuRequested = true
-        val _ = OperationMutex.withLock {
+        mtu = OperationMutex.withLock {
             logger?.trace(Layer.GATT) { "Requesting MTU: $ATT_MTU_MAX" }
             impl.events
                 .onSubscription {
