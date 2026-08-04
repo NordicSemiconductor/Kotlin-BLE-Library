@@ -100,8 +100,6 @@ private val DEFAULT_MOCK_SCANNER: MockScanner = { Result.success(true) }
  * The permission can be set to true to emulate it being granted in runtime.
  * @property isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is granted.
  * The permission can be set to true to emulate it being granted in runtime.
- * @property isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
- * advertising on LE Coded PHY as Primary PHY.
  * @property issueOnlyOneActiveScan Some early Android devices were sending only one *Scan Request*
  * message for a single device per scan. Non-connectable devices were reported continuously, but
  * connectable devices were reported only once. The client had to stop and start scanning again
