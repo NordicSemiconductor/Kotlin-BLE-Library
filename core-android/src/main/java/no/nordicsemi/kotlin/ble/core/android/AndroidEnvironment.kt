@@ -241,16 +241,6 @@ interface AndroidEnvironment : Environment {
         get() = androidSdkVersion >= SdkVersion.MARSHMALLOW
 
     /**
-     * Whether the connection can be established with PHY LE Coded.
-     *
-     * See: [BluetoothDevice.connectGatt](https://developer.android.com/reference/android/bluetooth/BluetoothDevice#connectGatt(android.bluetooth.BluetoothGattConnectionSettings,%20java.util.concurrent.Executor,%20android.bluetooth.BluetoothGattCallback))
-     */
-    val supportsConnectingWithLeCodedPhy: Boolean
-        // Before Oreo, PHY LE Coded was not supported.
-        // New connectGatt API from Android 17 Cinnamon Bun does not allow to set PHY.
-        get() = androidSdkVersion < SdkVersion.OREO || androidSdkVersion >= SdkVersion.CINNAMON_BUN
-
-    /**
      * Unregisters the broadcast receiver that listens for Bluetooth state changes.
      *
      * This should be called when the environment is no longer needed.

@@ -133,7 +133,7 @@ sealed class MockAndroidEnvironment(
     override val isLeExtendedAdvertisingSupported: Boolean = false,
     override val isLePeriodicAdvertisingSupported: Boolean = false,
     override val leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int = 31,
-    val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
+    isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
     val issueOnlyOneActiveScan: Boolean = false, // Nexus 4 issue
     val issueIncorrectL2capTxMtu: Boolean = false, // Samsung A8 Tab issue
     // TODO add the issue when Samsung S8 fails PHY update, tested with Memfault.
@@ -155,6 +155,8 @@ sealed class MockAndroidEnvironment(
 
     override var isBluetoothAdvertisePermissionGranted: Boolean = isBluetoothAdvertisePermissionGranted
         set(value) { field = field || value && requiresBluetoothRuntimePermissions }
+
+    override val isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported && isScanningOnLeCodedPhySupported
 
     /**
      * Simulates turning on Bluetooth adapter on the mock device.

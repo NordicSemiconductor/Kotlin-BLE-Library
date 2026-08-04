@@ -245,4 +245,8 @@ class NativeAndroidEnvironment private constructor(
     override val isMultipleAdvertisementSupported: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
                 bluetoothManager?.adapter?.isMultipleAdvertisementSupported ?: false
+    override val isScanningOnLeCodedPhySupported: Boolean
+        // This is not exactly true.
+        // There's a lot of devices that don't scan packets sent on LE Coded PHY as Primary PHY.`
+        get() = isLeCodedPhySupported
 }

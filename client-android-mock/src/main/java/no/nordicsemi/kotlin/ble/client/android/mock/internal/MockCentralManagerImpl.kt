@@ -252,9 +252,7 @@ open class MockCentralManagerImpl(
                     }
 
                     // If PHY LE Coded is not supported, ignore results sent with LE Coded PHY.
-                    if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED &&
-                        (!environment.isLeCodedPhySupported || !environment.isScanningOnLeCodedPhySupported)
-                    ) {
+                    if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED && !environment.isScanningOnLeCodedPhySupported) {
                         return@collect
                     }
                     if (result.secondaryPhy == Phy.PHY_LE_CODED && !environment.isLeCodedPhySupported) {
