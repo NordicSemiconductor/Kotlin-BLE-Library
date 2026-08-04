@@ -115,11 +115,13 @@ class MockRemoteDescriptor(
         }
         when (result) {
             is ReadResponse.Success -> {
+                // Bluetooth Core Specification 6.2, Vol 3 (Host), Part F (ATT), 3.2.9. Long attribute values:
+                // "The maximum length of an attribute value shall be 512 octets."
                 val truncatedData = result.value.take(512).toByteArray()
                 // Reading descriptor value takes time depending on the size of the value
                 // and connection parameters.
                 val duration =
-                    peripheralSpec.estimateTransferDuration(truncatedData, true)
+                    peripheralSpec.estimateTransferDuration(truncatedData, isWrite = false)
                 delay(duration)
                 emit(DescriptorRead(
                         descriptor = this@MockRemoteDescriptor,
@@ -205,7 +207,7 @@ class MockRemoteDescriptor(
                         // Writing characteristic value takes time depending on the size of the value
                         // and connection parameters.
                         val duration =
-                            peripheralSpec.estimateTransferDuration(data, true)
+                            peripheralSpec.estimateTransferDuration(data, isWrite = true, withResponse = true)
                         delay(duration)
                         // Validate received data. In case of an incorrect data, throw an exception.
                         val match = truncatedData.contentEquals(result.value)
@@ -236,7 +238,7 @@ class MockRemoteDescriptor(
                     }
 
                     is PrepareWriteResponse.Failure -> {
-                        // The read response is delivered in the next connection interval.
+                        // The write response is delivered in the next connection interval.
                         delay(connectionInterval)
                         emit(CharacteristicWrite(
                             characteristic = this@MockRemoteDescriptor,
@@ -260,10 +262,10 @@ class MockRemoteDescriptor(
                 }
                 when (result) {
                     is WriteResponse.Success -> {
-                        // Reading descriptor value takes time depending on the size of the value
+                        // Writing descriptor value takes time depending on the size of the value
                         // and connection parameters.
                         val duration =
-                            peripheralSpec.estimateTransferDuration(truncatedData, true)
+                            peripheralSpec.estimateTransferDuration(truncatedData, isWrite = true, withResponse = true)
                         delay(duration)
                         emit(DescriptorWrite(
                             descriptor = this@MockRemoteDescriptor,
@@ -275,7 +277,7 @@ class MockRemoteDescriptor(
                             OperationStatus.Busy -> throw OperationFailedException(OperationStatus.Busy)
                             else -> { /* continue */ }
                         }
-                        // The read response is delivered in the next connection interval.
+                        // The write response is delivered in the next connection interval.
                         delay(connectionInterval)
                         emit(DescriptorWrite(
                             descriptor = this@MockRemoteDescriptor,

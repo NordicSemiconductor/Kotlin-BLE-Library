@@ -255,21 +255,26 @@ class PeripheralSpec<ID: Any> private constructor(
         private set
 
     /**
-     * Estimates the duration needed to transfer given data to the peripheral using
-     * a single GATT operation.
+     * Estimates the time it takes to transfer a single Write or Read packet in Bluetooth LE.
      *
-     * This applies to single Write Command, Write Request or Long Write procedures, as well
-     * ass Read and Long Read procedures. It does NOT calculate the total time for transferring
-     * a long packet using multiple writes.
+     * This applies to single Write Command, Write Request or Long Write procedures, as well as
+     * Read and Long Read procedures. It does NOT calculate the total time for transferring a
+     * long packet using multiple writes.
      *
-     * @param value The data to be transferred.
-     * @param withResponse Whether the write with response is used.
+     * @param value the attribute value to be written or read.
+     * @param isWrite whether this is a Read (Read Request / Long Read via Read Blob) as opposed to
+     * a Write (Write Request / Long Write via Prepare Write). Ignored when [withResponse] is
+     * `false`, since only writes can be sent without a response.
+     * @param withResponse whether the operation requires a response (Write Request / Long Write,
+     * or any Read operation). Must be `false` only for Write Command (fire-and-forget writes have
+     * no response; there is no such thing as a "read without response").
      * @return The estimated duration of the transfer.
      * @throws IllegalStateException if the peripheral is not connected.
      */
     internal fun estimateTransferDuration(
         value: ByteArray,
-        withResponse: Boolean,
+        isWrite: Boolean,
+        withResponse: Boolean = true,
     ): Duration {
         val mtu = checkNotNull(mtu) { "Peripheral not connected" }
         val l2capMtu = checkNotNull(l2capMtu)
@@ -277,25 +282,46 @@ class PeripheralSpec<ID: Any> private constructor(
         val connectionInterval = checkNotNull(connectionParameters).connectionIntervalMillis
 
         return when (withResponse) {
-            // Long packets may be split into several Prepare Write or Prepare Read operations.
-            true -> {
-                // Payload per ATT packet (bytes).
-                val payloadPerPacket = min(mtu - 1, l2capMtu - 4)
-                // Number of packets needed.
-                val packetsNeeded = ceil((value.size.toDouble() + 2.0) / payloadPerPacket)
-                connectionInterval.milliseconds * packetsNeeded
+            true -> when (isWrite) {
+                // Read Request / Read Blob Request (Long Read). Both Read Response and Read Blob
+                // Response carry only a 1-byte opcode as overhead, so the payload cap is mtu - 1.
+                // Since the caller already knows value.size, no extra "confirmation" read is
+                // needed once all bytes have been retrieved.
+                false -> {
+                    val payloadPerPdu = min(mtu - 1, l2capMtu - 4)
+                    val pdusNeeded = ceil(value.size.toDouble() / payloadPerPdu)
+                    connectionInterval.milliseconds * pdusNeeded
+                }
+                // Write Request, Indications or Prepare Write + Execute Write (Long Write).
+                true -> {
+                    // Write Request overhead: opcode (1) + handle (2) = 3 bytes.
+                    val singlePduCap = min(mtu - 3, l2capMtu - 4)
+                    if (value.size <= singlePduCap) {
+                        // Fits into a single Write Request / Write Response.
+                        connectionInterval.milliseconds
+                    } else {
+                        // Long Write: Prepare Write overhead is opcode (1) + handle (2) + offset (2)
+                        // = 5 bytes per chunk, followed by one mandatory Execute Write Request/Response.
+                        val chunkCap = min(mtu - 5, l2capMtu - 4)
+                        val chunksNeeded = ceil(value.size.toDouble() / chunkCap)
+                        connectionInterval.milliseconds * (chunksNeeded + 1) // +1 for Execute Write
+                    }
+                }
             }
-            // Single write without response (on a notification) fits into a single ATT packet,
-            // but may be split into several L2CAP packets, which may take more than one connection interval.
+            // Write Command and Notifications fit into a single ATT PDU
+            // (opcode + handle = 3 bytes overhead), but may be split into several link-layer PDUs.
             false -> {
-                // Max payload of a single L2CAP packet (bytes).
-                val payloadPerL2capPacket = min(mtu - 1, l2capMtu - 4)
-                // Time to send a single L2CAP packet, including a gap afterward (seconds).
-                val timePerPacket =
-                    (payloadPerL2capPacket + 14) * 8 / phy.rate() + 0.00015 // seconds
-                // Approximate time needed to send all L2CAP packets.
-                val l2capPacketsNeeded = (value.size + 2.0) / payloadPerL2capPacket
-                timePerPacket.seconds * l2capPacketsNeeded
+                // Max payload of a single link-layer PDU (bytes).
+                val payloadPerPdu = min(mtu - 3, l2capMtu - 4)
+                // Time to send a single PDU, including a gap afterward (seconds).
+                // +14 = preamble(1) + access address(4) + LL header(2) + CRC(3) + MIC(4), assuming
+                // an encrypted 1M/2M PHY link; use +10 instead if the link is not encrypted.
+                // Note: this linear model does not hold for LE Coded PHY (S=2/S=8), which has a
+                // different packet structure (FEC block, CI, TERM1/TERM2).
+                val timePerPdu = (payloadPerPdu + 14) * 8 / phy.rate() + 0.00015 // seconds
+                // Approximate time needed to send all PDUs.
+                val pdusNeeded = value.size / payloadPerPdu.toDouble()
+                timePerPdu.seconds * pdusNeeded
             }
         }
     }
@@ -531,7 +557,7 @@ class PeripheralSpec<ID: Any> private constructor(
 
         // Notify clients that the value has changed.
         scope.launch {
-            val transferDuration = estimateTransferDuration(value, withResponse = false)
+            val transferDuration = estimateTransferDuration(value, isWrite = true, withResponse = false)
             delay(transferDuration)
 
             // If any client is still connected, emit the event.
