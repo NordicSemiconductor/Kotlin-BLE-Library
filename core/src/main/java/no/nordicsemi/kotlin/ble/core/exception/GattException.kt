@@ -37,4 +37,5 @@ package no.nordicsemi.kotlin.ble.core.exception
 open class GattException: Exception {
     constructor(): super("GATT error")
     constructor(message: String): super(message)
+    constructor(message: String, cause: Throwable?): super(message, cause)
 }

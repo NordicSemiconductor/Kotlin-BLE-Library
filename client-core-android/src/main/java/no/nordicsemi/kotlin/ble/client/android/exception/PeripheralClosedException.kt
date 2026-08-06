@@ -40,4 +40,4 @@ import no.nordicsemi.kotlin.ble.client.android.Peripheral
  * This exception is thrown from [Peripheral.refreshCache] when the underlying GATT
  * object is null.
  */
-class PeripheralClosedException: BluetoothException()
+class PeripheralClosedException: BluetoothException("Peripheral is closed")
