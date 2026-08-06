@@ -62,6 +62,8 @@ import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.ScanResult
+import no.nordicsemi.kotlin.ble.client.android.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
@@ -85,20 +87,23 @@ class ScannerViewModel @Inject constructor(
 ): ViewModel() {
     val state = centralManager.state
 
-    private val _peripherals: MutableStateFlow<List<Peripheral>> = MutableStateFlow(
+    private val _peripherals: MutableStateFlow<List<ScanResult>> = MutableStateFlow(
         listOf(
             // Note: It's not possible to connect to PreviewPeripheral instances.
             //       An exception is thrown, that it was obtained using a different CentralManager.
             // TODO Allow it?
-            PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
-                .apply {
-                    // Track state of each peripheral.
-                    // Note, that the states are observed using the view model scope, even when the
-                    // device isn't connected.
-                    observePeripheralState(this, scope)
-                    // Track bond state of each peripheral.
-                    observeBondState(this, scope)
-                }
+            MockScanResult(
+                peripheral = PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
+                    .apply {
+                        // Track state of each peripheral.
+                        // Note, that the states are observed using the view model scope, even when the
+                        // device isn't connected.
+                        observePeripheralState(this, scope)
+                        // Track bond state of each peripheral.
+                        observeBondState(this, scope)
+                    },
+                isConnectable = true,
+            )
         )
     )
     val peripherals = _peripherals.asStateFlow()
@@ -132,13 +137,16 @@ class ScannerViewModel @Inject constructor(
                 _isScanning.update { true }
             }
             .distinctByPeripheral()
-            .map { it.peripheral }
-            .filterNot { _peripherals.value.contains(it) }
-            //.distinct()
-            .onEach { newPeripheral ->
-                Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
-                _peripherals.update { peripherals.value + newPeripheral }
+            .filterNot { result ->
+                _peripherals.value.any { it.peripheral == result.peripheral }
             }
+            //.distinct()
+            .onEach { result ->
+                val newPeripheral = result.peripheral
+                Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address}), connectable: ${result.isConnectable}")
+                _peripherals.update { peripherals.value + result }
+            }
+            .map { it.peripheral }
             .onEach { peripheral ->
                 // Track state of each peripheral.
                 // Note, that the states are observed using the view model scope, even when the

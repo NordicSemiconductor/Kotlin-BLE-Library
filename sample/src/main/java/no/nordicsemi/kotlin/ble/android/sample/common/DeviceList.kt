@@ -65,12 +65,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.android.sample.theme.Nordic
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.ScanResult
+import no.nordicsemi.kotlin.ble.client.android.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
@@ -78,7 +81,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeviceList(
-    devices: List<Peripheral>,
+    results: List<ScanResult>,
     onItemClick: (Peripheral) -> Unit,
     onBondRequested: (Peripheral) -> Unit,
     onRemoveBondRequested: (Peripheral) -> Unit,
@@ -94,15 +97,16 @@ fun DeviceList(
         verticalArrangement = verticalArrangement,
         contentPadding = contentPadding,
     ) {
-        items(devices) { peripheral ->
+        items(results) { result ->
             DeviceItem(
-                peripheral = peripheral,
-                onClick = { onItemClick(peripheral) },
-                onBondRequested = { onBondRequested(peripheral) },
-                onRemoveBondRequested = { onRemoveBondRequested(peripheral) },
-                onClearCacheRequested = { onClearCacheRequested(peripheral) },
-                onReadRssi = { onReadRssi(peripheral) },
-                onReadPhy = { onReadPhy(peripheral) },
+                peripheral = result.peripheral,
+                onClick = { onItemClick(result.peripheral) },
+                enabled = result.isConnectable != false,
+                onBondRequested = { onBondRequested(result.peripheral) },
+                onRemoveBondRequested = { onRemoveBondRequested(result.peripheral) },
+                onClearCacheRequested = { onClearCacheRequested(result.peripheral) },
+                onReadRssi = { onReadRssi(result.peripheral) },
+                onReadPhy = { onReadPhy(result.peripheral) },
             )
         }
     }
@@ -112,6 +116,7 @@ fun DeviceList(
 fun DeviceItem(
     peripheral: Peripheral,
     onClick: () -> Unit,
+    enabled: Boolean,
     onBondRequested: () -> Unit,
     onRemoveBondRequested: () -> Unit,
     onClearCacheRequested: () -> Unit,
@@ -133,15 +138,23 @@ fun DeviceItem(
         )
         ElevatedCard(
             onClick = onClick,
+            enabled = enabled,
             colors = CardDefaults.elevatedCardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             )
         ) {
             ListItem(
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
                 ),
-                headlineContent = { Text(text = peripheral.name ?: "Unknown device") },
+                headlineContent = {
+                    Text(
+                        text = peripheral.name ?: "Unknown device",
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
                 supportingContent = { Text(text = peripheral.address) },
                 leadingContent = {
                     Icon(
@@ -207,31 +220,54 @@ fun DeviceItem(
     }
 }
 
-@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     AppTheme {
         val scope = rememberCoroutineScope()
         DeviceList(
             modifier = Modifier.fillMaxWidth(),
-            devices = listOf(
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "AA:BB:CC:DD:EE:FF",
-                    name = "Mock device 1",
-                    state = ConnectionState.Connected,
-                    hasBondInformation = true,
+            results = listOf(
+                MockScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "AA:BB:CC:DD:EE:01",
+                        name = "Mock device 1",
+                        state = ConnectionState.Connected,
+                        hasBondInformation = true,
+                    ),
+                    rssi = -30,
+                    isConnectable = true,
                 ),
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "00:11:22:33:44:55",
-                    name = "Mock device 2",
-                    state = ConnectionState.Connecting
+                MockScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "AA:BB:CC:DD:EE:02",
+                        name = "Mock device 2",
+                        state = ConnectionState.Connecting,
+                    ),
+                    rssi = -50,
+                    isConnectable = true,
                 ),
-                PreviewPeripheral(
-                    scope = scope,
-                    address = "AA:BB:CC:DD:EE:00",
-                    name = "Mock device 3"
+                MockScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "AA:BB:CC:DD:EE:03",
+                        name = "Mock device 3",
+                        state = ConnectionState.Disconnected(),
+                    ),
+                    rssi = -70,
+                    isConnectable = true,
+                ),
+                MockScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "AA:BB:CC:DD:EE:04",
+                        name = "Non-connectable Mock device 4",
+                        state = ConnectionState.Disconnected(),
+                    ),
+                    rssi = -90,
+                    isConnectable = false,
                 ),
             ),
             onItemClick = {},
