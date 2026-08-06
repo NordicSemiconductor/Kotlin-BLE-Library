@@ -31,65 +31,76 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.common
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 
 @Composable
 fun DeviceActions(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
     isBonded: Boolean,
     onBondRequested: () -> Unit,
     onRemoveBondRequested: () -> Unit,
     onClearCacheRequested: () -> Unit,
+    onReadRssi: () -> Unit,
+    onReadPhy: () -> Unit,
 ) {
     val environment = LocalEnvironmentOwner.current
-
-    Column {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Button(
-                onClick = onBondRequested,
-                enabled = !isBonded,
-            ) {
-                Text("Pair", maxLines = 1)
-            }
-            Button(
-                onClick = onRemoveBondRequested,
-                enabled = isBonded && environment.allowsBondRemoval,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                ),
-            ) {
-                Text("Forget", maxLines = 1)
-            }
-            Button(
-                onClick = onClearCacheRequested,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error,
-                    contentColor = MaterialTheme.colorScheme.onError
-                ),
-            ) {
-                Text("Refresh", maxLines = 1)
-            }
-        }
-        if (isBonded && !environment.allowsBondRemoval) {
-            Text(
-                text = "Note: On this platform forgetting bond information is only possible from system settings.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest
+    ) {
+        DropdownMenuItem(
+            text = { Text(text = "Bond") },
+            enabled = !isBonded,
+            onClick = {
+                onBondRequested()
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            enabled = isBonded && environment.allowsBondRemoval,
+            text = { Text(text = "Remove bond") },
+            onClick = {
+                onRemoveBondRequested()
+                onDismissRequest()
+            },
+            colors = MenuDefaults.itemColors(
+                textColor = MaterialTheme.colorScheme.error,
+                leadingIconColor = MaterialTheme.colorScheme.error,
+            ),
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(text = "Clear cache") },
+            onClick = {
+                onClearCacheRequested()
+                onDismissRequest()
+            },
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(text = "Read RSSI") },
+            onClick = {
+                onReadRssi()
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(text = "Read PHY") },
+            onClick = {
+                onReadPhy()
+                onDismissRequest()
+            },
+        )
     }
 }
 

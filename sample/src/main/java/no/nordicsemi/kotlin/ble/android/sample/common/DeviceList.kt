@@ -31,33 +31,45 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.common
 
+import android.content.res.Configuration
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.ElevatedButton
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
+import no.nordicsemi.kotlin.ble.android.sample.theme.Nordic
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.BondState
@@ -71,6 +83,8 @@ fun DeviceList(
     onBondRequested: (Peripheral) -> Unit,
     onRemoveBondRequested: (Peripheral) -> Unit,
     onClearCacheRequested: (Peripheral) -> Unit,
+    onReadRssi: (Peripheral) -> Unit,
+    onReadPhy: (Peripheral) -> Unit,
     modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(8.dp),
     contentPadding: PaddingValues = PaddingValues(0.dp),
@@ -80,13 +94,15 @@ fun DeviceList(
         verticalArrangement = verticalArrangement,
         contentPadding = contentPadding,
     ) {
-        items(devices) { device ->
+        items(devices) { peripheral ->
             DeviceItem(
-                device = device,
-                onClick = { onItemClick(device) },
-                onBondRequested = { onBondRequested(device) },
-                onRemoveBondRequested = { onRemoveBondRequested(device) },
-                onClearCacheRequested = { onClearCacheRequested(device) },
+                peripheral = peripheral,
+                onClick = { onItemClick(peripheral) },
+                onBondRequested = { onBondRequested(peripheral) },
+                onRemoveBondRequested = { onRemoveBondRequested(peripheral) },
+                onClearCacheRequested = { onClearCacheRequested(peripheral) },
+                onReadRssi = { onReadRssi(peripheral) },
+                onReadPhy = { onReadPhy(peripheral) },
             )
         }
     }
@@ -94,61 +110,104 @@ fun DeviceList(
 
 @Composable
 fun DeviceItem(
-    device: Peripheral,
+    peripheral: Peripheral,
     onClick: () -> Unit,
     onBondRequested: () -> Unit,
     onRemoveBondRequested: () -> Unit,
     onClearCacheRequested: () -> Unit,
+    onReadRssi: () -> Unit,
+    onReadPhy: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column {
-        val state by device.state.collectAsStateWithLifecycle()
+    Column(
+        modifier = modifier,
+    ) {
+        val state by peripheral.state.collectAsStateWithLifecycle()
         val animatedColor by animateColorAsState(
             targetValue = when (state) {
-                is ConnectionState.Connected -> Color.Green
-                is ConnectionState.Connecting -> Color.Gray
-                else -> contentColorFor(backgroundColor = MaterialTheme.colorScheme.surface)
+                is ConnectionState.Connected -> Nordic.Color.Blue
+                is ConnectionState.Connecting -> Nordic.Color.Sky
+                else -> MaterialTheme.colorScheme.surfaceVariant
             },
             label = "background color animation"
         )
-        ElevatedButton(
+        ElevatedCard(
             onClick = onClick,
-            modifier = modifier,
+            colors = CardDefaults.elevatedCardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            )
         ) {
-            Text(text = device.name ?: "Unknown device")
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                imageVector = Icons.Default.Info,
-                contentDescription = "Icon",
-                tint = animatedColor
+            ListItem(
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                ),
+                headlineContent = { Text(text = peripheral.name ?: "Unknown device") },
+                supportingContent = { Text(text = peripheral.address) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Nordic.Icons.Bluetooth,
+                        contentDescription = "Device Icon",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                            .background(animatedColor)
+                            .padding(4.dp),
+                    )
+                },
+                trailingContent = {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val bondState by peripheral.bondState.collectAsStateWithLifecycle()
+                        val isBonded = bondState == BondState.BONDED
+                        if (isBonded) {
+                            Icon(
+                                imageVector = Nordic.Icons.Encrypted,
+                                contentDescription = "Bonded",
+                            )
+                        }
+                        var menuOpen by remember { mutableStateOf(false) }
+                        IconButton(
+                            onClick = { menuOpen = true }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Menu",
+                            )
+                        }
+                        DeviceActions(
+                            expanded = menuOpen,
+                            onDismissRequest = { menuOpen = false },
+                            isBonded = isBonded,
+                            onBondRequested = onBondRequested,
+                            onRemoveBondRequested = onRemoveBondRequested,
+                            onClearCacheRequested = onClearCacheRequested,
+                            onReadRssi = onReadRssi,
+                            onReadPhy = onReadPhy,
+                        )
+                    }
+                }
             )
         }
         if (state.isConnected) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp),
+                    .padding(start = 16.dp, top = 8.dp),
             ) {
                 Column(
                     modifier = Modifier.padding(8.dp)
                 ) {
-                    val services by device.services().collectAsStateWithLifecycle()
-                    val bondState by device.bondState.collectAsStateWithLifecycle()
+                    val services by peripheral.services().collectAsStateWithLifecycle()
                     DeviceServices(services = services)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    DeviceActions(
-                        isBonded = bondState == BondState.BONDED,
-                        onBondRequested = onBondRequested,
-                        onRemoveBondRequested = onRemoveBondRequested,
-                        onClearCacheRequested = onClearCacheRequested,
-                    )
                 }
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun GreetingPreview() {
     val scope = rememberCoroutineScope()

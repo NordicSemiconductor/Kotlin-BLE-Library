@@ -124,6 +124,8 @@ fun ScannerScreen() {
                 onBondRequested = vm::onBondRequested,
                 onRemoveBondRequested = vm::onRemoveBondRequested,
                 onClearCacheRequested = vm::onClearCacheRequested,
+                onRssiRead = vm::onRssiRead,
+                onReadPhy = vm::onReadPhy,
             )
         } else {
             Button(

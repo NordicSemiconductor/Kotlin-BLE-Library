@@ -272,6 +272,30 @@ class ScannerViewModel @Inject constructor(
         }
     }
 
+    fun onRssiRead(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                Timber.i("Reading RSSI...")
+                val rssi = peripheral.readRssi()
+                Timber.i("RSSI: $rssi dBm")
+            } catch (e: Exception) {
+                Timber.e(e, "Reading RSSI failed")
+            }
+        }
+    }
+
+    fun onReadPhy(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                Timber.i("Reading PHY...")
+                val phy = peripheral.readPhy()
+                Timber.i("PHY: $phy")
+            } catch (e: Exception) {
+                Timber.e(e, "Reading PHY failed")
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         centralManager.close()
@@ -503,7 +527,7 @@ class ScannerViewModel @Inject constructor(
 
                     is ConnectionState.Disconnected -> {
                         // Just for testing, wait with cancelling the scope to get all the logs.
-                        delay(500)
+                        delay(500.milliseconds)
                         // Cancel connection scope, so that previously launched jobs are canceled.
                         connectionScopeMap.remove(peripheral)?.cancel()
                     }
