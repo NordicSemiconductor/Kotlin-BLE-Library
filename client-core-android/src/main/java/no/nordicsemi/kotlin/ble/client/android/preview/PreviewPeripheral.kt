@@ -117,7 +117,7 @@ private class StubExecutor(
     hasBondInformation: Boolean,
 ): Peripheral.Executor {
     override var logger: Log.Sink<Layer>? = Log.Sink.Null
-    private val _events = MutableSharedFlow<GattEvent>(replay = 1)
+    private val _events = MutableSharedFlow<GattEvent>(extraBufferCapacity = 64)
     override val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
     private val _bondState = MutableStateFlow(if (hasBondInformation) BondState.BONDED else BondState.NONE)
