@@ -402,7 +402,7 @@ private class StubRemoteDescriptor(
 open class PreviewPeripheral(
     scope: CoroutineScope,
     address: String = "00:11:22:33:44:55",
-    name: String? = "My Device",
+    name: String? = "Mock Device",
     type: PeripheralType = PeripheralType.LE,
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.PHY_LE_1M,
