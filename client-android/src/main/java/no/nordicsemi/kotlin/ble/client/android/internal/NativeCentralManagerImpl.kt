@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("UnusedReceiverParameter", "unused")
-
 package no.nordicsemi.kotlin.ble.client.android.internal
 
 import android.bluetooth.BluetoothDevice
@@ -339,7 +337,7 @@ internal class NativeCentralManagerImpl(
                             ).also { p -> p.logger = logger }
                         }
                     }
-                ) ?: return
+                )
 
                 // Check other filters that cannot be checked by the controller.
                 if (filters?.match(scanResult) == false) return

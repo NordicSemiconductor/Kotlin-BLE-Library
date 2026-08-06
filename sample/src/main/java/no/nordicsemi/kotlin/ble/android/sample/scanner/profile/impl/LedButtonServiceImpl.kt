@@ -206,7 +206,7 @@ class LedButtonServiceImpl(
                 try {
                     withTimeout(LedButtonProfile.LONG_PRESS_TIMEOUT) {
                         // Await the button to be released before the timeout.
-                        button.drop(1).filter { !it }.first()
+                        button.drop(1).first { !it }
                     }
                 } catch (_: TimeoutCancellationException) {
                     // Button has not been released before the time runed out.

@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.core
 
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason.Cancelled

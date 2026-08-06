@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.environment.android.compose
 
 import android.os.Build
@@ -94,10 +92,10 @@ object LocalEnvironmentOwner {
             val context = LocalContext.current
             return try {
                 NativeAndroidEnvironment.getInstance(context, isNeverForLocationFlagSet = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            } catch (e: NoClassDefFoundError) {
+            } catch (_: NoClassDefFoundError) {
                 try {
                     LatestApi()
-                } catch (e: NoClassDefFoundError) {
+                } catch (_: NoClassDefFoundError) {
                     error("Android environment not specified, add dependency to the native or mock env.")
                 }
             }
@@ -121,7 +119,7 @@ object LocalEnvironmentOwner {
         // Both Mock and Native implementations are added with "compileOnly" as optional dependencies.
         // Let's check if the mock implementation is available.
         val isMock = try { environment is MockAndroidEnvironment }
-        catch (e: NoClassDefFoundError) { false }
+        catch (_: NoClassDefFoundError) { false }
 
         if (isMock && (environment is MockAndroidEnvironment)) {
             // Modify the LocalActivityResultRegistryOwner only in the mock environment.

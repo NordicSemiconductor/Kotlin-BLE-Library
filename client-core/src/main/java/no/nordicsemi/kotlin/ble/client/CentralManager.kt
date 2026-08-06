@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
-
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.CancellationException

@@ -47,7 +47,6 @@ import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
  * @param forceLegacy If set to true, the legacy implementation will be used on Android O and newer.
  * @return Instance of [BluetoothLeAdvertiser].
  */
-@Suppress("unused")
 fun BluetoothLeAdvertiser.Factory.native(
     environment: NativeAndroidEnvironment,
     forceLegacy: Boolean = false

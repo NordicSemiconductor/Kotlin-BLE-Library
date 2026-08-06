@@ -31,14 +31,14 @@
 
 @file:Suppress("unused")
 
-package no.nordicsemi.kotlin.ble.core;
+package no.nordicsemi.kotlin.ble.core
 
 import kotlin.experimental.or
 
 /**
  * An enum with AD Flag values.
  *
- * @property value The flag bit mask.
+ * @property mask The flag bit mask.
  */
 enum class AdvertisingDataFlag(val mask: Byte) {
     LE_LIMITED_DISCOVERABLE_MODE(0b00000001),
