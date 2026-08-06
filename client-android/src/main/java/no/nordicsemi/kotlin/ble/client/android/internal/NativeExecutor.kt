@@ -43,18 +43,20 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.core.ATT_MTU_DEFAULT
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
+import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
-import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import no.nordicsemi.kotlin.log.Log
 import org.jetbrains.annotations.Range
+import java.lang.reflect.InvocationTargetException
 import kotlin.uuid.Uuid
 
 /**
@@ -150,8 +152,7 @@ internal class NativeExecutor(
             logger?.d(Layer.GATT) { "gatt.discoverServices()" }
             val result = gatt.discoverServices()
             if (!result) {
-                logger?.w(Layer.GATT) { "Discovering services failed" }
-                return false
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
             return true
         }
@@ -161,26 +162,25 @@ internal class NativeExecutor(
     override suspend fun createBond(): Boolean {
         // `createBond` was hidden in Android 4.3, but available using reflection.
         // https://android.googlesource.com/platform/frameworks/base/+/android-4.3_r1/core/java/android/bluetooth/BluetoothDevice.java
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        // It was exposed in Android 4.4. KitKat.
+        val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             logger?.d(Layer.SMP) { "device.createBond()" }
-            val result = bluetoothDevice.createBond()
-            if (!result) {
-                logger?.w(Layer.SMP) { "Creating bond failed" }
-                return false
-            }
-            return true
+            bluetoothDevice.createBond()
         } else {
-            // `createBond()` was exposed in Android 4.4. KitKat:
-            return try {
+            try {
                 logger?.d(Layer.SMP) { "device.createBond() (hidden)" }
                 val method = BluetoothDevice::class.java.getMethod("createBond")
                 method.invoke(bluetoothDevice) as Boolean
+            } catch (e: SecurityException) {
+                throw e
             } catch (e: Exception) {
-                val reason = e.cause?.message ?: e.message
-                logger?.warn(Layer.SMP, e) { "Bonding failed${reason?.let { ": $it" } ?: ""}" }
-                false
+                throw OperationFailedException(OperationStatus.RequestNotSupported, e)
             }
         }
+        if (!result) {
+            throw OperationFailedException(OperationStatus.RequestFailed)
+        }
+        return true
     }
 
     override suspend fun removeBond(): Boolean {
@@ -193,30 +193,40 @@ internal class NativeExecutor(
             logger?.d(Layer.SMP) { "device.removeBond() (hidden)" }
             val method = BluetoothDevice::class.java.getMethod("removeBond")
             method.invoke(bluetoothDevice) as Boolean
+        } catch (e: SecurityException) {
+            throw e
+        } catch (e: InvocationTargetException) {
+            // Android 17+ throws SecurityException if BLUETOOTH_PRIVILEGED permission is not granted.
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && e.targetException is SecurityException) {
+                throw e.targetException
+            }
+            throw OperationFailedException(OperationStatus.RequestNotSupported, e)
         } catch (e: Exception) {
-            val reason = e.cause?.message ?: e.message
-            logger?.warn(Layer.SMP, e) { "Failed to remove bond information${reason?.let { ": $it" } ?: ""}" }
-            false
+            throw OperationFailedException(OperationStatus.RequestNotSupported, e)
         }
-        return result
+        if (!result) {
+            throw OperationFailedException(OperationStatus.RequestFailed)
+        }
+        return true
     }
 
     override suspend fun refreshCache(): Boolean {
         gatt?.let { gatt ->
             val result = try {
-                logger?.d(Layer.GATT) { "gatt.refresh() (hidden)"}
+                logger?.d(Layer.GATT) { "gatt.refresh() (hidden)" }
                 val method = BluetoothGatt::class.java.getMethod("refresh")
                 method.invoke(gatt) as Boolean
+            } catch (e: SecurityException) {
+                throw e
             } catch (e: Exception) {
-                val reason = e.cause?.message ?: e.message
-                logger?.warn(Layer.GATT, e) { "Refreshing GATT cache failed${reason?.let { ": $it" } ?: ""}" }
-                false
+                throw OperationFailedException(OperationStatus.RequestNotSupported, e)
             }
-            if (result) {
-                // There is no callback for services invalidated.
-                gattCallback.onServiceChanged(gatt)
-                return true
+            if (!result) {
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
+            // There is no callback for services invalidated.
+            gattCallback.onServiceChanged(gatt)
+            return true
         }
         return false
     }
@@ -227,8 +237,7 @@ internal class NativeExecutor(
                 logger?.d(Layer.LINK) { "gatt.requestConnectionPriority(${priority.toPriority()})" }
                 val result = gatt.requestConnectionPriority(priority.toPriority())
                 if (!result) {
-                    logger?.w(Layer.LINK) { "Requesting connection priority failed" }
-                    return false
+                    throw OperationFailedException(OperationStatus.RequestFailed)
                 }
             }
 
@@ -244,11 +253,10 @@ internal class NativeExecutor(
     override suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean {
         gatt?.let { gatt ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                logger?.d(Layer.LINK) { "gatt.requestMtu($mtu)" }
+                logger?.d(Layer.GATT) { "gatt.requestMtu($mtu)" }
                 val result = gatt.requestMtu(mtu)
                 if (!result) {
-                    logger?.w(Layer.LINK) { "Requesting MTU failed" }
-                    return false
+                    throw OperationFailedException(OperationStatus.RequestFailed)
                 }
             } else {
                 gattCallback.onMtuChanged(gatt, ATT_MTU_DEFAULT, BluetoothGatt.GATT_SUCCESS)
@@ -298,8 +306,7 @@ internal class NativeExecutor(
             val result = gatt.beginReliableWrite()
                 .also { isReliableWriteEnabled = it }
             if (!result) {
-                logger?.w(Layer.GATT) { "Initiating reliable write failed" }
-                return false
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
             return true
         }
@@ -309,10 +316,9 @@ internal class NativeExecutor(
     override suspend fun executeReliableWrite(): Boolean {
         gatt?.let { gatt ->
             logger?.d(Layer.GATT) { "gatt.executeReliableWrite()" }
-             val result = gatt.executeReliableWrite()
+            val result = gatt.executeReliableWrite()
             if (!result) {
-                logger?.w(Layer.GATT) { "Executing reliable write failed" }
-                return false
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
             return true
         }
@@ -339,8 +345,7 @@ internal class NativeExecutor(
             logger?.d(Layer.LINK) { "gatt.readRemoteRssi()" }
             val result = gatt.readRemoteRssi()
             if (!result) {
-                logger?.w(Layer.LINK) { "Reading RSSI failed" }
-                return false
+                throw OperationFailedException(OperationStatus.RequestFailed)
             }
             return true
         }

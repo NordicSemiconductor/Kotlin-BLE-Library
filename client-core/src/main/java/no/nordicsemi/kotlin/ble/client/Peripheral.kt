@@ -68,7 +68,6 @@ import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Environment
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
-import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.internal.withCallSite
@@ -206,6 +205,8 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * The result should be reported by emitting [ServicesDiscovered] event to [events] flow.
          * @param uuids An optional list of service UUIDs to filter the results.
          * @return True if service discovery was requested successfully; false otherwise.
+         * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+         * @throws OperationFailedException If the operation failed due to a platform error.
          */
         @IgnorableReturnValue
         suspend fun discoverServices(uuids: List<Uuid>): Boolean
@@ -217,6 +218,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          *
          * @return True if RSSI was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
+         * @throws OperationFailedException If the operation failed due to a platform error.
          */
         @IgnorableReturnValue
         suspend fun readRssi(): Boolean
@@ -517,7 +519,14 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                 }
                 logger?.trace(Layer.GATT) { "Discovering services" }
                 _services.update { RemoteServices.Discovering }
-                impl.discoverServices(uuids)
+                try {
+                    if (!impl.discoverServices(uuids)) {
+                        throw PeripheralNotConnectedException()
+                    }
+                } catch (e: Exception) {
+                    logger?.error(Layer.GATT) { "Discovering services failed: ${e.message}" }
+                    throw e
+                }
             }
         }
     }
@@ -1451,19 +1460,21 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
      */
     suspend fun readRssi(): Int = withCallSite("readRssi") {
-        check (isConnected) {
-            throw PeripheralNotConnectedException()
-        }
         OperationMutex.withLock {
-            logger?.trace(Layer.LINK) { "Reading RSSI" }
             impl.events
                 .onSubscription {
-                    if (!impl.readRssi()) {
-                        throw OperationFailedException(OperationStatus.RequestFailed)
+                    logger?.trace(Layer.LINK) { "Reading RSSI" }
+                    try {
+                        if (!isConnected || !impl.readRssi()) {
+                            throw PeripheralNotConnectedException()
+                        }
+                    } catch (e: Exception) {
+                        logger?.error(Layer.LINK) { "Reading RSSI failed: ${e.message}" }
+                        throw e
                     }
                 }
                 .takeWhile { !it.isDisconnectionEvent }
-                .filterIsInstance(RssiRead::class)
+                .filterIsInstance<RssiRead>()
                 // TODO add .timeout(...)?
                 .firstOrNull()?.rssi
                 ?.also { logger?.info(Layer.LINK) { "RSSI read: $it dBm" } }
