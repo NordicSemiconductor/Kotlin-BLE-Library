@@ -58,6 +58,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.android.sample.view.ExposedDropdownMenu
 import no.nordicsemi.kotlin.ble.android.sample.view.LabeledSwitch
 import no.nordicsemi.kotlin.ble.android.sample.view.Title
@@ -69,7 +70,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.TxPowerLevel
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
-import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
 import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
@@ -317,11 +318,13 @@ fun AdvertiserView(
 @Preview(showBackground = true)
 @Composable
 private fun PreviewAdvertiserScreen() {
-    AdvertiserView(
-        isAdvertising = false,
-        onStartClicked = { },
-        onStopClicked = { },
-        errorMessage = "Error!",
-        environment = MockAndroidEnvironment.Api31()
-    )
+    AppTheme {
+        AdvertiserView(
+            isAdvertising = false,
+            onStartClicked = { },
+            onStopClicked = { },
+            errorMessage = "Error!",
+            environment = LatestApi()
+        )
+    }
 }

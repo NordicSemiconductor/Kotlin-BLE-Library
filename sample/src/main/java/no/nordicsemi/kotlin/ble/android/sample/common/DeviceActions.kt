@@ -107,10 +107,16 @@ fun DeviceActions(
 @Preview
 @Composable
 private fun DeviceActionsPreview() {
-    DeviceActions(
-        isBonded = false,
-        onBondRequested = {},
-        onRemoveBondRequested = {},
-        onClearCacheRequested = {},
-    )
+    AppTheme {
+        DeviceActions(
+            expanded = true,
+            onDismissRequest = {},
+            isBonded = false,
+            onBondRequested = {},
+            onRemoveBondRequested = {},
+            onClearCacheRequested = {},
+            onReadRssi = {},
+            onReadPhy = {},
+        )
+    }
 }

@@ -42,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 
 @Composable
 fun LabeledSwitch(
@@ -79,13 +80,15 @@ fun LabeledSwitch(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 private fun SwitchPreview() {
-    LabeledSwitch(
-        title = "Switch",
-        enabled = true,
-        checked = false,
-        onCheckedChange = {},
-    )
+    AppTheme {
+        LabeledSwitch(
+            title = "Switch",
+            enabled = true,
+            checked = false,
+            onCheckedChange = {},
+        )
+    }
 }

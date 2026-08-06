@@ -47,6 +47,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
@@ -163,59 +164,79 @@ private fun Modifier.indent(strokeWidth: Dp = 12.dp, color: Color): Modifier {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDeviceServices_discovery() {
-    DeviceServices(RemoteServices.Discovering)
+    AppTheme {
+        DeviceServices(RemoteServices.Discovering)
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDeviceServices() {
-    DeviceServices(
-        RemoteServices.Discovered(
-            services = listOf(
-                PreviewRemoteService(0x1800) {
-                    Characteristic(0x2A00, CharacteristicProperty.NOTIFY) {
-                        CharacteristicUserDescriptionDescriptor("Example")
-                    }
-                    Characteristic(0x2A01)
-                },
-                PreviewRemoteService(0x1801),
-                // LED Button Service
-                PreviewRemoteService(
-                    uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123"),
-                ) {
-                    // Button Characteristic
-                    Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
-                    // LED Characteristic
-                    Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
-                    // Another LED Button Service inside! What a surprise!
-                    IncludedService(
-                        uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+    AppTheme {
+        DeviceServices(
+            RemoteServices.Discovered(
+                services = listOf(
+                    PreviewRemoteService(0x1800) {
+                        Characteristic(0x2A00, CharacteristicProperty.NOTIFY) {
+                            CharacteristicUserDescriptionDescriptor("Example")
+                        }
+                        Characteristic(0x2A01)
+                    },
+                    PreviewRemoteService(0x1801),
+                    // LED Button Service
+                    PreviewRemoteService(
+                        uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123"),
                     ) {
-                        Characteristic(Uuid.parse("00001524-1212-efde-1523-785feabcd123"), CharacteristicProperty.NOTIFY)
-                        Characteristic(Uuid.parse("00001525-1212-efde-1523-785feabcd123"), CharacteristicProperty.WRITE_WITHOUT_RESPONSE)
+                        // Button Characteristic
+                        Characteristic(
+                            Uuid.parse("00001524-1212-efde-1523-785feabcd123"),
+                            CharacteristicProperty.NOTIFY
+                        )
+                        // LED Characteristic
+                        Characteristic(
+                            Uuid.parse("00001525-1212-efde-1523-785feabcd123"),
+                            CharacteristicProperty.WRITE_WITHOUT_RESPONSE
+                        )
+                        // Another LED Button Service inside! What a surprise!
+                        IncludedService(
+                            uuid = Uuid.parse("00001523-1212-efde-1523-785feabcd123")
+                        ) {
+                            Characteristic(
+                                Uuid.parse("00001524-1212-efde-1523-785feabcd123"),
+                                CharacteristicProperty.NOTIFY
+                            )
+                            Characteristic(
+                                Uuid.parse("00001525-1212-efde-1523-785feabcd123"),
+                                CharacteristicProperty.WRITE_WITHOUT_RESPONSE
+                            )
+                        }
                     }
-                }
+                )
             )
         )
-    )
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewCharacteristics() {
-    Characteristic(
-        characteristic = PreviewRemoteCharacteristic(0x2A00) {
-            CharacteristicUserDescriptionDescriptor("Description")
-            ClientCharacteristicConfigurationDescriptor()
-            Descriptor(Uuid.random())
-        }
-    )
+    AppTheme {
+        Characteristic(
+            characteristic = PreviewRemoteCharacteristic(0x2A00) {
+                CharacteristicUserDescriptionDescriptor("Description")
+                ClientCharacteristicConfigurationDescriptor()
+                Descriptor(Uuid.random())
+            }
+        )
+    }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun PreviewDescriptor() {
-    Descriptor(
-        descriptor = PreviewRemoteDescriptor(Uuid.random())
-    )
+    AppTheme {
+        Descriptor(
+            descriptor = PreviewRemoteDescriptor(Uuid.random())
+        )
+    }
 }

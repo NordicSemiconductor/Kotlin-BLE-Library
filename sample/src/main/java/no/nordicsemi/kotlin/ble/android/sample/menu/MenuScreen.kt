@@ -45,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.kotlin.ble.android.sample.NAV_ADVERTISER
 import no.nordicsemi.kotlin.ble.android.sample.NAV_SCANNER
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 
 @Composable
 fun MenuScreen(
@@ -76,7 +77,9 @@ fun MenuScreen(
 @Preview
 @Composable
 fun PreviewMenuScreen() {
-    MenuScreen(
-        onMenuClicked = { },
-    )
+    AppTheme {
+        MenuScreen(
+            onMenuClicked = { },
+        )
+    }
 }

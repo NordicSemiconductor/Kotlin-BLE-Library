@@ -55,6 +55,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
 import no.nordicsemi.kotlin.ble.core.ConnectionState
@@ -122,23 +123,28 @@ fun ScannerView(
 @Preview(showBackground = true)
 @Composable
 private fun ScannerScreenPreview() {
-    val scope = rememberCoroutineScope()
-    ScannerView(
-        devices = listOf(
-            PreviewPeripheral(
-                scope = scope,
-                address = "00:11:22:33:44:55",
-                name = "Device 1",
-                state = ConnectionState.Connected,
+    var isScanning by remember { mutableStateOf(false) }
+    AppTheme {
+        val scope = rememberCoroutineScope()
+        ScannerView(
+            devices = listOf(
+                PreviewPeripheral(
+                    scope = scope,
+                    address = "00:11:22:33:44:55",
+                    name = "Device 1",
+                    state = ConnectionState.Connected,
+                ),
+                PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
+                PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
             ),
-            PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
-            PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
-        ),
-        isScanning = true,
-        onStartScan = {},
-        onPeripheralClicked = {},
-        onBondRequested = {},
-        onRemoveBondRequested = {},
-        onClearCacheRequested = {},
-    )
+            isScanning = isScanning,
+            onStartScan = { isScanning = !isScanning },
+            onPeripheralClicked = {},
+            onBondRequested = {},
+            onRemoveBondRequested = {},
+            onClearCacheRequested = {},
+            onRssiRead = {},
+            onReadPhy = {},
+        )
+    }
 }
