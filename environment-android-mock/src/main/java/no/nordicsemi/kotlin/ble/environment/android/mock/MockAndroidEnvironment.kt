@@ -51,13 +51,13 @@ import org.jetbrains.annotations.Range
 /**
  * A type alias for the lastest Android API.
  *
- * Currently, this is set to [MockAndroidEnvironment.Api36] and will change in the future to match
+ * Currently, this is set to [MockAndroidEnvironment.Api37] and will change in the future to match
  * the latest Android API, when available.
  *
  * Note, that ApiXX is also valid for APIs greater than XX. A new type is only added when there's
  * a significant change in the Bluetooth-related API.
  */
-typealias LatestApi = MockAndroidEnvironment.Api36
+typealias LatestApi = MockAndroidEnvironment.Api37
 
 /**
  * A callback used for a mock advertiser.
@@ -657,6 +657,106 @@ sealed class MockAndroidEnvironment(
         issueIncorrectLlTxMtu: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.BAKLAVA,
+        deviceName = deviceName,
+        isBluetoothSupported = isBluetoothSupported,
+        isBluetoothEnabled = isBluetoothEnabled,
+        isMultipleAdvertisementSupported = isMultipleAdvertisementSupported,
+        isLePeriodicAdvertisingSupported = isLePeriodicAdvertisingSupported,
+        isLeExtendedAdvertisingSupported = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength = leMaximumAdvertisingDataLength,
+        maxLlMtu = maxLlMtu,
+        isLocationRequiredForScanning = !isNeverForLocationFlagSet,
+        isLocationPermissionGranted = isLocationPermissionGranted,
+        isLocationEnabled = isLocationEnabled,
+        isLe2MPhySupported = isLe2MPhySupported,
+        isLeCodedPhySupported = isLeCodedPhySupported,
+        isScanningOnLeCodedPhySupported = isScanningOnLeCodedPhySupported,
+        isBluetoothPrivilegedPermissionGranted = isBluetoothPrivilegedPermissionGranted,
+        isBluetoothScanPermissionGranted = isBluetoothScanPermissionGranted,
+        isBluetoothConnectPermissionGranted = isBluetoothConnectPermissionGranted,
+        isBluetoothAdvertisePermissionGranted = isBluetoothAdvertisePermissionGranted,
+        advertiser = advertiser,
+        scanner = scanner,
+        issueOnlyOneActiveScan = issueOnlyOneActiveScan,
+        issueIncorrectLlTxMtu = issueIncorrectLlTxMtu,
+    )
+
+    /**
+     * A mock environment for Android 17 (Cinnamon Bun).
+     *
+     * Android 17 added new `connectGatt` API with an option to automatically request high MTU,
+     * and opportunistic connections. Bonding is no longer possible, unless the app has
+     * `BLUETOOTH_PRIVILEDED` permission, which is not available for 3-rd party apps.
+     * The app needs to be signed with the same certificate as the device.
+     *
+     * In scanning, a new scan type allows for passive scan.
+     *
+     * See ([Behavior Changes Android 17](https://developer.android.com/about/versions/17/behavior-changes-all#connectivity)).
+     *
+     * @param deviceName The device name, by default set to "Mock".
+     * @param isBluetoothSupported Whether Bluetooth is supported on the device.
+     * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
+     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
+     * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
+     * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
+     * @param leMaximumAdvertisingDataLength The maximum LE advertising data length in bytes,
+     * if LE Extended Advertising feature is supported.
+     * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
+     * @param isLe2MPhySupported Whether LE 2M PHY is supported on the device.
+     * @param isLeCodedPhySupported Whether LE Coded PHY is supported on the device.
+     * @param isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
+     * advertising on LE Coded PHY as Primary PHY.
+     * @param isBluetoothScanPermissionGranted Whether the `BLUETOOTH_SCAN` permission is
+     * initially granted.
+     * @param isBluetoothConnectPermissionGranted Whether the `BLUETOOTH_CONNECT` permission is
+     * initially granted.
+     * @param isBluetoothAdvertisePermissionGranted Whether the `BLUETOOTH_ADVERTISE` permission is
+     * initially granted.
+     * @param isNeverForLocationFlagSet Whether the app is not using results of Bluetooth LE scanning
+     * to estimate device location. By default, `neverForLocation` flag is assumed.
+     * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
+     * @param isLocationEnabled Whether location service is enabled on the device.
+     * @param advertiser A callback that will be called when the app requests to advertise.
+     * The callback should return TX power level used for mock advertising.
+     * @param scanner A callback that will be called when the mock central manager requests to scan
+     * for devices. It returns whether the scan was successful, secretly failed, or returned an error.
+     * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
+     * message for a single device per scan. Non-connectable devices were reported continuously, but
+     * connectable devices were reported only once. The client had to stop and start scanning again
+     * to receive further advertisements. This flag simulates this issue. It was encountered e.g. on Nexus 4.
+     * @param issueIncorrectLlTxMtu Some Android devices claim they can only transmit 27-byte long
+     * PDUs on Link Layer in the LLCP Data Length Update procedure, while later trying to send 251 bytes.
+     * This causes the peripheral to terminate the connection. This flag simulates this issue.
+     * It was encountered e.g. on Samsung A8 and Samsung A8 Tab.
+     */
+    class Api37(
+        deviceName: String = DEFAULT_NAME,
+        isBluetoothSupported: Boolean = true,
+        isBluetoothEnabled: Boolean = true,
+        isBluetoothPrivilegedPermissionGranted: Boolean = false,
+        isMultipleAdvertisementSupported: Boolean = true,
+        isLeExtendedAdvertisingSupported: Boolean = true,
+        isLePeriodicAdvertisingSupported: Boolean = isLeExtendedAdvertisingSupported,
+        leMaximumAdvertisingDataLength: @Range(from = 31, to = 1650) Int =
+            if (isLeExtendedAdvertisingSupported) 1650 else 31,
+        maxLlMtu: @Range(from = 27, to = 251) Int = LL_MTU_MAX,
+        isLe2MPhySupported: Boolean = true,
+        isLeCodedPhySupported: Boolean = true,
+        isScanningOnLeCodedPhySupported: Boolean = isLeCodedPhySupported,
+        isBluetoothScanPermissionGranted: Boolean = true,
+        isBluetoothConnectPermissionGranted: Boolean = true,
+        isBluetoothAdvertisePermissionGranted: Boolean = true,
+        isNeverForLocationFlagSet: Boolean = true,
+        isLocationPermissionGranted: Boolean = true,
+        isLocationEnabled: Boolean = true,
+        advertiser: MockAdvertiser = DEFAULT_MOCK_ADVERTISER,
+        scanner: MockScanner = DEFAULT_MOCK_SCANNER,
+        issueOnlyOneActiveScan: Boolean = false,
+        issueIncorrectLlTxMtu: Boolean = false,
+    ): MockAndroidEnvironment(
+        androidSdkVersion = AndroidEnvironment.SdkVersion.CINNAMON_BUN,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,

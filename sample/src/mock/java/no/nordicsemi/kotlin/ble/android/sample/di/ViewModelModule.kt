@@ -123,8 +123,8 @@ object ViewModelModule {
 
         // Event handlers implementation
 
-        override fun onConnectionRequest(preferredPhy: List<Phy>): ConnectionResult {
-            Timber.i("[Blinky] Connection request received")
+        override fun onConnectionRequest(phy: PrimaryPhy): ConnectionResult {
+            Timber.i("[Blinky] Connection request received on PHY: $phy")
             return ConnectionResult.Accept
         }
 
@@ -247,7 +247,7 @@ object ViewModelModule {
             ) {
                 Flags(
                     AdvertisingDataFlag.LE_GENERAL_DISCOVERABLE_MODE,
-                    AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED
+                    AdvertisingDataFlag.BR_EDR_NOT_SUPPORTED,
                 )
                 CompleteLocalName("HR Sensor")
                 ServiceUuid(shortUuid = 0x1809)
