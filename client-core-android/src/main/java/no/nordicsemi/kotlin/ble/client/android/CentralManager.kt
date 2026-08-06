@@ -145,7 +145,7 @@ interface CentralManager:
          * when no other GATT connections are active for the remote device.
          */
         data class AutoConnect(
-            override val automaticallyRequestHighestValueLength: Boolean = false,
+            override val automaticallyRequestHighestValueLength: Boolean = true,
             override val opportunistic: Boolean = false,
         ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic)
 
@@ -170,7 +170,7 @@ interface CentralManager:
             val timeout: Duration = 10.seconds,
             val retry: Int = 2,
             val retryDelay: Duration = 300.milliseconds,
-            override val automaticallyRequestHighestValueLength: Boolean = false,
+            override val automaticallyRequestHighestValueLength: Boolean = true,
             override val opportunistic: Boolean = false
         ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic)
     }
