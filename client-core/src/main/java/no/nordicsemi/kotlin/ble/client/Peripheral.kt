@@ -524,6 +524,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
                         throw PeripheralNotConnectedException()
                     }
                 } catch (e: Exception) {
+                    OperationMutex.unlock(ServicesChanged)
                     logger?.error(Layer.GATT) { "Discovering services failed: ${e.message}" }
                     throw e
                 }
