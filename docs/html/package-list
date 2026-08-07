@@ -30,6 +30,7 @@ no.nordicsemi.kotlin.ble.core.log
 no.nordicsemi.kotlin.ble.core.util
 module:core-android
 no.nordicsemi.kotlin.ble.core.android
+no.nordicsemi.kotlin.ble.core.android.preview
 module:core-mock
 no.nordicsemi.kotlin.ble.core.mock
 module:environment-android
