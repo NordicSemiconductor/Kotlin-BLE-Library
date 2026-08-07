@@ -33,6 +33,7 @@ package no.nordicsemi.kotlin.ble.android.sample.scanner
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -412,6 +413,7 @@ class ScannerViewModel @Inject constructor(
                                 val value = remoteCharacteristic.read()
                                 Timber.i("- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                             } catch (e: Exception) {
+                                if (e is CancellationException) throw e
                                 if (e is InvalidAttributeException) throw e
                                 if (expectError) {
                                     Timber.w("- Value of ${remoteCharacteristic.uuid}: Read not permitted")
@@ -425,6 +427,7 @@ class ScannerViewModel @Inject constructor(
                                     val descValue = descriptor.read()
                                     Timber.i("   - Value of descriptor ${descriptor.uuid}: 0x${descValue.toHexString()}")
                                 } catch (e: Exception) {
+                                    if (e is CancellationException) throw e
                                     if (e is InvalidAttributeException) throw e
                                     if (e is OperationFailedException && e.reason == OperationStatus.ReadNotPermitted) {
                                         // This is expected for Client Characteristic Configuration Descriptor of non-notifiable characteristics.
@@ -478,25 +481,28 @@ class ScannerViewModel @Inject constructor(
                                     }
                                     .launchIn(scope)
                             } catch (e: Exception) {
+                                if (e is CancellationException) throw e
                                 if (e is InvalidAttributeException) throw e
                                 if (!expectError) {
-                                    Timber.e("($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                                    Timber.e(e, "($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
                                 }
                             }
                         }
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (_: InvalidAttributeException) {
                     // InvalidAttributeException is thrown when the peripheral is disconnected
                     // or services got invalidated when a notification is awaited (waitForValueChange).
                     Timber.w("Services invalidated during an operation")
                 } catch (t: Throwable) {
-                    Timber.e("GATT operation failed: ${t.message}")
+                    Timber.e(t, "GATT operation failed: ${t.message}")
                 }
             }
             // This catch would cancel the flow and stop collecting.
             // Instead, exceptions are caught in onEach above.
             .catch { t->
-                Timber.wtf("Operation failed: ${t.message}")
+                Timber.wtf(t, "Operation failed: ${t.message}")
             }
             .onCompletion {
                 Timber.d("Service collection completed")

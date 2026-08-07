@@ -121,13 +121,16 @@ class LedButtonServiceImpl(
 
                     // Update the local state.
                     flow.update { isOn }
+                } catch (e: CancellationException) {
+                    // Rethrow the cancellation exception.
+                    throw e
                 } catch (_: InvalidAttributeException) {
                     // This exception is thrown when the device disconnects, or invalidates services.
                     Timber.w("Services invalidated before reading the LED characteristic")
                 } catch (e: OperationFailedException) {
                     // In some implementations the LED characteristic is not readable.
                     Timber.w("Reading LED characteristic failed: ${e.message}")
-                } catch (e: BluetoothException) {
+                } catch (e: Exception) {
                     // Other errors.
                     Timber.e("Reading LED characteristic failed: ${e.message}")
                 }
@@ -138,6 +141,9 @@ class LedButtonServiceImpl(
                         try {
                             val command = byteArrayOf(if (value) 1 else 0)
                             ledCharacteristic.write(command)
+                        } catch (e: CancellationException) {
+                            // Rethrow the cancellation exception.
+                            throw e
                         } catch (_: InvalidAttributeException) {
                             // This exception is thrown when the device disconnects, or invalidates services.
                             Timber.w("Services invalidated before writing to LED characteristic")
@@ -146,7 +152,7 @@ class LedButtonServiceImpl(
                             // doesn't know about it before writing to the characteristic.
                             // This usually indicates error 133.
                             Timber.w("Writing to LED characteristic failed: ${e.message}")
-                        } catch (e: BluetoothException) {
+                        } catch (e: Exception) {
                             // Other errors.
                             Timber.e("Writing to LED characteristic failed: ${e.message}")
                         }
@@ -168,13 +174,16 @@ class LedButtonServiceImpl(
 
                     // Update the local state.
                     flow.update { pressed }
+                } catch (e: CancellationException) {
+                    // Rethrow the cancellation exception.
+                    throw e
                 } catch (_: InvalidAttributeException) {
                     // This exception is thrown when the device disconnects, or invalidates services.
                     Timber.w("Services invalidated before reading the Button characteristic")
                 } catch (e: OperationFailedException) {
                     // In some implementations the Button characteristic is not readable.
                     Timber.w("Reading button characteristic failed: ${e.message}")
-                } catch (e: BluetoothException) {
+                } catch (e: Exception) {
                     // Other errors.
                     Timber.e("Reading button characteristic failed: ${e.message}")
                 }
