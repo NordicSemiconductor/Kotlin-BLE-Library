@@ -184,6 +184,8 @@ abstract class BaseRemoteCharacteristic(
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
                         throw e
+                    } catch (e: SecurityException) {
+                        throw e
                     } catch (e: BluetoothException) {
                         throw e
                     } catch (_: IllegalStateException) {
@@ -236,6 +238,8 @@ abstract class BaseRemoteCharacteristic(
                         throw e
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
+                        throw e
+                    } catch (e: SecurityException) {
                         throw e
                     } catch (e: BluetoothException) {
                         throw e

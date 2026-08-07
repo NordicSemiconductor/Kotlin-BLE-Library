@@ -134,6 +134,8 @@ abstract class BaseRemoteDescriptor(
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
                         throw e
+                    } catch (e: SecurityException) {
+                        throw e
                     } catch (e: BluetoothException) {
                         throw e
                     } catch (_: IllegalStateException) {
@@ -185,6 +187,8 @@ abstract class BaseRemoteDescriptor(
                         throw e
                     } catch (e: InvalidAttributeException) {
                         // Thrown when the services have been invalidated.
+                        throw e
+                    } catch (e: SecurityException) {
                         throw e
                     } catch (e: BluetoothException) {
                         throw e
