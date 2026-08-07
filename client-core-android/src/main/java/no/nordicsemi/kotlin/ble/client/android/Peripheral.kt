@@ -131,7 +131,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If connection priority request failed.
          */
-        @IgnorableReturnValue
         suspend fun requestConnectionPriority(priority: ConnectionPriority): Boolean
 
         /**
@@ -144,7 +143,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If MTU request failed.
          */
-        @IgnorableReturnValue
         suspend fun requestMtu(mtu: @Range(from = 23, to = 517) Int): Boolean
 
         /**
@@ -159,7 +157,6 @@ open class Peripheral(
          * @return True if PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        @IgnorableReturnValue
         suspend fun requestPhy(txPhy: Phy, rxPhy: Phy, phyOptions: PhyOption): Boolean
 
         /**
@@ -170,7 +167,6 @@ open class Peripheral(
          * @return True if reading PHY was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        @IgnorableReturnValue
         suspend fun readPhy(): Boolean
 
         /**
@@ -182,7 +178,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If reliable write could not be started.
          */
-        @IgnorableReturnValue
         fun beginReliableWrite(): Boolean
 
         /**
@@ -194,7 +189,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If reliable write could not be executed.
          */
-        @IgnorableReturnValue
         suspend fun executeReliableWrite(): Boolean
 
         /**
@@ -205,7 +199,6 @@ open class Peripheral(
          * @return True if the operation was successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        @IgnorableReturnValue
         suspend fun abortReliableWrite(): Boolean
 
         /**
@@ -216,7 +209,6 @@ open class Peripheral(
          * @throws OperationFailedException If refreshing cache failed.
          * @throws PeripheralClosedException If the peripheral was closed.
          */
-        @IgnorableReturnValue
         suspend fun refreshCache(): Boolean
 
         /**
@@ -231,7 +223,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If creating bond failed.
          */
-        @IgnorableReturnValue
         suspend fun createBond(): Boolean
 
         /**
@@ -247,7 +238,6 @@ open class Peripheral(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If removing bond information failed.
          */
-        @IgnorableReturnValue
         suspend fun removeBond(): Boolean
     }
 
@@ -890,7 +880,12 @@ open class Peripheral(
                     .onSubscription {
                         logger?.trace(Layer.SMP) { "Creating bond" }
                         try {
-                            impl.createBond()
+                            if (!impl.createBond()) {
+                                // The device doesn't need to be connected for the bond
+                                // request to be successful, hence OperationFailedException, not
+                                // PeripheralNotConnectedException.
+                                throw OperationFailedException(OperationStatus.RequestFailed)
+                            }
                         } catch (e: Exception) {
                             // Reflection exception has a cause, which is more important.
                             val reason = e.cause?.message ?: e.message
@@ -939,7 +934,12 @@ open class Peripheral(
                     .onSubscription {
                         logger?.trace(Layer.SMP) { "Removing bond information" }
                         try {
-                            impl.removeBond()
+                            if (!impl.removeBond()) {
+                                // The device doesn't need to be connected for the bond
+                                // request to be successful, hence OperationFailedException, not
+                                // PeripheralNotConnectedException.
+                                throw OperationFailedException(OperationStatus.RequestFailed)
+                            }
                         } catch (e: Exception) {
                             // Reflection exception has a cause, which is more important.
                             val reason = e.cause?.message ?: e.message

@@ -208,7 +208,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If the operation failed due to a platform error.
          */
-        @IgnorableReturnValue
         suspend fun discoverServices(uuids: List<Uuid>): Boolean
 
         /**
@@ -220,7 +219,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          * @throws OperationFailedException If the operation failed due to a platform error.
          */
-        @IgnorableReturnValue
         suspend fun readRssi(): Boolean
 
         /**
@@ -233,7 +231,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
          * @return True if disconnection was requested successfully; false otherwise.
          * @throws SecurityException If BLUETOOTH_CONNECT permission is denied.
          */
-        @IgnorableReturnValue
         suspend fun disconnect(reason: ConnectionState.Disconnected.Reason): Boolean
 
         /**
