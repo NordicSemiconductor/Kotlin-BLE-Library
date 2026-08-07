@@ -73,8 +73,8 @@ import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.android.sample.theme.Nordic
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
-import no.nordicsemi.kotlin.ble.client.android.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewScanResult
 import no.nordicsemi.kotlin.ble.core.BondState
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 
@@ -228,7 +228,7 @@ fun GreetingPreview() {
         DeviceList(
             modifier = Modifier.fillMaxWidth(),
             results = listOf(
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "AA:BB:CC:DD:EE:01",
@@ -239,7 +239,7 @@ fun GreetingPreview() {
                     rssi = -30,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "AA:BB:CC:DD:EE:02",
@@ -249,7 +249,7 @@ fun GreetingPreview() {
                     rssi = -50,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "AA:BB:CC:DD:EE:03",
@@ -259,7 +259,7 @@ fun GreetingPreview() {
                     rssi = -70,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "AA:BB:CC:DD:EE:04",

@@ -63,8 +63,8 @@ import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
-import no.nordicsemi.kotlin.ble.client.android.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewScanResult
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
@@ -92,7 +92,7 @@ class ScannerViewModel @Inject constructor(
             // Note: It's not possible to connect to PreviewPeripheral instances.
             //       An exception is thrown, that it was obtained using a different CentralManager.
             // TODO Allow it?
-            MockScanResult(
+            PreviewScanResult(
                 peripheral = PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
                     .apply {
                         // Track state of each peripheral.

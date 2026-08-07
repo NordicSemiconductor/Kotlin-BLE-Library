@@ -58,8 +58,8 @@ import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
 import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
 import no.nordicsemi.kotlin.ble.client.android.ScanResult
-import no.nordicsemi.kotlin.ble.client.android.mock.MockScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewScanResult
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 
 @Composable
@@ -130,7 +130,7 @@ private fun ScannerScreenPreview() {
         val scope = rememberCoroutineScope()
         ScannerView(
             results = listOf(
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "00:11:22:33:44:55",
@@ -140,7 +140,7 @@ private fun ScannerScreenPreview() {
                     rssi = -30,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "11:22:33:44:55:66",
@@ -150,7 +150,7 @@ private fun ScannerScreenPreview() {
                     rssi = -50,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "22:33:44:55:66:77",
@@ -161,7 +161,7 @@ private fun ScannerScreenPreview() {
                     rssi = -70,
                     isConnectable = true,
                 ),
-                MockScanResult(
+                PreviewScanResult(
                     peripheral = PreviewPeripheral(
                         scope = scope,
                         address = "33:44:55:66:77:88",

@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.kotlin.ble.client.android.mock
+package no.nordicsemi.kotlin.ble.client.android.preview
 
 import no.nordicsemi.kotlin.ble.client.android.AdvertisingData
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -38,7 +38,7 @@ import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
 /**
- * Mock implementation of [ScanResult] for testing purposes.
+ * Preview implementation of [ScanResult] for showing scan results on Compose previews.
  *
  * @param peripheral The peripheral associated with the scan result.
  * @param isConnectable Whether the peripheral is connectable. Use `null` if the API doesn't
@@ -51,7 +51,7 @@ import no.nordicsemi.kotlin.ble.core.PrimaryPhy
  * @param secondaryPhy The secondary PHY used to transmit the advertisement, or `null` (default) if not used.
  * @param timestamp The timestamp since when the scan record was observed.
  */
-class MockScanResult(
+class PreviewScanResult(
     peripheral: Peripheral,
     isConnectable: Boolean?,
     advertisingData: AdvertisingData = fromName(peripheral.name),
