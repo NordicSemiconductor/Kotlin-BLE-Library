@@ -47,6 +47,8 @@ sealed class RemoteServices {
         sealed class Reason {
             /** Service discovery returned empty list of services. */
             data object EmptyResult : Reason()
+            /** Service discovery failed to start. */
+            data object InternalError : Reason()
             /** Service discovery finished with a different status than SUCCESS. */
             data class Unknown(val status: Int) : Reason()
         }
