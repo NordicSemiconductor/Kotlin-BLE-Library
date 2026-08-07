@@ -261,6 +261,8 @@ sealed class MockAndroidEnvironment(
      * @param deviceName The device name, by default set to "Mock".
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
+     * @param isSystemApp Whether the app is running with system permissions. This is equivalent of
+     * BLUETOOTH_PRIVILEGED permission added in API 19.
      * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
@@ -270,12 +272,14 @@ sealed class MockAndroidEnvironment(
         deviceName: String = DEFAULT_NAME,
         isBluetoothSupported: Boolean = true,
         isBluetoothEnabled: Boolean = true,
+        isSystemApp: Boolean = false,
         issueOnlyOneActiveScan: Boolean = false,
     ): MockAndroidEnvironment(
         androidSdkVersion = AndroidEnvironment.SdkVersion.JELLY_BEAN_MR2,
         deviceName = deviceName,
         isBluetoothSupported = isBluetoothSupported,
         isBluetoothEnabled = isBluetoothEnabled,
+        isBluetoothPrivilegedPermissionGranted = isSystemApp,
         scanner = DEFAULT_MOCK_SCANNER,
         issueOnlyOneActiveScan = issueOnlyOneActiveScan,
     )
@@ -287,7 +291,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param issueOnlyOneActiveScan Some early Android devices were sending only one Scan Request
      * message for a single device per scan. Non-connectable devices were reported continuously, but
      * connectable devices were reported only once. The client had to stop and start scanning again
@@ -316,7 +320,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param advertiser A callback that will be called when the app requests to advertise.
      * The callback should return TX power level used for mock advertising.
@@ -357,7 +361,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param maxLlMtu The maximum Link Layer MTU size in range 27 - 251.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLocationPermissionGranted Whether the fine location permission is initially granted.
@@ -416,7 +420,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
@@ -501,7 +505,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
@@ -597,7 +601,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
@@ -697,7 +701,7 @@ sealed class MockAndroidEnvironment(
      * @param isBluetoothSupported Whether Bluetooth is supported on the device.
      * @param isBluetoothEnabled Whether Bluetooth is enabled on the device.
      * @param isBluetoothPrivilegedPermissionGranted Whether the Bluetooth privileged permission is
-     * initially granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
+     * granted. This permission can only be granted in own AOSP builds, not for 3rd party apps.
      * @param isMultipleAdvertisementSupported Whether multi advertisement is supported by the chipset.
      * @param isLeExtendedAdvertisingSupported Whether LE Extended Advertising feature is supported.
      * @param isLePeriodicAdvertisingSupported Whether LE Periodic Advertising feature is supported.
