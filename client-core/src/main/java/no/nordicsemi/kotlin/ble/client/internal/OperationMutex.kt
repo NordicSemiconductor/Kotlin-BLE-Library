@@ -31,7 +31,6 @@
 
 package no.nordicsemi.kotlin.ble.client.internal
 
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
@@ -51,37 +50,5 @@ object OperationMutex {
      */
     suspend fun <T> withLock(owner: Any? = null, block: suspend () -> T): T {
         return lock.withLock(owner) { block() }
-    }
-
-    /**
-     * Locks this mutex, suspending caller until the lock is acquired (in other words, while the
-     * lock is held elsewhere).
-     *
-     * This suspending function is cancellable: if the Job of the current coroutine is canceled
-     * while this suspending function is waiting, this function immediately resumes with
-     * [CancellationException].
-     */
-    suspend fun lock(owner: Any? = null) {
-        lock.lock(owner)
-    }
-
-    /**
-     * Unlocks this mutex.
-     *
-     * Throws [IllegalStateException] if invoked on a mutex that is not locked or was locked with
-     * a different owner token (by identity).
-     */
-    fun unlock(owner: Any? = null) {
-        lock.unlock(owner)
-    }
-
-    /**
-     * Checks whether this mutex is locked by the specified owner.
-     *
-     * @param owner - The owner token to check.
-     * @return `true` if this mutex is locked by the given owner.
-     */
-    fun holdsLock(owner: Any): Boolean {
-        return lock.holdsLock(owner)
     }
 }

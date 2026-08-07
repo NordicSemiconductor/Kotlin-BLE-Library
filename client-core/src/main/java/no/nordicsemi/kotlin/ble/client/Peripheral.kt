@@ -66,7 +66,6 @@ import no.nordicsemi.kotlin.ble.client.internal.OperationMutex
 import no.nordicsemi.kotlin.ble.core.Characteristic
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.Environment
-import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.Peer
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
@@ -139,6 +138,11 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * A flag indicating that the service discovery was requested.
      */
     private var serviceDiscoveryRequested = false
+
+    /**
+     * A coroutine job that is used to start service discovery.
+     */
+    private var serviceDiscoveryJob: Job? = null
 
     /**
      * The list of service UUIDs requested for discovery.
@@ -364,13 +368,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
         _services.value.invalidate()
         _services.update { RemoteServices.Unknown }
         servicesDiscovered = false
-        if (OperationMutex.holdsLock(ServicesChanged)) {
-            try {
-                OperationMutex.unlock(ServicesChanged)
-            } catch (e: IllegalStateException) {
-                logger?.warn(Layer.GATT, e)
-            }
-        }
         // Note!
         // Don't clear the serviceDiscoveryRequested flag here.
         // It will be cleared when the peripheral is closed.
@@ -415,12 +412,7 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             is ServicesDiscovered -> {
-                try {
-                    // Unlocks the lock locked in `discoverServices` below.
-                    OperationMutex.unlock(ServicesChanged)
-                } catch (e: IllegalStateException) {
-                    logger?.warn(Layer.GAP, e)
-                }
+                servicesDiscovered = true
                 logger?.info(Layer.GATT) { "Services discovered" }
                 // Assign the owner to each service, making them valid.
                 val services = event.services.onEach { it.owner = this }
@@ -470,12 +462,6 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
             }
 
             is ServiceDiscoveryFailed -> {
-                try {
-                    // Unlocks the lock locked in `discoverServices` below.
-                    OperationMutex.unlock(ServicesChanged)
-                } catch (e: IllegalStateException) {
-                    logger?.warn(Layer.GATT, e)
-                }
                 logger?.warn(Layer.GATT) { "Service discovery failed: ${event.reason}" }
                 invalidateServices()
                 _services.update { RemoteServices.Failed(event.reason) }
@@ -502,28 +488,31 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      * This method does nothing if [servicesDiscovered] is `true`.
      */
     private fun discoverServices(uuids: List<Uuid>) {
-        if (!servicesDiscovered) {
-            servicesDiscovered = true
-            scope.launch {
+        if (servicesDiscovered || serviceDiscoveryJob?.isActive == true) {
+            return
+        }
+        serviceDiscoveryJob = scope.launch {
+            OperationMutex.withLock {
                 try {
-                    // On older Android versions each Bluetooth operation needs to await its
-                    // callback before another one can be triggered. Otherwise, some callbacks
-                    // aren't called at all. I.e. discovering services while also requesting HIGH
-                    // connection priority makes only one of them to complete.
-                    OperationMutex.lock(ServicesChanged)
-                } catch (e: IllegalStateException) {
-                    logger?.warn(Layer.GATT, e)
-                }
-                logger?.trace(Layer.GATT) { "Discovering services" }
-                _services.update { RemoteServices.Discovering }
-                try {
-                    if (!impl.discoverServices(uuids)) {
-                        throw PeripheralNotConnectedException()
-                    }
-                } catch (e: Exception) {
-                    OperationMutex.unlock(ServicesChanged)
-                    logger?.error(Layer.GATT) { "Discovering services failed: ${e.message}" }
+                    impl.events
+                        .onSubscription {
+                            logger?.trace(Layer.GATT) { "Discovering services" }
+                            _services.update { RemoteServices.Discovering }
+                            if (!isConnected || !impl.discoverServices(uuids)) {
+                                throw PeripheralNotConnectedException()
+                            }
+                        }
+                        .takeWhile { !it.isDisconnectionEvent }
+                        .filterIsInstance<ServiceDiscoveryCompleted>()
+                        .firstOrNull()
+                        ?: throw PeripheralNotConnectedException()
+                } catch (e: CancellationException) {
                     throw e
+                } catch (e: PeripheralNotConnectedException) {
+                    _services.update { RemoteServices.Unknown }
+                } catch (e: Exception) {
+                    _services.update { RemoteServices.Failed(RemoteServices.Failed.Reason.InternalError) }
+                    logger?.error(Layer.GATT) { "Discovering services failed: ${e.message}" }
                 }
             }
         }
