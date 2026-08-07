@@ -46,6 +46,8 @@ package no.nordicsemi.kotlin.ble.core
  * @property allowsBondRemoval Whether the device provides API to remove bond information from local host.
  * @property reportsConnectableFlag Whether the device provides information whether a scanned
  * Bluetooth LE advertising packet is connectable.
+ * @property isSystem Whether the app is running in a privileged environment and has access to
+ * restricted features.
  */
 interface Environment {
     val deviceName: String
@@ -56,4 +58,5 @@ interface Environment {
     val automaticallyRequestsMtu: Boolean
     val allowsBondRemoval: Boolean
     val reportsConnectableFlag: Boolean
+    val isSystem: Boolean
 }

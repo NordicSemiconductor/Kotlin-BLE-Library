@@ -67,7 +67,11 @@ abstract class BaseRemoteCharacteristic(
      * A flag indicating whether reliable write is enabled.
      */
     protected val isReliableWriteEnabled: Boolean
-        get() = service.owner?.executor?.isReliableWriteEnabled ?: false
+        get() = owner?.executor?.isReliableWriteEnabled ?: false
+
+    /** Cached restriction flag. */
+    private val _isRestricted by lazy { super.isRestricted() }
+    override fun isRestricted(): Boolean = _isRestricted
 
     abstract fun setCharacteristicNotification(enabled: Boolean)
 
@@ -121,8 +125,13 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun setNotifying(enabled: Boolean) = withCallSite("setNotifying") {
         // Check whether the characteristic wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Subscribing to value changes from characteristic $uuid is not permitted")
         }
 
         // If the current state of notifications is the same as the requested state, return.
@@ -160,8 +169,13 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun read(): ByteArray = withCallSite("read") {
         // Check whether the characteristic wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Reading characteristic $uuid is not permitted")
         }
 
         // Verify that the characteristic can be read.
@@ -212,8 +226,13 @@ abstract class BaseRemoteCharacteristic(
 
     final override suspend fun write(data: ByteArray, writeType: WriteType) = withCallSite("write") {
         // Check whether the characteristic wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Writing characteristic $uuid is not permitted")
         }
 
         // Verify that the characteristic can be written.
@@ -281,8 +300,13 @@ abstract class BaseRemoteCharacteristic(
         onSubscription: suspend RemoteCharacteristic.() -> Unit
     ): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Subscribing to value changes from characteristic $uuid is not permitted")
         }
 
         // Verify that the characteristic can be subscribed to.

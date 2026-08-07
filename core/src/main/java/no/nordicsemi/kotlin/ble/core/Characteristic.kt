@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  */
 interface Characteristic<D: Descriptor> {
 
-    companion object {
+    companion object Uuids {
         /** Device Name characteristic UUID. */
         val DEVICE_NAME: Uuid by lazy { Uuid.fromShortUuid(0x2A00) }
         /** Appearance characteristic UUID. */
@@ -54,6 +54,30 @@ interface Characteristic<D: Descriptor> {
         val PERIPHERAL_PREFERRED_CONNECTION_PARAMETERS: Uuid by lazy { Uuid.fromShortUuid(0x2A04) }
         /** Service Changed characteristic UUID. */
         val SERVICE_CHANGED: Uuid by lazy { Uuid.fromShortUuid(0x2A05) }
+
+        /**
+         * Set of restricted GATT characteristics.
+         *
+         * @see Service.Uuids.Restricted
+         */
+        private object Restricted {
+            /** The UUID of the Human Interface Device Service. */
+            val HID_UUID: Uuid by lazy { Uuid.fromShortUuid(0x1812) }
+            /**
+             * Set of Human Interface Device GATT characteristics.
+             */
+            val HID_CHARACTERISTICS: Set<Uuid> by lazy {
+                setOf(
+                    Uuid.fromShortUuid(0x2A4A), // HID Information
+                    Uuid.fromShortUuid(0x2A4B), // Report Map
+                    Uuid.fromShortUuid(0x2A4C), // HID Control Point
+                    Uuid.fromShortUuid(0x2A4D)  // Report
+                )
+            }
+            /** Checks whether the given [uuid] is restricted. */
+            fun contains(uuid: Uuid, serviceUuid: Uuid) =
+                serviceUuid == HID_UUID && uuid in HID_CHARACTERISTICS
+        }
     }
 
     /**
@@ -113,4 +137,10 @@ interface Characteristic<D: Descriptor> {
         it == CharacteristicProperty.NOTIFY ||
         it == CharacteristicProperty.INDICATE
     } && descriptors.any { it.isClientCharacteristicConfiguration }
+
+    /**
+     * Returns whether the service is restricted and accessing it will result in a
+     * [SecurityException].
+     */
+    fun isRestricted() = Restricted.contains(uuid, service.uuid) || service.isRestricted()
 }

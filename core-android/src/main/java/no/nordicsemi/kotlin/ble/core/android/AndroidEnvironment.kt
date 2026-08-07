@@ -216,6 +216,10 @@ interface AndroidEnvironment : Environment {
         // https://cs.android.com/android/_/android/platform/packages/modules/Bluetooth/+/f4c525723297ede881a618bb325f4b78a9babb1c
         get() = androidSdkVersion < SdkVersion.CINNAMON_BUN || isBluetoothPrivilegedPermissionGranted
 
+    override val isSystem: Boolean
+        // System apps have Bluetooth Privileged permission granted.
+        get() = isBluetoothPrivilegedPermissionGranted
+
     /**
      * The local Bluetooth adapter name, or *null* if the required permission is not granted.
      */

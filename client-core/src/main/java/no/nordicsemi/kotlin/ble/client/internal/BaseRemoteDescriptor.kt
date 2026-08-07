@@ -64,7 +64,11 @@ abstract class BaseRemoteDescriptor(
      * A flag indicating whether reliable write is enabled.
      */
     protected val isReliableWriteEnabled: Boolean
-        get() = characteristic.owner?.executor?.isReliableWriteEnabled ?: false
+        get() = owner?.executor?.isReliableWriteEnabled ?: false
+
+    /** Cached restriction flag. */
+    private val _isRestricted by lazy { super.isRestricted() }
+    override fun isRestricted(): Boolean = _isRestricted
 
     /**
      * Executes the read operation specific to the implementation.
@@ -111,8 +115,13 @@ abstract class BaseRemoteDescriptor(
 
     final override suspend fun read(): ByteArray = withCallSite("read") {
         // Check whether the descriptor wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Reading descriptor $uuid is not permitted")
         }
 
         // Verify that the descriptor can be read.
@@ -162,8 +171,13 @@ abstract class BaseRemoteDescriptor(
 
     final override suspend fun write(data: ByteArray) = withCallSite("write") {
         // Check whether the descriptor wasn't invalidated.
-        requireNotNull(owner) {
+        val owner = requireNotNull(owner) {
             throw InvalidAttributeException()
+        }
+
+        // Check whether accessing the attribute is permitted.
+        require(owner.executor.environment.isSystem || !isRestricted()) {
+            throw SecurityException("Writing descriptor $uuid is not permitted")
         }
 
         // Verify that the descriptor can be written to.

@@ -41,7 +41,7 @@ import kotlin.uuid.Uuid
  */
 interface Descriptor {
 
-    companion object {
+    companion object Uuids {
         /** Characteristic Extended Properties descriptor UUID. */
         val CHAR_EXT_PROP_UUID: Uuid by lazy { Uuid.fromShortUuid(0x2900) }
         /** Characteristic User Description descriptor UUID. */
@@ -139,4 +139,10 @@ interface Descriptor {
         uuid != CHAR_EXT_PROP_UUID &&
         uuid != CHAR_PRESENTATION_FORMAT_UUID &&
         uuid != CHAR_AGGREGATE_FORMAT_UUID
+
+    /**
+     * Returns whether reading or writing to the descriptor is restricted and will result
+     * in a [SecurityException].
+     */
+    fun isRestricted() = characteristic.isRestricted()
 }

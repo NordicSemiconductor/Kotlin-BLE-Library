@@ -39,11 +39,54 @@ import kotlin.uuid.Uuid
  */
 sealed interface Service<C: Characteristic<*>> {
 
-    companion object {
+    companion object Uuids {
         /** The UUID of Generic Access Service. */
         val GENERIC_ACCESS_UUID: Uuid by lazy { Uuid.fromShortUuid(0x1800) }
         /** The UUID of Generic Attribute Service. */
         val GENERIC_ATTRIBUTE_UUID: Uuid by lazy { Uuid.fromShortUuid(0x1801) }
+
+        /**
+         * Set of restricted GATT Services.
+         *
+         * Accessing any attribute in those will result in a [SecurityException].
+         *
+         * The list is based on the following sources:
+         * * [GattUtil](https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/android/app/src/com/android/bluetooth/gatt/GattUtil.kt)
+         * * [isRestrictedSrvcUuid](https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/android/app/src/com/android/bluetooth/gatt/GattService.java;l=1654)
+         * * [HidHostService](https://cs.android.com/android/platform/superproject/+/android-latest-release:packages/modules/Bluetooth/android/app/src/com/android/bluetooth/hid/HidHostService.java)
+         */
+        private object Restricted {
+            /** The UUID of the Android TV Remote Service. */
+            val ANDROID_TV_REMOTE_UUID: Uuid by lazy { Uuid.parse("AB5E0001-5A21-4F05-BC7D-AF01F617B664") }
+            /** The UUID of the Android Head Tracker Service. */
+            val ANDROID_HEADTRACKER_UUID: Uuid by lazy { Uuid.parse("109b862f-50e3-45cc-8ea1-ac62de4846d1") }
+            /** The UUID of the Apple Notification Center Service (ANCS). */
+            val ANCS_UUID: Uuid by lazy { Uuid.parse("7905F431-B5CE-4E99-A40F-4B1E122D00D0") }
+            /** The UUID of the FIDO Service. */
+            val FIDO_SERVICE_UUID: Uuid by lazy { Uuid.fromShortUuid(0xFFFD) } // U2F
+            /** Set of LE Audio Services. */
+            val LE_AUDIO_SERVICE_UUIDS: Set<Uuid> by lazy {
+                setOf(
+                    Uuid.fromShortUuid(0x1843), // AICS
+                    Uuid.fromShortUuid(0x1844), // VCS
+                    Uuid.fromShortUuid(0x1845), // VOCS
+                    Uuid.fromShortUuid(0x1846), // CSIS
+                    Uuid.fromShortUuid(0x184E), // ASCS
+                    Uuid.fromShortUuid(0x184F), // BASS
+                    Uuid.fromShortUuid(0x1850), // PACS
+                    Uuid.fromShortUuid(0x1854), // HAP
+                )
+            }
+            /** Checks whether the given [uuid] is restricted. */
+            fun contains(uuid: Uuid) =
+                // 4 characteristics in HID service are restricted.
+                uuid == ANDROID_TV_REMOTE_UUID ||
+                uuid == ANDROID_HEADTRACKER_UUID ||
+                // uuid == ANCS_UUID ||
+                uuid == FIDO_SERVICE_UUID ||
+                uuid in LE_AUDIO_SERVICE_UUIDS
+            // TODO Test LE Audio and ANCS on a real device
+        }
     }
 
     /**
@@ -65,6 +108,12 @@ sealed interface Service<C: Characteristic<*>> {
      * List of included secondary services.
      */
     val includedServices: List<IncludedService<C>>
+
+    /**
+     * Returns whether the service is restricted and accessing it will result in a
+     * [SecurityException].
+     */
+    fun isRestricted() = Restricted.contains(uuid)
 }
 
 /**
