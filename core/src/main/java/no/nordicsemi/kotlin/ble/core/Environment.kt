@@ -39,9 +39,21 @@ package no.nordicsemi.kotlin.ble.core
  * @property deviceName The name of the local device.
  * @property isBluetoothSupported Whether Bluetooth is supported.
  * @property isBluetoothEnabled Whether Bluetooth is enabled.
+ * @property isScanningOnLeCodedPhySupported Whether the device can scan for Bluetooth LE devices
+ * advertising on LE Coded PHY as Primary PHY.
+ * @property reportsConnectionParameters Whether the device reports connection parameters.
+ * @property automaticallyRequestsMtu Whether the device automatically requests MTU upon connection.
+ * @property allowsBondRemoval Whether the device provides API to remove bond information from local host.
+ * @property reportsConnectableFlag Whether the device provides information whether a scanned
+ * Bluetooth LE advertising packet is connectable.
  */
 interface Environment {
     val deviceName: String
     val isBluetoothSupported: Boolean
     val isBluetoothEnabled: Boolean
+    val isScanningOnLeCodedPhySupported: Boolean
+    val reportsConnectionParameters: Boolean
+    val automaticallyRequestsMtu: Boolean
+    val allowsBondRemoval: Boolean
+    val reportsConnectableFlag: Boolean
 }

@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.environment.android.compose
 
 import android.os.Build
@@ -44,8 +42,10 @@ import androidx.compose.runtime.ProvidedValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.core.app.ActivityOptionsCompat
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.core.android.preview.PreviewEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
@@ -84,13 +84,18 @@ object LocalEnvironmentOwner {
     val current: AndroidEnvironment
         @Composable
         get() = LocalEnvironment.current?: run {
+            val isPreview = LocalInspectionMode.current
+            if (isPreview) {
+                return PreviewEnvironment()
+            }
+
             val context = LocalContext.current
             return try {
                 NativeAndroidEnvironment.getInstance(context, isNeverForLocationFlagSet = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-            } catch (e: NoClassDefFoundError) {
+            } catch (_: NoClassDefFoundError) {
                 try {
                     LatestApi()
-                } catch (e: NoClassDefFoundError) {
+                } catch (_: NoClassDefFoundError) {
                     error("Android environment not specified, add dependency to the native or mock env.")
                 }
             }
@@ -114,7 +119,7 @@ object LocalEnvironmentOwner {
         // Both Mock and Native implementations are added with "compileOnly" as optional dependencies.
         // Let's check if the mock implementation is available.
         val isMock = try { environment is MockAndroidEnvironment }
-        catch (e: NoClassDefFoundError) { false }
+        catch (_: NoClassDefFoundError) { false }
 
         if (isMock && (environment is MockAndroidEnvironment)) {
             // Modify the LocalActivityResultRegistryOwner only in the mock environment.

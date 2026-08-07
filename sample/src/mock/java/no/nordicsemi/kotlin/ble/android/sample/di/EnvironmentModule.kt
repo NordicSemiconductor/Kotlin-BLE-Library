@@ -40,6 +40,7 @@ import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 // import no.nordicsemi.kotlin.ble.advertiser.exception.AdvertisingNotStartedException
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.environment.android.mock.LatestApi
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAdvertiser
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 // import no.nordicsemi.kotlin.ble.client.android.exception.ScanningFailedToStartException
@@ -55,7 +56,7 @@ object EnvironmentModule {
         lifecycle: ActivityRetainedLifecycle
     ): MockAndroidEnvironment {
         // Define the mock SDK version.
-        val sdkVersion = 35
+        val sdkVersion = 37
 
         // Setting an advertiser callback allows to simulate different behaviors
         // of the advertiser, such as returning a different TX power, or failing.
@@ -74,7 +75,9 @@ object EnvironmentModule {
             in 21..22 -> MockAndroidEnvironment.Api21(advertiser = advertiser)
             in 23..25 -> MockAndroidEnvironment.Api23(advertiser = advertiser)
             in 26..30 -> MockAndroidEnvironment.Api26(advertiser = advertiser)
-            else -> MockAndroidEnvironment.Api31(
+            in 31..35 -> MockAndroidEnvironment.Api31(advertiser = advertiser)
+            36 -> MockAndroidEnvironment.Api36(advertiser = advertiser)
+            else -> LatestApi(
                 advertiser = advertiser,
 
                 // Uncomment to disable LE Coded PHY support.

@@ -144,7 +144,7 @@ class MockRemoteCharacteristic(
                 // Reading descriptor value takes time depending on the size of the value
                 // and connection parameters.
                 val duration =
-                    peripheralSpec.estimateTransferDuration(truncatedData, true)
+                    peripheralSpec.estimateTransferDuration(truncatedData, isWrite = false)
                 delay(duration)
                 emit(CharacteristicRead(
                     characteristic = this@MockRemoteCharacteristic,
@@ -234,7 +234,7 @@ class MockRemoteCharacteristic(
                                 // Writing characteristic value takes time depending on the size of the value
                                 // and connection parameters.
                                 val duration =
-                                    peripheralSpec.estimateTransferDuration(data, true)
+                                    peripheralSpec.estimateTransferDuration(data, isWrite = true, withResponse = true)
                                 delay(duration)
                                 // Validate received data. In case of an incorrect data, throw an exception.
                                 val match = truncatedData.contentEquals(response.value)
@@ -278,7 +278,7 @@ class MockRemoteCharacteristic(
                                 // Writing characteristic value takes time depending on the size of the value
                                 // and connection parameters.
                                 val duration =
-                                    peripheralSpec.estimateTransferDuration(data, true)
+                                    peripheralSpec.estimateTransferDuration(data, isWrite = true, withResponse = true)
                                 delay(duration)
                                 emit(CharacteristicWrite(
                                     characteristic = this@MockRemoteCharacteristic,
@@ -317,7 +317,7 @@ class MockRemoteCharacteristic(
                 // Writing characteristic value takes time depending on the size of the value.
                 // Multiple packets may be sent in one connection interval.
                 val duration =
-                    peripheralSpec.estimateTransferDuration(truncatedData, false)
+                    peripheralSpec.estimateTransferDuration(truncatedData, isWrite = true, withResponse = false)
                 delay(duration)
 
                 // The flow is suspended and awaits for CharacteristicWrite event.

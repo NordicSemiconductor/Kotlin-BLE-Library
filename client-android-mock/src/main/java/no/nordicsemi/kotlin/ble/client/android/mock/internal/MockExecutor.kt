@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
 import kotlinx.coroutines.flow.Flow
@@ -47,6 +45,7 @@ import no.nordicsemi.kotlin.ble.core.ConnectionParameters
 import no.nordicsemi.kotlin.ble.core.PeripheralType
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PhyOption
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
 import no.nordicsemi.kotlin.ble.environment.android.mock.MockAndroidEnvironment
 import org.jetbrains.annotations.Range
@@ -64,7 +63,7 @@ import kotlin.time.Duration.Companion.seconds
 open class MockExecutor(
     peripheralSpec: PeripheralSpec<String>,
     name: String?,
-    private val environment: MockAndroidEnvironment,
+    override val environment: MockAndroidEnvironment,
     advertisements: Flow<MockScanResult<String>>,
 ): MockExecutor(peripheralSpec, name, environment, advertisements), Peripheral.Executor {
     override val type: PeripheralType = peripheralSpec.type
@@ -77,15 +76,22 @@ open class MockExecutor(
 
     // Implementation
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+    ) {
+        // Android 17 Cinnamon Bun added a new `connectGatt` API with an option to set automatic
+        // MTU request upon connection. For older versions the MTU request is done in `Peripheral`.
+        val supportsAutoMtu = environment.automaticallyRequestsMtu
         if (autoConnect) {
             // There is no timeout for auto connect attempts.
-            super.connect(true, preferredPhy)
+            super.connect(true, supportsAutoMtu && autoMtu, opportunistic)
         } else {
             // Android has a timeout of 30 seconds for connection attempts.
             // User may set a shorter timeout in ConnectionOptions.Direct.
             withTimeout(30.seconds) {
-                super.connect(false, preferredPhy)
+                super.connect(false, supportsAutoMtu && autoMtu, opportunistic)
             }
         }
     }
@@ -96,6 +102,8 @@ open class MockExecutor(
 
     override suspend fun removeBond(): Boolean {
         TODO("Not yet implemented")
+        // Check isBluetoothPrivilegedPermissionGranted() for Android 17+
+        // Android 4.3 was failing to remove bond information. After a reboot it was restored.
     }
 
     override suspend fun refreshCache(): Boolean {

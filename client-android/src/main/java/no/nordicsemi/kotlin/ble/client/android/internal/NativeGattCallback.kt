@@ -236,7 +236,6 @@ internal class NativeGattCallback(
     // The base method is hidden in BluetoothGattCallback using @hide.
     // It was added in Android 8 (Oreo) and it is possible to override it, but due to its hidden
     // nature, it cannot use `override`.
-    @Suppress("UNUSED_PARAMETER")
     @Keep
     /* override */ fun onConnectionUpdated(gatt: BluetoothGatt, interval: Int, latency: Int, timeout: Int, status: Int) {
         logger?.debug(Layer.LINK) { "onConnectionUpdated(interval=$interval, latency=$latency, timeout=$timeout, status=$status)" }

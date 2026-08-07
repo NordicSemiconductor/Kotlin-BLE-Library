@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
@@ -46,19 +44,20 @@ import org.jetbrains.annotations.Range
  * packet.
  *
  * @property peripheral The peripheral that was found.
- * @property isConnectable Whether the peripheral is connectable.
+ * @property isConnectable Whether the peripheral is connectable; `null` if the API does not
+ * provide this information, i.e. until Android 8 Oreo.
  * @property advertisingData The advertising data (combined with scan response data,
  * if applicable).
  * @property rssi The received signal strength (RSSI), in dBm.
  * @property txPowerLevel The transmission power level, as advertised in Extended Advertising
- * packet. `null` if not present.
+ * packet; `null` if not present.
  * @property primaryPhy The primary PHY used to transmit the advertisement.
  * @property secondaryPhy The secondary PHY used to transmit the advertisement, or `null` if not used.
  * @property timestamp The timestamp since boot when the scan record was observed, in milliseconds.
  */
 interface ScanResult<P: Peripheral<*, *>, AD: AdvertisingData> {
     val peripheral: P
-    val isConnectable: Boolean
+    val isConnectable: Boolean?
     val advertisingData: AD
     val rssi: @Range(from = -127, to = 126) Int
     val txPowerLevel: @Range(from = -127, to = 126) Int?

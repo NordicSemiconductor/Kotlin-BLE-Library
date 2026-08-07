@@ -35,3 +35,7 @@ package no.nordicsemi.kotlin.ble.core
 const val ATT_MTU_DEFAULT = 23
 /** The maximum ATT MTU size. */
 const val ATT_MTU_MAX = 517
+/** The default Link Layer MTU size. */
+const val LL_MTU_DEFAULT = 27
+/** The maximum Link Layer MTU size. */
+const val LL_MTU_MAX = 251

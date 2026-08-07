@@ -54,7 +54,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
- * Class responsible for starting advertisements on Android API level < 26.
+ * Class responsible for starting advertisements on Android API level 21 - 26.
  *
  * @constructor Creates an instance of an advertiser.
  * @param environment The Android-specific environment to use for the advertiser.

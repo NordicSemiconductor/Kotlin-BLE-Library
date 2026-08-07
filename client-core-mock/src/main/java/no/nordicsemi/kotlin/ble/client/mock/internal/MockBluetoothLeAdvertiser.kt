@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.mock.internal
 
 import kotlinx.coroutines.CoroutineScope
@@ -59,9 +57,9 @@ class MockBluetoothLeAdvertiser<ID: Any>(
      *
      * This implementation emits advertising events just as specified in the [PeripheralSpec]s.
      * It does not take under consideration the [Environment], i.e. packets using
-     * LE Coded PHY will advertise and it is up to the scanner to filter them or not.
+     * LE Coded PHY will advertise, and it is up to the scanner to filter them or not.
      *
-     * @param scope The coroutine scope to run the advertising simulation in.
+     * @param peripherals The list of peripheral specs simulating advertising.
      * @return A flow emitting [MockScanResult]s for each advertising event.
      */
     fun simulateAdvertising(peripherals: List<PeripheralSpec<ID>>) {

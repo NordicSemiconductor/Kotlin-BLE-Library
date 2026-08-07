@@ -45,25 +45,34 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.kotlin.ble.android.sample.common.DeviceList
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewScanResult
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 
 @Composable
 fun ScannerView(
-    devices: List<Peripheral>,
+    results: List<ScanResult>,
     isScanning: Boolean,
     onStartScan: () -> Unit,
     onPeripheralClicked: (Peripheral) -> Unit,
     onBondRequested: (Peripheral) -> Unit,
     onRemoveBondRequested: (Peripheral) -> Unit,
     onClearCacheRequested: (Peripheral) -> Unit,
+    onRssiRead: (Peripheral) -> Unit,
+    onReadPhy: (Peripheral) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -89,7 +98,7 @@ fun ScannerView(
             }
         }
 
-        if (devices.isNotEmpty()) {
+        if (results.isNotEmpty()) {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(text = "Tap on a device to connect.")
@@ -101,11 +110,13 @@ fun ScannerView(
 
         DeviceList(
             modifier = Modifier.fillMaxSize(),
-            devices = devices,
+            results = results,
             onItemClick = onPeripheralClicked,
             onBondRequested = onBondRequested,
             onRemoveBondRequested = onRemoveBondRequested,
             onClearCacheRequested = onClearCacheRequested,
+            onReadRssi = onRssiRead,
+            onReadPhy = onReadPhy,
             contentPadding = PaddingValues(bottom = 56.dp, top = 16.dp),
         )
     }
@@ -114,23 +125,61 @@ fun ScannerView(
 @Preview(showBackground = true)
 @Composable
 private fun ScannerScreenPreview() {
-    val scope = rememberCoroutineScope()
-    ScannerView(
-        devices = listOf(
-            PreviewPeripheral(
-                scope = scope,
-                address = "00:11:22:33:44:55",
-                name = "Device 1",
-                state = ConnectionState.Connected,
+    var isScanning by remember { mutableStateOf(false) }
+    AppTheme {
+        val scope = rememberCoroutineScope()
+        ScannerView(
+            results = listOf(
+                PreviewScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "00:11:22:33:44:55",
+                        name = "Device 1",
+                        state = ConnectionState.Connected,
+                    ),
+                    rssi = -30,
+                    isConnectable = true,
+                ),
+                PreviewScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "11:22:33:44:55:66",
+                        name = "Device 2",
+                        state = ConnectionState.Connecting,
+                    ),
+                    rssi = -50,
+                    isConnectable = true,
+                ),
+                PreviewScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "22:33:44:55:66:77",
+                        name = "Device 3",
+                        state = ConnectionState.Disconnected(),
+                        hasBondInformation = true,
+                    ),
+                    rssi = -70,
+                    isConnectable = true,
+                ),
+                PreviewScanResult(
+                    peripheral = PreviewPeripheral(
+                        scope = scope,
+                        address = "33:44:55:66:77:88",
+                        name = "Device 4",
+                        state = ConnectionState.Disconnected(),
+                    ),
+                    rssi = -90,
+                    isConnectable = false,
+                )
             ),
-            PreviewPeripheral(scope, "11:22:33:44:55:66", "Device 2"),
-            PreviewPeripheral(scope, "22:33:44:55:66:77", "Device 3"),
-        ),
-        isScanning = true,
-        onStartScan = {},
-        onPeripheralClicked = {},
-        onBondRequested = {},
-        onRemoveBondRequested = {},
-        onClearCacheRequested = {},
-    )
+            isScanning = isScanning,
+            onStartScan = { isScanning = !isScanning },
+            onPeripheralClicked = {},
+            onBondRequested = {},
+            onRemoveBondRequested = {},
+            onClearCacheRequested = {},
+            onRssiRead = {},
+            onReadPhy = {},
+        )
+    }
 }

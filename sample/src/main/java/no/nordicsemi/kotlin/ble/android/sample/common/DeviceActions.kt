@@ -31,61 +31,92 @@
 
 package no.nordicsemi.kotlin.ble.android.sample.common
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
+import no.nordicsemi.kotlin.ble.environment.android.compose.LocalEnvironmentOwner
 
 @Composable
 fun DeviceActions(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
     isBonded: Boolean,
     onBondRequested: () -> Unit,
     onRemoveBondRequested: () -> Unit,
     onClearCacheRequested: () -> Unit,
+    onReadRssi: () -> Unit,
+    onReadPhy: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    val environment = LocalEnvironmentOwner.current
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest
     ) {
-        Button(
-            onClick = onBondRequested,
+        DropdownMenuItem(
+            text = { Text(text = "Bond") },
             enabled = !isBonded,
-        ) {
-            Text("Bind", maxLines = 1)
-        }
-        Button(
-            onClick = onRemoveBondRequested,
-            enabled = isBonded,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
+            onClick = {
+                onBondRequested()
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            enabled = isBonded && environment.allowsBondRemoval,
+            text = { Text(text = "Remove bond") },
+            onClick = {
+                onRemoveBondRequested()
+                onDismissRequest()
+            },
+            colors = MenuDefaults.itemColors(
+                textColor = MaterialTheme.colorScheme.error,
+                leadingIconColor = MaterialTheme.colorScheme.error,
             ),
-        ) {
-            Text("Unbind", maxLines = 1)
-        }
-        Button(
-            onClick = onClearCacheRequested,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.error,
-                contentColor = MaterialTheme.colorScheme.onError
-            ),
-        ) {
-            Text("Refresh", maxLines = 1)
-        }
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(text = "Clear cache") },
+            onClick = {
+                onClearCacheRequested()
+                onDismissRequest()
+            },
+        )
+        HorizontalDivider()
+        DropdownMenuItem(
+            text = { Text(text = "Read RSSI") },
+            onClick = {
+                onReadRssi()
+                onDismissRequest()
+            },
+        )
+        DropdownMenuItem(
+            text = { Text(text = "Read PHY") },
+            onClick = {
+                onReadPhy()
+                onDismissRequest()
+            },
+        )
     }
 }
 
 @Preview
 @Composable
 private fun DeviceActionsPreview() {
-    DeviceActions(
-        isBonded = false,
-        onBondRequested = {},
-        onRemoveBondRequested = {},
-        onClearCacheRequested = {},
-    )
+    AppTheme {
+        DeviceActions(
+            expanded = true,
+            onDismissRequest = {},
+            isBonded = false,
+            onBondRequested = {},
+            onRemoveBondRequested = {},
+            onClearCacheRequested = {},
+            onReadRssi = {},
+            onReadPhy = {},
+        )
+    }
 }

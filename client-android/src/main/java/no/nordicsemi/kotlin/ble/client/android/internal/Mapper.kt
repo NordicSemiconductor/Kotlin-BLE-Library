@@ -35,11 +35,9 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanRecord
 import android.os.Build
-import android.util.SparseArray
+import android.os.SystemClock
 import androidx.annotation.RequiresApi
-import androidx.core.util.forEach
 import no.nordicsemi.kotlin.ble.client.android.AdvertisingData
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
@@ -103,14 +101,15 @@ internal fun Int.errorCodeToReason(): ScanningFailedToStartException.Reason = wh
     else -> ScanningFailedToStartException.Reason.Unknown(this)
 }
 
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice, name: String?) -> Peripheral): ScanResult? {
     val scanRecord = scanRecord ?: return null
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         val deviceName = try { device.name } catch (_: SecurityException) { null }
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: deviceName),
-            isConnectable =  isConnectable,
-            advertisingData = scanRecord.toAdvertisementData(),
+            advertisingData = AdvertisingData(raw = scanRecord.bytes),
+            isConnectable = isConnectable,
             rssi = rssi,
             txPowerLevel =
                 if (txPower != NativeScanResult.TX_POWER_NOT_PRESENT)
@@ -122,13 +121,13 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
                         null,
             primaryPhy = primaryPhy.toPrimaryPhy(),
             secondaryPhy = secondaryPhy.toPhy(),
-            timestamp = timestampNanos / 1000
+            timestamp = timestampNanos / 1_000_000
         )
     } else {
         ScanResult(
             peripheral = peripheral(device, scanRecord.deviceName ?: device.name),
-            isConnectable =  true,
-            advertisingData = scanRecord.toAdvertisementData(),
+            advertisingData = AdvertisingData(raw = scanRecord.bytes),
+            isConnectable = null, // Unknown
             rssi = rssi,
             txPowerLevel =
                 if (scanRecord.txPowerLevel != Int.MIN_VALUE)
@@ -136,20 +135,24 @@ internal fun NativeScanResult.toScanResult(peripheral: (device: BluetoothDevice,
                 else
                     null,
             primaryPhy = PrimaryPhy.PHY_LE_1M,
-            secondaryPhy = null,
-            timestamp = timestampNanos / 1000
+            secondaryPhy = null, // Not used
+            timestamp = timestampNanos / 1_000_000
         )
     }
 }
 
-private fun ScanRecord.toAdvertisementData(): AdvertisingData {
-    return AdvertisingData(raw = bytes)
-}
-
-private fun SparseArray<ByteArray>.toMap(): Map<Int, ByteArray> {
-    val map = mutableMapOf<Int, ByteArray>()
-    forEach { key, value -> map[key] = value }
-    return map
+internal fun ByteArray.toScanResult(rssi: Int, peripheral: (name: String?) -> Peripheral): ScanResult {
+    val data = AdvertisingData(raw = this)
+    return ScanResult(
+        peripheral = peripheral(data.name),
+        isConnectable = null, // Unknown
+        advertisingData = data,
+        rssi = rssi,
+        txPowerLevel = null, // Unknown
+        primaryPhy = PrimaryPhy.PHY_LE_1M,
+        secondaryPhy = null, // Not used
+        timestamp = SystemClock.elapsedRealtime()
+    )
 }
 
 private fun Int.toPrimaryPhy(): PrimaryPhy = when (this) {
@@ -160,12 +163,14 @@ private fun Int.toPrimaryPhy(): PrimaryPhy = when (this) {
 internal fun Int.toPhy(): Phy = when (this) {
     2 /* BluetoothDevice.PHY_LE_2M */ -> Phy.PHY_LE_2M
     3 /* BluetoothDevice.PHY_LE_CODED */ -> Phy.PHY_LE_CODED
+    5 /* BluetoothDevice.PHY_LE_HDT */ -> Phy.PHY_LE_HDT
     else -> Phy.PHY_LE_1M
 }
 
 internal fun Phy.toPhy(): Int = when (this) {
     Phy.PHY_LE_2M -> 2 /* BluetoothDevice.PHY_LE_2M */
     Phy.PHY_LE_CODED -> 3 /* BluetoothDevice.PHY_LE_CODED */
+    Phy.PHY_LE_HDT -> 5 /* BluetoothDevice.PHY_LE_HDT */
     else -> 1 /* BluetoothDevice.PHY_LE_1M */
 }
 
@@ -175,19 +180,7 @@ internal fun PhyOption.toOption(): Int = when (this) {
     PhyOption.S8 -> 2 /* BluetoothDevice.PHY_OPTION_S8 */
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-internal fun List<Phy>.toMask(): Int {
-    var mask = 0
-    forEach {
-        mask = mask or when (it) {
-            Phy.PHY_LE_1M -> 1 /* BluetoothDevice.PHY_LE_1M_MASK */
-            Phy.PHY_LE_2M -> 2 /* BluetoothDevice.PHY_LE_2M_MASK */
-            Phy.PHY_LE_CODED -> 4 /* BluetoothDevice.PHY_LE_CODED_MASK */
-        }
-    }
-    return mask
-}
-
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal fun ConnectionPriority.toPriority() = when (this) {
     ConnectionPriority.BALANCED -> BluetoothGatt.CONNECTION_PRIORITY_BALANCED
     ConnectionPriority.HIGH -> BluetoothGatt.CONNECTION_PRIORITY_HIGH

@@ -35,7 +35,7 @@ import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.mock.internal.MockRemoteDescriptor
 import no.nordicsemi.kotlin.ble.core.OperationStatus
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 import kotlin.uuid.Uuid
 
@@ -204,11 +204,11 @@ interface PeripheralSpecEventHandler {
      *
      * By default, the connection request is accepted.
      *
-     * @param preferredPhy The list of PHYs preferred by the central.
+     * @param phy The PHY used for connection.
      * @return The result of the connection request, by default [ConnectionResult.Accept].
      */
     // Note: This cannot be suspended! It can request MTU, bonding, PHY update, etc., but in a coroutine.
-    fun onConnectionRequest(preferredPhy: List<Phy>): ConnectionResult {
+    fun onConnectionRequest(phy: PrimaryPhy): ConnectionResult {
         return ConnectionResult.Accept
     }
 

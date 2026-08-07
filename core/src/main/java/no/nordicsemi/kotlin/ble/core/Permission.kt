@@ -72,10 +72,6 @@ enum class Permission {
     WRITE_SIGNED_MITM;
 }
 
-infix fun Permission.and(permission: Permission): Set<Permission> {
-    return setOf(this, permission)
-}
+infix fun Permission.and(permission: Permission): Set<Permission> = setOf(this, permission)
 
-infix fun Set<Permission>.and(permission: Permission): Set<Permission> {
-    return this + permission
-}
+infix fun Set<Permission>.and(permission: Permission): Set<Permission> = this + permission

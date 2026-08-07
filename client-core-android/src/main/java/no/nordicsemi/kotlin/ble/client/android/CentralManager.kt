@@ -29,7 +29,7 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused")
 
 package no.nordicsemi.kotlin.ble.client.android
 
@@ -37,7 +37,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import no.nordicsemi.kotlin.ble.client.CentralManager
 import no.nordicsemi.kotlin.ble.client.exception.ConnectionFailedException
-import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothUnavailableException
 import no.nordicsemi.kotlin.ble.core.exception.ManagerClosedException
 import kotlin.time.Duration
@@ -113,9 +112,13 @@ interface CentralManager:
      *
      * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
      * the highest MTU supported by the remote device immediately after establishing the connection.
+     * @property opportunistic Opportunistic connection is available from Android 17 onwards.
+     * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+     * when no other GATT connections are active for the remote device.
      */
     sealed class ConnectionOptions(
-        open val automaticallyRequestHighestValueLength: Boolean
+        open val automaticallyRequestHighestValueLength: Boolean,
+        open val opportunistic: Boolean,
     ) {
         companion object {
             /**
@@ -134,10 +137,17 @@ interface CentralManager:
          *
          * In general, the first ever connection to a device should be direct and subsequent
          * connections to known devices should be invoked with this option.
+         *
+         * @param automaticallyRequestHighestValueLength If true, the manager will automatically request
+         * the highest MTU supported by the remote device immediately after establishing the connection.
+         * @param opportunistic Opportunistic connection is available from Android 17 onwards.
+         * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+         * when no other GATT connections are active for the remote device.
          */
         data class AutoConnect(
-            override val automaticallyRequestHighestValueLength: Boolean = false
-        ): ConnectionOptions(automaticallyRequestHighestValueLength)
+            override val automaticallyRequestHighestValueLength: Boolean = true,
+            override val opportunistic: Boolean = false,
+        ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic)
 
         /**
          * Connection options for direct connection.
@@ -145,45 +155,23 @@ interface CentralManager:
          * Direct connection has a maximum timeout which depends on the device manufacturer and is
          * usually 30 seconds or less. It may be shortened using the [timeout] parameter.
          *
-         * @property timeout The connection timeout. 0 to default to system timeout.
-         * Default timeout is 10 seconds.
+         * @property timeout The connection timeout, defaults to 10 seconds.
+         * If set to a longer time than the system timeout (around 30 seconds)
+         * the connection will still timeout after the default timer. Use [AutoConnect] instead.
          * @property retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
          * @property retryDelay The delay between connection retries, defaults to 300 ms.
-         * @property preferredPhy Preferred PHY for connections to remote LE device. Note that this is
-         * just a recommendation, whether the PHY change will happen depends on other applications
-         * preferences, local and remote controller capabilities. Controller can override these settings.
          * @property automaticallyRequestHighestValueLength If true, the manager will automatically request
          * the highest MTU supported by the remote device immediately after establishing the connection.
+         * @property opportunistic Opportunistic connection is available from Android 17 onwards.
+         * An opportunistic GATT client does not hold a GATT connection. It automatically disconnects
+         * when no other GATT connections are active for the remote device.
          */
         data class Direct(
             val timeout: Duration = 10.seconds,
             val retry: Int = 2,
             val retryDelay: Duration = 300.milliseconds,
-            val preferredPhy: List<Phy> = listOf(Phy.PHY_LE_1M),
-            override val automaticallyRequestHighestValueLength: Boolean = false
-        ): ConnectionOptions(automaticallyRequestHighestValueLength) {
-
-            /**
-             * Connection options for direct connection.
-             *
-             * Direct connection has a maximum timeout which depends on the device manufacturer and is
-             * usually 30 seconds or less. It may be shortened using the [timeout] parameter.
-             *
-             * @param timeout The connection timeout. 0 to default to system timeout.
-             * Default timeout is 10 seconds.
-             * @param retry The number of connection retries. Value *N* indicates *N+1* connection attempts.
-             * @param retryDelay The delay between connection retries, defaults to 300 ms.
-             * @param preferredPhy The preferred PHY for connections to remote LE device.
-             * @param automaticallyRequestHighestValueLength If true, the manager will automatically request
-             * the highest MTU supported by the remote device immediately after establishing the connection.
-             */
-            constructor(
-                timeout: Duration = 10.seconds,
-                retry: Int = 3,
-                retryDelay: Duration = 300.milliseconds,
-                vararg preferredPhy: Phy,
-                automaticallyRequestHighestValueLength: Boolean = false
-            ): this(timeout, retry, retryDelay, preferredPhy = preferredPhy.toList(), automaticallyRequestHighestValueLength)
-        }
+            override val automaticallyRequestHighestValueLength: Boolean = true,
+            override val opportunistic: Boolean = false
+        ): ConnectionOptions(automaticallyRequestHighestValueLength, opportunistic)
     }
 }

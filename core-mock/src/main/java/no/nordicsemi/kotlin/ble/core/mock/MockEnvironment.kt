@@ -32,12 +32,18 @@
 package no.nordicsemi.kotlin.ble.core.mock
 
 import no.nordicsemi.kotlin.ble.core.Environment
+import org.jetbrains.annotations.Range
 
 /**
  * A mock environment that can be used to test the behavior of the Central Manager.
  *
- * @property reportsConnectionParameters Whether the device reports connection parameters.
+ * @property maxAttMtu The maximum supported ATT MTU. This defaults to 23 bytes and can be
+ * extended to 517 bytes (512 bytes for the payload, 2 octets for handle number, 2 for the offset
+ * and 1 for the op code).
+ * @property maxLlMtu The maximum supported Link Layer MTU. This defaults to 27 bytes and can be
+ * extended to 251 with Data Length Extension (DLE).
  */
 interface MockEnvironment : Environment {
-    val reportsConnectionParameters: Boolean
+    val maxAttMtu: @Range(from = 23, to = 517) Int
+    val maxLlMtu: @Range(from = 27, to = 251) Int
 }

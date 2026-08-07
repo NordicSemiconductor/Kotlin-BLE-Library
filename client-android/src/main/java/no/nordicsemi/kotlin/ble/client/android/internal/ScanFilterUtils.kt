@@ -104,7 +104,7 @@ internal fun ScanFilter.toNative(): NativeScanFilter? {
                         // Due to a bug in Android API, the mask is declared as @NonNull.
                         // However, it should be perfectly fine to pass null here.
                         // Instead, we will pass a mask with all zeros, which should have the same effect.
-                        setAdvertisingDataTypeWithData(type.type, it, mask ?: ByteArray(it.size) { 0 })
+                        setAdvertisingDataTypeWithData(type.type, it, mask ?: ByteArray(it.size))
                     } ?: setAdvertisingDataType(type.type)
                 }
             }

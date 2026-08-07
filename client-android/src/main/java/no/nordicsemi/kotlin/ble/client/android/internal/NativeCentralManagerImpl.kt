@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("UnusedReceiverParameter", "unused")
-
 package no.nordicsemi.kotlin.ble.client.android.internal
 
 import android.bluetooth.BluetoothDevice
@@ -39,9 +37,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.ProducerScope
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -66,6 +66,7 @@ import no.nordicsemi.kotlin.ble.environment.android.NativeAndroidEnvironment
 import no.nordicsemi.kotlin.log.Log
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
+import android.bluetooth.BluetoothAdapter.LeScanCallback as NativeLegacyScanCallback
 import android.bluetooth.le.ScanCallback as NativeScanCallback
 import android.bluetooth.le.ScanResult as NativeScanResult
 import android.bluetooth.le.ScanSettings as NativeScanSettings
@@ -115,7 +116,7 @@ internal class NativeCentralManagerImpl(
             peripheral(id) {
                 Peripheral(
                     scope = scope,
-                    impl = NativeExecutor(environment.applicationContext, adapter.getRemoteDevice(it), null)
+                    impl = NativeExecutor(environment, adapter.getRemoteDevice(it), null)
                         .apply {
                             _bondState
                                 .filter { (address, _) -> address == id }
@@ -165,97 +166,10 @@ internal class NativeCentralManagerImpl(
                 return@callbackFlow
             }
 
-            // Ensure the Bluetooth is enabled and Bluetooth LE Scanner is available.
-            val scanner = environment.bluetoothManager?.adapter
-                ?.takeIf { it.isEnabled }
-                ?.bluetoothLeScanner
-                ?: run {
-                    closeWithCallSite(BluetoothUnavailableException())
-                    return@callbackFlow
-                }
-
-            // Verify the BLUETOOTH_SCAN permission is granted (Android 12+).
-            try {
-                checkScanningPermission()
-            } catch (e: Exception) {
-                closeWithCallSite(e)
-                return@callbackFlow
-            }
-
-            // Build the filter based on the provided builder.
-            val filters = ConjunctionFilter().apply(filter).filters
-
-            // Use the most optimal scan mode for low latency immediate scanning.
-            val settings = NativeScanSettings.Builder()
-                .apply {
-                    // TODO Scan settings could be configurable.
-                    setScanMode(NativeScanSettings.SCAN_MODE_LOW_LATENCY)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        setLegacy(false)
-                        setPhy(NativeScanSettings.PHY_LE_ALL_SUPPORTED)
-                    }
-                }
-                .build()
-
-            // Define the callback that will emit scan results.
-            val callback: NativeScanCallback = object : NativeScanCallback() {
-                override fun onScanResult(callbackType: Int, result: NativeScanResult) {
-                    // A result matching the offloaded filter was found, convert it to ScanResult.
-                    val scanResult = result.toScanResult(
-                        peripheral = { device, name ->
-                            peripheral(device.address) {
-                                Peripheral(
-                                    scope = scope,
-                                    impl = NativeExecutor(environment.applicationContext, device, name)
-                                        .apply {
-                                            _bondState
-                                                .filter { (address, _) -> address == device.address }
-                                                .onEach { (_, state) -> onBondStateChanged(state) }
-                                                .launchIn(scope)
-                                        }
-                                ).also { p -> p.logger = logger }
-                            }
-                        }
-                    ) ?: return
-
-                    // Check other filters that cannot be checked by the controller.
-                    if (filters?.match(scanResult) == false) return
-
-                    trySend(scanResult)
-                }
-
-                override fun onBatchScanResults(results: List<NativeScanResult>) {
-                    results.forEach { onScanResult(0, it) }
-                }
-
-                override fun onScanFailed(errorCode: Int) {
-                    with (ScanningFailedToStartException(errorCode.errorCodeToReason())) {
-                        logger?.error(Layer.GAP, this)
-                        closeWithCallSite(this)
-                    }
-                }
-            }
-
-            // Finally, start the scan.
-            logger?.trace(Layer.GAP) {
-                "Starting scanning with ${filters?.let { "filters: $it" } ?: "no filters"}"
-            }
-            scanner.startScan(filters?.toNative(), settings, callback)
-
-            // Set a timeout to stop the scan.
-            if (timeout > 0.milliseconds) {
-                launch(Dispatchers.IO) {
-                    // If the flow is canceled before the timeout, the delay() method will throw
-                    // a CancellationException, which will be ignored.
-                    delay(timeout)
-                    // If we reached the timeout, close the flow manually.
-                    logger?.trace(Layer.GAP) { "Scanning timed out after $timeout" }
-                    close()
-                }
-            }
-            awaitClose {
-                scanner.stopScan(callback)
-                logger?.trace(Layer.GAP) { "Scanning stopped" }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                scanLollipop(timeout, filter, ::closeWithCallSite)
+            } else {
+                scanJellyBean(timeout, filter, ::closeWithCallSite)
             }
         }
     }
@@ -281,6 +195,177 @@ internal class NativeCentralManagerImpl(
             environment.applicationContext.unregisterReceiver(bondStateBroadcastReceiver)
         } catch (_: Exception) {
             // Ignore
+        }
+    }
+
+    // Implementations
+
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+    private suspend fun ProducerScope<ScanResult>.scanLollipop(
+        timeout: Duration,
+        filter: ConjunctionFilterScope.() -> Unit,
+        closeWithCallSite: (Throwable) -> Unit
+    ) {
+        // Ensure the Bluetooth is enabled and Bluetooth LE Scanner is available.
+        val scanner = environment.bluetoothManager?.adapter
+            ?.takeIf { it.isEnabled }
+            ?.bluetoothLeScanner
+            ?: run {
+                closeWithCallSite(BluetoothUnavailableException())
+                return
+            }
+
+        // Verify the BLUETOOTH_SCAN permission is granted (Android 12+).
+        try {
+            checkScanningPermission()
+        } catch (e: Exception) {
+            closeWithCallSite(e)
+            return
+        }
+
+        // Build the filter based on the provided builder.
+        val filters = ConjunctionFilter().apply(filter).filters
+
+        // Use the most optimal scan mode for low latency immediate scanning.
+        val settings = NativeScanSettings.Builder()
+            .apply {
+                // TODO Scan settings could be configurable.
+                setScanMode(NativeScanSettings.SCAN_MODE_LOW_LATENCY)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    setLegacy(false)
+                    setPhy(NativeScanSettings.PHY_LE_ALL_SUPPORTED)
+                }
+            }
+            .build()
+
+        // Define the callback that will emit scan results.
+        val callback = object : NativeScanCallback() {
+            override fun onScanResult(callbackType: Int, result: NativeScanResult) {
+                // A result matching the offloaded filter was found, convert it to ScanResult.
+                val scanResult = result.toScanResult(
+                    peripheral = { device, name ->
+                        peripheral(device.address) {
+                            Peripheral(
+                                scope = scope,
+                                impl = NativeExecutor(environment, device, name)
+                                    .apply {
+                                        _bondState
+                                            .filter { (address, _) -> address == device.address }
+                                            .onEach { (_, state) -> onBondStateChanged(state) }
+                                            .launchIn(scope)
+                                    }
+                            ).also { p -> p.logger = logger }
+                        }
+                    }
+                ) ?: return
+
+                // Check other filters that cannot be checked by the controller.
+                if (filters?.match(scanResult) == false) return
+
+                trySend(scanResult)
+            }
+
+            override fun onBatchScanResults(results: List<NativeScanResult>) {
+                results.forEach { onScanResult(0, it) }
+            }
+
+            override fun onScanFailed(errorCode: Int) {
+                with (ScanningFailedToStartException(errorCode.errorCodeToReason())) {
+                    logger?.error(Layer.GAP, this)
+                    closeWithCallSite(this)
+                }
+            }
+        }
+
+        // Finally, start the scan.
+        logger?.trace(Layer.GAP) {
+            "Starting scanning with ${filters?.let { "filters: $it" } ?: "no filters"}"
+        }
+        scanner.startScan(filters?.toNative(), settings, callback)
+
+        // Set a timeout to stop the scan.
+        if (timeout > 0.milliseconds) {
+            launch(Dispatchers.IO) {
+                // If the flow is canceled before the timeout, the delay() method will throw
+                // a CancellationException, which will be ignored.
+                delay(timeout)
+                // If we reached the timeout, close the flow manually.
+                logger?.trace(Layer.GAP) { "Scanning timed out after $timeout" }
+                close()
+            }
+        }
+        awaitClose {
+            scanner.stopScan(callback)
+            logger?.trace(Layer.GAP) { "Scanning stopped" }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private suspend fun ProducerScope<ScanResult>.scanJellyBean(
+        timeout: Duration,
+        filter: ConjunctionFilterScope.() -> Unit,
+        closeWithCallSite: (Throwable) -> Unit
+    ) {
+        // Ensure the Bluetooth is enabled and Bluetooth LE Scanner is available.
+        val adapter = environment.bluetoothManager?.adapter
+            ?.takeIf { it.isEnabled }
+            ?: run {
+                closeWithCallSite(BluetoothUnavailableException())
+                return
+            }
+
+        // Build the filter based on the provided builder.
+        val filters = ConjunctionFilter().apply(filter).filters
+
+        // Define the callback that will emit scan results.
+        val callback = object : NativeLegacyScanCallback {
+            override fun onLeScan(device: BluetoothDevice?, rssi: Int, scanRecord: ByteArray?) {
+                if (device == null || scanRecord == null) return
+                val scanResult = scanRecord.toScanResult(
+                    rssi = rssi,
+                    peripheral = { name ->
+                        peripheral(device.address) {
+                            Peripheral(
+                                scope = scope,
+                                impl = NativeExecutor(environment, device, name)
+                                    .apply {
+                                        _bondState
+                                            .filter { (address, _) -> address == device.address }
+                                            .onEach { (_, state) -> onBondStateChanged(state) }
+                                            .launchIn(scope)
+                                    }
+                            ).also { p -> p.logger = logger }
+                        }
+                    }
+                )
+
+                // Check other filters that cannot be checked by the controller.
+                if (filters?.match(scanResult) == false) return
+
+                trySend(scanResult)
+            }
+        }
+
+        // Finally, start the scan.
+        logger?.trace(Layer.GAP) {
+            "Starting scanning with ${filters?.let { "filters: $it" } ?: "no filters"}"
+        }
+        adapter.stopLeScan(callback)
+
+        // Set a timeout to stop the scan.
+        if (timeout > 0.milliseconds) {
+            launch(Dispatchers.IO) {
+                // If the flow is canceled before the timeout, the delay() method will throw
+                // a CancellationException, which will be ignored.
+                delay(timeout)
+                // If we reached the timeout, close the flow manually.
+                logger?.trace(Layer.GAP) { "Scanning timed out after $timeout" }
+                close()
+            }
+        }
+        awaitClose {
+            adapter.stopLeScan(callback)
+            logger?.trace(Layer.GAP) { "Scanning stopped" }
         }
     }
 }

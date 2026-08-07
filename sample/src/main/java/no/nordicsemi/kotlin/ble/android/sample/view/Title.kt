@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import no.nordicsemi.kotlin.ble.android.sample.theme.AppTheme
 
 @Composable
 fun Title(
@@ -87,8 +88,10 @@ fun Title(
 @Preview
 @Composable
 fun TitlePreview() {
-    Title(
-        icon = Icons.Default.Home,
-        title = { Text("Home") }
-    )
+    AppTheme {
+        Title(
+            icon = Icons.Default.Home,
+            title = { Text("Home") }
+        )
+    }
 }

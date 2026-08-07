@@ -35,9 +35,9 @@ import no.nordicsemi.kotlin.ble.client.ScanResult
 import no.nordicsemi.kotlin.ble.core.Phy
 import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 
-class ScanResult(
+open class ScanResult(
     override val peripheral: Peripheral,
-    override val isConnectable: Boolean,
+    override val isConnectable: Boolean?,
     override val advertisingData: AdvertisingData,
     override val rssi: Int,
     override val txPowerLevel: Int?,

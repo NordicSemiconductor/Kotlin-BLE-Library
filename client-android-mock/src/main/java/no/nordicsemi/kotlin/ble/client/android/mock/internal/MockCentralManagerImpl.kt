@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.android.mock.internal
 
 import kotlinx.coroutines.CoroutineScope
@@ -252,9 +250,7 @@ open class MockCentralManagerImpl(
                     }
 
                     // If PHY LE Coded is not supported, ignore results sent with LE Coded PHY.
-                    if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED &&
-                        (!environment.isLeCodedPhySupported || !environment.isScanningOnLeCodedPhySupported)
-                    ) {
+                    if (result.primaryPhy == PrimaryPhy.PHY_LE_CODED && !environment.isScanningOnLeCodedPhySupported) {
                         return@collect
                     }
                     if (result.secondaryPhy == Phy.PHY_LE_CODED && !environment.isLeCodedPhySupported) {
@@ -271,7 +267,7 @@ open class MockCentralManagerImpl(
                     // The mock scanner found the device and cached its MAC address.
                     result.peripheralSpec.simulateCaching()
 
-                    val scanResult = result.toScanResult { peripheralSpec, name ->
+                    val scanResult = result.toScanResult(environment) { peripheralSpec, name ->
                         peripheral(peripheralSpec.identifier) {
                             Peripheral(
                                 scope = scope,

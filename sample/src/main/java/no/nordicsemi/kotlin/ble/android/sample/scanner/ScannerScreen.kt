@@ -58,7 +58,7 @@ fun ScannerScreen() {
     val environment = LocalEnvironmentOwner.current
     val vm = hiltViewModel<ScannerViewModel>()
     val state by vm.state.collectAsStateWithLifecycle()
-    val devices by vm.peripherals.collectAsStateWithLifecycle()
+    val results by vm.peripherals.collectAsStateWithLifecycle()
     val isScanning by vm.isScanning.collectAsStateWithLifecycle()
 
     Column(
@@ -112,7 +112,7 @@ fun ScannerScreen() {
             // Both Bluetooth and Location permissions are granted.
             // We can now start scanning.
             ScannerView(
-                devices = devices,
+                results = results,
                 isScanning = isScanning,
                 onStartScan = {
                     if (!isScanning)
@@ -124,6 +124,8 @@ fun ScannerScreen() {
                 onBondRequested = vm::onBondRequested,
                 onRemoveBondRequested = vm::onRemoveBondRequested,
                 onClearCacheRequested = vm::onClearCacheRequested,
+                onRssiRead = vm::onRssiRead,
+                onReadPhy = vm::onReadPhy,
             )
         } else {
             Button(

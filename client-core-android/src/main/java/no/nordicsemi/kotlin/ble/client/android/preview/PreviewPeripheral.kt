@@ -76,6 +76,8 @@ import no.nordicsemi.kotlin.ble.core.PhyOption
 import no.nordicsemi.kotlin.ble.core.ServerScope
 import no.nordicsemi.kotlin.ble.core.Service
 import no.nordicsemi.kotlin.ble.core.WriteType
+import no.nordicsemi.kotlin.ble.core.android.AndroidEnvironment
+import no.nordicsemi.kotlin.ble.core.android.preview.PreviewEnvironment
 import no.nordicsemi.kotlin.ble.core.internal.CharacteristicDefinition
 import no.nordicsemi.kotlin.ble.core.internal.DescriptorDefinition
 import no.nordicsemi.kotlin.ble.core.internal.ServerScopeImpl
@@ -115,7 +117,7 @@ private class StubExecutor(
     hasBondInformation: Boolean,
 ): Peripheral.Executor {
     override var logger: Log.Sink<Layer>? = Log.Sink.Null
-    private val _events = MutableSharedFlow<GattEvent>(replay = 1)
+    private val _events = MutableSharedFlow<GattEvent>(extraBufferCapacity = 64)
     override val events: SharedFlow<GattEvent> = _events.asSharedFlow()
 
     private val _bondState = MutableStateFlow(if (hasBondInformation) BondState.BONDED else BondState.NONE)
@@ -126,10 +128,15 @@ private class StubExecutor(
 
     override var isReliableWriteEnabled: Boolean = false
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
+    override val environment: AndroidEnvironment = PreviewEnvironment()
+
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+    ) {
         _events.emit(ConnectionStateChanged(ConnectionState.Connected))
     }
-
     
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {
         _events.emit(ServicesDiscovered(initialServices))
@@ -395,7 +402,7 @@ private class StubRemoteDescriptor(
 open class PreviewPeripheral(
     scope: CoroutineScope,
     address: String = "00:11:22:33:44:55",
-    name: String? = "My Device",
+    name: String? = "Mock Device",
     type: PeripheralType = PeripheralType.LE,
     rssi: Int = -40, // dBm
     phy: PhyInUse = PhyInUse.PHY_LE_1M,
@@ -447,7 +454,7 @@ open class PreviewPeripheral(
             },
         rssi = rssi,
         phy = phy,
-        hasBondInformation = hasBondInformation
+        hasBondInformation = hasBondInformation,
     )
 ) {
     override fun toString(): String {

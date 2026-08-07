@@ -33,6 +33,7 @@ package no.nordicsemi.kotlin.ble.android.sample.scanner
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -62,7 +63,9 @@ import no.nordicsemi.kotlin.ble.client.RemoteServices
 import no.nordicsemi.kotlin.ble.client.android.CentralManager
 import no.nordicsemi.kotlin.ble.client.android.ConnectionPriority
 import no.nordicsemi.kotlin.ble.client.android.Peripheral
+import no.nordicsemi.kotlin.ble.client.android.ScanResult
 import no.nordicsemi.kotlin.ble.client.android.preview.PreviewPeripheral
+import no.nordicsemi.kotlin.ble.client.android.preview.PreviewScanResult
 import no.nordicsemi.kotlin.ble.client.distinctByPeripheral
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
@@ -85,20 +88,23 @@ class ScannerViewModel @Inject constructor(
 ): ViewModel() {
     val state = centralManager.state
 
-    private val _peripherals: MutableStateFlow<List<Peripheral>> = MutableStateFlow(
+    private val _peripherals: MutableStateFlow<List<ScanResult>> = MutableStateFlow(
         listOf(
             // Note: It's not possible to connect to PreviewPeripheral instances.
             //       An exception is thrown, that it was obtained using a different CentralManager.
             // TODO Allow it?
-            PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
-                .apply {
-                    // Track state of each peripheral.
-                    // Note, that the states are observed using the view model scope, even when the
-                    // device isn't connected.
-                    observePeripheralState(this, scope)
-                    // Track bond state of each peripheral.
-                    observeBondState(this, scope)
-                }
+            PreviewScanResult(
+                peripheral = PreviewPeripheral(scope, phy = PhyInUse(txPhy = Phy.PHY_LE_1M, rxPhy = Phy.PHY_LE_2M))
+                    .apply {
+                        // Track state of each peripheral.
+                        // Note, that the states are observed using the view model scope, even when the
+                        // device isn't connected.
+                        observePeripheralState(this, scope)
+                        // Track bond state of each peripheral.
+                        observeBondState(this, scope)
+                    },
+                isConnectable = true,
+            )
         )
     )
     val peripherals = _peripherals.asStateFlow()
@@ -132,13 +138,16 @@ class ScannerViewModel @Inject constructor(
                 _isScanning.update { true }
             }
             .distinctByPeripheral()
-            .map { it.peripheral }
-            .filterNot { _peripherals.value.contains(it) }
-            //.distinct()
-            .onEach { newPeripheral ->
-                Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address})")
-                _peripherals.update { peripherals.value + newPeripheral }
+            .filterNot { result ->
+                _peripherals.value.any { it.peripheral == result.peripheral }
             }
+            //.distinct()
+            .onEach { result ->
+                val newPeripheral = result.peripheral
+                Timber.i("Found new device: ${newPeripheral.name} (${newPeripheral.address}), connectable: ${result.isConnectable}")
+                _peripherals.update { peripherals.value + result }
+            }
+            .map { it.peripheral }
             .onEach { peripheral ->
                 // Track state of each peripheral.
                 // Note, that the states are observed using the view model scope, even when the
@@ -272,6 +281,30 @@ class ScannerViewModel @Inject constructor(
         }
     }
 
+    fun onRssiRead(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                Timber.i("Reading RSSI...")
+                val rssi = peripheral.readRssi()
+                Timber.i("RSSI: $rssi dBm")
+            } catch (e: Exception) {
+                Timber.e(e, "Reading RSSI failed")
+            }
+        }
+    }
+
+    fun onReadPhy(peripheral: Peripheral) {
+        scope.launch {
+            try {
+                Timber.i("Reading PHY...")
+                val phy = peripheral.readPhy()
+                Timber.i("PHY: $phy")
+            } catch (e: Exception) {
+                Timber.e(e, "Reading PHY failed")
+            }
+        }
+    }
+
     override fun onCleared() {
         super.onCleared()
         centralManager.close()
@@ -290,7 +323,7 @@ class ScannerViewModel @Inject constructor(
                     timeout = 3.seconds,
                     retry = 2,
                     retryDelay = 1.seconds,
-                    Phy.PHY_LE_2M,
+                    automaticallyRequestHighestValueLength = true,
                 )
             },
         )
@@ -299,8 +332,8 @@ class ScannerViewModel @Inject constructor(
 
     private suspend fun initiateConnection(peripheral: Peripheral) {
         try {
-            // Request MTU
-            peripheral.requestHighestValueLength()
+            // MTU request is done automatically on connection.
+            // peripheral.requestHighestValueLength()
 
             // Check maximum write length
             val writeType = WriteType.WITHOUT_RESPONSE
@@ -380,6 +413,7 @@ class ScannerViewModel @Inject constructor(
                                 val value = remoteCharacteristic.read()
                                 Timber.i("- Value of ${remoteCharacteristic.uuid}: 0x${value.toHexString()}")
                             } catch (e: Exception) {
+                                if (e is CancellationException) throw e
                                 if (e is InvalidAttributeException) throw e
                                 if (expectError) {
                                     Timber.w("- Value of ${remoteCharacteristic.uuid}: Read not permitted")
@@ -393,6 +427,7 @@ class ScannerViewModel @Inject constructor(
                                     val descValue = descriptor.read()
                                     Timber.i("   - Value of descriptor ${descriptor.uuid}: 0x${descValue.toHexString()}")
                                 } catch (e: Exception) {
+                                    if (e is CancellationException) throw e
                                     if (e is InvalidAttributeException) throw e
                                     if (e is OperationFailedException && e.reason == OperationStatus.ReadNotPermitted) {
                                         // This is expected for Client Characteristic Configuration Descriptor of non-notifiable characteristics.
@@ -446,25 +481,28 @@ class ScannerViewModel @Inject constructor(
                                     }
                                     .launchIn(scope)
                             } catch (e: Exception) {
+                                if (e is CancellationException) throw e
                                 if (e is InvalidAttributeException) throw e
                                 if (!expectError) {
-                                    Timber.e("($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
+                                    Timber.e(e, "($ce) Failed to subscribe to ${remoteCharacteristic.uuid}: ${e.message}")
                                 }
                             }
                         }
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (_: InvalidAttributeException) {
                     // InvalidAttributeException is thrown when the peripheral is disconnected
                     // or services got invalidated when a notification is awaited (waitForValueChange).
                     Timber.w("Services invalidated during an operation")
                 } catch (t: Throwable) {
-                    Timber.e("GATT operation failed: ${t.message}")
+                    Timber.e(t, "GATT operation failed: ${t.message}")
                 }
             }
             // This catch would cancel the flow and stop collecting.
             // Instead, exceptions are caught in onEach above.
             .catch { t->
-                Timber.wtf("Operation failed: ${t.message}")
+                Timber.wtf(t, "Operation failed: ${t.message}")
             }
             .onCompletion {
                 Timber.d("Service collection completed")
@@ -503,7 +541,7 @@ class ScannerViewModel @Inject constructor(
 
                     is ConnectionState.Disconnected -> {
                         // Just for testing, wait with cancelling the scope to get all the logs.
-                        delay(500)
+                        delay(500.milliseconds)
                         // Cancel connection scope, so that previously launched jobs are canceled.
                         connectionScopeMap.remove(peripheral)?.cancel()
                     }

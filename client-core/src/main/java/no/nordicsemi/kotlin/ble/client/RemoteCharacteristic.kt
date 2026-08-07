@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client
 
 import kotlinx.coroutines.flow.Flow
@@ -114,6 +112,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
      * disconnection or service change event.
+     * @throws SecurityException if accessing the characteristic is not permitted.
      * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
      * a reason.
      */
@@ -134,6 +133,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
      * disconnection or service change event.
+     * @throws SecurityException if accessing the characteristic is not permitted.
      * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
      * a reason.
      */
@@ -161,6 +161,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
      * disconnection or service change event.
+     * @throws SecurityException if accessing the characteristic is not permitted.
      * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
      * a reason.
      */
@@ -220,6 +221,7 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * @throws OperationFailedException if the operation failed.
      * @throws InvalidAttributeException if the characteristic has been invalidated due to
      * disconnection or service change event.
+     * @throws SecurityException if accessing the characteristic or its descriptor is not permitted.
      * @throws BluetoothException if the implementation fails, see [BluetoothException.cause] for
      * a reason.
      * @see isNotifying

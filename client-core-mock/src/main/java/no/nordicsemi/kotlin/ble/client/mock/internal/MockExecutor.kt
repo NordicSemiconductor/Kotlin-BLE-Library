@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.client.mock.internal
 
 import kotlinx.coroutines.flow.Flow
@@ -41,7 +39,7 @@ import no.nordicsemi.kotlin.ble.client.RemoteService
 import no.nordicsemi.kotlin.ble.client.mock.PeripheralSpec
 import no.nordicsemi.kotlin.ble.core.ConnectionState
 import no.nordicsemi.kotlin.ble.core.ConnectionState.Disconnected.Reason
-import no.nordicsemi.kotlin.ble.core.Phy
+import no.nordicsemi.kotlin.ble.core.PrimaryPhy
 import no.nordicsemi.kotlin.ble.core.log.Layer
 import no.nordicsemi.kotlin.ble.core.mock.MockEnvironment
 import no.nordicsemi.kotlin.log.Log
@@ -60,7 +58,7 @@ import kotlin.uuid.Uuid
 open class MockExecutor(
     val peripheralSpec: PeripheralSpec<String>,
     name: String?,
-    private val environment: MockEnvironment,
+    override val environment: MockEnvironment,
     private val advertisements: Flow<MockScanResult<String>>,
 ): Peripheral.Executor<String> {
     override var logger: Log.Sink<Layer>? = Log.Sink.Null
@@ -90,8 +88,12 @@ open class MockExecutor(
     override val isClosed: Boolean
         get() = gatt == null
 
-    override suspend fun connect(autoConnect: Boolean, preferredPhy: List<Phy>) {
-        gatt = peripheralSpec.connectGatt(environment, autoConnect, preferredPhy, advertisements)
+    override suspend fun connect(
+        autoConnect: Boolean,
+        autoMtu: Boolean,
+        opportunistic: Boolean,
+    ) {
+        gatt = peripheralSpec.connectGatt(environment, autoConnect, autoMtu, opportunistic, advertisements)
     }
 
     override suspend fun discoverServices(uuids: List<Uuid>): Boolean {

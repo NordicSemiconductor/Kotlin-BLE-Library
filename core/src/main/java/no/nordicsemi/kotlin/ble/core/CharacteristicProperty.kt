@@ -29,8 +29,6 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-@file:Suppress("unused")
-
 package no.nordicsemi.kotlin.ble.core
 
 /**
@@ -48,12 +46,12 @@ enum class CharacteristicProperty {
     READ,
     /**
      * A property that indicates a peripheral can write the characteristic’s value,
-     * without a response to indicate that the write succeeded.
+     * without a response to indicate that the write operation succeeded.
      */
     WRITE_WITHOUT_RESPONSE,
     /**
      * A property that indicates a peripheral can write the characteristic’s value,
-     * with a response to indicate that the write succeeded.
+     * with a response to indicate that the write operation succeeded.
      */
     WRITE,
     /**
@@ -68,7 +66,7 @@ enum class CharacteristicProperty {
     INDICATE,
     /**
      * A property that indicates the peripheral allows signed writes of the characteristic’s value,
-     * without a response to indicate the write succeeded.
+     * without a response to indicate the write operation succeeded.
      */
     SIGNED_WRITE,
     /**
@@ -94,7 +92,7 @@ enum class CharacteristicProperty {
 
     /**
      * The write type associated with this property, or null if the property does not
-     * relates to writing.
+     * relate to writing.
      */
     val writeType: WriteType?
         get() = when (this) {
@@ -105,13 +103,11 @@ enum class CharacteristicProperty {
         }
 }
 
-infix fun CharacteristicProperty.and(property: CharacteristicProperty): Set<CharacteristicProperty> {
-    return setOf(this, property)
-}
+infix fun CharacteristicProperty.and(property: CharacteristicProperty): Set<CharacteristicProperty> =
+    setOf(this, property)
 
-infix fun Set<CharacteristicProperty>.and(property: CharacteristicProperty): Set<CharacteristicProperty> {
-    return this + property
-}
+infix fun Set<CharacteristicProperty>.and(property: CharacteristicProperty): Set<CharacteristicProperty> =
+    this + property
 
 /**
  * Returns the default write type for the given list of properties.
