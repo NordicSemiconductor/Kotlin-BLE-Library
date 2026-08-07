@@ -1498,54 +1498,52 @@ abstract class Peripheral<ID: Any, EX: Peripheral.Executor<ID>>(
      */
     internal suspend fun disconnect(reason: ConnectionState.Disconnected.Reason) = withCallSite("disconnect") {
         withContext(NonCancellable) {
-            OperationMutex.withLock {
-                // Depending on the state...
-                when (state.value) {
-                    is ConnectionState.Disconnected -> {
-                        // Make sure auto-connection is closed.
-                        close()
-                        return@withLock
-                    }
-
-                    is ConnectionState.Disconnecting -> {
-                        // Skip..
-                    }
-
-                    is ConnectionState.Connecting -> {
-                        // Cancel the connection attempt.
-                        logger?.trace(Layer.GAP) { "Cancelling connection to ${this@Peripheral}" }
-                        _state.update { ConnectionState.Disconnecting }
-                    }
-
-                    is ConnectionState.Connected -> {
-                        // Disconnect from the peripheral.
-                        logger?.trace(Layer.GAP) { "Disconnecting from ${this@Peripheral}" }
-                        _state.update { ConnectionState.Disconnecting }
-                    }
+            // Depending on the state...
+            when (state.value) {
+                is ConnectionState.Disconnected -> {
+                    // Make sure auto-connection is closed.
+                    close()
+                    return@withContext
                 }
 
-                // Disconnect and wait until it is disconnected, then close.
-                try {
-                    if (!impl.isClosed) {
-                        await(
-                            action = { impl.disconnect(reason) },
-                            condition = { it.isDisconnected },
-                            timeout = 500.milliseconds
-                        )
-                    }
-                } catch (e: TimeoutCancellationException) {
-                    if (!isDisconnected) {
-                        logger?.warn(Layer.GAP) { "Disconnection takes longer than expected, closing" }
-                    }
-                } finally {
-                    close()
-                    // If before calling disconnect() the state was not Connected (i.e. Connecting),
-                    // the state at this point will be Disconnecting. Change it to Disconnected manually.
-                    _state.compareAndSet(
-                        expect = ConnectionState.Disconnecting,
-                        update = ConnectionState.Disconnected(reason)
+                is ConnectionState.Disconnecting -> {
+                    // Skip..
+                }
+
+                is ConnectionState.Connecting -> {
+                    // Cancel the connection attempt.
+                    logger?.trace(Layer.GAP) { "Cancelling connection to ${this@Peripheral}" }
+                    _state.update { ConnectionState.Disconnecting }
+                }
+
+                is ConnectionState.Connected -> {
+                    // Disconnect from the peripheral.
+                    logger?.trace(Layer.GAP) { "Disconnecting from ${this@Peripheral}" }
+                    _state.update { ConnectionState.Disconnecting }
+                }
+            }
+
+            // Disconnect and wait until it is disconnected, then close.
+            try {
+                if (!impl.isClosed) {
+                    await(
+                        action = { impl.disconnect(reason) },
+                        condition = { it.isDisconnected },
+                        timeout = 500.milliseconds
                     )
                 }
+            } catch (e: TimeoutCancellationException) {
+                if (!isDisconnected) {
+                    logger?.warn(Layer.GAP) { "Disconnection takes longer than expected, closing" }
+                }
+            } finally {
+                close()
+                // If before calling disconnect() the state was not Connected (i.e. Connecting),
+                // the state at this point will be Disconnecting. Change it to Disconnected manually.
+                _state.compareAndSet(
+                    expect = ConnectionState.Disconnecting,
+                    update = ConnectionState.Disconnected(reason)
+                )
             }
         }
     }
