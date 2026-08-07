@@ -33,4 +33,4 @@ package no.nordicsemi.kotlin.ble.client.android.exception
 
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
 
-class BondingFailedException: BluetoothException()
+class BondingFailedException: BluetoothException("Bonding failed")
