@@ -70,6 +70,8 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      *
      * This method writes to the Client Characteristic Configuration Descriptor (CCCD)
      * belonging to this characteristic to enable or disable notifications or indications.
+     * If both modes are supported, indications are preferred. Use the overload accepting
+     * [SubscriptionMode] to select a mode explicitly.
      *
      * Note: [subscribe] or [waitForValueChange] enable notifications automatically.
      *
@@ -176,6 +178,8 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * If not already enabled, this method enables notifications or indications automatically
      * on subscription, that is when a terminal operator (`collect`, `first`, etc.) is invoked on
      * the returned flow.
+     * If both modes are supported, indications are preferred. Use the overload accepting
+     * [SubscriptionMode] to select a mode explicitly.
      *
      * [onSubscription] callback is invoked when the notifications or indications have been
      * enabled successfully.
@@ -238,6 +242,8 @@ interface RemoteCharacteristic: Characteristic<RemoteDescriptor> {
      * This method suspends until the value of the characteristic changes.
      * If the notifications or indications are not enabled, this method will enable them
      * automatically after subscribing for value changes.
+     * If both modes are supported, indications are preferred. Use the overload accepting
+     * [SubscriptionMode] to select a mode explicitly.
      *
      * ```kotlin
      * val newValue = remoteCharacteristic.waitForValueChange(

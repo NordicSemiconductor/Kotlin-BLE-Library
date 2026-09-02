@@ -50,6 +50,8 @@ dependencies {
     api(project(":core-mock"))
     api(project(":client-core"))
 
+    testImplementation(libs.kotlin.test)
+
     // Adds @hide annotation to exclude internal classes from the documentation.
     dokkaPlugin(libs.dokka.android.gradlePlugin)
 }

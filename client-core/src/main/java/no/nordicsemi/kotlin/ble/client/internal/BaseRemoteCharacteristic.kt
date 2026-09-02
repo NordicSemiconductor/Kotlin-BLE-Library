@@ -45,10 +45,10 @@ import no.nordicsemi.kotlin.ble.client.AnyRemoteService
 import no.nordicsemi.kotlin.ble.client.GattEvent
 import no.nordicsemi.kotlin.ble.client.RemoteCharacteristic
 import no.nordicsemi.kotlin.ble.client.RemoteDescriptor
+import no.nordicsemi.kotlin.ble.client.SubscriptionMode
 import no.nordicsemi.kotlin.ble.client.exception.InvalidAttributeException
 import no.nordicsemi.kotlin.ble.client.exception.OperationFailedException
 import no.nordicsemi.kotlin.ble.client.exception.ValueDoesNotMatchException
-import no.nordicsemi.kotlin.ble.core.CharacteristicProperty
 import no.nordicsemi.kotlin.ble.core.OperationStatus
 import no.nordicsemi.kotlin.ble.core.WriteType
 import no.nordicsemi.kotlin.ble.core.exception.BluetoothException
@@ -119,53 +119,42 @@ abstract class BaseRemoteCharacteristic(
     abstract fun OperationEvent.matches(): Boolean
 
     /** A flag indicating whether notifications or indications are enabled.  */
-    private var _isNotifying: Boolean = false
+    private val subscriptionController = SubscriptionController()
     final override val isNotifying: Boolean
-        get() = owner != null && _isNotifying
+        get() = owner != null && subscriptionController.isEnabled
 
-    final override suspend fun setNotifying(enabled: Boolean) = withCallSite("setNotifying") {
-        // Check whether the characteristic wasn't invalidated.
-        val owner = requireNotNull(owner) {
-            throw InvalidAttributeException()
+    final override suspend fun setNotifying(enabled: Boolean) =
+        setNotifying(enabled, SubscriptionMode.AUTOMATIC)
+
+    internal suspend fun setNotifying(enabled: Boolean, mode: SubscriptionMode) =
+        withCallSite("setNotifying") {
+            // Check whether the characteristic wasn't invalidated.
+            val owner = requireNotNull(owner) {
+                throw InvalidAttributeException()
+            }
+
+            // Check whether accessing the attribute is permitted.
+            require(owner.executor.environment.isSystem || !isRestricted()) {
+                throw SecurityException("Subscribing to value changes from characteristic $uuid is not permitted")
+            }
+
+            // Verify that the characteristic can be subscribed to.
+            require(isSubscribable()) {
+                throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
+            }
+
+            // Check if the CCCD descriptor exists.
+            val cccd = descriptors.cccd()
+                ?: throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
+
+            subscriptionController.setNotifying(
+                enabled = enabled,
+                requestedMode = mode,
+                properties = properties,
+                setLocalRegistration = ::setCharacteristicNotification,
+                writeCccd = cccd::write,
+            )
         }
-
-        // Check whether accessing the attribute is permitted.
-        require(owner.executor.environment.isSystem || !isRestricted()) {
-            throw SecurityException("Subscribing to value changes from characteristic $uuid is not permitted")
-        }
-
-        // If the current state of notifications is the same as the requested state, return.
-        if (enabled == isNotifying)
-            return@withCallSite
-
-        // Verify that the characteristic can be subscribed to.
-        require(isSubscribable()) {
-            throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
-        }
-
-        // Check if the CCCD descriptor exists.
-        val cccd = descriptors.cccd()
-            ?: throw OperationFailedException(OperationStatus.SubscribeNotPermitted)
-
-        // Enable handling of notifications or indications locally.
-        try {
-            setCharacteristicNotification(enabled)
-        } catch (e: OperationFailedException) {
-            throw e
-        } catch (e: Exception) {
-            throw BluetoothException(e)
-        }
-
-        // Enable notifications or indications by writing to the CCCD descriptor.
-        val value = when {
-            // Note: Indicate has priority over Notify, if both are supported.
-            enabled && CharacteristicProperty.INDICATE in properties -> BaseRemoteDescriptor.ENABLE_INDICATIONS_VALUE
-            enabled -> BaseRemoteDescriptor.ENABLE_NOTIFICATIONS_VALUE
-            else -> BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE
-        }
-        cccd.write(value)
-        _isNotifying = enabled
-    }
 
     final override suspend fun read(): ByteArray = withCallSite("read") {
         // Check whether the characteristic wasn't invalidated.
@@ -288,8 +277,22 @@ abstract class BaseRemoteCharacteristic(
         merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
         filter: (ByteArray) -> Boolean,
         trigger: suspend RemoteCharacteristic.() -> Unit,
+    ): ByteArray = waitForValueChange(
+        SubscriptionMode.AUTOMATIC,
+        rawDataFilter,
+        merge,
+        filter,
+        trigger,
+    )
+
+    internal suspend fun waitForValueChange(
+        mode: SubscriptionMode,
+        rawDataFilter: (ByteArray) -> Boolean,
+        merge: suspend (ByteArray, ByteArray, Int) -> MergeResult,
+        filter: (ByteArray) -> Boolean,
+        trigger: suspend RemoteCharacteristic.() -> Unit,
     ): ByteArray = withCallSite("waitForValueChange") {
-        subscribe(trigger)
+        subscribe(mode, trigger)
             .filter(rawDataFilter)
             .mergeIndexed(merge)
             .firstOrNull(filter)
@@ -298,6 +301,11 @@ abstract class BaseRemoteCharacteristic(
 
     override fun subscribe(
         onSubscription: suspend RemoteCharacteristic.() -> Unit
+    ): Flow<ByteArray> = subscribe(SubscriptionMode.AUTOMATIC, onSubscription)
+
+    internal fun subscribe(
+        mode: SubscriptionMode,
+        onSubscription: suspend RemoteCharacteristic.() -> Unit,
     ): Flow<ByteArray> {
         // Check whether the characteristic wasn't invalidated.
         val owner = requireNotNull(owner) {
@@ -324,7 +332,7 @@ abstract class BaseRemoteCharacteristic(
                 val collectedHere = CallSiteException("subscribe() Flow started being collected here")
                 try {
                     // First, make sure the notifications or indications are enabled.
-                    setNotifying(true)
+                    setNotifying(true, mode)
                     // Then, invoke the user callback.
                     onSubscription()
                 } catch (e: CancellationException) {
