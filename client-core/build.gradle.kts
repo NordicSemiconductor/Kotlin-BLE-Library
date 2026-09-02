@@ -51,6 +51,8 @@ dependencies {
 
     api(libs.kotlinx.datetime)
 
+    testImplementation(libs.kotlin.test)
+
     // Adds @hide annotation to exclude internal classes from the documentation.
     dokkaPlugin(libs.dokka.android.gradlePlugin)
 }

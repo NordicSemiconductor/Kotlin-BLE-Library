@@ -65,6 +65,12 @@ class MockRemoteDescriptor(
 ): BaseRemoteDescriptor(parent, events) {
     override val uuid: Uuid = descriptor.uuid
     override val instanceId: Int = descriptor.instanceId
+    private val cccdState = (descriptor as? CCCD)?.let {
+        CccdState(
+            enabled = it.enabled,
+            properties = characteristic.properties,
+        )
+    }
 
     override suspend fun FlowCollector<GattEvent>.executeRead() {
         val eventHandler = checkNotNull(peripheralSpec.eventHandler)
@@ -108,7 +114,7 @@ class MockRemoteDescriptor(
         }
 
         val result = when (descriptor) {
-            is CCCD -> ReadResponse.Success(descriptor.value)
+            is CCCD -> ReadResponse.Success(checkNotNull(cccdState).value)
             is CUD -> ReadResponse.Success(descriptor.value)
             is CEPD -> ReadResponse.Success(descriptor.value)
             else -> eventHandler.onReadRequest(this@MockRemoteDescriptor)
@@ -250,13 +256,10 @@ class MockRemoteDescriptor(
             false -> {
                 val result = when (descriptor) {
                     is CCCD -> {
-                        // Values 0x01-00 and 0x02-00 are used to enable notifications and indications, respectively.
-                        // Value 0x00-00 is used to disable both.
-                        // Any other value is RFU and ignored.
-                        if (data.size == 2 && data[0] >= 0 && data[0] <= 1 && data[1] == 0.toByte()) {
-                            descriptor.enabled = data[1] > 0
+                        val response = eventHandler.onWriteRequest(this@MockRemoteDescriptor, truncatedData)
+                        checkNotNull(cccdState).write(truncatedData, response).also {
+                            descriptor.enabled = cccdState.isEnabled
                         }
-                        WriteResponse.Success
                     }
                     else -> eventHandler.onWriteRequest(this@MockRemoteDescriptor, truncatedData)
                 }
@@ -291,14 +294,6 @@ class MockRemoteDescriptor(
 
     override fun OperationEvent.matches(): Boolean = this.subject == this@MockRemoteDescriptor
 
-    /** The value of the CCCD in bytes. */
-    val CCCD.value: ByteArray
-        get() = when {
-            enabled && CharacteristicProperty.NOTIFY in characteristic.properties -> ENABLE_NOTIFICATIONS_VALUE
-            enabled && CharacteristicProperty.INDICATE in characteristic.properties -> ENABLE_INDICATIONS_VALUE
-            else -> DISABLE_NOTIFICATIONS_VALUE
-        }
-
     /** The value of the CUD in bytes. */
     val CUD.value: ByteArray
         get() = this.description.encodeToByteArray()
@@ -312,4 +307,42 @@ class MockRemoteDescriptor(
             // Other bits are reserved and set to 0.
             return byteArrayOf(flags.toByte(), 0.toByte())
         }
+}
+
+internal class CccdState(
+    enabled: Boolean,
+    private val properties: Set<CharacteristicProperty>,
+) {
+    var value: ByteArray = when {
+        !enabled -> BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE
+        CharacteristicProperty.NOTIFY in properties -> BaseRemoteDescriptor.ENABLE_NOTIFICATIONS_VALUE
+        CharacteristicProperty.INDICATE in properties -> BaseRemoteDescriptor.ENABLE_INDICATIONS_VALUE
+        else -> BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE
+    }
+        private set
+
+    val isEnabled: Boolean
+        get() = !value.contentEquals(BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE)
+
+    fun write(
+        newValue: ByteArray,
+        response: WriteResponse = WriteResponse.Success,
+    ): WriteResponse = when {
+        response is WriteResponse.Failure -> response
+        newValue.contentEquals(BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE) -> {
+            value = BaseRemoteDescriptor.DISABLE_NOTIFICATIONS_VALUE
+            WriteResponse.Success
+        }
+        newValue.contentEquals(BaseRemoteDescriptor.ENABLE_NOTIFICATIONS_VALUE) &&
+                CharacteristicProperty.NOTIFY in properties -> {
+            value = BaseRemoteDescriptor.ENABLE_NOTIFICATIONS_VALUE
+            WriteResponse.Success
+        }
+        newValue.contentEquals(BaseRemoteDescriptor.ENABLE_INDICATIONS_VALUE) &&
+                CharacteristicProperty.INDICATE in properties -> {
+            value = BaseRemoteDescriptor.ENABLE_INDICATIONS_VALUE
+            WriteResponse.Success
+        }
+        else -> WriteResponse.Failure(OperationStatus.ValueNotAllowed)
+    }
 }

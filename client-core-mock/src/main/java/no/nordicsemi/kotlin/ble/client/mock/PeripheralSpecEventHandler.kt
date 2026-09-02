@@ -492,6 +492,8 @@ interface PeripheralSpecEventHandler {
      * @param value The value written to the characteristic descriptor.
      * @return The response of the write operation. This emulates a response received from the peripheral,
      * and it will be delayed to the client by one connection interval.
+     * Client Characteristic Configuration Descriptor writes are also delivered here, allowing
+     * a mock peripheral to accept or reject notification and indication modes.
      * @throws OperationFailedException in case of a client error (reported without a delay).
      */
     fun onWriteRequest(descriptor: MockRemoteDescriptor, value: ByteArray): WriteResponse {

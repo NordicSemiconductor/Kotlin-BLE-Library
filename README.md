@@ -349,6 +349,17 @@ remoteService.characteristics.forEach { remoteCharacteristic ->
 
 #### Subscribing to value changes
 
+When a characteristic supports both notifications and indications, the default behavior prefers
+indications. Select a mode explicitly when the peripheral requires one:
+
+```kotlin
+remoteCharacteristic.subscribe(SubscriptionMode.NOTIFICATION)
+    .onEach { newValue ->
+        Timber.i("Value changed: 0x${newValue.toHexString()}")
+    }
+    .launchIn(scope)
+```
+
 ```kotlin
 remoteService.characteristics.forEach { remoteCharacteristic ->
     try {
